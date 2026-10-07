@@ -1,8 +1,8 @@
 # ADR-0008: AI 駆動開発のハーネス（CLAUDE.md / docs / ADR）
 
-- ステータス: 提案中
+- ステータス: 承認
 - 日付: 2026-10-07
-- 決定者: Shun（承認待ち）
+- 決定者: Shun（2026-10-07 PR #1 のマージで承認）
 - 関連: [ADR-0001](./0001-record-architecture-decisions.md) / [開発ルール](../05-development/development-rules.md) / [AI 開発ハーネス](../05-development/ai-harness.md)
 
 ## 背景

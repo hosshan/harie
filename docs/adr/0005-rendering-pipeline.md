@@ -1,8 +1,8 @@
 # ADR-0005: 描画パイプライン: 注釈 → SVG → resvg（WASM）
 
-- ステータス: 提案中
+- ステータス: 承認
 - 日付: 2026-10-07
-- 決定者: Shun（承認待ち）
+- 決定者: Shun（2026-10-07 PR #1 のマージで承認）
 - 関連: NFR-PLAT-05 / FR-MCP-03 / [アーキテクチャ](../03-design/architecture.md) / [ADR-0002](./0002-app-platform.md)
 
 ## 背景
