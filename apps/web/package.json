@@ -1,0 +1,32 @@
+{
+  "name": "@anoi/web",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "typecheck": "tsc -p tsconfig.json && tsc -p tsconfig.e2e.json",
+    "e2e": "playwright test"
+  },
+  "dependencies": {
+    "@anoi/editor": "workspace:*",
+    "@anoi/format": "workspace:*",
+    "@anoi/model": "workspace:*",
+    "@anoi/render": "workspace:*",
+    "@expo-google-fonts/noto-sans-jp": "^0.4.4",
+    "@jsquash/jpeg": "^1.6.0",
+    "@resvg/resvg-wasm": "^2.6.2",
+    "react": "^19.3.0",
+    "react-dom": "^19.3.0"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.64.0",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "@vitejs/plugin-react": "^6.1.2",
+    "vite": "^8.3.3",
+    "@types/node": "^22.20.5"
+  }
+}

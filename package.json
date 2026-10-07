@@ -13,7 +13,8 @@
     "typecheck": "pnpm -r --if-present typecheck",
     "test": "vitest run",
     "build": "pnpm -r --if-present build",
-    "anoi": "node apps/cli/bin/anoi.mjs"
+    "anoi": "node apps/cli/bin/anoi.mjs",
+    "e2e": "pnpm --filter @anoi/web e2e"
   },
   "devDependencies": {
     "@biomejs/biome": "^2.5.15",

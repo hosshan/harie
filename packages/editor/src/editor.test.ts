@@ -1,0 +1,118 @@
+import { createDocument } from "@anoi/model";
+import { describe, expect, it } from "vitest";
+import { hitTest } from "./Canvas";
+import { boxFrom, handlesFor, movePatch, resizePatch } from "./geometry";
+import { editorReducer, initialState, newAnnotationId } from "./history";
+
+const base = () =>
+  createDocument({
+    width: 800,
+    height: 600,
+    docId: "c8be77cd-bc6d-4747-bf15-12e345a4b522",
+    now: new Date("2026-10-07T00:00:00Z"),
+  });
+
+const rect = { id: "rect-1", type: "rect", x: 10, y: 10, w: 100, h: 50 };
+const arrow = { id: "arrow-1", type: "arrow", from: { x: 0, y: 200 }, to: { x: 200, y: 200 } };
+
+describe("editorReducer（FR-EDIT-07）", () => {
+  it("操作を適用し、元に戻す・やり直すができる", () => {
+    let s = initialState(base());
+    s = editorReducer(s, {
+      type: "apply",
+      ops: [{ op: "add", annotation: rect }],
+      select: "rect-1",
+    });
+    expect(s.doc.annotations).toHaveLength(1);
+    expect(s.selectedId).toBe("rect-1");
+    s = editorReducer(s, {
+      type: "apply",
+      ops: [{ op: "update", id: "rect-1", patch: { x: 50 } }],
+    });
+    s = editorReducer(s, { type: "undo" });
+    expect(s.doc.annotations[0]).toMatchObject({ x: 10 });
+    s = editorReducer(s, { type: "undo" });
+    expect(s.doc.annotations).toHaveLength(0);
+    expect(s.selectedId).toBeNull();
+    s = editorReducer(s, { type: "redo" });
+    s = editorReducer(s, { type: "redo" });
+    expect(s.doc.annotations[0]).toMatchObject({ x: 50 });
+    expect(editorReducer(s, { type: "redo" })).toBe(s);
+  });
+
+  it("新しい操作をするとやり直しの履歴は消える", () => {
+    let s = initialState(base());
+    s = editorReducer(s, { type: "apply", ops: [{ op: "add", annotation: rect }] });
+    s = editorReducer(s, { type: "undo" });
+    s = editorReducer(s, { type: "apply", ops: [{ op: "add", annotation: arrow }] });
+    expect(s.future).toHaveLength(0);
+    expect(s.doc.annotations.map((a) => a.id)).toEqual(["arrow-1"]);
+  });
+
+  it("失敗した操作は状態を変えずにエラーを残す", () => {
+    let s = initialState(base());
+    s = editorReducer(s, { type: "apply", ops: [{ op: "add", annotation: rect }] });
+    const before = s.doc;
+    s = editorReducer(s, { type: "apply", ops: [{ op: "remove", id: "nope" }] });
+    expect(s.doc).toBe(before);
+    expect(s.error?.message).toContain("nope");
+  });
+
+  it("ID は既存と重ならない", () => {
+    let s = initialState(base());
+    s = editorReducer(s, { type: "apply", ops: [{ op: "add", annotation: rect }] });
+    expect(newAnnotationId(s.doc, "rect")).toBe("rect-2");
+  });
+});
+
+describe("geometry", () => {
+  it("移動は矢印の両端も動かす", () => {
+    const r = editorReducer(initialState(base()), {
+      type: "apply",
+      ops: [{ op: "add", annotation: arrow }],
+    });
+    const a = r.doc.annotations[0];
+    if (a === undefined) throw new Error();
+    expect(movePatch(a, 10, -5)).toEqual({ from: { x: 10, y: 195 }, to: { x: 210, y: 195 } });
+  });
+
+  it("角のハンドルは反対側の角を固定し、裏返しても幅・高さは正", () => {
+    const s = editorReducer(initialState(base()), {
+      type: "apply",
+      ops: [{ op: "add", annotation: rect }],
+    });
+    const a = s.doc.annotations[0];
+    if (a === undefined) throw new Error();
+    expect(handlesFor(a)).toHaveLength(8);
+    expect(resizePatch(a, "se", { x: 210, y: 110 })).toEqual({ x: 10, y: 10, w: 200, h: 100 });
+    expect(resizePatch(a, "nw", { x: 200, y: 100 })).toEqual({ x: 110, y: 60, w: 90, h: 40 });
+    expect(boxFrom({ x: 5, y: 5 }, { x: 1, y: 1 })).toEqual({ x: 1, y: 1, w: 4, h: 4 });
+  });
+
+  it("当たり判定は上に描かれた注釈を優先し、矢印は線の近くだけ当たる", () => {
+    const s = editorReducer(initialState(base()), {
+      type: "apply",
+      ops: [
+        { op: "add", annotation: rect },
+        { op: "add", annotation: { ...rect, id: "rect-2", x: 50 } },
+        { op: "add", annotation: arrow },
+      ],
+    });
+    expect(hitTest(s.doc, { x: 60, y: 20 }, 4)?.id).toBe("rect-2");
+    expect(hitTest(s.doc, { x: 100, y: 203 }, 4)?.id).toBe("arrow-1");
+    expect(hitTest(s.doc, { x: 100, y: 260 }, 4)).toBeUndefined();
+  });
+});
+
+describe("保存後のリビジョン", () => {
+  it("saved は履歴中のドキュメントにも新しいリビジョンを反映する", () => {
+    let s = initialState(base());
+    s = editorReducer(s, { type: "apply", ops: [{ op: "add", annotation: rect }] });
+    const meta = { ...s.doc.meta, updatedAt: "2026-10-08T00:00:00.000Z" };
+    s = editorReducer(s, { type: "saved", revision: 3, meta });
+    expect(s.doc.revision).toBe(3);
+    s = editorReducer(s, { type: "undo" });
+    expect(s.doc.revision).toBe(3);
+    expect(s.doc.annotations).toHaveLength(0);
+  });
+});

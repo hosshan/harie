@@ -1,0 +1,96 @@
+:root {
+  --fg: #1c2024;
+  --muted: #687076;
+  --bg: #ffffff;
+  --line: #d0d5dd;
+  --accent: #0b6bcb;
+  font-family: "Hiragino Sans", "Noto Sans JP", system-ui, sans-serif;
+  color: var(--fg);
+  background: var(--bg);
+}
+* {
+  box-sizing: border-box;
+}
+body {
+  margin: 0;
+}
+button {
+  font: inherit;
+  padding: 4px 10px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: #fff;
+  cursor: pointer;
+}
+button:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+textarea,
+input {
+  font: inherit;
+  padding: 4px 6px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+}
+.app {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 12px 16px;
+  min-height: 100vh;
+}
+.app-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.app-header h1 {
+  font-size: 18px;
+  margin: 0;
+}
+.app-main {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.app-file {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.app-file-name {
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+.app-primary {
+  background: var(--accent);
+  color: #fff;
+  border-color: var(--accent);
+}
+.app-drop {
+  flex: 1;
+  display: grid;
+  place-content: center;
+  text-align: center;
+  border: 2px dashed var(--line);
+  border-radius: 12px;
+  padding: 48px 16px;
+}
+.app-error,
+.app-warning {
+  margin: 0;
+  padding: 8px 12px;
+  border-radius: 8px;
+}
+.app-error {
+  background: #fdecec;
+  color: #b42318;
+}
+.app-warning {
+  background: #fff4e5;
+  color: #8a4b00;
+}
+.anoi-muted {
+  color: var(--muted);
+}

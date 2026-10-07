@@ -30,7 +30,7 @@
 | ✅ `format`: PNG 読み書き | FR-FILE-02 | 同上 |
 | ✅ `format`: 整合性チェック（ハッシュ検証、壊れたファイル） | FR-FILE-05, NFR-DATA-03 | 外部ツール再保存で正しく判定（ImageMagick でのリサイズをテストで再現） |
 | ✅ `render`: SVG 生成（rect / arrow / text / callout / badge） | FR-EDIT-01〜04 | スナップショットテスト |
-| ✅ `render`: resvg-wasm ラスタライズ・合成・エンコード | NFR-PLAT-05 | Node で決定的な出力（ブラウザ（Playwright）との同一ピクセル確認は M3 で Web エディタと一緒に行う） |
+| ✅ `render`: resvg-wasm ラスタライズ・合成・エンコード | NFR-PLAT-05 | Node で決定的な出力。ブラウザとの一致は M3 の E2E で確認済み |
 | ✅ `render`: マスク適用（塗りつぶし・モザイク・ぼかし・ダミー置換の描画） | FR-EDIT-05, FR-PII-02〜04 | 加工後に元ピクセルが残らないテスト |
 | ✅ CLI（開発用）: `anoi inspect/create/render/extract/mask`（`apps/cli`） | FR-FILE-08 | 手元でファイルを検査できる |
 | ✅ 性能計測 | NFR-PERF-01 | 2560×1600 で保存 2 秒以内（未達なら ADR-0005 を再評価）。結果は [描画・保存の性能](../02-research/rendering-performance.md) |
@@ -49,9 +49,9 @@
 
 | タスク | 要件 | 完了条件 |
 |---|---|---|
-| 画像の取り込み（D&D / クリップボード / ファイル） | FR-CAP-05, FR-FILE-08 | E2E |
-| 注釈の追加・選択・移動・リサイズ・削除、Undo/Redo | FR-EDIT-01〜05, 07 | E2E |
-| 保存（File System Access API / ダウンロード）、ファイル名規則 | FR-FILE-06 | 保存 → 再読込で同じ状態 |
+| ✅ 画像の取り込み（D&D / クリップボード / ファイル） | FR-CAP-05, FR-FILE-08 | E2E |
+| 注釈の追加・選択・移動・リサイズ・削除、Undo/Redo | FR-EDIT-01〜05, 07 | E2E（✅ FR-EDIT-01〜04, 07。PII マスクの UI（FR-EDIT-05）は未実装） |
+| ✅ 保存（File System Access API / ダウンロード）、ファイル名規則 | FR-FILE-06, NFR-PLAT-05 | 保存 → 再読込で同じ状態。ブラウザと Node の保存結果がバイト単位で一致（E2E） |
 | 不整合ファイルの扱い UI | FR-FILE-05 | E2E |
 | PWA 化（オフライン、WASM・フォントのキャッシュ） | NFR-PLAT-01 | オフラインで起動 |
 

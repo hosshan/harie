@@ -1,0 +1,131 @@
+import { readFileSync } from "node:fs";
+import { readAnoi, writeAnoi } from "@anoi/format";
+import { expect, type Page, test } from "@playwright/test";
+import { nodeRenderer } from "../../../packages/render/src/test-utils/node-renderer";
+
+const FIXTURES = new URL("../../../packages/format/fixtures/", import.meta.url);
+const fixture = (name: string) => readFileSync(new URL(name, FIXTURES));
+
+async function openFixture(page: Page, name: string, mimeType = "image/jpeg") {
+  await page.goto("/");
+  await page.getByLabel("画像ファイル").setInputFiles({ name, mimeType, buffer: fixture(name) });
+  await expect(page.getByRole("application", { name: "注釈の編集面" })).toBeVisible();
+}
+
+/** 編集面の上で、画像の座標（px）を画面の座標に直してドラッグする（縦横比を保った余白も考慮） */
+async function drag(page: Page, from: [number, number], to: [number, number], size = [520, 400]) {
+  const box = await page.getByRole("application", { name: "注釈の編集面" }).boundingBox();
+  if (box === null) throw new Error("編集面がない");
+  const [w, h] = size as [number, number];
+  const k = Math.min(box.width / w, box.height / h);
+  const ox = box.x + (box.width - w * k) / 2;
+  const oy = box.y + (box.height - h * k) / 2;
+  const at = (p: [number, number]) => [ox + p[0] * k, oy + p[1] * k] as const;
+  await page.mouse.move(...at(from));
+  await page.mouse.down();
+  await page.mouse.move(...at([(from[0] + to[0]) / 2, (from[1] + to[1]) / 2]));
+  await page.mouse.move(...at(to));
+  await page.mouse.up();
+}
+
+const annotationRects = (page: Page) => page.locator(".anoi-canvas-image rect");
+
+test("FR-FILE-08, FR-EDIT-01〜04, 07: 画像を開いて注釈を付け、元に戻す・やり直す", async ({
+  page,
+}) => {
+  await openFixture(page, "large-base.jpg");
+  await page.getByRole("button", { name: "四角" }).click();
+  await drag(page, [40, 40], [240, 120]);
+  await expect(annotationRects(page)).toHaveCount(1);
+  await expect(page.locator("[data-selected]")).toHaveCount(1);
+
+  await page.getByRole("button", { name: "元に戻す" }).click();
+  await expect(annotationRects(page)).toHaveCount(0);
+  await page.keyboard.press("Control+Shift+Z");
+  await expect(annotationRects(page)).toHaveCount(1);
+
+  // 選択して移動 → Delete で削除 → Ctrl+Z で戻る
+  await drag(page, [140, 42], [180, 82]);
+  await expect(annotationRects(page).first()).toHaveAttribute("x", "80");
+  await page.keyboard.press("Delete");
+  await expect(annotationRects(page)).toHaveCount(0);
+  await page.keyboard.press("Control+Z");
+  await expect(annotationRects(page)).toHaveCount(1);
+});
+
+test("FR-FILE-06: 保存したファイルは普通の JPEG で、開き直すと同じ注釈を編集できる", async ({
+  page,
+}) => {
+  await openFixture(page, "large-base.jpg");
+  await page.getByRole("button", { name: "四角" }).click();
+  await drag(page, [40, 40], [240, 120]);
+  await page.getByRole("button", { name: "吹き出し" }).click();
+  await drag(page, [260, 60], [260, 60]);
+  const textarea = page.getByLabel("文字");
+  await textarea.fill("ここで通知を設定します");
+  await textarea.blur();
+  await page.getByRole("button", { name: "青" }).click();
+
+  const [download] = await Promise.all([
+    page.waitForEvent("download"),
+    page.getByRole("button", { name: "保存" }).click(),
+  ]);
+  expect(download.suggestedFilename()).toBe("large-base.anoi.jpg");
+  const file = new Uint8Array(readFileSync(await download.path()));
+  const read = readAnoi(file);
+  expect(read.kind).toBe("anoi");
+  if (read.kind !== "anoi") return;
+  expect(read.doc.revision).toBe(1);
+  expect(read.doc.annotations.map((a) => a.type)).toEqual(["rect", "callout"]);
+  // 画面上でドラッグした位置が、画像の座標として記録されている
+  expect(read.doc.annotations[0]).toMatchObject({ x: 40, y: 40, w: 200, h: 80 });
+  expect(read.doc.annotations[1]).toMatchObject({
+    text: "ここで通知を設定します",
+    style: { stroke: "#0B6BCB" },
+  });
+  // ベース画像は読み込んだバイト列のまま（ADR-0004）
+  expect(read.base.bytes).toEqual(new Uint8Array(fixture("large-base.jpg")));
+
+  // NFR-PLAT-05: ブラウザで保存したファイルと、Node で同じ注釈から作ったファイルがバイト単位で一致する
+  const rendered = await (await nodeRenderer()).render({
+    doc: read.doc,
+    base: read.base,
+    output: "jpeg",
+  });
+  expect(writeAnoi({ rendered, base: read.base.bytes, doc: read.doc })).toEqual(file);
+
+  // 開き直すと注釈が戻り、続けて編集できる
+  await page.getByLabel("画像ファイル").setInputFiles({
+    name: "large-base.anoi.jpg",
+    mimeType: "image/jpeg",
+    buffer: Buffer.from(file),
+  });
+  await expect(page.locator(".anoi-canvas-image svg")).toContainText("ここで通知を設定");
+  await expect(page.locator(".app-file-name")).toHaveText("large-base.anoi.jpg");
+});
+
+test("FR-CAP-05: ドラッグ＆ドロップと貼り付けで画像を取り込める", async ({ page }) => {
+  await page.goto("/");
+  const bytes = [...fixture("base.png")];
+  await page.evaluate((data) => {
+    const dt = new DataTransfer();
+    dt.items.add(new File([new Uint8Array(data)], "dropped.png", { type: "image/png" }));
+    window.dispatchEvent(new DragEvent("drop", { dataTransfer: dt, cancelable: true }));
+  }, bytes);
+  await expect(page.locator(".app-file-name")).toHaveText("dropped.png");
+
+  await page.evaluate((data) => {
+    const dt = new DataTransfer();
+    dt.items.add(new File([new Uint8Array(data)], "pasted.png", { type: "image/png" }));
+    window.dispatchEvent(new ClipboardEvent("paste", { clipboardData: dt, cancelable: true }));
+  }, bytes);
+  await expect(page.locator(".app-file-name")).toHaveText("pasted.png");
+});
+
+test("画像でないファイルは開かずに理由を表示する", async ({ page }) => {
+  await page.goto("/");
+  await page
+    .getByLabel("画像ファイル")
+    .setInputFiles({ name: "note.png", mimeType: "image/png", buffer: Buffer.from("hello") });
+  await expect(page.getByRole("alert")).toContainText("JPEG か PNG");
+});
