@@ -1,4 +1,4 @@
-import { type AnoiDocument, DocumentSchema, SCHEMA_VERSION } from "./schema";
+import { type AnoiDocument, DocumentSchema, type PiiApplied, SCHEMA_VERSION } from "./schema";
 
 // Web Crypto はブラウザと Node 22 の両方にグローバルで存在する。DOM 型に依存しないよう最小限だけ宣言する
 declare const crypto: { randomUUID(): string };
@@ -48,4 +48,12 @@ export function prepareForSave(
       ? doc.annotations
       : doc.annotations.filter((a) => a.status !== "suggested"),
   };
+}
+
+/**
+ * PII 加工の記録を追記する（ADR-0007）。ベース画像の差し替え（`@anoi/render` の `applyMasks`）と必ず組で使う。
+ * 記録は種別・方法・範囲のみで、元の値やダミー文字列は持たない。
+ */
+export function recordPiiApplied(doc: AnoiDocument, applied: readonly PiiApplied[]): AnoiDocument {
+  return { ...doc, pii: { ...doc.pii, applied: [...doc.pii.applied, ...applied] } };
 }

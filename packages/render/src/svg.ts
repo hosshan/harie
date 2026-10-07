@@ -2,6 +2,7 @@
 // 純粋関数。エディタの表示と保存時のラスタライズの両方がこの SVG を使い、見た目を一致させる。
 import type { Annotation, AnoiDocument, Style } from "@anoi/model";
 import { THEMES, type Theme } from "./theme";
+import { attrs, esc, n } from "./xml";
 
 export const FONT_FAMILY = "Noto Sans JP";
 
@@ -11,26 +12,6 @@ export type BuildSvgOptions = {
   /** AI 提案中（status: "suggested"）の注釈も描くか。保存時は描かない（FR-AI-02）。 */
   includeSuggested?: boolean;
 };
-
-function esc(s: string): string {
-  return s
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;");
-}
-
-/** 数値を SVG に書く。小数は 2 桁に丸め、出力を安定させる（スナップショット・決定性のため）。 */
-function n(v: number): string {
-  return String(Math.round(v * 100) / 100);
-}
-
-function attrs(a: Record<string, string | number | undefined>): string {
-  return Object.entries(a)
-    .filter(([, v]) => v !== undefined)
-    .map(([k, v]) => `${k}="${typeof v === "number" ? n(v) : esc(v as string)}"`)
-    .join(" ");
-}
 
 type Resolved = {
   stroke: string;

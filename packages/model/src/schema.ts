@@ -108,6 +108,21 @@ export const PiiAppliedSchema = z.object({
   rect: RectSchema,
 });
 
+export type PiiApplied = z.infer<typeof PiiAppliedSchema>;
+
+/**
+ * PII 加工の指示（エディタ・MCP・AI の検出結果から作る）。`replacement` はダミー置換の文字列で、
+ * ドキュメントには残さない（記録は `PiiApplied` の種別・方法・範囲だけ）。
+ */
+export const PiiMaskSchema = z.object({
+  kind: PiiKindSchema,
+  method: PiiMethodSchema,
+  rect: RectSchema,
+  replacement: z.string().max(200).optional(),
+  color: color.optional(),
+});
+export type PiiMask = z.infer<typeof PiiMaskSchema>;
+
 const isoDateTime = z.iso.datetime({ offset: true });
 
 export const DocumentSchema = z.looseObject({
