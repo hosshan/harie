@@ -70,6 +70,8 @@ Anoi ファイルに埋め込む注釈ドキュメント（JSON）の構造。�
 
 `blur` を注釈として持つと、ベース画像に元のピクセルが残る。PII の加工は注釈ではなく、ベース画像の書き換え（`pii.applied` に記録）で行う。エディタはこの違いを UI 上で明確に区別する。
 
+PII 加工の指示は `PiiMask`（`kind`, `method`, `rect`, 任意で `replacement`・`color`）で表す。指示はドキュメントに保存せず、加工後に `pii.applied`（`kind`, `method`, `rect`）だけを残す。ダミー置換の文字列も残さない。
+
 ## 4. 操作（`packages/model` の API）
 
 注釈の変更はすべて純粋関数の「操作」として表す。エディタの Undo/Redo、AI の提案、MCP のツールが同じ操作を使う。
