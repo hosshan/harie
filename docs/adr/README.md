@@ -17,7 +17,7 @@
 | # | タイトル | ステータス |
 |---|---|---|
 | [0001](./0001-record-architecture-decisions.md) | ADR で設計判断を記録する | 承認 |
-| [0002](./0002-app-platform.md) | アプリ基盤に TypeScript Web コア + Tauri 2 を採用する | 提案中 |
+| [0002](./0002-app-platform.md) | アプリ基盤に TypeScript Web コア + Tauri 2 を採用する | 承認 |
 | [0003](./0003-monorepo-tooling.md) | pnpm モノレポと TypeScript ツールチェーン | 提案中 |
 | [0004](./0004-image-container-format.md) | 画像保存形式: XMP 記述子 + JUMBF ペイロード埋め込み | 提案中 |
 | [0005](./0005-rendering-pipeline.md) | 描画パイプライン: 注釈 → SVG → resvg（WASM） | 提案中 |

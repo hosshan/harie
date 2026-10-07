@@ -1,8 +1,8 @@
 # ADR-0002: アプリ基盤に TypeScript Web コア + Tauri 2 を採用する
 
-- ステータス: 提案中
+- ステータス: 承認
 - 日付: 2026-10-07
-- 決定者: Shun（承認待ち）
+- 決定者: Shun（2026-10-07 承認）
 - 関連: [技術調査: アプリ基盤](../02-research/app-platform.md) / NFR-PLAT-01〜05 / [ADR-0003](./0003-monorepo-tooling.md) / [ADR-0005](./0005-rendering-pipeline.md)
 
 ## 背景
