@@ -52,6 +52,7 @@ flowchart LR
 | `apps/extension` | Chrome 拡張。キャプチャ・DOM 情報取得、拡張ページでエディタを開く | Chrome |
 | `apps/desktop` | Tauri 2 の殻。ファイル関連付け、ネイティブ保存 | macOS / Windows |
 | `apps/mcp` | MCP サーバー。ファイルを開いて注釈を変更し、再レンダリングして保存 | Node |
+| `apps/cli` | 開発用 CLI（`pnpm anoi`）。ファイルの検査・作成・描き直し・PII 加工。WASM とフォントを Node で読み込む | Node |
 
 依存の向きは `apps → editor/ai → render/format → model` の一方向。`model` / `format` / `render` は DOM・React に依存しない（Lint で禁止する）。
 

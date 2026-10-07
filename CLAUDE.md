@@ -13,13 +13,14 @@ Anoi（Annotation Image）: SaaS の利用ガイド用スクリーンショッ�
 
 触る領域に関係する ADR と設計書は、作業前に必ず読むこと。
 
-## リポジトリ構成（`packages/model`・`packages/format`・`packages/render` 以外は未作成。実装計画の順に追加する）
+## リポジトリ構成（`packages/model`・`packages/format`・`packages/render`・`apps/cli` 以外は未作成。実装計画の順に追加する）
 
 ```
 apps/web         Web エディタ（Vite + React, PWA）
 apps/extension   Chrome 拡張（WXT, MV3）
 apps/desktop     デスクトップ（Tauri 2）
 apps/mcp         MCP サーバー（Node, stdio）
+apps/cli         開発用 CLI（inspect / create / render / extract / mask）
 packages/model   注釈ドキュメントのスキーマと操作（zod）
 packages/format  JPEG/PNG への埋め込み・読み出し
 packages/render  注釈 → SVG → ピクセル（resvg-wasm）
@@ -35,6 +36,7 @@ pnpm install
 pnpm check        # lint（Biome）+ typecheck + test（Vitest）。PR 前に必ず通す
 pnpm test         # テストのみ
 pnpm format       # Biome で整形・import 整理
+pnpm anoi inspect <file>   # 開発用 CLI（`pnpm anoi --help` で一覧）
 ```
 
 - Node 22 / pnpm 10。TypeScript は 7 系（`tsc` はネイティブ版）。
