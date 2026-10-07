@@ -25,10 +25,10 @@
 
 | タスク | 要件 | 完了条件 |
 |---|---|---|
-| `model`: zod スキーマ、`apply(ops)`、マイグレーション枠 | FR-FILE-07 | 単体テスト |
-| `format`: JPEG 読み書き（PoC を本実装に） | FR-FILE-01, 03, 04 | ゴールデンテスト、ベース画像のバイト一致 |
-| `format`: PNG 読み書き | FR-FILE-02 | 同上 |
-| `format`: 整合性チェック（ハッシュ検証、壊れたファイル） | FR-FILE-05, NFR-DATA-03 | 外部ツール再保存フィクスチャで正しく判定 |
+| ✅ `model`: zod スキーマ、`applyOps`、マイグレーション枠 | FR-FILE-07 | 単体テスト |
+| ✅ `format`: JPEG 読み書き（PoC を本実装に） | FR-FILE-01, 03, 04 | ゴールデンテスト、ベース画像のバイト一致 |
+| ✅ `format`: PNG 読み書き | FR-FILE-02 | 同上 |
+| ✅ `format`: 整合性チェック（ハッシュ検証、壊れたファイル） | FR-FILE-05, NFR-DATA-03 | 外部ツール再保存で正しく判定（ImageMagick でのリサイズをテストで再現） |
 | `render`: SVG 生成（rect / arrow / text / callout / badge） | FR-EDIT-01〜04 | スナップショットテスト |
 | `render`: resvg-wasm ラスタライズ・合成・エンコード | NFR-PLAT-05 | ブラウザ（Playwright）と Node で同一ピクセル |
 | `render`: マスク適用（塗りつぶし・モザイク・ぼかし） | FR-EDIT-05, FR-PII-03, 04 | 加工後に元ピクセルが残らないテスト |

@@ -76,19 +76,25 @@ IEND
 
 1. 形式判定（マジックナンバー）。JPEG / PNG 以外は非対応として通常画像扱い。
 2. XMP 記述子を探す。無ければ通常画像。
-3. JUMBF ペイロードを集める（JPEG は `En` ごとに `Z` 順で連結）。
-4. `payloadSha256` を検証。不一致 → `PayloadCorrupted`。
+3. JUMBF ペイロードを集める（JPEG は `En` ごとに `Z` 順で連結）。パケットが欠けている・`LBox` と合わない superbox はその superbox だけ捨てる（ImageMagick は複数セグメントの APP11 のうち先頭だけを残すことがある）。ラベルの揃わない状態は `PayloadMissing`。
+4. `anoi.document` と `anoi.base` が揃わなければ `PayloadMissing`。`payloadSha256` を検証し、不一致なら `PayloadCorrupted`。
 5. `renderSha256` を検証。不一致 → `RenderedImageModified`（外部で再エンコード・編集された）。
 6. `formatVersion` のメジャーが未知 → 読み取り専用で開くか、通常画像として開く。
 7. 注釈ドキュメントをスキーマ検証し、マイグレーション。
 
 いずれの失敗でも例外で落とさず、状態付きの結果を返す（NFR-DATA-03）。
 
+実装: `packages/format/src/anoi-file.ts` の `readAnoi`。結果の型は次のとおり。
+
 ```ts
 type ReadResult =
-  | { kind: "plain"; image: Bytes }
-  | { kind: "anoi"; doc: AnoiDocument; base: Bytes; rendered: Bytes }
-  | { kind: "anoi-mismatch"; reason: "PayloadCorrupted" | "RenderedImageModified" | "UnsupportedVersion"; doc?: AnoiDocument; base?: Bytes; rendered: Bytes };
+  | { kind: "plain"; format }                                  // Anoi ファイルではない
+  | { kind: "anoi"; format; descriptor; doc; base }            // 正常
+  | { kind: "anoi-mismatch"; format; reason; descriptor; doc?; base? }
+    // reason: PayloadMissing | PayloadCorrupted | RenderedImageModified | UnsupportedVersion | InvalidDocument
+    // RenderedImageModified のときは doc と base を返し、ユーザーに「埋め込みから復元」か「今のピクセルを新しいベースにする」かを選ばせる
+  | { kind: "unsupported" }                                    // JPEG / PNG 以外
+  | { kind: "corrupted"; format; message };                    // 画像として構造が壊れている
 ```
 
 ## 7. 書き込み規則
@@ -99,7 +105,7 @@ type ReadResult =
 
 ## 8. テスト用資産
 
-`packages/format/fixtures/` に以下を置き、ゴールデンテストにする（実装時）。
+`packages/format/fixtures/` に以下を置き、ゴールデンテストにしている（`v0.1/` は再生成しない）。
 
 - 各バージョンの正常ファイル（後方互換テスト）
 - ペイロード欠損・ハッシュ不一致・分割順序の乱れたファイル
