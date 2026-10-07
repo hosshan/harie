@@ -62,11 +62,11 @@ Anoi ファイルに埋め込む注釈ドキュメント（JSON）の構造。�
 | `rect` | `x, y, w, h` | `style.radius`, `style.fill` 任意 |
 | `ellipse` | `x, y, w, h` | |
 | `arrow` | `from, to` | `style.head`（`end` / `both` / `none`） |
-| `text` | `x, y, text` | 枠なしラベル |
+| `text` | `x, y, text` | 枠なしラベル。`style.fontWeight`（`normal` / `bold`） |
 | `callout` | `x, y, w, text` | 吹き出し。`anchor` で他注釈に紐付け可能 |
 | `badge` | `x, y, number` | 番号付き丸 |
 | `spotlight` | `x, y, w, h` | 範囲外を暗くする（Next） |
-| `blur` | `x, y, w, h, method` | **可逆マスク**。PII 以外（見せたくないだけの UI）向け。PII には使わない |
+| `blur` | `x, y, w, h, method` | **可逆マスク**。PII 以外（見せたくないだけの UI）向け。PII には使わない。`method: mosaic` は SVG で表現できないため、描画では強めのぼかしで代替する |
 
 `blur` を注釈として持つと、ベース画像に元のピクセルが残る。PII の加工は注釈ではなく、ベース画像の書き換え（`pii.applied` に記録）で行う。エディタはこの違いを UI 上で明確に区別する。
 

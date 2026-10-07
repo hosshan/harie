@@ -29,11 +29,11 @@
 | ✅ `format`: JPEG 読み書き（PoC を本実装に） | FR-FILE-01, 03, 04 | ゴールデンテスト、ベース画像のバイト一致 |
 | ✅ `format`: PNG 読み書き | FR-FILE-02 | 同上 |
 | ✅ `format`: 整合性チェック（ハッシュ検証、壊れたファイル） | FR-FILE-05, NFR-DATA-03 | 外部ツール再保存で正しく判定（ImageMagick でのリサイズをテストで再現） |
-| `render`: SVG 生成（rect / arrow / text / callout / badge） | FR-EDIT-01〜04 | スナップショットテスト |
-| `render`: resvg-wasm ラスタライズ・合成・エンコード | NFR-PLAT-05 | ブラウザ（Playwright）と Node で同一ピクセル |
+| ✅ `render`: SVG 生成（rect / arrow / text / callout / badge） | FR-EDIT-01〜04 | スナップショットテスト |
+| ✅ `render`: resvg-wasm ラスタライズ・合成・エンコード | NFR-PLAT-05 | Node で決定的な出力（ブラウザ（Playwright）との同一ピクセル確認は M3 で Web エディタと一緒に行う） |
 | `render`: マスク適用（塗りつぶし・モザイク・ぼかし） | FR-EDIT-05, FR-PII-03, 04 | 加工後に元ピクセルが残らないテスト |
 | CLI（開発用）: `anoi render/inspect` | — | 手元でファイルを検査できる |
-| 性能計測 | NFR-PERF-01 | 2560×1600 で保存 2 秒以内（未達なら ADR-0005 を再評価） |
+| ✅ 性能計測 | NFR-PERF-01 | 2560×1600 で保存 2 秒以内（未達なら ADR-0005 を再評価）。結果は [描画・保存の性能](../02-research/rendering-performance.md) |
 
 ### M2: MCP サーバー（最初に価値を確認できる形態）
 
