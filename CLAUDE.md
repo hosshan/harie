@@ -13,7 +13,7 @@ Anoi（Annotation Image）: SaaS の利用ガイド用スクリーンショッ�
 
 触る領域に関係する ADR と設計書は、作業前に必ず読むこと。
 
-## リポジトリ構成（`packages/model` 以外は未作成。実装計画の順に追加する）
+## リポジトリ構成（`packages/model` と `packages/format` 以外は未作成。実装計画の順に追加する）
 
 ```
 apps/web         Web エディタ（Vite + React, PWA）

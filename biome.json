@@ -39,7 +39,13 @@
   },
   "overrides": [
     {
-      "includes": ["packages/model/**", "packages/format/**", "packages/render/**"],
+      "includes": [
+        "packages/model/**",
+        "packages/format/**",
+        "packages/render/**",
+        "!**/*.test.ts",
+        "!**/test-utils/**"
+      ],
       "linter": {
         "rules": {
           "style": {
