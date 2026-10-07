@@ -13,7 +13,7 @@ Anoi（Annotation Image）: SaaS の利用ガイド用スクリーンショッ�
 
 触る領域に関係する ADR と設計書は、作業前に必ず読むこと。
 
-## リポジトリ構成（`packages/model`・`packages/format`・`packages/render`・`apps/cli` 以外は未作成。実装計画の順に追加する）
+## リポジトリ構成（`packages/*` の model / format / render と `apps/cli`・`apps/mcp` 以外は未作成。実装計画の順に追加する）
 
 ```
 apps/web         Web エディタ（Vite + React, PWA）
@@ -36,6 +36,7 @@ pnpm install
 pnpm check        # lint（Biome）+ typecheck + test（Vitest）。PR 前に必ず通す
 pnpm test         # テストのみ
 pnpm format       # Biome で整形・import 整理
+pnpm build        # 配布物のビルド（apps/mcp → dist/）
 pnpm anoi inspect <file>   # 開発用 CLI（`pnpm anoi --help` で一覧）
 ```
 

@@ -39,9 +39,9 @@
 
 | タスク | 要件 | 完了条件 |
 |---|---|---|
-| `anoi_open` / `anoi_create` / `anoi_edit` / `anoi_preview` | FR-MCP-01〜04 | Claude Code / Claude Desktop から「この画像に枠を付けて」が通る |
-| ルートディレクトリ制限、楽観的ロック | — | テスト |
-| `npx` で起動できるパッケージ化 | — | README の手順で起動 |
+| ✅ `anoi_open` / `anoi_create` / `anoi_edit` / `anoi_preview`（＋ `anoi_list`） | FR-MCP-01〜04 | Claude Code / Claude Desktop から「この画像に枠を付けて」が通る |
+| ✅ ルートディレクトリ制限、楽観的ロック | — | テスト |
+| `npx` で起動できるパッケージ化 | — | README の手順で起動（✅ ビルドと README。npm への公開は未実施） |
 
 > M2 を早めに置く理由: UI がなくても「AI が注釈を付けて、後から変更できる画像」という中心価値を確認でき、形式と描画の実戦テストになる。
 
