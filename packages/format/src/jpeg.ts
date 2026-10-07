@@ -122,3 +122,15 @@ export function extractJpeg(jpeg: Bytes): JpegExtract {
   }
   return { xmp, superboxes };
 }
+
+/** SOFn セグメントから画像の大きさを読む。DHT(C4)・JPG(C8)・DAC(CC) は SOF ではない。 */
+export function jpegSize(jpeg: Bytes): { width: number; height: number } {
+  for (const s of scan(jpeg).segments) {
+    const m = s.marker & 0xff;
+    if (m >= 0xc0 && m <= 0xcf && m !== 0xc4 && m !== 0xc8 && m !== 0xcc) {
+      if (s.data.length < 5) break;
+      return { height: readU16(s.data, 1), width: readU16(s.data, 3) };
+    }
+  }
+  throw new RangeError("SOF not found");
+}

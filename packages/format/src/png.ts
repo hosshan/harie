@@ -83,3 +83,10 @@ export function extractPng(png: Bytes): { xmp: Bytes | null; superboxes: Bytes[]
   }
   return { xmp, superboxes };
 }
+
+/** IHDR（先頭チャンク）から画像の大きさを読む。 */
+export function pngSize(png: Bytes): { width: number; height: number } {
+  const ihdr = chunks(png)[0];
+  if (ihdr?.type !== "IHDR" || ihdr.data.length < 8) throw new RangeError("IHDR not found");
+  return { width: readU32(ihdr.data, 0), height: readU32(ihdr.data, 4) };
+}
