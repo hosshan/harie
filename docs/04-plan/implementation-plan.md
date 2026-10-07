@@ -16,10 +16,10 @@
 
 | タスク | 完了条件 |
 |---|---|
-| docs / ADR / CLAUDE.md（本 PR） | ADR-0002, 0004, 0006 が承認されている |
-| pnpm モノレポ、TS / Biome / Vitest 設定（ADR-0003） | `pnpm check` が空のパッケージで通る |
-| GitHub Actions で `pnpm check` | PR で自動実行される |
-| Claude Code のフック・権限設定（[AI 開発ハーネス](../05-development/ai-harness.md)） | 編集後に format が自動で走る |
+| ✅ docs / ADR / CLAUDE.md（PR #1） | ADR-0002, 0004, 0006 が承認されている |
+| ✅ pnpm モノレポ、TS / Biome / Vitest 設定（ADR-0003） | `pnpm check` が通る（`packages/model` にファイル名規則 FR-FILE-06 を実装） |
+| ✅ GitHub Actions で `pnpm check` | PR で自動実行される |
+| ✅ Claude Code のフック・権限設定（[AI 開発ハーネス](../05-development/ai-harness.md)） | 編集後に format が自動で走る |
 
 ### M1: コア（形式・モデル・描画）— UI なし
 

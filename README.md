@@ -6,4 +6,4 @@ Annotation Image Application: Web サービス向けのガイド作成などで�
 - 設計判断: [docs/adr/](docs/adr/README.md)
 - AI エージェント向け: [CLAUDE.md](CLAUDE.md)
 
-現在は設計フェーズ（M0）。実装計画は [docs/04-plan/implementation-plan.md](docs/04-plan/implementation-plan.md) を参照。
+現在は M0（基盤整備）。`pnpm install && pnpm check` で検証できる。実装計画は [docs/04-plan/implementation-plan.md](docs/04-plan/implementation-plan.md) を参照。

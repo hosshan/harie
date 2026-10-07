@@ -1,8 +1,8 @@
 # ADR-0004: 画像保存形式: XMP 記述子 + JUMBF ペイロード埋め込み
 
-- ステータス: 提案中
+- ステータス: 承認
 - 日付: 2026-10-07
-- 決定者: Shun（承認待ち）
+- 決定者: Shun（2026-10-07 PR #1 のマージで承認）
 - 関連: [技術調査: 画像保存方式](../02-research/image-storage.md) / [ファイル形式仕様](../03-design/anoi-format-spec.md) / FR-FILE-01〜07 / [ADR-0007](./0007-pii-masking.md)
 
 ## 背景
