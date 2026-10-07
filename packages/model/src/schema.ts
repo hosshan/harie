@@ -23,6 +23,7 @@ export const StyleSchema = z.looseObject({
   opacity: finite.min(0).max(1).optional(),
   color: color.optional(),
   fontSize: finite.positive().optional(),
+  fontWeight: z.enum(["normal", "bold"]).optional(),
   head: z.enum(["end", "both", "none"]).optional(),
 });
 export type Style = z.infer<typeof StyleSchema>;

@@ -6,6 +6,7 @@
 | 要件 | [要件定義](01-requirements/requirements-definition.md) | 機能・非機能要件（ID 付き）、MVP の範囲 |
 | 調査 | [アプリ基盤](02-research/app-platform.md) | Tauri 2 / Flutter / Electron などの比較 |
 | 調査 | [画像保存方式](02-research/image-storage.md) | 通常画像のまま再編集可能にする方式、PoC |
+| 調査 | [描画・保存の性能](02-research/rendering-performance.md) | resvg-wasm と mozjpeg での保存時間（NFR-PERF-01）、ライセンス |
 | 設計 | [アーキテクチャ](03-design/architecture.md) | 全体構成、パッケージ、主要フロー |
 | 設計 | [ファイル形式仕様](03-design/anoi-format-spec.md) | Anoi ファイルのバイナリ仕様 |
 | 設計 | [注釈ドキュメントモデル](03-design/document-model.md) | 注釈 JSON の構造と操作 |
