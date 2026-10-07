@@ -21,6 +21,6 @@
 | [0003](./0003-monorepo-tooling.md) | pnpm モノレポと TypeScript ツールチェーン | 提案中 |
 | [0004](./0004-image-container-format.md) | 画像保存形式: XMP 記述子 + JUMBF ペイロード埋め込み | 提案中 |
 | [0005](./0005-rendering-pipeline.md) | 描画パイプライン: 注釈 → SVG → resvg（WASM） | 提案中 |
-| [0006](./0006-file-naming.md) | 保存ファイル名の規則 | 提案中 |
+| [0006](./0006-file-naming.md) | 保存ファイル名の規則（`<名前>.anoi.jpg`） | 承認 |
 | [0007](./0007-pii-masking.md) | PII 加工はベース画像に不可逆に適用する | 提案中 |
 | [0008](./0008-ai-development-harness.md) | AI 駆動開発のハーネス（CLAUDE.md / docs / ADR） | 提案中 |
