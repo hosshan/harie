@@ -1,0 +1,66 @@
+{
+  "$schema": "https://biomejs.dev/schemas/2.5.15/schema.json",
+  "vcs": {
+    "enabled": true,
+    "clientKind": "git",
+    "useIgnoreFile": true
+  },
+  "files": {
+    "ignoreUnknown": true,
+    "includes": ["**", "!docs"]
+  },
+  "formatter": {
+    "enabled": true,
+    "indentStyle": "space",
+    "indentWidth": 2,
+    "lineWidth": 100
+  },
+  "linter": {
+    "enabled": true,
+    "rules": {
+      "preset": "recommended",
+      "suspicious": {
+        "noExplicitAny": "error"
+      }
+    }
+  },
+  "javascript": {
+    "formatter": {
+      "quoteStyle": "double"
+    }
+  },
+  "assist": {
+    "enabled": true,
+    "actions": {
+      "source": {
+        "organizeImports": "on"
+      }
+    }
+  },
+  "overrides": [
+    {
+      "includes": ["packages/model/**", "packages/format/**", "packages/render/**"],
+      "linter": {
+        "rules": {
+          "style": {
+            "noRestrictedImports": {
+              "level": "error",
+              "options": {
+                "paths": {
+                  "react": "コア層（model/format/render）は UI に依存しない（CLAUDE.md の依存方向）",
+                  "react-dom": "コア層（model/format/render）は UI に依存しない（CLAUDE.md の依存方向）"
+                },
+                "patterns": [
+                  {
+                    "group": ["node:*", "@anoi/editor", "@anoi/ai"],
+                    "message": "コア層は Node 固有 API・上位パッケージに依存しない（CLAUDE.md の依存方向）"
+                  }
+                ]
+              }
+            }
+          }
+        }
+      }
+    }
+  ]
+}

@@ -13,7 +13,7 @@ Anoi（Annotation Image）: SaaS の利用ガイド用スクリーンショッ�
 
 触る領域に関係する ADR と設計書は、作業前に必ず読むこと。
 
-## リポジトリ構成（予定。M0 で作成）
+## リポジトリ構成（`packages/model` 以外は未作成。実装計画の順に追加する）
 
 ```
 apps/web         Web エディタ（Vite + React, PWA）
@@ -28,14 +28,18 @@ packages/editor  エディタ UI（React）
 docs/            要求・要件・調査・設計・計画・ADR・開発ルール
 ```
 
-## コマンド（M0 以降）
+## コマンド
 
 ```sh
 pnpm install
-pnpm check        # lint + typecheck + test。PR 前に必ず通す
+pnpm check        # lint（Biome）+ typecheck + test（Vitest）。PR 前に必ず通す
 pnpm test         # テストのみ
-pnpm dev --filter web
+pnpm format       # Biome で整形・import 整理
 ```
+
+- Node 22 / pnpm 10。TypeScript は 7 系（`tsc` はネイティブ版）。
+- 新しいパッケージは `packages/model` を雛形にする（`package.json` の `typecheck` スクリプト、`tsconfig.json`、`vitest.config.ts` の `name`）。
+- Claude Code のフック（`.claude/settings.json`）: 編集後に Biome で自動整形、クラウド環境では起動時に `pnpm install`。
 
 ## 必ず守ること
 
