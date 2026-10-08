@@ -102,7 +102,8 @@ export async function createRenderer(init: RendererInit): Promise<Renderer> {
     const pixels = img.pixels;
     const encoded = await encodeJpeg(
       {
-        data: new Uint8ClampedArray(pixels.buffer, pixels.byteOffset, pixels.length),
+        // resvg の出力は通常の ArrayBuffer（SharedArrayBuffer ではない）。DOM の型に合わせて明示する
+        data: new Uint8ClampedArray(pixels.buffer as ArrayBuffer, pixels.byteOffset, pixels.length),
         width: img.width,
         height: img.height,
         colorSpace: "srgb",

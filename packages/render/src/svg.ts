@@ -91,6 +91,13 @@ function textLines(
     .join("");
 }
 
+/** 吹き出しの折り返しと高さ。描画と当たり判定で同じ値を使う。 */
+function calloutLayout(a: Extract<Annotation, { type: "callout" }>, s: Resolved) {
+  const pad = s.fontSize * 0.6;
+  const lines = wrapText(a.text, s.fontSize, a.w - pad * 2);
+  return { pad, lines, h: pad * 2 + s.fontSize * (1 + (lines.length - 1) * LINE_HEIGHT) };
+}
+
 function arrow(a: Extract<Annotation, { type: "arrow" }>, s: Resolved): string {
   const dx = a.to.x - a.from.x;
   const dy = a.to.y - a.from.y;
@@ -145,9 +152,7 @@ function annotation(
     case "text":
       return `<g ${attrs(common)}>${textLines(a.text.split("\n"), a.x, a.y, s)}</g>`;
     case "callout": {
-      const pad = s.fontSize * 0.6;
-      const lines = wrapText(a.text, s.fontSize, a.w - pad * 2);
-      const h = pad * 2 + s.fontSize * (1 + (lines.length - 1) * LINE_HEIGHT);
+      const { pad, lines, h } = calloutLayout(a, s);
       return `<g ${attrs(common)}><rect ${attrs({ x: a.x, y: a.y, width: a.w, height: h, rx: s.radius ?? theme.calloutRadius, fill: s.fill ?? theme.calloutFill, stroke: s.stroke, "stroke-width": Math.max(1, s.strokeWidth / 2) })}/>${textLines(lines, a.x + pad, a.y + pad, s)}</g>`;
     }
     case "badge": {
@@ -168,6 +173,39 @@ function annotation(
       const id = `blur-${a.id.replace(/[^a-zA-Z0-9_-]/g, "_")}`;
       const sigma = Math.max(4, Math.min(a.w, a.h) / (a.method === "mosaic" ? 6 : 10));
       return `<clipPath id="${id}-clip"><rect ${attrs({ x: a.x, y: a.y, width: a.w, height: a.h })}/></clipPath><filter id="${id}-f" x="0" y="0" width="1" height="1" filterUnits="objectBoundingBox"><feGaussianBlur stdDeviation="${n(sigma)}" edgeMode="duplicate"/></filter><g clip-path="url(#${id}-clip)"><image ${attrs({ href: baseImageHref, x: 0, y: 0, width: doc.canvas.width, height: doc.canvas.height, preserveAspectRatio: "none", filter: `url(#${id}-f)` })}/></g>`;
+    }
+  }
+}
+
+export type Bounds = { x: number; y: number; w: number; h: number };
+
+/**
+ * 注釈が描かれる範囲。エディタの選択枠・当たり判定に使う。
+ * 描画（`annotation()`）と同じ寸法の計算を使い、表示とずれないようにする。
+ */
+export function annotationBounds(a: Annotation, theme: Theme = THEMES.default): Bounds {
+  const s = resolve(theme, a);
+  switch (a.type) {
+    case "rect":
+    case "ellipse":
+    case "spotlight":
+    case "blur":
+      return { x: a.x, y: a.y, w: a.w, h: a.h };
+    case "arrow": {
+      const x = Math.min(a.from.x, a.to.x);
+      const y = Math.min(a.from.y, a.to.y);
+      return { x, y, w: Math.abs(a.to.x - a.from.x), h: Math.abs(a.to.y - a.from.y) };
+    }
+    case "text": {
+      const lines = a.text.split("\n");
+      const w = Math.max(...lines.map((l) => estimateTextWidth(l, s.fontSize)));
+      return { x: a.x, y: a.y, w, h: s.fontSize * (1 + (lines.length - 1) * LINE_HEIGHT) };
+    }
+    case "callout":
+      return { x: a.x, y: a.y, w: a.w, h: calloutLayout(a, s).h };
+    case "badge": {
+      const r = s.fontSize * 0.8;
+      return { x: a.x, y: a.y, w: r * 2, h: r * 2 };
     }
   }
 }

@@ -13,7 +13,8 @@
     "typecheck": "pnpm -r --if-present typecheck",
     "test": "vitest run",
     "build": "pnpm -r --if-present build",
-    "harie": "node apps/cli/bin/harie.mjs"
+    "harie": "node apps/cli/bin/harie.mjs",
+    "e2e": "pnpm --filter @harie/web e2e"
   },
   "devDependencies": {
     "@biomejs/biome": "^2.5.15",
