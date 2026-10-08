@@ -1,5 +1,6 @@
 import { readFileSync } from "node:fs";
 import { readHarie, writeHarie } from "@harie/format";
+import { createDocument } from "@harie/model";
 import { expect, type Page, test } from "@playwright/test";
 import { nodeRenderer } from "../../../packages/render/src/test-utils/node-renderer";
 
@@ -135,4 +136,117 @@ test("画像でないファイルは開かずに理由を表示する", async ({
     .getByLabel("画像ファイル")
     .setInputFiles({ name: "note.png", mimeType: "image/png", buffer: Buffer.from("hello") });
   await expect(page.getByRole("alert")).toContainText("JPEG か PNG");
+});
+
+test("FR-EDIT-05, FR-PII-04: 個人情報のマスクはベース画像に焼き込まれ、元の画像は保存されない", async ({
+  page,
+}) => {
+  await openFixture(page, "large-base.jpg");
+  await page.getByRole("button", { name: "個人情報を隠す" }).click();
+  await drag(page, [20, 20], [220, 60]);
+  await drag(page, [20, 100], [220, 140]);
+  const panel = page.getByRole("region", { name: "個人情報のマスク" });
+  await panel.getByLabel("範囲 2 の隠し方").selectOption("replace");
+  await panel.getByLabel("置き換える文字").fill("佐藤 花子");
+  await panel.getByRole("button", { name: "マスクを適用する" }).click();
+  await expect(page.getByRole("status")).toContainText("2 か所をマスクしました");
+
+  const [download] = await Promise.all([
+    page.waitForEvent("download"),
+    page.getByRole("button", { name: "保存" }).click(),
+  ]);
+  const file = new Uint8Array(readFileSync(await download.path()));
+  const read = readHarie(file);
+  expect(read.kind).toBe("harie");
+  if (read.kind !== "harie") return;
+  // 記録は種別・方法・範囲だけ。置き換えた文字も残さない
+  expect(read.doc.pii.applied).toEqual([
+    { kind: "other", method: "fill", rect: { x: 20, y: 20, w: 200, h: 40 } },
+    { kind: "other", method: "replace", rect: { x: 20, y: 100, w: 200, h: 40 } },
+  ]);
+  expect(Buffer.from(file).includes(Buffer.from("佐藤 花子"))).toBe(false);
+  // 元のベース画像はファイルのどこにも入っていない
+  const original = fixture("large-base.jpg");
+  expect(Buffer.from(file).includes(original.subarray(original.length - 4096))).toBe(false);
+
+  // NFR-PLAT-05: ブラウザでの加工結果は Node の applyMasks と同じバイト列になる
+  const masked = await (await nodeRenderer()).applyMasks({
+    base: { bytes: new Uint8Array(original), mediaType: "image/jpeg" },
+    width: read.doc.canvas.width,
+    height: read.doc.canvas.height,
+    masks: [
+      { kind: "other", method: "fill", rect: { x: 20, y: 20, w: 200, h: 40 } },
+      {
+        kind: "other",
+        method: "replace",
+        rect: { x: 20, y: 100, w: 200, h: 40 },
+        replacement: "佐藤 花子",
+      },
+    ],
+  });
+  expect(read.base.bytes).toEqual(masked.base.bytes);
+});
+
+test("FR-FILE-05: 別のアプリで編集された Harie ファイルは、どちらで開くか選べる", async ({
+  page,
+}) => {
+  const base = fixture("base.jpg");
+  const doc = {
+    ...createDocument({ width: 64, height: 40, now: new Date("2026-10-08T00:00:00Z") }),
+    annotations: [{ id: "rect-1", type: "rect" as const, x: 4, y: 4, w: 30, h: 16 }],
+  };
+  const rendered = await (await nodeRenderer()).render({
+    doc,
+    base: { bytes: new Uint8Array(base), mediaType: "image/jpeg" },
+    output: "jpeg",
+  });
+  const file = writeHarie({ rendered, base: new Uint8Array(base), doc });
+  // 画像データの 1 バイトだけを変える（別のアプリで編集・再保存された状態）
+  const tampered = file.slice();
+  const at = tampered.length - 10;
+  tampered[at] = (tampered[at] as number) ^ 0x01;
+
+  await page.goto("/");
+  await page.getByLabel("画像ファイル").setInputFiles({
+    name: "modified.harie.jpg",
+    mimeType: "image/jpeg",
+    buffer: Buffer.from(tampered),
+  });
+  const warning = page.getByRole("alert");
+  await expect(warning).toContainText("別のアプリで編集されています");
+  // 既定は保存されていた注釈で開く
+  await expect(annotationRects(page)).toHaveCount(1);
+
+  await warning.getByRole("button", { name: "今の画像を新しい下地にする" }).click();
+  await expect(annotationRects(page)).toHaveCount(0);
+  await expect(page.getByRole("alert")).toHaveCount(0);
+  await expect(page.locator(".app-file-name")).toHaveText("modified.harie.jpg");
+});
+
+test("NFR-PLAT-01: 一度開いたあとはオフラインでも起動し、画像を編集して保存できる", async ({
+  page,
+  context,
+}) => {
+  await page.goto("/");
+  // Service Worker が描画エンジン（WASM）とフォントまでキャッシュし終えるのを待つ
+  await page.evaluate(async () => {
+    await navigator.serviceWorker.ready;
+  });
+  await context.setOffline(true);
+  await page.reload();
+  await expect(page.getByRole("button", { name: "画像を開く" })).toBeVisible();
+
+  await page.getByLabel("画像ファイル").setInputFiles({
+    name: "large-base.jpg",
+    mimeType: "image/jpeg",
+    buffer: fixture("large-base.jpg"),
+  });
+  await page.getByRole("button", { name: "四角" }).click();
+  await drag(page, [40, 40], [240, 120]);
+  const [download] = await Promise.all([
+    page.waitForEvent("download"),
+    page.getByRole("button", { name: "保存" }).click(),
+  ]);
+  const read = readHarie(new Uint8Array(readFileSync(await download.path())));
+  expect(read.kind === "harie" && read.doc.annotations).toHaveLength(1);
 });

@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import { hitTest } from "./Canvas";
 import { boxFrom, handlesFor, movePatch, resizePatch } from "./geometry";
 import { editorReducer, initialState, newAnnotationId } from "./history";
+import { maskRect, newMaskDraft, toPiiMasks } from "./masks";
 
 const base = () =>
   createDocument({
@@ -114,5 +115,50 @@ describe("保存後のリビジョン", () => {
     s = editorReducer(s, { type: "undo" });
     expect(s.doc.revision).toBe(3);
     expect(s.doc.annotations).toHaveLength(0);
+  });
+});
+
+describe("個人情報のマスク（FR-EDIT-05）", () => {
+  const canvas = { width: 800, height: 600 };
+
+  it("範囲は画像内に収め、画像の外だけなら作らない", () => {
+    expect(maskRect({ x: 790, y: -10 }, { x: 900, y: 20 }, canvas)).toEqual({
+      x: 790,
+      y: 0,
+      w: 10,
+      h: 20,
+    });
+    expect(maskRect({ x: 900, y: 10 }, { x: 950, y: 40 }, canvas)).toBeNull();
+    // クリックだけなら 1 行分の大きさで作る
+    expect(maskRect({ x: 10, y: 10 }, { x: 11, y: 11 }, canvas)).toEqual({
+      x: 10,
+      y: 10,
+      w: 160,
+      h: 32,
+    });
+  });
+
+  it("既定は塗りつぶし。ダミーの文字は置き換えのときだけ渡す", () => {
+    const a = newMaskDraft([], { x: 0, y: 0, w: 10, h: 10 });
+    const b = { ...newMaskDraft([a], { x: 20, y: 0, w: 10, h: 10 }), replacement: "佐藤" };
+    expect(a.method).toBe("fill");
+    expect(b.id).not.toBe(a.id);
+    expect(toPiiMasks([a, b])).toEqual([
+      { kind: "other", method: "fill", rect: a.rect },
+      { kind: "other", method: "fill", rect: b.rect },
+    ]);
+    expect(toPiiMasks([{ ...b, method: "replace" }])[0]).toMatchObject({ replacement: "佐藤" });
+  });
+
+  it("適用の記録は元に戻す・やり直すで消えない（ADR-0007）", () => {
+    let s = initialState(base());
+    s = editorReducer(s, { type: "apply", ops: [{ op: "add", annotation: rect }] });
+    const pii = { applied: [{ kind: "other" as const, method: "fill" as const, rect: rect }] };
+    s = editorReducer(s, { type: "piiApplied", pii: { ...s.doc.pii, ...pii } });
+    s = editorReducer(s, { type: "undo" });
+    expect(s.doc.annotations).toHaveLength(0);
+    expect(s.doc.pii.applied).toHaveLength(1);
+    s = editorReducer(s, { type: "redo" });
+    expect(s.doc.pii.applied).toHaveLength(1);
   });
 });

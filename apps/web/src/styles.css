@@ -91,6 +91,15 @@ input {
   background: #fff4e5;
   color: #8a4b00;
 }
+.app-warning p {
+  margin: 0;
+}
+.app-warning .app-warning-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 8px;
+}
 .harie-muted {
   color: var(--muted);
 }

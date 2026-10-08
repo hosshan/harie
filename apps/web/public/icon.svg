@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <title>Harie</title>
+  <rect width="512" height="512" rx="112" fill="#0B6BCB"/>
+  <rect x="104" y="136" width="232" height="160" rx="20" fill="none" stroke="#FFFFFF" stroke-width="32"/>
+  <path d="M408 400 L300 292" stroke="#FFFFFF" stroke-width="32" stroke-linecap="round"/>
+  <path d="M276 268 L352 284 L292 344 Z" fill="#FFFFFF"/>
+  <circle cx="392" cy="140" r="44" fill="#F76B15"/>
+</svg>

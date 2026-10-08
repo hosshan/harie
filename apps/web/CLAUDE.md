@@ -6,3 +6,5 @@ Web エディタ（Vite + React）。画像を開く → `packages/editor` で�
 - 読み込みは `src/load.ts`、保存ファイルの組み立ては `src/save.ts`。ベース画像は読み込んだバイト列のまま埋め込む（ADR-0004）。
 - E2E は `e2e/`（Playwright）。`pnpm e2e` でビルドしたものをプレビューして動かす。ローカルでは `HARIE_CHROMIUM_PATH` でブラウザを指定できる。
 - ブラウザと Node の保存結果がバイト単位で一致することを E2E で確認している（NFR-PLAT-05）。描画や保存を変えたらこのテストを通す。
+- PWA は `vite-plugin-pwa`（`vite.config.ts`）。ビルドに含まれる WASM・フォントも precache する。アイコンの元は `public/icon.svg`。
+- 個人情報のマスクは `applyMasks` でベース画像を書き換え、`Opened.base` を差し替える。加工前のバイト列（`alternative` を含む）を残さない（ADR-0007）。

@@ -100,6 +100,8 @@ export type AnnotationType = Annotation["type"];
 
 export const PiiKindSchema = z.enum(["name", "email", "phone", "address", "id", "face", "other"]);
 export const PiiMethodSchema = z.enum(["replace", "fill", "mosaic", "blur"]);
+export type PiiKind = z.infer<typeof PiiKindSchema>;
+export type PiiMethod = z.infer<typeof PiiMethodSchema>;
 
 /** PII 加工の記録。元の値は持たない（ADR-0007）。 */
 export const PiiAppliedSchema = z.object({
