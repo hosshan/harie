@@ -12,6 +12,7 @@
   },
   "dependencies": {
     "@expo-google-fonts/noto-sans-jp": "^0.4.4",
+    "@harie/ai": "workspace:*",
     "@harie/editor": "workspace:*",
     "@harie/format": "workspace:*",
     "@harie/model": "workspace:*",

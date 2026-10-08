@@ -8,3 +8,4 @@ Web エディタ（Vite + React）。画像を開く → `packages/editor` で�
 - ブラウザと Node の保存結果がバイト単位で一致することを E2E で確認している（NFR-PLAT-05）。描画や保存を変えたらこのテストを通す。
 - PWA は `vite-plugin-pwa`（`vite.config.ts`）。ビルドに含まれる WASM・フォントも precache する。アイコンの元は `public/icon.svg`。
 - 個人情報のマスクは `applyMasks` でベース画像を書き換え、`Opened.base` を差し替える。加工前のバイト列（`alternative` を含む）を残さない（ADR-0007）。
+- AI（`src/ai/`）: 提案と個人情報の検出は利用者の API キー（BYOK、localStorage）で Claude API をブラウザから直接呼ぶ。送信先の表示と同意がないと送れない（NFR-SEC-01）。SDK を含む `run.ts` は使うときにだけ `import()` する。E2E は `page.route` で API を差し替える。

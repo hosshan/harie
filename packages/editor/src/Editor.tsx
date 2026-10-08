@@ -1,10 +1,11 @@
 // エディタ全体（ツールバー・編集面・選択中の注釈の設定）
 import type { Annotation, HarieDocument, PiiMask } from "@harie/model";
-import { type Dispatch, useEffect, useMemo, useReducer, useState } from "react";
+import { type Dispatch, type ReactNode, useEffect, useMemo, useReducer, useState } from "react";
 import { Canvas, type Tool } from "./Canvas";
 import { type EditorAction, type EditorState, editorReducer, initialState } from "./history";
 import { MaskPanel } from "./MaskPanel";
 import { type MaskDraft, newMaskDraft, toPiiMasks } from "./masks";
+import { adoptSuggestionOps, rejectSuggestionOps } from "./suggestions";
 
 export function useEditorState(doc: HarieDocument) {
   return useReducer(editorReducer, doc, initialState);
@@ -45,11 +46,32 @@ export type EditorProps = {
    * `applyMasks` で新しいベース画像を作り、`piiApplied` を dispatch する。省略するとマスクの道具を出さない
    */
   onApplyMasks?: (masks: PiiMask[]) => Promise<void>;
+  /**
+   * 適用前のマスク範囲を呼び出し側で持つとき（個人情報の検出結果を下書きとして渡す。FR-PII-01）。
+   * 省略するとエディタの中で持つ
+   */
+  masks?: MaskDraft[];
+  onMasksChange?: (masks: MaskDraft[]) => void;
+  /** 右側の欄の先頭に出す内容（AI のパネルなど） */
+  aside?: ReactNode;
 };
 
-export function Editor({ state, dispatch, baseImageUrl, onApplyMasks }: EditorProps) {
+export function Editor({
+  state,
+  dispatch,
+  baseImageUrl,
+  onApplyMasks,
+  masks: controlledMasks,
+  onMasksChange,
+  aside,
+}: EditorProps) {
   const [tool, setTool] = useState<Tool>("select");
-  const [masks, setMasks] = useState<MaskDraft[]>([]);
+  const [ownMasks, setOwnMasks] = useState<MaskDraft[]>([]);
+  const masks = controlledMasks ?? ownMasks;
+  const setMasks = (next: MaskDraft[]) => {
+    if (controlledMasks === undefined) setOwnMasks(next);
+    onMasksChange?.(next);
+  };
   const canMask = onApplyMasks !== undefined;
   const tools = useMemo(() => (canMask ? [...TOOLS, MASK_TOOL] : TOOLS), [canMask]);
 
@@ -118,9 +140,10 @@ export function Editor({ state, dispatch, baseImageUrl, onApplyMasks }: EditorPr
           tool={tool}
           onToolDone={() => setTool("select")}
           masks={masks}
-          onMaskDrawn={(rect) => setMasks((m) => [...m, newMaskDraft(m, rect)])}
+          onMaskDrawn={(rect) => setMasks([...masks, newMaskDraft(masks, rect)])}
         />
         <aside className="harie-inspector" aria-label="選択中の注釈">
+          {aside}
           {onApplyMasks !== undefined && (tool === "mask" || masks.length > 0) && (
             <MaskPanel
               drafts={masks}
@@ -135,7 +158,12 @@ export function Editor({ state, dispatch, baseImageUrl, onApplyMasks }: EditorPr
           {selected === undefined ? (
             <p className="harie-muted">注釈を選ぶと、ここで文字や色を変えられます。</p>
           ) : (
-            <Inspector key={selected.id} annotation={selected} dispatch={dispatch} />
+            <Inspector
+              key={selected.id}
+              doc={state.doc}
+              annotation={selected}
+              dispatch={dispatch}
+            />
           )}
           {state.error !== null && <p role="alert">{state.error.message}</p>}
         </aside>
@@ -145,9 +173,11 @@ export function Editor({ state, dispatch, baseImageUrl, onApplyMasks }: EditorPr
 }
 
 function Inspector({
+  doc,
   annotation,
   dispatch,
 }: {
+  doc: HarieDocument;
   annotation: Annotation;
   dispatch: Dispatch<EditorAction>;
 }) {
@@ -160,10 +190,32 @@ function Inspector({
     if (hasText && text !== annotation.text) update({ text });
   };
   const colorKey = annotation.type === "text" ? "color" : "stroke";
+  const suggested = annotation.status === "suggested";
   const current = annotation.style?.[colorKey];
 
   return (
     <div className="harie-inspector-body">
+      {suggested && (
+        <p className="harie-suggestion-actions">
+          <span className="harie-muted">AI の提案です。採用するまで保存されません。</span>
+          <button
+            type="button"
+            onClick={() =>
+              dispatch({ type: "apply", ops: adoptSuggestionOps(doc, [annotation.id]) })
+            }
+          >
+            採用
+          </button>
+          <button
+            type="button"
+            onClick={() =>
+              dispatch({ type: "apply", ops: rejectSuggestionOps(doc, [annotation.id]) })
+            }
+          >
+            却下
+          </button>
+        </p>
+      )}
       {hasText && (
         <label>
           文字

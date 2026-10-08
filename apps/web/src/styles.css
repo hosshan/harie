@@ -103,3 +103,46 @@ input {
 .harie-muted {
   color: var(--muted);
 }
+.app-ai h2,
+.app-ai h3 {
+  font-size: 14px;
+  margin: 0;
+}
+.app-ai form,
+.app-ai label {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.app-ai .app-ai-consent {
+  flex-direction: row;
+  align-items: center;
+}
+.app-ai-notice {
+  margin: 0;
+  padding: 6px 8px;
+  border-radius: 6px;
+  background: #f4f0ff;
+  color: #4a3a8c;
+  font-size: 13px;
+}
+.app-ai-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 0;
+}
+.app-ai-suggestions ol {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 4px 0;
+  padding-left: 20px;
+}
+.app-ai-suggestions li span {
+  margin-right: 6px;
+}
+.app-ai-forget {
+  align-self: flex-start;
+  font-size: 12px;
+}

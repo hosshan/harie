@@ -1,0 +1,24 @@
+{
+  "name": "@harie/ai",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc -p tsconfig.json && tsc -p tsconfig.eval.json",
+    "eval": "tsx eval/run.ts"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.132.1",
+    "@harie/model": "workspace:*",
+    "@harie/render": "workspace:*",
+    "zod": "^4.6.5"
+  },
+  "devDependencies": {
+    "@anthropic-ai/claude-agent-sdk": "^0.3.293",
+    "@types/node": "^22.20.5",
+    "tsx": "^4.23.15"
+  }
+}

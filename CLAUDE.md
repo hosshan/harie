@@ -13,7 +13,7 @@ Harie（はりえ）: SaaS の利用ガイド用スクリーンショットに�
 
 触る領域に関係する ADR と設計書は、作業前に必ず読むこと。
 
-## リポジトリ構成（`apps/extension`・`apps/desktop`・`packages/ai` は未作成。実装計画の順に追加する）
+## リポジトリ構成（`apps/extension`・`apps/desktop` は未作成。実装計画の順に追加する）
 
 ```
 apps/web         Web エディタ（Vite + React, PWA）
@@ -24,7 +24,7 @@ apps/cli         開発用 CLI（inspect / create / render / extract / mask）
 packages/model   注釈ドキュメントのスキーマと操作（zod）
 packages/format  JPEG/PNG への埋め込み・読み出し
 packages/render  注釈 → SVG → ピクセル（resvg-wasm）
-packages/ai      補足提案・PII 検出
+packages/ai      補足提案・PII 検出（Claude API、BYOK）
 packages/editor  エディタ UI（React）
 docs/            要求・要件・調査・設計・計画・ADR・開発ルール
 ```
