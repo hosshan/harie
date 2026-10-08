@@ -1,5 +1,5 @@
-import { readAnoi, writeAnoi } from "@anoi/format";
-import { applyOps, createDocument, type PiiMask, recordPiiApplied } from "@anoi/model";
+import { readHarie, writeHarie } from "@harie/format";
+import { applyOps, createDocument, type PiiMask, recordPiiApplied } from "@harie/model";
 import { describe, expect, it } from "vitest";
 import { blockSize, DEFAULT_FILL, MIN_MOSAIC_BLOCK, snapRect } from "./mask";
 import type { BaseImage, Pixels } from "./renderer";
@@ -193,15 +193,15 @@ describe("applyMasks（ADR-0007）", () => {
         base: out.base,
         output: format,
       });
-      const file = writeAnoi({ doc: d, base: out.base.bytes, rendered });
+      const file = writeHarie({ doc: d, base: out.base.bytes, rendered });
 
       expect(indexOfBytes(file, original.bytes)).toBe(-1);
       const text = new TextDecoder("latin1").decode(file);
       for (const s of ["taro@example.com", "user@example.com"]) expect(text).not.toContain(s);
 
-      const read = readAnoi(file);
-      expect(read.kind).toBe("anoi");
-      if (read.kind !== "anoi") return;
+      const read = readHarie(file);
+      expect(read.kind).toBe("harie");
+      if (read.kind !== "harie") return;
       expect(read.base).toEqual(out.base);
       expect(read.doc.pii.applied).toEqual([{ kind: "email", method: "replace", rect: snapped }]);
     },

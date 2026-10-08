@@ -1,11 +1,11 @@
-// PNG コンテナ（docs/03-design/anoi-format-spec.md §5）
+// PNG コンテナ（docs/03-design/harie-format-spec.md §5）
 import { ascii, type Bytes, concat, fromAscii, readU32, startsWith, u32 } from "./bytes";
 import { crc32 } from "./crc32";
 
 const SIGNATURE = Uint8Array.of(0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a);
 const XMP_KEYWORD = "XML:com.adobe.xmp";
 /** 補助・私用・コピー安全チャンク。中身は JUMBF superbox 1 つ。 */
-export const ANOI_CHUNK = "anOi";
+export const HARIE_CHUNK = "haRi";
 
 type Chunk = { type: string; start: number; end: number; data: Bytes };
 
@@ -48,14 +48,14 @@ export function pngRenderData(png: Bytes): Bytes {
 }
 
 /**
- * レンダリング画像に XMP（iTXt）と anOi チャンクを埋め込み、最初の IDAT の前に置く。
- * 既存の XMP・anOi・eXIf は除く。
+ * レンダリング画像に XMP（iTXt）と haRi チャンクを埋め込み、最初の IDAT の前に置く。
+ * 既存の XMP・haRi・eXIf は除く。
  */
 export function embedPng(rendered: Bytes, xmp: Bytes, superboxes: readonly Bytes[]): Bytes {
   const all = chunks(rendered);
   const firstIdat = all.findIndex((c) => c.type === "IDAT");
   if (firstIdat < 0) throw new RangeError("IDAT not found");
-  const keep = (c: Chunk) => !isXmpChunk(c) && c.type !== ANOI_CHUNK && c.type !== "eXIf";
+  const keep = (c: Chunk) => !isXmpChunk(c) && c.type !== HARIE_CHUNK && c.type !== "eXIf";
   const raw = (c: Chunk) => rendered.subarray(c.start, c.end);
   // iTXt: keyword\0 compression-flag(0) method(0) language\0 translated\0 text
   const itxt = concat([ascii(`${XMP_KEYWORD}\0`), Uint8Array.of(0, 0, 0, 0), xmp]);
@@ -63,7 +63,7 @@ export function embedPng(rendered: Bytes, xmp: Bytes, superboxes: readonly Bytes
     SIGNATURE,
     ...all.slice(0, firstIdat).filter(keep).map(raw),
     chunk("iTXt", itxt),
-    ...superboxes.map((sb) => chunk(ANOI_CHUNK, sb)),
+    ...superboxes.map((sb) => chunk(HARIE_CHUNK, sb)),
     ...all.slice(firstIdat).filter(keep).map(raw),
   ]);
 }
@@ -79,7 +79,7 @@ export function extractPng(png: Bytes): { xmp: Bytes | null; superboxes: Bytes[]
       p = c.data.indexOf(0, p) + 1;
       if (p > 0 && c.data[XMP_KEYWORD.length + 1] === 0) xmp = c.data.subarray(p);
     }
-    if (c.type === ANOI_CHUNK) superboxes.push(c.data);
+    if (c.type === HARIE_CHUNK) superboxes.push(c.data);
   }
   return { xmp, superboxes };
 }

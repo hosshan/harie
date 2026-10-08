@@ -58,7 +58,7 @@ Refs: FR-FILE-03, ADR-0004
 - 仕様・挙動を変える PR は、同じ PR で `docs/` を更新する。
 - 後から変えにくい判断は ADR を書く（[ADR 運用ルール](../adr/README.md)）。
 - 要件を追加・変更したら [要件定義](../01-requirements/requirements-definition.md) の ID を更新する。ID は削除せず「廃止」と書く。
-- ファイル形式を変えるときは [形式仕様](../03-design/anoi-format-spec.md) のバージョンを上げ、マイグレーションとフィクスチャを追加する。
+- ファイル形式を変えるときは [形式仕様](../03-design/harie-format-spec.md) のバージョンを上げ、マイグレーションとフィクスチャを追加する。
 
 ## 6. セキュリティ・秘密情報
 
@@ -74,5 +74,5 @@ Refs: FR-FILE-03, ADR-0004
 
 ## 8. リリース（将来）
 
-- バージョンは SemVer。パッケージ（`@anoi/mcp` 等）は Changesets で管理する予定。
+- バージョンは SemVer。パッケージ（`@harie/mcp` 等）は Changesets で管理する予定。
 - ファイル形式のバージョン（`formatVersion`）はアプリのバージョンと独立して管理する。

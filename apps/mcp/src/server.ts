@@ -1,6 +1,6 @@
 // MCP サーバーの組み立て。ツールの入力は zod で検証してから本体に渡す（CLAUDE.md）
 
-import { OpSchema } from "@anoi/model";
+import { OpSchema } from "@harie/model";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import type { CallToolResult } from "@modelcontextprotocol/sdk/types.js";
 import { z } from "zod";
@@ -44,16 +44,16 @@ async function run(fn: () => ToolOutput | Promise<ToolOutput>): Promise<CallTool
 
 export function createServer(options: { root: string }): McpServer {
   const guard = createRootGuard(options.root);
-  const server = new McpServer({ name: "anoi", version: VERSION });
+  const server = new McpServer({ name: "harie", version: VERSION });
   const path = z.string().describe(`ファイルのパス（${guard.root} からの相対パスか絶対パス）`);
   const ops = z.array(OpSchema).describe(OPS_HELP);
 
   server.registerTool(
-    "anoi_open",
+    "harie_open",
     {
-      title: "Anoi ファイルを開く",
+      title: "Harie ファイルを開く",
       description:
-        "Anoi ファイル（注釈を再編集できる JPEG/PNG）を開き、注釈の一覧と画像を返す。普通の画像なら status: plain を返す",
+        "Harie ファイル（注釈を再編集できる JPEG/PNG）を開き、注釈の一覧と画像を返す。普通の画像なら status: plain を返す",
       inputSchema: { path },
       annotations: { readOnlyHint: true },
     },
@@ -61,14 +61,14 @@ export function createServer(options: { root: string }): McpServer {
   );
 
   server.registerTool(
-    "anoi_create",
+    "harie_create",
     {
-      title: "画像から Anoi ファイルを作る",
+      title: "画像から Harie ファイルを作る",
       description:
-        "普通の JPEG/PNG から注釈のない Anoi ファイルを作る。元の画像はそのまま残し、既定では <名前>.anoi.<拡張子> に保存する",
+        "普通の JPEG/PNG から注釈のない Harie ファイルを作る。元の画像はそのまま残し、既定では <名前>.harie.<拡張子> に保存する",
       inputSchema: {
         imagePath: path,
-        outPath: z.string().optional().describe("保存先。省略時は <名前>.anoi.<拡張子>"),
+        outPath: z.string().optional().describe("保存先。省略時は <名前>.harie.<拡張子>"),
         title: z.string().optional().describe("画像のタイトル（例: 通知設定の画面）"),
       },
     },
@@ -76,11 +76,11 @@ export function createServer(options: { root: string }): McpServer {
   );
 
   server.registerTool(
-    "anoi_edit",
+    "harie_edit",
     {
       title: "注釈を変更して保存する",
       description:
-        "注釈を追加・更新・削除し、画像を描き直して上書き保存する。保存後の画像を返す。先に anoi_preview で確認するとよい",
+        "注釈を追加・更新・削除し、画像を描き直して上書き保存する。保存後の画像を返す。先に harie_preview で確認するとよい",
       inputSchema: {
         path,
         ops,
@@ -88,7 +88,7 @@ export function createServer(options: { root: string }): McpServer {
           .int()
           .nonnegative()
           .optional()
-          .describe("anoi_open で得た revision。他で先に保存されていたら失敗させる"),
+          .describe("harie_open で得た revision。他で先に保存されていたら失敗させる"),
       },
       annotations: { destructiveHint: true, idempotentHint: false },
     },
@@ -96,7 +96,7 @@ export function createServer(options: { root: string }): McpServer {
   );
 
   server.registerTool(
-    "anoi_preview",
+    "harie_preview",
     {
       title: "注釈の変更を保存せずに確認する",
       description: "ops を適用した結果の画像を返す。ファイルは変更しない",
@@ -107,10 +107,11 @@ export function createServer(options: { root: string }): McpServer {
   );
 
   server.registerTool(
-    "anoi_list",
+    "harie_list",
     {
-      title: "Anoi ファイルを一覧する",
-      description: "ディレクトリ内の Anoi ファイルを、タイトル・リビジョン・注釈数とともに一覧する",
+      title: "Harie ファイルを一覧する",
+      description:
+        "ディレクトリ内の Harie ファイルを、タイトル・リビジョン・注釈数とともに一覧する",
       inputSchema: {
         dir: z.string().optional().describe("探すディレクトリ。省略時は許可されたディレクトリ全体"),
         recursive: z.boolean().optional().describe("サブディレクトリも探すか（既定 true）"),

@@ -1,6 +1,6 @@
 # apps/cli
 
-開発用 CLI。`pnpm anoi --help` で使い方を表示する。TypeScript のソースを tsx で直接読み込むので、ビルドは要らない。
+開発用 CLI。`pnpm harie --help` で使い方を表示する。TypeScript のソースを tsx で直接読み込むので、ビルドは要らない。
 
 - コマンドの本体は `src/commands.ts`。引数の解釈（`src/main.ts`）と分け、テストは本体を直接呼ぶ。
 - 利用者の入力ミスは `CliError` で返す（スタックトレースを出さない）。

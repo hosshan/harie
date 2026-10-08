@@ -2,9 +2,9 @@
 
 - ステータス: ドラフト
 - 最終更新: 2026-10-07
-- 関連: [ファイル形式仕様](./anoi-format-spec.md) / [アーキテクチャ](./architecture.md)
+- 関連: [ファイル形式仕様](./harie-format-spec.md) / [アーキテクチャ](./architecture.md)
 
-Anoi ファイルに埋め込む注釈ドキュメント（JSON）の構造。正となる定義は実装時に `packages/model` の zod スキーマとし、そこから JSON Schema を生成して MCP のツール定義にも使う。本書はその設計意図を説明する。
+Harie ファイルに埋め込む注釈ドキュメント（JSON）の構造。正となる定義は実装時に `packages/model` の zod スキーマとし、そこから JSON Schema を生成して MCP のツール定義にも使う。本書はその設計意図を説明する。
 
 ## 1. 例
 
@@ -84,7 +84,7 @@ type Op =
   | { op: "reorder"; id: string; index: number }
   | { op: "renumber" };
 
-function apply(doc: AnoiDocument, ops: Op[]): AnoiDocument; // 不正な操作は検証エラーを返す
+function apply(doc: HarieDocument, ops: Op[]): HarieDocument; // 不正な操作は検証エラーを返す
 ```
 
 ## 5. マイグレーション

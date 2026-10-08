@@ -1,5 +1,5 @@
 {
-  "name": "@anoi/format",
+  "name": "@harie/format",
   "version": "0.0.0",
   "private": true,
   "type": "module",
@@ -10,7 +10,7 @@
     "typecheck": "tsc -p tsconfig.json && tsc -p tsconfig.test.json"
   },
   "dependencies": {
-    "@anoi/model": "workspace:*",
+    "@harie/model": "workspace:*",
     "@noble/hashes": "^2.4.0"
   }
 }

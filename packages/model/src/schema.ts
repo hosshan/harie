@@ -153,4 +153,4 @@ export const DocumentSchema = z.looseObject({
   pii: z.object({ applied: z.array(PiiAppliedSchema).default([]) }).default({ applied: [] }),
   context: z.looseObject({ intent: z.string().optional() }).optional(),
 });
-export type AnoiDocument = z.infer<typeof DocumentSchema>;
+export type HarieDocument = z.infer<typeof DocumentSchema>;

@@ -2,14 +2,14 @@
 // LLM は呼ばない。画像を見て注釈を考えるのはクライアント側の LLM で、ここは読み書きと描画に徹する
 import { readdirSync, readFileSync, renameSync, statSync, writeFileSync } from "node:fs";
 import { basename, dirname, extname, join } from "node:path";
-import { type BaseMediaType, readAnoi, readImageSize, writeAnoi } from "@anoi/format";
+import { type BaseMediaType, readHarie, readImageSize, writeHarie } from "@harie/format";
 import {
-  type AnoiDocument,
   applyOps,
   createDocument,
+  type HarieDocument,
   prepareForSave,
   renameForSave,
-} from "@anoi/model";
+} from "@harie/model";
 import type { RootGuard } from "./paths";
 import { nodeRenderer } from "./runtime";
 
@@ -21,7 +21,7 @@ export type ToolOutput = { summary: Record<string, unknown>; image?: ImageOut };
 
 type Loaded = {
   path: string;
-  doc: AnoiDocument;
+  doc: HarieDocument;
   base: { bytes: Uint8Array; mediaType: BaseMediaType };
 };
 
@@ -45,21 +45,21 @@ function writeAtomic(path: string, bytes: Uint8Array): void {
 
 function load(guard: RootGuard, path: string): Loaded {
   const absolute = guard.resolve(path);
-  const read = readAnoi(readBytes(absolute));
-  if (read.kind === "anoi") return { path: absolute, doc: read.doc, base: read.base };
-  if (read.kind === "anoi-mismatch" && read.doc !== undefined && read.base !== undefined) {
+  const read = readHarie(readBytes(absolute));
+  if (read.kind === "harie") return { path: absolute, doc: read.doc, base: read.base };
+  if (read.kind === "harie-mismatch" && read.doc !== undefined && read.base !== undefined) {
     // 画像だけ外部ツールで変わった場合など。埋め込みの注釈とベースから描き直せば整合が戻る
     return { path: absolute, doc: read.doc, base: read.base };
   }
   if (read.kind === "plain") {
     throw new ToolError(
-      "注釈データのない普通の画像です。先に anoi_create で Anoi ファイルにしてください",
+      "注釈データのない普通の画像です。先に harie_create で Harie ファイルにしてください",
     );
   }
-  throw new ToolError(`Anoi ファイルとして読めません（${read.kind}）`);
+  throw new ToolError(`Harie ファイルとして読めません（${read.kind}）`);
 }
 
-function docSummary(doc: AnoiDocument) {
+function docSummary(doc: HarieDocument) {
   return {
     docId: doc.docId,
     revision: doc.revision,
@@ -70,22 +70,22 @@ function docSummary(doc: AnoiDocument) {
   };
 }
 
-async function renderImage(doc: AnoiDocument, base: Loaded["base"]): Promise<ImageOut> {
+async function renderImage(doc: HarieDocument, base: Loaded["base"]): Promise<ImageOut> {
   const output = base.mediaType === "image/png" ? "png" : "jpeg";
   const data = await (await nodeRenderer()).render({ doc, base, output, includeSuggested: true });
   return { data, mediaType: base.mediaType };
 }
 
 /** 保存する。描画した画像に注釈データを埋め込んで書き出し、保存したドキュメントを返す。 */
-async function save(target: string, doc: AnoiDocument, base: Loaded["base"]) {
+async function save(target: string, doc: HarieDocument, base: Loaded["base"]) {
   const saved = prepareForSave(doc);
   const output = base.mediaType === "image/png" ? "png" : "jpeg";
   const rendered = await (await nodeRenderer()).render({ doc: saved, base, output });
-  writeAtomic(target, writeAnoi({ rendered, base: base.bytes, doc: saved }));
+  writeAtomic(target, writeHarie({ rendered, base: base.bytes, doc: saved }));
   return { saved, rendered: { data: rendered, mediaType: base.mediaType } };
 }
 
-function applyOrThrow(doc: AnoiDocument, ops: readonly unknown[]): AnoiDocument {
+function applyOrThrow(doc: HarieDocument, ops: readonly unknown[]): HarieDocument {
   const result = applyOps(doc, ops);
   if (!result.ok) {
     throw new ToolError(`ops[${result.error.opIndex}] を適用できません: ${result.error.message}`);
@@ -96,21 +96,21 @@ function applyOrThrow(doc: AnoiDocument, ops: readonly unknown[]): AnoiDocument 
 export function open(guard: RootGuard, input: { path: string }): ToolOutput {
   const absolute = guard.resolve(input.path);
   const bytes = readBytes(absolute);
-  const read = readAnoi(bytes);
+  const read = readHarie(bytes);
   const path = guard.display(absolute);
   switch (read.kind) {
-    case "anoi":
+    case "harie":
       return {
         summary: { path, status: "ok", ...docSummary(read.doc) },
         image: { data: bytes, mediaType: mediaTypeOf(read.format) },
       };
-    case "anoi-mismatch":
+    case "harie-mismatch":
       return {
         summary: {
           path,
           status: "mismatch",
           reason: read.reason,
-          hint: "注釈データが残っていれば、anoi_edit（ops は空でよい）で描き直すと整合が戻ります",
+          hint: "注釈データが残っていれば、harie_edit（ops は空でよい）で描き直すと整合が戻ります",
           ...(read.doc === undefined ? {} : docSummary(read.doc)),
         },
         image: { data: bytes, mediaType: mediaTypeOf(read.format) },
@@ -121,7 +121,7 @@ export function open(guard: RootGuard, input: { path: string }): ToolOutput {
           path,
           status: "plain",
           size: readImageSize(bytes),
-          hint: "注釈データのない普通の画像です。anoi_create で Anoi ファイルにできます",
+          hint: "注釈データのない普通の画像です。harie_create で Harie ファイルにできます",
         },
         image: { data: bytes, mediaType: mediaTypeOf(read.format) },
       };
@@ -138,8 +138,9 @@ export async function create(
 ): Promise<ToolOutput> {
   const source = guard.resolve(input.imagePath);
   const bytes = readBytes(source);
-  const read = readAnoi(bytes);
-  if (read.kind === "anoi") throw new ToolError("すでに Anoi ファイルです。anoi_open で開けます");
+  const read = readHarie(bytes);
+  if (read.kind === "harie")
+    throw new ToolError("すでに Harie ファイルです。harie_open で開けます");
   if (read.kind !== "plain") throw new ToolError("JPEG / PNG として読めません");
   const size = readImageSize(bytes);
   if (size === null) throw new ToolError("画像の大きさを読めません");
@@ -179,7 +180,7 @@ export async function edit(
   if (input.expectedRevision !== undefined && input.expectedRevision !== loaded.doc.revision) {
     // 楽観的ロック: 先に別の人・ツールが保存していたら上書きしない
     throw new ToolError(
-      `リビジョンが一致しません（期待 ${input.expectedRevision}、現在 ${loaded.doc.revision}）。anoi_open で開き直してください`,
+      `リビジョンが一致しません（期待 ${input.expectedRevision}、現在 ${loaded.doc.revision}）。harie_open で開き直してください`,
     );
   }
   const next = applyOrThrow(loaded.doc, input.ops);
@@ -226,11 +227,11 @@ export function list(
           walk(full);
         }
       } else if (entry.isFile() && IMAGE_EXT.has(extname(entry.name).toLowerCase())) {
-        const read = readAnoi(new Uint8Array(readFileSync(full)));
-        if (read.kind === "anoi" || read.kind === "anoi-mismatch") {
+        const read = readHarie(new Uint8Array(readFileSync(full)));
+        if (read.kind === "harie" || read.kind === "harie-mismatch") {
           files.push({
             path: guard.display(full),
-            status: read.kind === "anoi" ? "ok" : `mismatch: ${read.reason}`,
+            status: read.kind === "harie" ? "ok" : `mismatch: ${read.reason}`,
             title: read.doc?.meta.title,
             revision: read.descriptor.revision,
             annotations: read.doc?.annotations.length,

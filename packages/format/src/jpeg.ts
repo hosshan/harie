@@ -1,4 +1,4 @@
-// JPEG コンテナ（docs/03-design/anoi-format-spec.md §4）
+// JPEG コンテナ（docs/03-design/harie-format-spec.md §4）
 import { ascii, type Bytes, concat, readU16, readU32, startsWith, u16, u32 } from "./bytes";
 
 const SOI = 0xffd8;

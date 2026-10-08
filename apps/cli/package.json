@@ -1,18 +1,18 @@
 {
-  "name": "@anoi/cli",
+  "name": "@harie/cli",
   "version": "0.0.0",
   "private": true,
   "type": "module",
   "bin": {
-    "anoi": "./bin/anoi.mjs"
+    "harie": "./bin/harie.mjs"
   },
   "scripts": {
     "typecheck": "tsc -p tsconfig.json"
   },
   "dependencies": {
-    "@anoi/format": "workspace:*",
-    "@anoi/model": "workspace:*",
-    "@anoi/render": "workspace:*",
+    "@harie/format": "workspace:*",
+    "@harie/model": "workspace:*",
+    "@harie/render": "workspace:*",
     "@expo-google-fonts/noto-sans-jp": "^0.4.4",
     "@jsquash/jpeg": "^1.6.0",
     "@resvg/resvg-wasm": "^2.6.2",

@@ -52,7 +52,7 @@ flowchart LR
 | `apps/extension` | Chrome 拡張。キャプチャ・DOM 情報取得、拡張ページでエディタを開く | Chrome |
 | `apps/desktop` | Tauri 2 の殻。ファイル関連付け、ネイティブ保存 | macOS / Windows |
 | `apps/mcp` | MCP サーバー。ファイルを開いて注釈を変更し、再レンダリングして保存 | Node |
-| `apps/cli` | 開発用 CLI（`pnpm anoi`）。ファイルの検査・作成・描き直し・PII 加工。WASM とフォントを Node で読み込む | Node |
+| `apps/cli` | 開発用 CLI（`pnpm harie`）。ファイルの検査・作成・描き直し・PII 加工。WASM とフォントを Node で読み込む | Node |
 
 依存の向きは `apps → editor/ai → render/format → model` の一方向。`model` / `format` / `render` は DOM・React に依存しない（Lint で禁止する）。
 
@@ -70,7 +70,7 @@ sequenceDiagram
   E->>R: render(base, doc)
   R-->>E: レンダリング画像（JPEG/PNG バイト列）
   E->>F: embed(rendered, base, doc)
-  F-->>E: Anoi ファイル（バイト列）
+  F-->>E: Harie ファイル（バイト列）
   E->>U: ファイルに書き込み
 ```
 
@@ -122,7 +122,7 @@ sequenceDiagram
 
 | 場面 | LLM の所在 | 方針 |
 |---|---|---|
-| Web / 拡張 / デスクトップの提案・PII 検出 | Anoi が呼ぶ | MVP は BYOK（ユーザーの API キーをローカル保存）。本番は薄い API プロキシ（キー秘匿・利用量管理）を用意 |
+| Web / 拡張 / デスクトップの提案・PII 検出 | Harie が呼ぶ | MVP は BYOK（ユーザーの API キーをローカル保存）。本番は薄い API プロキシ（キー秘匿・利用量管理）を用意 |
 | MCP 経由 | MCP クライアント側の LLM | MCP サーバーは LLM を呼ばない。画像と注釈を返し、変更を受け付けるだけ。提案はクライアント側の LLM が行う |
 
 - 既定モデルは画像入力に対応した Claude の最新モデル。`packages/ai` はプロバイダ非依存のインターフェースにして、テストではモックを注入する。

@@ -1,6 +1,6 @@
 # CLAUDE.md
 
-Anoi（Annotation Image）: SaaS の利用ガイド用スクリーンショットに枠・矢印・説明文を付けるツール。保存した画像は普通の JPEG/PNG として表示でき、Anoi で開けば注釈を何度でも再編集できる。Web / Chrome 拡張 / デスクトップ / MCP で提供する。
+Harie（はりえ）: SaaS の利用ガイド用スクリーンショットに枠・矢印・説明文を付けるツール。保存した画像は普通の JPEG/PNG として表示でき、Harie で開けば注釈を何度でも再編集できる。Web / Chrome 拡張 / デスクトップ / MCP で提供する。
 
 ## まず読むもの
 
@@ -37,7 +37,7 @@ pnpm check        # lint（Biome）+ typecheck + test（Vitest）。PR 前に必
 pnpm test         # テストのみ
 pnpm format       # Biome で整形・import 整理
 pnpm build        # 配布物のビルド（apps/mcp → dist/）
-pnpm anoi inspect <file>   # 開発用 CLI（`pnpm anoi --help` で一覧）
+pnpm harie inspect <file>   # 開発用 CLI（`pnpm harie --help` で一覧）
 ```
 
 - Node 22 / pnpm 10。TypeScript は 7 系（`tsc` はネイティブ版）。

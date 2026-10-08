@@ -3,7 +3,7 @@
 - ステータス: 承認
 - 日付: 2026-10-07
 - 決定者: Shun（2026-10-07 PR #1 のマージで承認）
-- 関連: [技術調査: 画像保存方式](../02-research/image-storage.md) / [ファイル形式仕様](../03-design/anoi-format-spec.md) / FR-FILE-01〜07 / [ADR-0007](./0007-pii-masking.md)
+- 関連: [技術調査: 画像保存方式](../02-research/image-storage.md) / [ファイル形式仕様](../03-design/harie-format-spec.md) / FR-FILE-01〜07 / [ADR-0007](./0007-pii-masking.md)
 
 ## 背景
 
@@ -18,7 +18,7 @@
 
 ### B. XMP 記述子（APP1）+ JUMBF ペイロード（APP11）
 
-- 長所: バイナリをそのまま格納できる。分割規則が ISO で標準化。C2PA と同じ入れ物で、C2PA 対応の普及に伴い保持するツールが増えている。XMP 記述子で標準ツールからも Anoi ファイルと識別できる。
+- 長所: バイナリをそのまま格納できる。分割規則が ISO で標準化。C2PA と同じ入れ物で、C2PA 対応の普及に伴い保持するツールが増えている。XMP 記述子で標準ツールからも Harie ファイルと識別できる。
 - 短所: 実装がやや手間（PoC で約 150 行）。C2PA マニフェストと共存させる場合の配慮が要る。
 
 ### C. 独自 APPn / EOI 後への追記
@@ -33,9 +33,9 @@
 
 ## 決定
 
-**B を採用する。** PNG も同じ JUMBF ペイロードを独自チャンク `anOi` に、記述子を `iTXt` の XMP に格納する。
+**B を採用する。** PNG も同じ JUMBF ペイロードを独自チャンク `haRi` に、記述子を `iTXt` の XMP に格納する。
 
-PoC（`docs/02-research/poc/anoi-jpeg-poc.mjs`）で、Chromium・Pillow・ImageMagick が通常の JPEG として表示でき、ベース画像がバイト単位で復元できることを確認した。
+PoC（`docs/02-research/poc/harie-jpeg-poc.mjs`）で、Chromium・Pillow・ImageMagick が通常の JPEG として表示でき、ベース画像がバイト単位で復元できることを確認した。
 
 あわせて以下を決める。
 
