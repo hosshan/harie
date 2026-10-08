@@ -8,3 +8,6 @@ coverage/
 .DS_Store
 test-results/
 playwright-report/
+.output/
+.output-e2e/
+.wxt/

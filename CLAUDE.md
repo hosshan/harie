@@ -13,7 +13,7 @@ Harie（はりえ）: SaaS の利用ガイド用スクリーンショットに�
 
 触る領域に関係する ADR と設計書は、作業前に必ず読むこと。
 
-## リポジトリ構成（`apps/extension`・`apps/desktop` は未作成。実装計画の順に追加する）
+## リポジトリ構成（`apps/desktop` は未作成。実装計画の順に追加する）
 
 ```
 apps/web         Web エディタ（Vite + React, PWA）
@@ -35,9 +35,9 @@ docs/            要求・要件・調査・設計・計画・ADR・開発ルー
 pnpm install
 pnpm check        # lint（Biome）+ typecheck + test（Vitest）。PR 前に必ず通す
 pnpm test         # テストのみ
-pnpm e2e          # Web エディタの E2E（Playwright。ローカルは HARIE_CHROMIUM_PATH でブラウザを指定できる）
+pnpm e2e          # Web エディタと Chrome 拡張の E2E（Playwright。ローカルは HARIE_CHROMIUM_PATH でブラウザを指定できる）
 pnpm format       # Biome で整形・import 整理
-pnpm build        # 配布物のビルド（apps/mcp → dist/、apps/web → dist/）
+pnpm build        # 配布物のビルド（apps/mcp → dist/、apps/web → dist/、apps/extension → .output/chrome-mv3/）
 pnpm harie inspect <file>   # 開発用 CLI（`pnpm harie --help` で一覧）
 ```
 

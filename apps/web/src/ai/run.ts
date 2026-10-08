@@ -1,6 +1,7 @@
 // AI の呼び出し。Claude API の SDK を含むので、AI を使うときにだけ読み込む（AiPanel から import() する）
 import {
   createAnthropicClient,
+  type DomSnapshot,
   detectPii,
   type PiiCandidate,
   type Suggestion,
@@ -18,16 +19,29 @@ export async function runSuggest(
   base: Base,
   doc: HarieDocument,
   intent: string,
+  dom?: DomSnapshot,
 ): Promise<Suggestion[]> {
   const image = await prepareImage(base, doc.canvas);
-  return suggestAnnotations({ client: client(apiKey), image, doc, intent });
+  return suggestAnnotations({
+    client: client(apiKey),
+    image,
+    doc,
+    intent,
+    ...(dom === undefined ? {} : { dom }),
+  });
 }
 
 export async function runDetectPii(
   apiKey: string,
   base: Base,
   doc: HarieDocument,
+  dom?: DomSnapshot,
 ): Promise<PiiCandidate[]> {
   const image = await prepareImage(base, doc.canvas);
-  return detectPii({ client: client(apiKey), image, canvas: doc.canvas });
+  return detectPii({
+    client: client(apiKey),
+    image,
+    canvas: doc.canvas,
+    ...(dom === undefined ? {} : { dom }),
+  });
 }

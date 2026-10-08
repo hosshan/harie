@@ -3,6 +3,13 @@
   "version": "0.0.0",
   "private": true,
   "type": "module",
+  "exports": {
+    "./workspace": "./src/Workspace.tsx",
+    "./load": "./src/load.ts",
+    "./save": "./src/save.ts",
+    "./fonts": "./src/fonts.ts",
+    "./styles.css": "./src/styles.css"
+  },
   "scripts": {
     "dev": "vite",
     "build": "vite build",

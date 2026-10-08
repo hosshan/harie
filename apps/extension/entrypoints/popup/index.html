@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Harie でキャプチャ</title>
+    <style>
+      body { margin: 0; padding: 12px; width: 240px; font: 13px/1.5 "Hiragino Sans", "Noto Sans JP", system-ui, sans-serif; color: #1c2024; }
+      h1 { font-size: 14px; margin: 0 0 8px; }
+      button { display: block; width: 100%; margin: 0 0 6px; padding: 8px 10px; border: 1px solid #d0d5dd; border-radius: 6px; background: #fff; font: inherit; text-align: left; cursor: pointer; }
+      button:hover { border-color: #0b6bcb; }
+      .muted { color: #687076; font-size: 12px; margin: 6px 0 0; }
+      [role="alert"] { color: #b42318; margin: 6px 0 0; }
+    </style>
+  </head>
+  <body>
+    <h1>Harie でキャプチャ</h1>
+    <button type="button" data-mode="visible">見えている範囲</button>
+    <button type="button" data-mode="region">範囲を選ぶ</button>
+    <button type="button" data-mode="element">要素を選ぶ</button>
+    <p class="muted">撮った画像は Harie のエディタで開きます。画像とページの情報は、AI を使うまでこの端末から出ません。</p>
+    <p role="alert" hidden></p>
+    <script type="module" src="./main.ts"></script>
+  </body>
+</html>
