@@ -6,7 +6,7 @@ import { AiError, fitWithin, type LlmClient, MAX_IMAGE_EDGE } from "../src/llm";
 import { detectPii } from "../src/pii";
 import { suggestAnnotations } from "../src/suggest";
 import { createAgentClient } from "./agent-client";
-import { scorePii, scoreTargets } from "./score";
+import { matches, scorePii, scoreTargets } from "./score";
 import { screens } from "./screens";
 
 // .env に書いた値を読む（packages/ai/.env、なければリポジトリ直下の .env）。シェルで設定した値が優先される
@@ -98,6 +98,17 @@ for (const screen of all) {
   console.log(
     `${screen.name}: 個人情報 ${score.hit}/${score.truth} 見つけた・候補 ${score.correct}/${score.found} が正解 / 提案 ${suggestions.length} 件・狙いの要素に${hit ? "当たり" : "外れ"}`,
   );
+  // 外したものを出す（どの種類・値を見落とすか、何を余分に挙げるかを見るため。値はすべて架空）
+  for (const t of screen.pii) {
+    if (!pii.some((p) => matches(p.rect, t.rect))) {
+      console.log(`  × 見落とし: ${t.kind}${t.text === undefined ? "" : `「${t.text}」`}`);
+    }
+  }
+  for (const p of pii) {
+    if (!screen.pii.some((t) => matches(p.rect, t.rect))) {
+      console.log(`  × 余分: ${p.kind}「${p.text}」`);
+    }
+  }
   for (const s of suggestions) console.log(`  - ${s.text}`);
 }
 console.log(

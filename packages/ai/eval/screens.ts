@@ -18,7 +18,7 @@ export type Screen = {
   /** 提案が指してほしい UI 要素（どれか 1 つの提案が重なれば当たり） */
   targets: Rect[];
   /** 写っている個人情報（正解） */
-  pii: { kind: PiiKind; rect: Rect }[];
+  pii: { kind: PiiKind; rect: Rect; text?: string }[];
 };
 
 class Builder {
@@ -80,7 +80,7 @@ class Builder {
   }
 
   secret(kind: PiiKind, x: number, y: number, text: string, size = 14) {
-    this.pii.push({ kind, rect: this.text(x, y, text, { size }) });
+    this.pii.push({ kind, rect: this.text(x, y, text, { size }), text });
   }
 
   avatar(x: number, y: number, size: number) {
