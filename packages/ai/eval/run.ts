@@ -2,21 +2,36 @@
 // Claude API を実際に呼ぶ（費用がかかる）ので CI では動かさない。使い方は packages/ai/CLAUDE.md
 import { nodeRenderer } from "../../render/src/test-utils/node-renderer";
 import { createAnthropicClient } from "../src/anthropic";
-import { fitWithin, MAX_IMAGE_EDGE } from "../src/llm";
+import { AiError, fitWithin, type LlmClient, MAX_IMAGE_EDGE } from "../src/llm";
 import { detectPii } from "../src/pii";
 import { suggestAnnotations } from "../src/suggest";
+import { createAgentClient } from "./agent-client";
 import { scorePii, scoreTargets } from "./score";
 import { screens } from "./screens";
 
+// 失敗したら理由だけを出して止める（認証の失敗で残りの画面を試し続けない）
+process.on("uncaughtException", (e) => {
+  console.error(e instanceof AiError ? `失敗: ${e.message}` : e);
+  process.exit(1);
+});
+
+// 認証: ANTHROPIC_API_KEY があれば Claude API に直接（製品と同じ経路）、なければ CLAUDE_CODE_OAUTH_TOKEN で Claude Code 経由
+const model = process.env.HARIE_AI_MODEL || undefined;
 const apiKey = process.env.ANTHROPIC_API_KEY;
-if (apiKey === undefined || apiKey === "") {
-  console.error("ANTHROPIC_API_KEY を設定してください（キーはリポジトリやファイルに書かない）");
+let client: LlmClient;
+let via: string;
+if (apiKey !== undefined && apiKey !== "") {
+  client = createAnthropicClient({ apiKey, ...(model === undefined ? {} : { model }) });
+  via = "Claude API（ANTHROPIC_API_KEY）";
+} else if (process.env.CLAUDE_CODE_OAUTH_TOKEN) {
+  client = createAgentClient(model === undefined ? {} : { model });
+  via = "Claude Code（CLAUDE_CODE_OAUTH_TOKEN）";
+} else {
+  console.error(
+    "ANTHROPIC_API_KEY か CLAUDE_CODE_OAUTH_TOKEN を設定してください（packages/ai/CLAUDE.md の「評価」）",
+  );
   process.exit(1);
 }
-const client = createAnthropicClient({
-  apiKey,
-  ...(process.env.HARIE_AI_MODEL ? { model: process.env.HARIE_AI_MODEL } : {}),
-});
 const renderer = await nodeRenderer();
 const base = (await import("node:fs")).readFileSync(
   new URL("../../format/fixtures/base.png", import.meta.url),
@@ -27,7 +42,7 @@ let total = { truth: 0, found: 0, hit: 0, correct: 0 };
 let targetHits = 0;
 const all = screens();
 
-console.log(`model: ${client.model}`);
+console.log(`model: ${client.model} / 経由: ${via}`);
 for (const screen of all) {
   const { width, height } = screen.doc.canvas;
   // 縮小して送るときと同じ大きさで描く（座標の戻しも含めて評価する）
@@ -57,11 +72,15 @@ for (const screen of all) {
     correct: total.correct + score.correct,
   };
 
+  // 使える提案が 1 つもない（範囲が画像の外など）のは「外れ」として数え、次の画面に進む
   const suggestions = await suggestAnnotations({
     client,
     image,
     doc: { ...screen.doc, annotations: [] },
     intent: screen.intent,
+  }).catch((e: unknown) => {
+    if (e instanceof AiError && e.kind === "invalid-output") return [];
+    throw e;
   });
   const boxes = suggestions.flatMap((s) => s.annotations.filter((a) => a.type === "rect"));
   const hit = scoreTargets(boxes, screen.targets);
