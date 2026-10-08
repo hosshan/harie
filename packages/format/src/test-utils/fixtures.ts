@@ -1,5 +1,5 @@
 import { readFileSync } from "node:fs";
-import { type AnoiDocument, applyOps, createDocument } from "@anoi/model";
+import { applyOps, createDocument, type HarieDocument } from "@harie/model";
 
 const dir = new URL("../../fixtures/", import.meta.url);
 
@@ -9,7 +9,7 @@ export function fixture(name: string): Uint8Array {
 
 export const DOC_ID = "c8be77cd-bc6d-4747-bf15-12e345a4b522";
 
-export function sampleDoc(): AnoiDocument {
+export function sampleDoc(): HarieDocument {
   const doc = createDocument({
     width: 64,
     height: 40,

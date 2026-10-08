@@ -2,12 +2,12 @@ import { describe, expect, it } from "vitest";
 import { createDocument, prepareForSave } from "./document";
 import { migrateDocument } from "./migrate";
 import { applyOps } from "./ops";
-import type { AnoiDocument } from "./schema";
+import type { HarieDocument } from "./schema";
 
 const DOC_ID = "c8be77cd-bc6d-4747-bf15-12e345a4b522";
 const NOW = new Date("2026-10-07T08:00:00Z");
 
-function sampleDoc(): AnoiDocument {
+function sampleDoc(): HarieDocument {
   const doc = createDocument({ width: 1280, height: 800, docId: DOC_ID, now: NOW });
   const added = applyOps(doc, [
     { op: "add", annotation: { id: "a1", type: "rect", x: 10, y: 10, w: 100, h: 50 } },

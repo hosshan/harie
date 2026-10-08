@@ -49,7 +49,7 @@ type DomSnapshot = {
 
 ### 2.1 方針
 
-- **ローカル stdio サーバー**として提供する（FR-MCP-01）。実装は `apps/mcp`。`pnpm build` で 1 ファイルにまとめ、npm に公開すれば `npx @anoi/mcp` で起動できる形にしてある（公開は未実施。パッケージ名の確保と合わせて判断する）。
+- **ローカル stdio サーバー**として提供する（FR-MCP-01）。実装は `apps/mcp`。`pnpm build` で 1 ファイルにまとめ、npm に公開すれば `npx @harie/mcp` で起動できる形にしてある（公開は未実施。パッケージ名の確保と合わせて判断する）。
 - LLM は呼ばない。画像の「見る」「考える」はクライアント側（Claude 等）の LLM が担当し、サーバーは読み書きと描画に徹する。
 - 操作できるのは起動時に許可したディレクトリ配下のみ（`--root` 引数。既定はカレントディレクトリ）。
 
@@ -57,18 +57,18 @@ type DomSnapshot = {
 
 | ツール | 入力 | 出力 | 要件 |
 |---|---|---|---|
-| `anoi_open` | `path` | 注釈ドキュメント（JSON）、レンダリング画像（image content）、整合性の状態 | FR-MCP-02 |
-| `anoi_list` | `dir`, `recursive?` | Anoi ファイルの一覧（パス・タイトル・注釈数） | FR-MCP-05 |
-| `anoi_search` | `query`, `dir` | 注釈テキストに一致したファイルと注釈 ID | FR-MCP-05 |
-| `anoi_create` | `imagePath`, `outPath?`, `title?` | 新規 Anoi ファイルのパスと docId | FR-MCP-04 |
-| `anoi_edit` | `path`, `ops: Op[]`, `expectedRevision?` | 新しいリビジョン、レンダリング画像のプレビュー | FR-MCP-03 |
-| `anoi_preview` | `path`, `ops: Op[]` | 保存せずにレンダリング結果だけ返す | FR-MCP-03 |
+| `harie_open` | `path` | 注釈ドキュメント（JSON）、レンダリング画像（image content）、整合性の状態 | FR-MCP-02 |
+| `harie_list` | `dir`, `recursive?` | Harie ファイルの一覧（パス・タイトル・注釈数） | FR-MCP-05 |
+| `harie_search` | `query`, `dir` | 注釈テキストに一致したファイルと注釈 ID | FR-MCP-05 |
+| `harie_create` | `imagePath`, `outPath?`, `title?` | 新規 Harie ファイルのパスと docId | FR-MCP-04 |
+| `harie_edit` | `path`, `ops: Op[]`, `expectedRevision?` | 新しいリビジョン、レンダリング画像のプレビュー | FR-MCP-03 |
+| `harie_preview` | `path`, `ops: Op[]` | 保存せずにレンダリング結果だけ返す | FR-MCP-03 |
 
-MVP で実装したのは `anoi_open` / `anoi_create` / `anoi_edit` / `anoi_preview` / `anoi_list`。`anoi_search` は Next。
+MVP で実装したのは `harie_open` / `harie_create` / `harie_edit` / `harie_preview` / `harie_list`。`harie_search` は Next。
 
-- `anoi_edit` は `applyOps()` と同じ操作列（[注釈ドキュメントモデル](./document-model.md)）を受け取る。ツールの入力スキーマは zod（`OpSchema`）から生成し、座標の決まり（ベース画像のピクセル、左上原点）と例をツールの説明に含める。
-- 画像は MCP の image content で返す。`anoi_open` はファイルそのもの、`anoi_edit` / `anoi_preview` は描き直した画像（`anoi_preview` は AI 提案中の注釈も描く）。
-- 保存は一時ファイルに書いてから置き換える（書き込み途中で落ちても元のファイルを壊さない）。`anoi_create` は既存ファイルを上書きしない。
+- `harie_edit` は `applyOps()` と同じ操作列（[注釈ドキュメントモデル](./document-model.md)）を受け取る。ツールの入力スキーマは zod（`OpSchema`）から生成し、座標の決まり（ベース画像のピクセル、左上原点）と例をツールの説明に含める。
+- 画像は MCP の image content で返す。`harie_open` はファイルそのもの、`harie_edit` / `harie_preview` は描き直した画像（`harie_preview` は AI 提案中の注釈も描く）。
+- 保存は一時ファイルに書いてから置き換える（書き込み途中で落ちても元のファイルを壊さない）。`harie_create` は既存ファイルを上書きしない。
 - パスは `--root` からの相対パスか絶対パス。`..`・絶対パス・シンボリックリンクで root の外を指すものは拒否する。
 - `expectedRevision` を渡すと、別の人・別のツールが先に保存していた場合に失敗させる（楽観的ロック）。
 - PII 加工（ベース画像の書き換え）は MCP では MVP 対象外。誤って元画像を失うリスクが高いため、Next で確認付きの専用ツールとして追加する。

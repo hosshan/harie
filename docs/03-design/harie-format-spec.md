@@ -1,4 +1,4 @@
-# Anoi ファイル形式仕様 v0.1（ドラフト）
+# Harie ファイル形式仕様 v0.1（ドラフト）
 
 - ステータス: ドラフト（実装開始時に v0.1 を確定。確定後の破壊的変更はメジャーバージョンを上げる）
 - 最終更新: 2026-10-07
@@ -6,13 +6,13 @@
 
 ## 1. 概要
 
-Anoi ファイルは、次の 3 つを 1 つの画像ファイルに格納したもの。
+Harie ファイルは、次の 3 つを 1 つの画像ファイルに格納したもの。
 
 1. **レンダリング画像**: ファイルのピクセルそのもの（注釈焼き込み済み）
 2. **注釈ドキュメント**: JSON
 3. **ベース画像**: 注釈を焼き込む前の画像（PII 加工済み）。元のエンコードのバイト列
 
-Anoi を知らないツールは 1 だけを表示し、2 と 3 を無視する。
+Harie を知らないツールは 1 だけを表示し、2 と 3 を無視する。
 
 ## 2. 共通: ペイロード（JUMBF）
 
@@ -46,7 +46,7 @@ XMP は他のメタデータ（`dc:` 等）と同じパケットに共存して�
 SOI
 APP0 (JFIF)            … レンダリング画像のもの。あれば保持
 APP1 (EXIF)            … 既定では書かない（位置情報等の漏れ防止）
-APP1 (XMP)             … anoi 記述子
+APP1 (XMP)             … harie 記述子
 APP2 (ICC)             … レンダリング画像のもの。あれば保持
 APP11 (JUMBF, En=0xA001, Z=1..n)  … anoi.document
 APP11 (JUMBF, En=0xA002, Z=1..n)  … anoi.base
@@ -62,7 +62,7 @@ DQT / SOF / DHT / SOS … EOI   … レンダリング画像の本体
 ```
 IHDR
 iCCP / sRGB / ...      … あれば保持
-iTXt "XML:com.adobe.xmp" … anoi 記述子
+iTXt "XML:com.adobe.xmp" … harie 記述子
 anOi                   … JUMBF superbox: anoi.document
 anOi                   … JUMBF superbox: anoi.base
 IDAT ...
@@ -84,13 +84,13 @@ IEND
 
 いずれの失敗でも例外で落とさず、状態付きの結果を返す（NFR-DATA-03）。
 
-実装: `packages/format/src/anoi-file.ts` の `readAnoi`。結果の型は次のとおり。
+実装: `packages/format/src/harie-file.ts` の `readHarie`。結果の型は次のとおり。
 
 ```ts
 type ReadResult =
-  | { kind: "plain"; format }                                  // Anoi ファイルではない
-  | { kind: "anoi"; format; descriptor; doc; base }            // 正常
-  | { kind: "anoi-mismatch"; format; reason; descriptor; doc?; base? }
+  | { kind: "plain"; format }                                  // Harie ファイルではない
+  | { kind: "harie"; format; descriptor; doc; base }            // 正常
+  | { kind: "harie-mismatch"; format; reason; descriptor; doc?; base? }
     // reason: PayloadMissing | PayloadCorrupted | RenderedImageModified | UnsupportedVersion | InvalidDocument
     // RenderedImageModified のときは doc と base を返し、ユーザーに「埋め込みから復元」か「今のピクセルを新しいベースにする」かを選ばせる
   | { kind: "unsupported" }                                    // JPEG / PNG 以外

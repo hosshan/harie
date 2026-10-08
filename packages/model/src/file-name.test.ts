@@ -45,6 +45,15 @@ describe("FR-FILE-06: 保存ファイル名の規則（ADR-0006）", () => {
     expect(parseFileName("a.other.jpg")).toBeNull();
   });
 
+  it("旧名 anoi のファイル名も読み、再保存では新しいマーカーに付け替える", () => {
+    expect(parseFileName("settings.anoi.jpg")).toEqual({
+      stem: "settings",
+      marker: "anoi",
+      ext: "jpg",
+    });
+    expect(renameForSave("settings.anoi.jpg", "jpg")).toBe("settings.harie.jpg");
+  });
+
   it("再保存時は名前を保ち、通常画像には名前から規則名を付ける", () => {
     expect(renameForSave(`settings.${PRODUCT_MARKER}.jpeg`, "png")).toBe(
       `settings.${PRODUCT_MARKER}.png`,

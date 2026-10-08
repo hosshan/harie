@@ -3,7 +3,7 @@
 // 生成: GENERATE_GOLDEN=1 pnpm exec vitest run --project format golden
 import { existsSync, mkdirSync, writeFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
-import { readAnoi, writeAnoi } from "./anoi-file";
+import { readHarie, writeHarie } from "./harie-file";
 import { DOC_ID, fixture, sampleDoc } from "./test-utils/fixtures";
 
 const goldens = [
@@ -18,14 +18,14 @@ describe.each(goldens)("ゴールデン $file", ({ file, rendered, base }) => {
     mkdirSync(new URL(".", url), { recursive: true });
     writeFileSync(
       url,
-      writeAnoi({ rendered: fixture(rendered), base: fixture(base), doc: sampleDoc() }),
+      writeHarie({ rendered: fixture(rendered), base: fixture(base), doc: sampleDoc() }),
     );
   }
 
   it("現在の実装で読め、内容が変わらない", () => {
-    const r = readAnoi(fixture(file));
-    expect(r.kind).toBe("anoi");
-    if (r.kind !== "anoi") return;
+    const r = readHarie(fixture(file));
+    expect(r.kind).toBe("harie");
+    if (r.kind !== "harie") return;
     expect(r.descriptor.formatVersion).toBe("0.1");
     expect(r.doc.docId).toBe(DOC_ID);
     expect(r.doc.annotations.map((a) => a.id)).toEqual(["a1", "t1"]);

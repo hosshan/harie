@@ -1,4 +1,4 @@
-// XMP 記述子（docs/03-design/anoi-format-spec.md §3）
+// XMP 記述子（docs/03-design/harie-format-spec.md §3）
 export const ANOI_XMP_NS = "https://anoi.app/ns/1.0/";
 
 export type Descriptor = {
@@ -18,8 +18,8 @@ export function buildXmp(d: Descriptor): string {
 }
 
 /**
- * XMP パケットから Anoi 記述子を取り出す。Anoi 名前空間がなければ null。
- * 他ツールが同じパケットに書いた値は無視する。属性形式のみ対応（Anoi が書く形式）。
+ * XMP パケットから Harie 記述子を取り出す。Harie 名前空間がなければ null。
+ * 他ツールが同じパケットに書いた値は無視する。属性形式のみ対応（Harie が書く形式）。
  */
 export function parseXmp(xmp: string): Descriptor | null {
   if (!xmp.includes(ANOI_XMP_NS)) return null;

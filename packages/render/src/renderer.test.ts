@@ -1,5 +1,5 @@
-import { readAnoi, writeAnoi } from "@anoi/format";
-import { applyOps, createDocument } from "@anoi/model";
+import { readHarie, writeHarie } from "@harie/format";
+import { applyOps, createDocument } from "@harie/model";
 import { describe, expect, it } from "vitest";
 import { fixture, nodeRenderer, syntheticJpeg } from "./test-utils/node-renderer";
 
@@ -76,10 +76,10 @@ describe("Renderer", () => {
       const r = await nodeRenderer();
       const d = doc(64, 40, [red]);
       const rendered = await r.render({ doc: d, base, output });
-      const file = writeAnoi({ rendered, base: base.bytes, doc: d });
-      const read = readAnoi(file);
-      expect(read.kind).toBe("anoi");
-      expect(read.kind === "anoi" && read.format).toBe(output);
+      const file = writeHarie({ rendered, base: base.bytes, doc: d });
+      const read = readHarie(file);
+      expect(read.kind).toBe("harie");
+      expect(read.kind === "harie" && read.format).toBe(output);
     },
   );
 
@@ -103,7 +103,7 @@ describe("Renderer", () => {
     for (let i = 0; i < 3; i++) {
       const t = performance.now();
       const rendered = await r.render({ doc: target, base: big, output: "jpeg" });
-      writeAnoi({ doc: target, base: big.bytes, rendered });
+      writeHarie({ doc: target, base: big.bytes, rendered });
       times.push(performance.now() - t);
     }
     const ms = Math.min(...times);

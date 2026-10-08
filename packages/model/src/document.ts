@@ -1,4 +1,4 @@
-import { type AnoiDocument, DocumentSchema, type PiiApplied, SCHEMA_VERSION } from "./schema";
+import { DocumentSchema, type HarieDocument, type PiiApplied, SCHEMA_VERSION } from "./schema";
 
 // Web Crypto はブラウザと Node 22 の両方にグローバルで存在する。DOM 型に依存しないよう最小限だけ宣言する
 declare const crypto: { randomUUID(): string };
@@ -14,7 +14,7 @@ export function createDocument(options: {
   title?: string;
   now?: Date;
   docId?: string;
-}): AnoiDocument {
+}): HarieDocument {
   const now = (options.now ?? new Date()).toISOString();
   return DocumentSchema.parse({
     schemaVersion: SCHEMA_VERSION,
@@ -37,9 +37,9 @@ export function createDocument(options: {
 
 /** 保存直前に呼ぶ。リビジョンを進め、更新日時を記録し、未採用の AI 提案を除く。 */
 export function prepareForSave(
-  doc: AnoiDocument,
+  doc: HarieDocument,
   options: { now?: Date; keepSuggestions?: boolean } = {},
-): AnoiDocument {
+): HarieDocument {
   return {
     ...doc,
     revision: doc.revision + 1,
@@ -51,9 +51,12 @@ export function prepareForSave(
 }
 
 /**
- * PII 加工の記録を追記する（ADR-0007）。ベース画像の差し替え（`@anoi/render` の `applyMasks`）と必ず組で使う。
+ * PII 加工の記録を追記する（ADR-0007）。ベース画像の差し替え（`@harie/render` の `applyMasks`）と必ず組で使う。
  * 記録は種別・方法・範囲のみで、元の値やダミー文字列は持たない。
  */
-export function recordPiiApplied(doc: AnoiDocument, applied: readonly PiiApplied[]): AnoiDocument {
+export function recordPiiApplied(
+  doc: HarieDocument,
+  applied: readonly PiiApplied[],
+): HarieDocument {
   return { ...doc, pii: { ...doc.pii, applied: [...doc.pii.applied, ...applied] } };
 }

@@ -1,7 +1,7 @@
 import { mkdtempSync, readFileSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { readAnoi } from "@anoi/format";
+import { readHarie } from "@harie/format";
 import { describe, expect, it } from "vitest";
 import { CliError, create, extract, inspect, mask, render } from "./commands";
 
@@ -9,24 +9,24 @@ const FIXTURES = new URL("../../../packages/format/fixtures/", import.meta.url);
 const NOW = new Date("2026-10-07T00:00:00Z");
 
 function workdir(): string {
-  const dir = mkdtempSync(join(tmpdir(), "anoi-cli-"));
+  const dir = mkdtempSync(join(tmpdir(), "harie-cli-"));
   writeFileSync(join(dir, "screen.png"), readFileSync(new URL("base.png", FIXTURES)));
   writeFileSync(join(dir, "screen.jpg"), readFileSync(new URL("base.jpg", FIXTURES)));
   return dir;
 }
 
-const readFile = (p: string) => readAnoi(new Uint8Array(readFileSync(p)));
+const readFile = (p: string) => readHarie(new Uint8Array(readFileSync(p)));
 
-describe("anoi CLI", () => {
+describe("harie CLI", () => {
   it.each(["png", "jpg"])(
-    "FR-FILE-08: 普通の画像（%s）から Anoi ファイルを作り、名前規則で保存する",
+    "FR-FILE-08: 普通の画像（%s）から Harie ファイルを作り、名前規則で保存する",
     async (ext) => {
       const dir = workdir();
       const out = await create(join(dir, `screen.${ext}`), { title: "設定", now: NOW });
-      expect(out).toBe(join(dir, `screen.anoi.${ext}`));
+      expect(out).toBe(join(dir, `screen.harie.${ext}`));
       const read = readFile(out);
-      expect(read.kind).toBe("anoi");
-      if (read.kind !== "anoi") return;
+      expect(read.kind).toBe("harie");
+      if (read.kind !== "harie") return;
       expect(read.doc.canvas).toMatchObject({ width: 64, height: 40 });
       expect(read.doc.meta.title).toBe("設定");
       // ベース画像は読み込んだバイト列のまま（ADR-0004）
@@ -44,8 +44,8 @@ describe("anoi CLI", () => {
 
     await render(file, { doc: join(dir, "doc.json"), now: NOW });
     const read = readFile(file);
-    expect(read.kind === "anoi" && read.doc.annotations.map((a) => a.id)).toEqual(["r1"]);
-    expect(read.kind === "anoi" && read.doc.revision).toBe(doc.revision + 1);
+    expect(read.kind === "harie" && read.doc.annotations.map((a) => a.id)).toEqual(["r1"]);
+    expect(read.kind === "harie" && read.doc.revision).toBe(doc.revision + 1);
     expect(inspect(file)).toContain("注釈: 1 個（rect×1）");
   });
 
@@ -67,8 +67,8 @@ describe("anoi CLI", () => {
     const before = readFile(file);
     await mask(file, { rect: "8,8,30,16", method: "fill", kind: "email", now: NOW });
     const after = readFile(file);
-    expect(after.kind).toBe("anoi");
-    if (after.kind !== "anoi" || before.kind !== "anoi") return;
+    expect(after.kind).toBe("harie");
+    if (after.kind !== "harie" || before.kind !== "harie") return;
     expect(after.base.bytes).not.toEqual(before.base.bytes);
     expect(after.doc.pii.applied).toEqual([
       { kind: "email", method: "fill", rect: { x: 8, y: 8, w: 30, h: 16 } },
@@ -97,7 +97,7 @@ describe("anoi CLI", () => {
 
   it("注釈データのない画像の render・extract は分かるエラーにする", async () => {
     const dir = workdir();
-    await expect(render(join(dir, "screen.png"))).rejects.toThrow("anoi create");
+    await expect(render(join(dir, "screen.png"))).rejects.toThrow("harie create");
     expect(() => extract(join(dir, "screen.png"), { doc: join(dir, "d.json") })).toThrow(CliError);
   });
 });

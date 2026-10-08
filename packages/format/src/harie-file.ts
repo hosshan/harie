@@ -1,5 +1,5 @@
-// Anoi ファイルの読み書き（docs/03-design/anoi-format-spec.md, ADR-0004）
-import { type AnoiDocument, DocumentSchema, migrateDocument } from "@anoi/model";
+// Harie ファイルの読み書き（docs/03-design/harie-format-spec.md, ADR-0004）
+import { DocumentSchema, type HarieDocument, migrateDocument } from "@harie/model";
 import { sha256 } from "@noble/hashes/sha2.js";
 import { type Bytes, concat, fromUtf8, toHex, utf8 } from "./bytes";
 import { embedJpeg, extractJpeg, isJpeg, jpegRenderData } from "./jpeg";
@@ -37,7 +37,7 @@ const hex = (b: Bytes) => toHex(sha256(b));
  * レンダリング画像に注釈ドキュメントとベース画像を埋め込む。
  * ベース画像は渡されたバイト列をそのまま格納し、再エンコードしない（FR-FILE-04）。
  */
-export function writeAnoi(input: { rendered: Bytes; base: Bytes; doc: AnoiDocument }): Bytes {
+export function writeHarie(input: { rendered: Bytes; base: Bytes; doc: HarieDocument }): Bytes {
   const format = detectFormat(input.rendered);
   if (format === null) throw new Error("rendered は JPEG または PNG であること");
   const baseFormat = detectFormat(input.base);
@@ -69,19 +69,19 @@ export type MismatchReason =
 export type ReadResult =
   | { kind: "plain"; format: ImageFormat }
   | {
-      kind: "anoi";
+      kind: "harie";
       format: ImageFormat;
       descriptor: Descriptor;
-      doc: AnoiDocument;
+      doc: HarieDocument;
       base: { bytes: Bytes; mediaType: BaseMediaType };
     }
   | {
-      kind: "anoi-mismatch";
+      kind: "harie-mismatch";
       format: ImageFormat;
       reason: MismatchReason;
       descriptor: Descriptor;
       /** 復元できた場合のみ。RenderedImageModified ではユーザーに選ばせる材料になる。 */
-      doc?: AnoiDocument;
+      doc?: HarieDocument;
       base?: { bytes: Bytes; mediaType: BaseMediaType };
     }
   | { kind: "unsupported" }
@@ -95,7 +95,7 @@ function isBaseMediaType(s: string): s is BaseMediaType {
  * ファイルを読む。どんな入力でも例外を投げず、状態付きの結果を返す（NFR-DATA-03）。
  * 読み込み手順は形式仕様 §6。
  */
-export function readAnoi(bytes: Bytes): ReadResult {
+export function readHarie(bytes: Bytes): ReadResult {
   const format = detectFormat(bytes);
   if (format === null) return { kind: "unsupported" };
 
@@ -114,7 +114,7 @@ export function readAnoi(bytes: Bytes): ReadResult {
   }
   if (descriptor === null) return { kind: "plain", format };
   const mismatch = (reason: MismatchReason, extra: object = {}): ReadResult => ({
-    kind: "anoi-mismatch",
+    kind: "harie-mismatch",
     format,
     reason,
     descriptor: descriptor as Descriptor,
@@ -176,5 +176,5 @@ export function readAnoi(bytes: Bytes): ReadResult {
   }
   if (!renderMatches) return mismatch("RenderedImageModified", { doc, base });
 
-  return { kind: "anoi", format, descriptor, doc, base };
+  return { kind: "harie", format, descriptor, doc, base };
 }

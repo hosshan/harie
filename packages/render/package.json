@@ -1,5 +1,5 @@
 {
-  "name": "@anoi/render",
+  "name": "@harie/render",
   "version": "0.0.0",
   "private": true,
   "type": "module",
@@ -10,12 +10,12 @@
     "typecheck": "tsc -p tsconfig.json && tsc -p tsconfig.test.json"
   },
   "dependencies": {
-    "@anoi/model": "workspace:*",
+    "@harie/model": "workspace:*",
     "@jsquash/jpeg": "^1.6.0",
     "@resvg/resvg-wasm": "^2.6.2"
   },
   "devDependencies": {
-    "@anoi/format": "workspace:*",
+    "@harie/format": "workspace:*",
     "@expo-google-fonts/noto-sans-jp": "^0.4.4"
   }
 }

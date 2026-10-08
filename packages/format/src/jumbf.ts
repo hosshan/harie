@@ -1,4 +1,4 @@
-// JUMBF（ISO/IEC 19566-5）の最小実装。Anoi が使う JSON ボックスと埋め込みファイルボックスのみ
+// JUMBF（ISO/IEC 19566-5）の最小実装。Harie が使う JSON ボックスと埋め込みファイルボックスのみ
 import {
   ascii,
   type Bytes,

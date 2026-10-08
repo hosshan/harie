@@ -114,7 +114,7 @@ node docs/02-research/poc/anoi-jpeg-poc.mjs read out.anoi.jpg extracted-base.jpg
 - ベース画像は元のエンコード（JPEG/PNG のバイト列）をそのまま格納し、再エンコードしない。
 - サイドカー・独自コンテナは要求（1 ファイル完結・通常画像）を満たさないため不採用。
 
-仕様は [Anoi ファイル形式仕様](../03-design/anoi-format-spec.md) に定義する。
+仕様は [Anoi ファイル形式仕様](../03-design/harie-format-spec.md) に定義する。
 
 ## 7. 残課題
 

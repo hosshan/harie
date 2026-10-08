@@ -7,4 +7,4 @@ const { values } = parseArgs({ options: { root: { type: "string" } } });
 const server = createServer({ root: values.root ?? process.cwd() });
 await server.connect(new StdioServerTransport());
 // stdout は MCP の通信に使うので、ログは stderr に出す
-console.error(`anoi MCP server: root=${values.root ?? process.cwd()}`);
+console.error(`harie MCP server: root=${values.root ?? process.cwd()}`);

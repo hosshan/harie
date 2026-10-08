@@ -1,4 +1,4 @@
-// PNG コンテナ（docs/03-design/anoi-format-spec.md §5）
+// PNG コンテナ（docs/03-design/harie-format-spec.md §5）
 import { ascii, type Bytes, concat, fromAscii, readU32, startsWith, u32 } from "./bytes";
 import { crc32 } from "./crc32";
 
