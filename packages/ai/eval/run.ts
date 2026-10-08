@@ -9,6 +9,15 @@ import { createAgentClient } from "./agent-client";
 import { scorePii, scoreTargets } from "./score";
 import { screens } from "./screens";
 
+// .env に書いた値を読む（packages/ai/.env、なければリポジトリ直下の .env）。シェルで設定した値が優先される
+for (const path of ["../.env", "../../../.env"]) {
+  const file = new URL(path, import.meta.url);
+  if ((await import("node:fs")).existsSync(file)) {
+    process.loadEnvFile(file);
+    break;
+  }
+}
+
 // 失敗したら理由だけを出して止める（認証の失敗で残りの画面を試し続けない）
 process.on("uncaughtException", (e) => {
   console.error(e instanceof AiError ? `失敗: ${e.message}` : e);
