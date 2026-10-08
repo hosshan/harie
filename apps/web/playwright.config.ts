@@ -1,7 +1,7 @@
 import { defineConfig, devices } from "@playwright/test";
 
 // ローカル（クラウド開発環境）では同梱の Chromium を使う。CI では `playwright install` したものを使う
-const executablePath = process.env.ANOI_CHROMIUM_PATH;
+const executablePath = process.env.HARIE_CHROMIUM_PATH;
 
 export default defineConfig({
   testDir: "e2e",

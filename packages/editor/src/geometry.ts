@@ -1,6 +1,6 @@
 // 注釈の移動・リサイズ。結果は applyOps の update 操作の patch として返す
-import type { Annotation, Point } from "@anoi/model";
-import type { Bounds } from "@anoi/render";
+import type { Annotation, Point } from "@harie/model";
+import type { Bounds } from "@harie/render";
 
 export type Handle = "nw" | "n" | "ne" | "e" | "se" | "s" | "sw" | "w" | "from" | "to";
 

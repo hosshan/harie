@@ -1,4 +1,4 @@
-import { applyOps, createDocument } from "@anoi/model";
+import { applyOps, createDocument } from "@harie/model";
 import { describe, expect, it } from "vitest";
 import { buildSvg, estimateTextWidth, wrapText } from "./svg";
 

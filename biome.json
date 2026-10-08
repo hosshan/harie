@@ -58,7 +58,7 @@
                 },
                 "patterns": [
                   {
-                    "group": ["node:*", "@anoi/editor", "@anoi/ai"],
+                    "group": ["node:*", "@harie/editor", "@harie/ai"],
                     "message": "コア層は Node 固有 API・上位パッケージに依存しない（CLAUDE.md の依存方向）"
                   }
                 ]

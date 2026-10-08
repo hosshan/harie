@@ -1,4 +1,4 @@
-import "@anoi/editor/editor.css";
+import "@harie/editor/editor.css";
 import "./styles.css";
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";

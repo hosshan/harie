@@ -2,7 +2,7 @@
 // ベース画像の上に「元のピクセルに依存しない不透明な図形」を重ねた SVG を作り、それを新しいベース画像にする。
 // 重ねる図形の色は、塗りつぶし色・ブロック平均・周囲の背景色だけから決める。
 // そのため加工後の範囲内のピクセルから、ブロック平均より細かい元の情報は復元できない。
-import type { PiiApplied, PiiMask, Rect } from "@anoi/model";
+import type { PiiApplied, PiiMask, Rect } from "@harie/model";
 import { estimateTextWidth, FONT_FAMILY } from "./svg";
 import { attrs, esc, n } from "./xml";
 

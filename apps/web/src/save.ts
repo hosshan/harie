@@ -1,12 +1,12 @@
 // 保存（FR-FILE-06）。描き直した画像に注釈データを埋め込み、ファイル名規則で書き出す
-import { writeAnoi } from "@anoi/format";
-import { type AnoiDocument, prepareForSave, renameForSave } from "@anoi/model";
+import { writeHarie } from "@harie/format";
+import { type HarieDocument, prepareForSave, renameForSave } from "@harie/model";
 import { browserRenderer } from "./browser-renderer";
 import type { Opened } from "./load";
 
-export type Saved = { fileName: string; bytes: Uint8Array; doc: AnoiDocument };
+export type Saved = { fileName: string; bytes: Uint8Array; doc: HarieDocument };
 
-export async function buildSaveFile(opened: Opened, doc: AnoiDocument): Promise<Saved> {
+export async function buildSaveFile(opened: Opened, doc: HarieDocument): Promise<Saved> {
   const saved = prepareForSave(doc);
   const output = opened.base.mediaType === "image/png" ? "png" : "jpeg";
   const rendered = await (await browserRenderer()).render({
@@ -14,7 +14,7 @@ export async function buildSaveFile(opened: Opened, doc: AnoiDocument): Promise<
     base: opened.base,
     output,
   });
-  const bytes = writeAnoi({ rendered, base: opened.base.bytes, doc: saved });
+  const bytes = writeHarie({ rendered, base: opened.base.bytes, doc: saved });
   const fileName = renameForSave(opened.fileName, output === "png" ? "png" : "jpg");
   return { fileName, bytes, doc: saved };
 }

@@ -1,15 +1,15 @@
 import { parseArgs } from "node:util";
 import { CliError, create, extract, inspect, mask, render } from "./commands";
 
-const USAGE = `anoi — Anoi ファイルの開発用 CLI
+const USAGE = `harie — Harie ファイルの開発用 CLI
 
 使い方:
-  anoi inspect <file> [--json]                 ファイルの状態・注釈の概要を表示する
-  anoi create <image> [-o out] [--title t]     普通の画像から Anoi ファイルを作る
-  anoi render <file> [--doc doc.json] [-o out] 注釈（または JSON）で描き直す。-o 省略時は上書き
-  anoi extract <file> [--doc out.json] [--base out.jpg]
+  harie inspect <file> [--json]                 ファイルの状態・注釈の概要を表示する
+  harie create <image> [-o out] [--title t]     普通の画像から Harie ファイルを作る
+  harie render <file> [--doc doc.json] [-o out] 注釈（または JSON）で描き直す。-o 省略時は上書き
+  harie extract <file> [--doc out.json] [--base out.jpg]
                                                注釈 JSON とベース画像を取り出す
-  anoi mask <file> --rect x,y,w,h --method fill|mosaic|blur|replace --kind <種別> [--text ダミー] [-o out]
+  harie mask <file> --rect x,y,w,h --method fill|mosaic|blur|replace --kind <種別> [--text ダミー] [-o out]
                                                PII 加工をベース画像に不可逆に適用する（元に戻せない）`;
 
 export async function main(argv: string[]): Promise<number> {

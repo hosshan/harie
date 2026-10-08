@@ -24,7 +24,7 @@ ADR-0005（注釈 → SVG → resvg-wasm → エンコード）を `packages/ren
 | Resvg の構築（フォント読み込み含む） | 約 10〜60ms | 約 10〜60ms |
 | ラスタライズ（ベース画像のデコード含む） | 約 0.5〜0.7 秒 | 約 0.5〜0.7 秒 |
 | JPEG エンコード | 約 0.3〜0.4 秒 | 約 1.1〜1.2 秒 |
-| 埋め込み（`writeAnoi`、SHA-256 含む） | 約 50ms | 約 50〜80ms |
+| 埋め込み（`writeHarie`、SHA-256 含む） | 約 50ms | 約 50〜80ms |
 
 - ラスタライズの大半はベース画像のデコードで、注釈の数・日本語テキストの影響は小さい。
 - エンコード時間は画像の情報量に比例する。UI のスクリーンショットは平坦な領域が多く速い。
@@ -49,4 +49,4 @@ ADR-0005（注釈 → SVG → resvg-wasm → エンコード）を `packages/ren
 | @jsquash/jpeg（mozjpeg） | Apache-2.0（mozjpeg は IJG / BSD 系） | JPEG エンコード |
 | Noto Sans JP | OFL-1.1 | 描画用フォント（テストでは @expo-google-fonts/noto-sans-jp から読む） |
 
-MPL-2.0 は開発ルールの基本ライセンス（MIT / Apache-2.0 / BSD / ISC / OFL）の外にある。ファイル単位のコピーレフトで、resvg-wasm を改変せずに使う限り、Anoi 側のコードを公開する義務は生じない（配布時にライセンス表記と、resvg のソースの入手先を示す）。採用の可否は PR で確認する。
+MPL-2.0 は開発ルールの基本ライセンス（MIT / Apache-2.0 / BSD / ISC / OFL）の外にある。ファイル単位のコピーレフトで、resvg-wasm を改変せずに使う限り、Harie 側のコードを公開する義務は生じない（配布時にライセンス表記と、resvg のソースの入手先を示す）。採用の可否は PR で確認する。

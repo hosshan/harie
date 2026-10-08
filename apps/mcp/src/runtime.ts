@@ -1,8 +1,8 @@
-// Node で描画に必要な WASM とフォントを読み込む。描画そのものは @anoi/render（全環境共通）
+// Node で描画に必要な WASM とフォントを読み込む。描画そのものは @harie/render（全環境共通）
 import { existsSync, readFileSync } from "node:fs";
 import { createRequire } from "node:module";
 import { fileURLToPath } from "node:url";
-import { createRenderer, type Renderer } from "@anoi/render";
+import { createRenderer, type Renderer } from "@harie/render";
 
 const require = createRequire(import.meta.url);
 const read = (path: string) => new Uint8Array(readFileSync(path));

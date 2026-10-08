@@ -1,11 +1,11 @@
 // 保存ファイル名の規則（ADR-0006, FR-FILE-06）
-// 形式: <名前>.<プロダクト名マーカー>.<拡張子>  例: notification-settings.anoi.jpg
+// 形式: <名前>.<プロダクト名マーカー>.<拡張子>  例: notification-settings.harie.jpg
 
 /**
- * プロダクト名マーカー。「anoi」は仮名で、正式名称が決まったらこの値だけを変える。
+ * プロダクト名マーカー。名称を変えるときはこの値だけを変え、旧値は LEGACY_MARKERS に移す。
  * ファイル形式内の識別子（XMP 名前空間・JUMBF ラベル）とは独立しており、そちらは変えない。
  */
-export const PRODUCT_MARKER = "anoi";
+export const PRODUCT_MARKER = "harie";
 
 /** 名称変更前のマーカー。旧名のファイルも読み込み・検索の対象に含めるために残す。 */
 export const LEGACY_MARKERS: readonly string[] = [];
@@ -51,7 +51,7 @@ export type ParsedFileName = {
 
 /**
  * ファイル名が規則に沿っていれば分解する。沿っていなければ null。
- * ファイル名はヒントでしかなく、Anoi ファイルかどうかの判定は埋め込みデータで行う（ADR-0004）。
+ * ファイル名はヒントでしかなく、Harie ファイルかどうかの判定は埋め込みデータで行う（ADR-0004）。
  */
 export function parseFileName(fileName: string): ParsedFileName | null {
   const parts = fileName.split(".");

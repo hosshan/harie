@@ -1,11 +1,11 @@
 // エディタの状態と元に戻す／やり直す（FR-EDIT-07）
 // 変更はすべて applyOps の操作として適用する。ドラッグ中の途中経過は履歴に積まず、離したときに 1 回だけ積む
-import { type AnoiDocument, applyOps, type OpError } from "@anoi/model";
+import { applyOps, type HarieDocument, type OpError } from "@harie/model";
 
 export type EditorState = {
-  doc: AnoiDocument;
-  past: AnoiDocument[];
-  future: AnoiDocument[];
+  doc: HarieDocument;
+  past: HarieDocument[];
+  future: HarieDocument[];
   selectedId: string | null;
   /** 直前の操作が失敗した理由（UI に出す） */
   error: OpError | null;
@@ -16,17 +16,17 @@ export type EditorAction =
   | { type: "undo" }
   | { type: "redo" }
   | { type: "select"; id: string | null }
-  | { type: "reset"; doc: AnoiDocument }
+  | { type: "reset"; doc: HarieDocument }
   /** 保存した。以後の保存でリビジョンが戻らないよう、履歴中のドキュメントにも新しいリビジョンを反映する */
-  | { type: "saved"; revision: number; meta: AnoiDocument["meta"] };
+  | { type: "saved"; revision: number; meta: HarieDocument["meta"] };
 
 const HISTORY_LIMIT = 100;
 
-export function initialState(doc: AnoiDocument): EditorState {
+export function initialState(doc: HarieDocument): EditorState {
   return { doc, past: [], future: [], selectedId: null, error: null };
 }
 
-function exists(doc: AnoiDocument, id: string | null): string | null {
+function exists(doc: HarieDocument, id: string | null): string | null {
   return id !== null && doc.annotations.some((a) => a.id === id) ? id : null;
 }
 
@@ -75,7 +75,7 @@ export function editorReducer(state: EditorState, action: EditorAction): EditorS
     case "reset":
       return initialState(action.doc);
     case "saved": {
-      const mark = (d: AnoiDocument): AnoiDocument => ({
+      const mark = (d: HarieDocument): HarieDocument => ({
         ...d,
         revision: action.revision,
         meta: action.meta,
@@ -91,7 +91,7 @@ export function editorReducer(state: EditorState, action: EditorAction): EditorS
 }
 
 /** 新しい注釈の ID。ドキュメント内で一意であればよい */
-export function newAnnotationId(doc: AnoiDocument, type: string): string {
+export function newAnnotationId(doc: HarieDocument, type: string): string {
   let n = doc.annotations.length + 1;
   while (doc.annotations.some((a) => a.id === `${type}-${n}`)) n++;
   return `${type}-${n}`;

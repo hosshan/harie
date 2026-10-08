@@ -1,13 +1,13 @@
 // 開いたファイルを、エディタで扱える状態にする（FR-FILE-05, FR-FILE-08）
-import { type BaseMediaType, type MismatchReason, readAnoi, readImageSize } from "@anoi/format";
-import { type AnoiDocument, createDocument } from "@anoi/model";
+import { type BaseMediaType, type MismatchReason, readHarie, readImageSize } from "@harie/format";
+import { createDocument, type HarieDocument } from "@harie/model";
 
 export type Opened = {
   fileName: string;
-  doc: AnoiDocument;
+  doc: HarieDocument;
   base: { bytes: Uint8Array; mediaType: BaseMediaType };
-  /** 元から Anoi ファイルだったか（上書き保存してよいかの判断に使う） */
-  wasAnoi: boolean;
+  /** 元から Harie ファイルだったか（上書き保存してよいかの判断に使う） */
+  wasHarie: boolean;
   /** 不整合だったが、埋め込みの注釈とベース画像から開けた場合の理由 */
   warning?: MismatchReason;
 };
@@ -19,7 +19,7 @@ const MISMATCH_MESSAGES: Record<MismatchReason, string> = {
   PayloadCorrupted: "注釈データが壊れています。画像だけを開きました。",
   RenderedImageModified:
     "画像が別のアプリで編集されています。保存されていた注釈と元の画像から開き直しました（別のアプリでの変更は反映されていません）。",
-  UnsupportedVersion: "新しいバージョンの Anoi で保存されたファイルです。画像だけを開きました。",
+  UnsupportedVersion: "新しいバージョンの Harie で保存されたファイルです。画像だけを開きました。",
   InvalidDocument: "注釈データを読めません。画像だけを開きました。",
 };
 
@@ -28,15 +28,21 @@ export function mismatchMessage(reason: MismatchReason): string {
 }
 
 export function loadFile(fileName: string, bytes: Uint8Array, now = new Date()): LoadResult {
-  const read = readAnoi(bytes);
+  const read = readHarie(bytes);
   switch (read.kind) {
-    case "anoi":
-      return { ok: true, opened: { fileName, doc: read.doc, base: read.base, wasAnoi: true } };
-    case "anoi-mismatch":
+    case "harie":
+      return { ok: true, opened: { fileName, doc: read.doc, base: read.base, wasHarie: true } };
+    case "harie-mismatch":
       if (read.doc !== undefined && read.base !== undefined) {
         return {
           ok: true,
-          opened: { fileName, doc: read.doc, base: read.base, wasAnoi: true, warning: read.reason },
+          opened: {
+            fileName,
+            doc: read.doc,
+            base: read.base,
+            wasHarie: true,
+            warning: read.reason,
+          },
         };
       }
       return plain(fileName, bytes, read.format, now, read.reason);
@@ -64,7 +70,7 @@ function plain(
       fileName,
       doc: createDocument({ ...size, now }),
       base: { bytes, mediaType: format === "png" ? "image/png" : "image/jpeg" },
-      wasAnoi: false,
+      wasHarie: false,
       ...(warning === undefined ? {} : { warning }),
     },
   };

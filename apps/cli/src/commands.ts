@@ -1,37 +1,37 @@
-// 開発用 CLI のコマンド本体。手元で Anoi ファイルを作る・検査する・描き直すためのもの（実装計画 M1）
+// 開発用 CLI のコマンド本体。手元で Harie ファイルを作る・検査する・描き直すためのもの（実装計画 M1）
 import { readFileSync, writeFileSync } from "node:fs";
 import { basename, dirname, join } from "node:path";
-import { type BaseMediaType, readAnoi, readImageSize, writeAnoi } from "@anoi/format";
+import { type BaseMediaType, readHarie, readImageSize, writeHarie } from "@harie/format";
 import {
-  type AnoiDocument,
   createDocument,
+  type HarieDocument,
   migrateDocument,
   PiiMaskSchema,
   prepareForSave,
   recordPiiApplied,
   renameForSave,
-} from "@anoi/model";
+} from "@harie/model";
 import { nodeRenderer } from "./runtime";
 
 /** 利用者に見せるエラー。スタックトレースを出さずにメッセージだけ表示する。 */
 export class CliError extends Error {}
 
-type Loaded = { doc: AnoiDocument; base: { bytes: Uint8Array; mediaType: BaseMediaType } };
+type Loaded = { doc: HarieDocument; base: { bytes: Uint8Array; mediaType: BaseMediaType } };
 
-function loadAnoi(path: string): Loaded {
-  const read = readAnoi(new Uint8Array(readFileSync(path)));
+function loadHarie(path: string): Loaded {
+  const read = readHarie(new Uint8Array(readFileSync(path)));
   switch (read.kind) {
-    case "anoi":
+    case "harie":
       return { doc: read.doc, base: read.base };
-    case "anoi-mismatch":
+    case "harie-mismatch":
       if (read.doc !== undefined && read.base !== undefined) {
         // 外部ツールで画像だけ変わった場合など。埋め込みの注釈とベースから描き直せば整合が戻る
         return { doc: read.doc, base: read.base };
       }
-      throw new CliError(`${path}: Anoi のデータを復元できません（${read.reason}）`);
+      throw new CliError(`${path}: Harie のデータを復元できません（${read.reason}）`);
     case "plain":
       throw new CliError(
-        `${path}: 注釈データのない普通の画像です。先に \`anoi create\` してください`,
+        `${path}: 注釈データのない普通の画像です。先に \`harie create\` してください`,
       );
     case "unsupported":
       throw new CliError(`${path}: JPEG / PNG ではありません`);
@@ -46,18 +46,18 @@ function defaultOut(input: string, mediaType: BaseMediaType): string {
   return join(dirname(input), renameForSave(basename(input), extOf(mediaType)));
 }
 
-/** ドキュメントとベース画像から描き、Anoi ファイルとして書き出す。出力形式はベース画像に合わせる。 */
+/** ドキュメントとベース画像から描き、Harie ファイルとして書き出す。出力形式はベース画像に合わせる。 */
 async function save(loaded: Loaded, out: string, now?: Date): Promise<string> {
   const doc = prepareForSave(loaded.doc, now === undefined ? {} : { now });
   const output = loaded.base.mediaType === "image/png" ? "png" : "jpeg";
   const rendered = await (await nodeRenderer()).render({ doc, base: loaded.base, output });
-  writeFileSync(out, writeAnoi({ rendered, base: loaded.base.bytes, doc }));
+  writeFileSync(out, writeHarie({ rendered, base: loaded.base.bytes, doc }));
   return out;
 }
 
 export function inspect(path: string, options: { json?: boolean } = {}): string {
   const bytes = new Uint8Array(readFileSync(path));
-  const read = readAnoi(bytes);
+  const read = readHarie(bytes);
   if (options.json) {
     const { base, ...rest } = read as { base?: { bytes: Uint8Array; mediaType: string } };
     const summary =
@@ -79,11 +79,11 @@ export function inspect(path: string, options: { json?: boolean } = {}): string 
     case "corrupted":
       lines.push(`状態: 壊れている（${read.message}）`);
       break;
-    case "anoi":
-    case "anoi-mismatch": {
+    case "harie":
+    case "harie-mismatch": {
       lines.push(
-        read.kind === "anoi"
-          ? `状態: Anoi ファイル（${read.format}）`
+        read.kind === "harie"
+          ? `状態: Harie ファイル（${read.format}）`
           : `状態: 不整合（${read.reason}）`,
         `形式バージョン: ${read.descriptor.formatVersion}`,
         `docId: ${read.descriptor.docId} / revision: ${read.descriptor.revision}`,
@@ -107,14 +107,14 @@ export function inspect(path: string, options: { json?: boolean } = {}): string 
   return lines.join("\n");
 }
 
-/** 普通の画像から、注釈のない Anoi ファイルを作る（FR-FILE-08）。 */
+/** 普通の画像から、注釈のない Harie ファイルを作る（FR-FILE-08）。 */
 export async function create(
   imagePath: string,
   options: { out?: string; title?: string; now?: Date } = {},
 ): Promise<string> {
   const bytes = new Uint8Array(readFileSync(imagePath));
-  const read = readAnoi(bytes);
-  if (read.kind === "anoi") throw new CliError(`${imagePath}: すでに Anoi ファイルです`);
+  const read = readHarie(bytes);
+  if (read.kind === "harie") throw new CliError(`${imagePath}: すでに Harie ファイルです`);
   if (read.kind === "unsupported" || read.kind === "corrupted") {
     throw new CliError(`${imagePath}: JPEG / PNG として読めません`);
   }
@@ -135,7 +135,7 @@ export async function render(
   path: string,
   options: { doc?: string; out?: string; now?: Date } = {},
 ): Promise<string> {
-  const loaded = loadAnoi(path);
+  const loaded = loadHarie(path);
   if (options.doc !== undefined) {
     let raw: unknown;
     try {
@@ -159,7 +159,7 @@ export async function render(
 
 /** 注釈 JSON とベース画像を取り出す。 */
 export function extract(path: string, options: { doc?: string; base?: string }): string[] {
-  const loaded = loadAnoi(path);
+  const loaded = loadHarie(path);
   const written: string[] = [];
   if (options.doc !== undefined) {
     writeFileSync(options.doc, `${JSON.stringify(loaded.doc, null, 2)}\n`);
@@ -186,7 +186,7 @@ export async function mask(
     now?: Date;
   },
 ): Promise<string> {
-  const loaded = loadAnoi(path);
+  const loaded = loadHarie(path);
   const nums = options.rect.split(",").map(Number);
   if (nums.length !== 4 || nums.some((v) => !Number.isFinite(v))) {
     throw new CliError("--rect は x,y,w,h の 4 つの数値で指定してください");

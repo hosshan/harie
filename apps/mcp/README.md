@@ -1,6 +1,6 @@
-# @anoi/mcp
+# @harie/mcp
 
-Anoi ファイル（保存後も注釈を再編集できる JPEG / PNG）を読み書きするローカル MCP サーバー（stdio）。
+Harie ファイル（保存後も注釈を再編集できる JPEG / PNG）を読み書きするローカル MCP サーバー（stdio）。
 Claude などの MCP クライアントから「この画像に枠を付けて」「この説明文を直して」と頼めるようにする。
 
 サーバーは LLM を呼ばない。画像を見て注釈を考えるのはクライアント側の LLM で、サーバーは読み書きと描画だけを行う。
@@ -9,11 +9,11 @@ Claude などの MCP クライアントから「この画像に枠を付けて�
 
 | ツール | 内容 |
 |---|---|
-| `anoi_open` | ファイルを開き、注釈の一覧と画像を返す。普通の画像なら `status: plain` |
-| `anoi_create` | 普通の JPEG / PNG から Anoi ファイルを作る（既定は `<名前>.anoi.<拡張子>`。元画像は残す） |
-| `anoi_preview` | 注釈の変更（ops）を適用した画像を返す。ファイルは変えない |
-| `anoi_edit` | 注釈の変更を適用し、描き直して上書き保存する。`expectedRevision` で楽観的ロック |
-| `anoi_list` | ディレクトリ内の Anoi ファイルを一覧する |
+| `harie_open` | ファイルを開き、注釈の一覧と画像を返す。普通の画像なら `status: plain` |
+| `harie_create` | 普通の JPEG / PNG から Harie ファイルを作る（既定は `<名前>.harie.<拡張子>`。元画像は残す） |
+| `harie_preview` | 注釈の変更（ops）を適用した画像を返す。ファイルは変えない |
+| `harie_edit` | 注釈の変更を適用し、描き直して上書き保存する。`expectedRevision` で楽観的ロック |
+| `harie_list` | ディレクトリ内の Harie ファイルを一覧する |
 
 操作できるのは `--root` で指定したディレクトリ配下だけ（既定はカレントディレクトリ）。個人情報の加工（ベース画像の書き換え）は誤操作で元画像を失うおそれがあるため、MCP ではまだ提供していない。
 
@@ -29,7 +29,7 @@ pnpm build   # apps/mcp/dist/index.mjs と dist/fonts/ ができる
 ### Claude Code
 
 ```sh
-claude mcp add anoi -- node /path/to/anoi/apps/mcp/dist/index.mjs --root ~/Pictures/guides
+claude mcp add harie -- node /path/to/anoi/apps/mcp/dist/index.mjs --root ~/Pictures/guides
 ```
 
 ### Claude Desktop（`claude_desktop_config.json`）
@@ -37,7 +37,7 @@ claude mcp add anoi -- node /path/to/anoi/apps/mcp/dist/index.mjs --root ~/Pictu
 ```json
 {
   "mcpServers": {
-    "anoi": {
+    "harie": {
       "command": "node",
       "args": ["/path/to/anoi/apps/mcp/dist/index.mjs", "--root", "/Users/you/Pictures/guides"]
     }
@@ -47,8 +47,8 @@ claude mcp add anoi -- node /path/to/anoi/apps/mcp/dist/index.mjs --root ~/Pictu
 
 ### 使い方の例
 
-- 「`settings.png` を Anoi ファイルにして、保存ボタンを赤枠で囲み、『ここで保存します』と吹き出しを付けて」
-- 「`guides/` の Anoi ファイルを一覧して、タイトルのないものにタイトルを付けて」
+- 「`settings.png` を Harie ファイルにして、保存ボタンを赤枠で囲み、『ここで保存します』と吹き出しを付けて」
+- 「`guides/` の Harie ファイルを一覧して、タイトルのないものにタイトルを付けて」
 
 ## 開発
 

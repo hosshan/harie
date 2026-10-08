@@ -1,10 +1,10 @@
 // エディタ全体（ツールバー・編集面・選択中の注釈の設定）
-import type { Annotation, AnoiDocument } from "@anoi/model";
+import type { Annotation, HarieDocument } from "@harie/model";
 import { type Dispatch, useEffect, useReducer, useState } from "react";
 import { Canvas, type Tool } from "./Canvas";
 import { type EditorAction, type EditorState, editorReducer, initialState } from "./history";
 
-export function useEditorState(doc: AnoiDocument) {
+export function useEditorState(doc: HarieDocument) {
   return useReducer(editorReducer, doc, initialState);
 }
 
@@ -70,8 +70,8 @@ export function Editor({ state, dispatch, baseImageUrl }: EditorProps) {
   const selected = state.doc.annotations.find((a) => a.id === state.selectedId);
 
   return (
-    <div className="anoi-editor">
-      <div className="anoi-toolbar" role="toolbar" aria-label="ツール">
+    <div className="harie-editor">
+      <div className="harie-toolbar" role="toolbar" aria-label="ツール">
         {TOOLS.map((t) => (
           <button
             key={t.tool}
@@ -83,7 +83,7 @@ export function Editor({ state, dispatch, baseImageUrl }: EditorProps) {
             {t.label}
           </button>
         ))}
-        <span className="anoi-toolbar-sep" />
+        <span className="harie-toolbar-sep" />
         <button
           type="button"
           disabled={state.past.length === 0}
@@ -99,7 +99,7 @@ export function Editor({ state, dispatch, baseImageUrl }: EditorProps) {
           やり直す
         </button>
       </div>
-      <div className="anoi-workspace">
+      <div className="harie-workspace">
         <Canvas
           state={state}
           dispatch={dispatch}
@@ -107,9 +107,9 @@ export function Editor({ state, dispatch, baseImageUrl }: EditorProps) {
           tool={tool}
           onToolDone={() => setTool("select")}
         />
-        <aside className="anoi-inspector" aria-label="選択中の注釈">
+        <aside className="harie-inspector" aria-label="選択中の注釈">
           {selected === undefined ? (
-            <p className="anoi-muted">注釈を選ぶと、ここで文字や色を変えられます。</p>
+            <p className="harie-muted">注釈を選ぶと、ここで文字や色を変えられます。</p>
           ) : (
             <Inspector key={selected.id} annotation={selected} dispatch={dispatch} />
           )}
@@ -139,7 +139,7 @@ function Inspector({
   const current = annotation.style?.[colorKey];
 
   return (
-    <div className="anoi-inspector-body">
+    <div className="harie-inspector-body">
       {hasText && (
         <label>
           文字
@@ -171,7 +171,7 @@ function Inspector({
           <button
             key={c.value}
             type="button"
-            className="anoi-swatch"
+            className="harie-swatch"
             aria-label={c.label}
             aria-pressed={current === c.value}
             style={{ background: c.value }}

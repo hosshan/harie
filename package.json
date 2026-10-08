@@ -1,5 +1,5 @@
 {
-  "name": "anoi",
+  "name": "harie",
   "private": true,
   "type": "module",
   "packageManager": "pnpm@10.28.0",
@@ -13,8 +13,8 @@
     "typecheck": "pnpm -r --if-present typecheck",
     "test": "vitest run",
     "build": "pnpm -r --if-present build",
-    "anoi": "node apps/cli/bin/anoi.mjs",
-    "e2e": "pnpm --filter @anoi/web e2e"
+    "harie": "node apps/cli/bin/harie.mjs",
+    "e2e": "pnpm --filter @harie/web e2e"
   },
   "devDependencies": {
     "@biomejs/biome": "^2.5.15",

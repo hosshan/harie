@@ -2,7 +2,7 @@
 // 新しい schemaVersion を足すときは、ここに変換関数を追加し、旧バージョンのフィクスチャでテストする
 import { z } from "zod";
 import { err, ok, type Result } from "./result";
-import { type AnoiDocument, DocumentSchema, SCHEMA_VERSION } from "./schema";
+import { DocumentSchema, type HarieDocument, SCHEMA_VERSION } from "./schema";
 
 export type MigrateError =
   | { kind: "UnsupportedVersion"; version: string }
@@ -25,7 +25,7 @@ function isNewerMinor(version: string): boolean {
   return v !== null && current !== null && v[0] === current[0] && v[1] > current[1];
 }
 
-export function migrateDocument(raw: unknown): Result<AnoiDocument, MigrateError> {
+export function migrateDocument(raw: unknown): Result<HarieDocument, MigrateError> {
   if (typeof raw !== "object" || raw === null) {
     return err({ kind: "Invalid", message: "オブジェクトではない" });
   }

@@ -1,11 +1,11 @@
 {
-  "name": "@anoi/mcp",
+  "name": "@harie/mcp",
   "version": "0.0.0",
   "private": true,
-  "description": "Anoi（注釈を再編集できる JPEG/PNG）を読み書きするローカル MCP サーバー",
+  "description": "Harie（注釈を再編集できる JPEG/PNG）を読み書きするローカル MCP サーバー",
   "type": "module",
   "bin": {
-    "anoi-mcp": "./dist/index.mjs"
+    "harie-mcp": "./dist/index.mjs"
   },
   "files": [
     "dist"
@@ -22,9 +22,9 @@
     "zod": "^4.6.5"
   },
   "devDependencies": {
-    "@anoi/format": "workspace:*",
-    "@anoi/model": "workspace:*",
-    "@anoi/render": "workspace:*",
+    "@harie/format": "workspace:*",
+    "@harie/model": "workspace:*",
+    "@harie/render": "workspace:*",
     "@expo-google-fonts/noto-sans-jp": "^0.4.4",
     "esbuild": "^0.28.2"
   }

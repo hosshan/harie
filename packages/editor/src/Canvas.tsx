@@ -1,6 +1,6 @@
 // 編集面。下層に buildSvg の SVG（保存時と同じ見た目、ADR-0005）、上層に操作用の SVG を重ねる
-import { type Annotation, type AnoiDocument, applyOps, type Point } from "@anoi/model";
-import { annotationBounds, buildSvg } from "@anoi/render";
+import { type Annotation, applyOps, type HarieDocument, type Point } from "@harie/model";
+import { annotationBounds, buildSvg } from "@harie/render";
 import { type Dispatch, type PointerEvent, useMemo, useRef, useState } from "react";
 import {
   boxFrom,
@@ -33,14 +33,14 @@ function distanceToSegment(p: Point, a: Point, b: Point): number {
 }
 
 /** 上に描かれているものから順に当たり判定する */
-export function hitTest(doc: AnoiDocument, p: Point, tolerance: number): Annotation | undefined {
+export function hitTest(doc: HarieDocument, p: Point, tolerance: number): Annotation | undefined {
   return [...doc.annotations].reverse().find((a) => {
     if (a.type === "arrow") return distanceToSegment(p, a.from, a.to) <= tolerance;
     return contains(annotationBounds(a), p, tolerance);
   });
 }
 
-function dragOps(doc: AnoiDocument, drag: Drag): unknown[] {
+function dragOps(doc: HarieDocument, drag: Drag): unknown[] {
   if (drag.kind === "create") {
     const id = newAnnotationId(doc, drag.tool);
     const short =
@@ -171,16 +171,16 @@ export function Canvas({ state, dispatch, baseImageUrl, tool, onToolDone }: Canv
   const handleSize = screenPx(10);
 
   return (
-    <div className="anoi-canvas" style={{ aspectRatio: `${width} / ${height}` }}>
+    <div className="harie-canvas" style={{ aspectRatio: `${width} / ${height}` }}>
       {/* buildSvg の出力（エスケープ済みの SVG 文字列） */}
       <div
-        className="anoi-canvas-image"
+        className="harie-canvas-image"
         // biome-ignore lint/security/noDangerouslySetInnerHtml: buildSvg が属性・本文をエスケープして生成する
         dangerouslySetInnerHTML={{ __html: markup }}
       />
       <svg
         ref={overlay}
-        className="anoi-canvas-overlay"
+        className="harie-canvas-overlay"
         viewBox={`0 0 ${width} ${height}`}
         data-tool={tool}
         role="application"
@@ -210,7 +210,7 @@ function Selection({
   const b = annotationBounds(annotation);
   const pad = handleSize / 2;
   return (
-    <g className="anoi-selection" data-selected={annotation.id}>
+    <g className="harie-selection" data-selected={annotation.id}>
       {annotation.type !== "arrow" && (
         <rect
           x={b.x - pad}
@@ -237,7 +237,7 @@ function Selection({
             fill="#FFFFFF"
             stroke="#0B6BCB"
             strokeWidth={stroke}
-            className={`anoi-handle anoi-handle-${h}`}
+            className={`harie-handle harie-handle-${h}`}
           />
         );
       })}

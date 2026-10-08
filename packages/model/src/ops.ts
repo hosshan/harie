@@ -2,7 +2,7 @@
 // （docs/03-design/document-model.md の「操作」）
 import { z } from "zod";
 import { err, ok, type Result } from "./result";
-import { type Annotation, AnnotationSchema, type AnoiDocument } from "./schema";
+import { type Annotation, AnnotationSchema, type HarieDocument } from "./schema";
 
 export const OpSchema = z.discriminatedUnion("op", [
   z.object({ op: z.literal("add"), annotation: AnnotationSchema, index: z.int().optional() }),
@@ -68,9 +68,9 @@ function applyOne(annotations: Annotation[], op: Op): Result<Annotation[]> {
  * 入力の ops は外部入力（MCP 引数・LLM 出力）でありうるので、ここで検証する。
  */
 export function applyOps(
-  doc: AnoiDocument,
+  doc: HarieDocument,
   ops: readonly unknown[],
-): Result<AnoiDocument, OpError> {
+): Result<HarieDocument, OpError> {
   let annotations = doc.annotations;
   for (const [opIndex, raw] of ops.entries()) {
     const parsed = OpSchema.safeParse(raw);

@@ -1,5 +1,5 @@
 {
-  "name": "@anoi/editor",
+  "name": "@harie/editor",
   "version": "0.0.0",
   "private": true,
   "type": "module",
@@ -11,8 +11,8 @@
     "typecheck": "tsc -p tsconfig.json"
   },
   "dependencies": {
-    "@anoi/model": "workspace:*",
-    "@anoi/render": "workspace:*",
+    "@harie/model": "workspace:*",
+    "@harie/render": "workspace:*",
     "react": "^19.3.0",
     "react-dom": "^19.3.0"
   },

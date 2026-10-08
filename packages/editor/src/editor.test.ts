@@ -1,4 +1,4 @@
-import { createDocument } from "@anoi/model";
+import { createDocument } from "@harie/model";
 import { describe, expect, it } from "vitest";
 import { hitTest } from "./Canvas";
 import { boxFrom, handlesFor, movePatch, resizePatch } from "./geometry";

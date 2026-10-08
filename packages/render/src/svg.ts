@@ -1,6 +1,6 @@
 // 注釈ドキュメント → SVG（ADR-0005）
 // 純粋関数。エディタの表示と保存時のラスタライズの両方がこの SVG を使い、見た目を一致させる。
-import type { Annotation, AnoiDocument, Style } from "@anoi/model";
+import type { Annotation, HarieDocument, Style } from "@harie/model";
 import { THEMES, type Theme } from "./theme";
 import { attrs, esc, n } from "./xml";
 
@@ -137,7 +137,7 @@ function arrow(a: Extract<Annotation, { type: "arrow" }>, s: Resolved): string {
 function annotation(
   a: Annotation,
   theme: Theme,
-  doc: AnoiDocument,
+  doc: HarieDocument,
   baseImageHref: string | undefined,
 ): string {
   const s = resolve(theme, a);
@@ -210,7 +210,7 @@ export function annotationBounds(a: Annotation, theme: Theme = THEMES.default): 
   }
 }
 
-export function buildSvg(doc: AnoiDocument, options: BuildSvgOptions = {}): string {
+export function buildSvg(doc: HarieDocument, options: BuildSvgOptions = {}): string {
   const theme = THEMES[doc.theme.preset] ?? THEMES.default;
   const { width, height, crop } = doc.canvas;
   const view = crop ?? { x: 0, y: 0, w: width, h: height };

@@ -23,18 +23,18 @@ importers:
 
   apps/cli:
     dependencies:
-      '@anoi/format':
-        specifier: workspace:*
-        version: link:../../packages/format
-      '@anoi/model':
-        specifier: workspace:*
-        version: link:../../packages/model
-      '@anoi/render':
-        specifier: workspace:*
-        version: link:../../packages/render
       '@expo-google-fonts/noto-sans-jp':
         specifier: ^0.4.4
         version: 0.4.4
+      '@harie/format':
+        specifier: workspace:*
+        version: link:../../packages/format
+      '@harie/model':
+        specifier: workspace:*
+        version: link:../../packages/model
+      '@harie/render':
+        specifier: workspace:*
+        version: link:../../packages/render
       '@jsquash/jpeg':
         specifier: ^1.6.0
         version: 1.6.0
@@ -60,39 +60,39 @@ importers:
         specifier: ^4.6.5
         version: 4.6.5
     devDependencies:
-      '@anoi/format':
-        specifier: workspace:*
-        version: link:../../packages/format
-      '@anoi/model':
-        specifier: workspace:*
-        version: link:../../packages/model
-      '@anoi/render':
-        specifier: workspace:*
-        version: link:../../packages/render
       '@expo-google-fonts/noto-sans-jp':
         specifier: ^0.4.4
         version: 0.4.4
+      '@harie/format':
+        specifier: workspace:*
+        version: link:../../packages/format
+      '@harie/model':
+        specifier: workspace:*
+        version: link:../../packages/model
+      '@harie/render':
+        specifier: workspace:*
+        version: link:../../packages/render
       esbuild:
         specifier: ^0.28.2
         version: 0.28.2
 
   apps/web:
     dependencies:
-      '@anoi/editor':
-        specifier: workspace:*
-        version: link:../../packages/editor
-      '@anoi/format':
-        specifier: workspace:*
-        version: link:../../packages/format
-      '@anoi/model':
-        specifier: workspace:*
-        version: link:../../packages/model
-      '@anoi/render':
-        specifier: workspace:*
-        version: link:../../packages/render
       '@expo-google-fonts/noto-sans-jp':
         specifier: ^0.4.4
         version: 0.4.4
+      '@harie/editor':
+        specifier: workspace:*
+        version: link:../../packages/editor
+      '@harie/format':
+        specifier: workspace:*
+        version: link:../../packages/format
+      '@harie/model':
+        specifier: workspace:*
+        version: link:../../packages/model
+      '@harie/render':
+        specifier: workspace:*
+        version: link:../../packages/render
       '@jsquash/jpeg':
         specifier: ^1.6.0
         version: 1.6.0
@@ -127,10 +127,10 @@ importers:
 
   packages/editor:
     dependencies:
-      '@anoi/model':
+      '@harie/model':
         specifier: workspace:*
         version: link:../model
-      '@anoi/render':
+      '@harie/render':
         specifier: workspace:*
         version: link:../render
       react:
@@ -155,7 +155,7 @@ importers:
 
   packages/format:
     dependencies:
-      '@anoi/model':
+      '@harie/model':
         specifier: workspace:*
         version: link:../model
       '@noble/hashes':
@@ -170,7 +170,7 @@ importers:
 
   packages/render:
     dependencies:
-      '@anoi/model':
+      '@harie/model':
         specifier: workspace:*
         version: link:../model
       '@jsquash/jpeg':
@@ -180,12 +180,12 @@ importers:
         specifier: ^2.6.2
         version: 2.6.2
     devDependencies:
-      '@anoi/format':
-        specifier: workspace:*
-        version: link:../format
       '@expo-google-fonts/noto-sans-jp':
         specifier: ^0.4.4
         version: 0.4.4
+      '@harie/format':
+        specifier: workspace:*
+        version: link:../format
 
 packages:
 

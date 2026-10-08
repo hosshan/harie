@@ -1,8 +1,8 @@
-// ブラウザで描画に必要な WASM とフォントを読み込む。描画そのものは @anoi/render（全環境共通、ADR-0005）
+// ブラウザで描画に必要な WASM とフォントを読み込む。描画そのものは @harie/render（全環境共通、ADR-0005）
 
-import { createRenderer, type Renderer } from "@anoi/render";
 import regularFontUrl from "@expo-google-fonts/noto-sans-jp/400Regular/NotoSansJP_400Regular.ttf?url";
 import boldFontUrl from "@expo-google-fonts/noto-sans-jp/700Bold/NotoSansJP_700Bold.ttf?url";
+import { createRenderer, type Renderer } from "@harie/render";
 import jpegEncoderUrl from "@jsquash/jpeg/codec/enc/mozjpeg_enc.wasm?url";
 import resvgWasmUrl from "@resvg/resvg-wasm/index_bg.wasm?url";
 

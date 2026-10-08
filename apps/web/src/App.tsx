@@ -1,5 +1,5 @@
 // Web エディタ（M3）。画像を開く → 注釈を編集する → 保存する
-import { Editor, useEditorState } from "@anoi/editor";
+import { Editor, useEditorState } from "@harie/editor";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { boldFontUrl, regularFontUrl } from "./browser-renderer";
 import { loadFile, mismatchMessage, type Opened } from "./load";
@@ -91,7 +91,7 @@ export function App() {
   return (
     <div className="app">
       <header className="app-header">
-        <h1>Anoi</h1>
+        <h1>Harie</h1>
         <button type="button" onClick={pick}>
           {opened === null ? "画像を開く" : "別の画像を開く"}
         </button>
@@ -118,8 +118,8 @@ export function App() {
           <p>
             スクリーンショットをドラッグ＆ドロップするか、貼り付け（Ctrl / ⌘ + V）してください。
           </p>
-          <p className="anoi-muted">
-            JPEG と PNG に対応しています。保存した画像は普通の画像として使え、Anoi
+          <p className="harie-muted">
+            JPEG と PNG に対応しています。保存した画像は普通の画像として使え、Harie
             で開けば注釈を直せます。
           </p>
         </div>
@@ -175,8 +175,8 @@ function Workspace({
     setStatus("保存しています…");
     try {
       const saved = await buildSaveFile(opened, state.doc);
-      // Anoi ファイルを開いていたら上書き。普通の画像なら元の画像は残し、名前を変えて保存する
-      let target = opened.wasAnoi ? handle : null;
+      // Harie ファイルを開いていたら上書き。普通の画像なら元の画像は残し、名前を変えて保存する
+      let target = opened.wasHarie ? handle : null;
       const w = window as PickerWindow;
       if (target === null && handle !== null && w.showSaveFilePicker !== undefined) {
         target = await w.showSaveFilePicker({ suggestedName: saved.fileName, types: IMAGE_TYPES });
@@ -185,7 +185,7 @@ function Workspace({
       dispatch({ type: "saved", revision: saved.doc.revision, meta: saved.doc.meta });
       savedDoc.current = { ...state.doc, revision: saved.doc.revision };
       setStatus(`${saved.fileName} を保存しました`);
-      onSaved({ ...opened, fileName: saved.fileName, wasAnoi: true, doc: saved.doc }, target);
+      onSaved({ ...opened, fileName: saved.fileName, wasHarie: true, doc: saved.doc }, target);
     } catch (e) {
       setStatus(
         e instanceof DOMException && e.name === "AbortError" ? null : `保存できませんでした: ${e}`,
@@ -203,7 +203,7 @@ function Workspace({
           保存
         </button>
         {status !== null && (
-          <span className="anoi-muted" role="status">
+          <span className="harie-muted" role="status">
             {status}
           </span>
         )}

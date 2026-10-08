@@ -2,7 +2,7 @@
 // SVG → ピクセル → JPEG / PNG（ADR-0005）
 // WASM とフォントの読み込み方法は環境（ブラウザ・拡張・Node）ごとに違うため、呼び出し側から受け取る。
 // 描画そのものは全環境で同じコードが走る（NFR-PLAT-05）。
-import type { AnoiDocument, PiiApplied, PiiMask } from "@anoi/model";
+import type { HarieDocument, PiiApplied, PiiMask } from "@harie/model";
 import encodeJpeg, { init as initJpegEncoder } from "@jsquash/jpeg/encode.js";
 import { initWasm, Resvg } from "@resvg/resvg-wasm";
 import { toDataUri } from "./base64";
@@ -23,7 +23,7 @@ export type RendererInit = {
 export type OutputFormat = "jpeg" | "png";
 
 export type RenderInput = {
-  doc: AnoiDocument;
+  doc: HarieDocument;
   base: BaseImage;
   output: OutputFormat;
   /** JPEG 品質（1〜100）。既定 90 */

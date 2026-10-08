@@ -1,5 +1,5 @@
 import { readFileSync } from "node:fs";
-import { readAnoi, writeAnoi } from "@anoi/format";
+import { readHarie, writeHarie } from "@harie/format";
 import { expect, type Page, test } from "@playwright/test";
 import { nodeRenderer } from "../../../packages/render/src/test-utils/node-renderer";
 
@@ -10,6 +10,13 @@ async function openFixture(page: Page, name: string, mimeType = "image/jpeg") {
   await page.goto("/");
   await page.getByLabel("画像ファイル").setInputFiles({ name, mimeType, buffer: fixture(name) });
   await expect(page.getByRole("application", { name: "注釈の編集面" })).toBeVisible();
+  // 開いたときに Noto Sans JP を読み込み、読み込み終わると文字の高さが変わって編集面の位置がずれる。
+  // ドラッグの途中でずれないよう、読み込みを待ってから操作する
+  await page.waitForFunction(
+    () =>
+      document.fonts.status === "loaded" &&
+      [...document.fonts].every((f) => f.status !== "loading"),
+  );
 }
 
 /** 編集面の上で、画像の座標（px）を画面の座標に直してドラッグする（縦横比を保った余白も考慮） */
@@ -28,7 +35,7 @@ async function drag(page: Page, from: [number, number], to: [number, number], si
   await page.mouse.up();
 }
 
-const annotationRects = (page: Page) => page.locator(".anoi-canvas-image rect");
+const annotationRects = (page: Page) => page.locator(".harie-canvas-image rect");
 
 test("FR-FILE-08, FR-EDIT-01〜04, 07: 画像を開いて注釈を付け、元に戻す・やり直す", async ({
   page,
@@ -70,11 +77,11 @@ test("FR-FILE-06: 保存したファイルは普通の JPEG で、開き直す�
     page.waitForEvent("download"),
     page.getByRole("button", { name: "保存" }).click(),
   ]);
-  expect(download.suggestedFilename()).toBe("large-base.anoi.jpg");
+  expect(download.suggestedFilename()).toBe("large-base.harie.jpg");
   const file = new Uint8Array(readFileSync(await download.path()));
-  const read = readAnoi(file);
-  expect(read.kind).toBe("anoi");
-  if (read.kind !== "anoi") return;
+  const read = readHarie(file);
+  expect(read.kind).toBe("harie");
+  if (read.kind !== "harie") return;
   expect(read.doc.revision).toBe(1);
   expect(read.doc.annotations.map((a) => a.type)).toEqual(["rect", "callout"]);
   // 画面上でドラッグした位置が、画像の座標として記録されている
@@ -92,16 +99,16 @@ test("FR-FILE-06: 保存したファイルは普通の JPEG で、開き直す�
     base: read.base,
     output: "jpeg",
   });
-  expect(writeAnoi({ rendered, base: read.base.bytes, doc: read.doc })).toEqual(file);
+  expect(writeHarie({ rendered, base: read.base.bytes, doc: read.doc })).toEqual(file);
 
   // 開き直すと注釈が戻り、続けて編集できる
   await page.getByLabel("画像ファイル").setInputFiles({
-    name: "large-base.anoi.jpg",
+    name: "large-base.harie.jpg",
     mimeType: "image/jpeg",
     buffer: Buffer.from(file),
   });
-  await expect(page.locator(".anoi-canvas-image svg")).toContainText("ここで通知を設定");
-  await expect(page.locator(".app-file-name")).toHaveText("large-base.anoi.jpg");
+  await expect(page.locator(".harie-canvas-image svg")).toContainText("ここで通知を設定");
+  await expect(page.locator(".app-file-name")).toHaveText("large-base.harie.jpg");
 });
 
 test("FR-CAP-05: ドラッグ＆ドロップと貼り付けで画像を取り込める", async ({ page }) => {
