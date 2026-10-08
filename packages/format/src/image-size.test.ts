@@ -7,7 +7,7 @@ describe("readImageSize", () => {
     ["base.jpg", 64, 40],
     ["base.png", 64, 40],
     ["large-base.jpg", 520, 400],
-    ["v0.1/sample.anoi.jpg", 64, 40],
+    ["v0.1/sample.harie.jpg", 64, 40],
   ])("%s の大きさを読む", (name, width, height) => {
     expect(readImageSize(fixture(name))).toEqual({ width, height });
   });

@@ -1,15 +1,15 @@
 #!/usr/bin/env node
-// Anoi JPEG 埋め込み方式の PoC（docs/research/image-storage.md 参照）
+// Harie JPEG 埋め込み方式の PoC（docs/research/image-storage.md 参照）
 //
 // 使い方:
-//   node anoi-jpeg-poc.mjs write <rendered.jpg> <base.jpg> <out.jpg>
-//   node anoi-jpeg-poc.mjs read  <anoi.jpg> [<extracted-base.jpg>]
+//   node harie-jpeg-poc.mjs write <rendered.jpg> <base.jpg> <out.jpg>
+//   node harie-jpeg-poc.mjs read  <harie.jpg> [<extracted-base.jpg>]
 //
 // 方式:
 //   - APP1 XMP に小さな記述子（docId / formatVersion / payload の SHA-256）
 //   - APP11 JUMBF（ISO/IEC 19566-5, C2PA と同じ入れ物）に
-//       label "anoi.document" : JSON（アノテーション文書）
-//       label "anoi.base"     : 元画像バイナリ（再編集用、アノテーション焼き込み前）
+//       label "harie.document" : JSON（アノテーション文書）
+//       label "harie.base"     : 元画像バイナリ（再編集用、アノテーション焼き込み前）
 //     64KB を超える box は複数 APP11 セグメントに分割（Z = シーケンス番号）
 // 依存なし（Node 標準のみ）。実装本体ではなく検証用コード。
 
@@ -76,9 +76,9 @@ function toApp11Segments(superbox, instance) {
 function xmpSegment(desc) {
   const xmp = `<?xpacket begin="﻿" id="W5M0MpCehiHzreSzNTczkc9d"?>
 <x:xmpmeta xmlns:x="adobe:ns:meta/"><rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
-<rdf:Description rdf:about="" xmlns:anoi="https://anoi.app/ns/1.0/"
- anoi:formatVersion="${desc.formatVersion}" anoi:docId="${desc.docId}"
- anoi:revision="${desc.revision}" anoi:payloadSha256="${desc.payloadSha256}"/>
+<rdf:Description rdf:about="" xmlns:harie="https://harie.app/ns/1.0/"
+ harie:formatVersion="${desc.formatVersion}" harie:docId="${desc.docId}"
+ harie:revision="${desc.revision}" harie:payloadSha256="${desc.payloadSha256}"/>
 </rdf:RDF></x:xmpmeta>
 <?xpacket end="w"?>`;
   const data = Buffer.concat([Buffer.from("http://ns.adobe.com/xap/1.0/\0"), Buffer.from(xmp, "utf8")]);
@@ -101,15 +101,15 @@ function write(renderedPath, basePath, outPath) {
   const rendered = readFileSync(renderedPath);
   const base = readFileSync(basePath);
   const doc = {
-    $schema: "https://anoi.app/schema/document/0.1.json",
+    $schema: "https://harie.app/schema/document/0.1.json",
     docId: randomUUID(),
     revision: 1,
     service: "example",
     canvas: { width: 1280, height: 800 },
     layers: [{ id: "a1", type: "rect", x: 100, y: 100, w: 500, h: 300, style: { stroke: "#ff0000", strokeWidth: 6 } }],
   };
-  const docBox = jumbJson("anoi.document", doc);
-  const baseBox = jumbFile("anoi.base", "image/jpeg", base);
+  const docBox = jumbJson("harie.document", doc);
+  const baseBox = jumbFile("harie.base", "image/jpeg", base);
   const payloadSha256 = createHash("sha256").update(docBox).update(baseBox).digest("hex");
 
   // 既存の APP0/APP1(EXIF) 等は残し、その後ろに XMP と APP11 を差し込む
@@ -146,7 +146,7 @@ function read(path, extractBasePath) {
       instances.get(en).parts[z - 1] = part;
     }
   }
-  const result = { hasXmpDescriptor: !!xmp && xmp.includes("anoi:docId"), boxes: [] };
+  const result = { hasXmpDescriptor: !!xmp && xmp.includes("harie:docId"), boxes: [] };
   for (const [, { header, parts }] of instances) {
     const body = Buffer.concat(parts);
     // body = jumd + content boxes
@@ -164,4 +164,4 @@ function read(path, extractBasePath) {
 const [cmd, ...args] = process.argv.slice(2);
 if (cmd === "write") write(...args);
 else if (cmd === "read") read(...args);
-else { console.error("usage: write <rendered> <base> <out> | read <anoi.jpg> [<base-out>]"); process.exit(1); }
+else { console.error("usage: write <rendered> <base> <out> | read <harie.jpg> [<base-out>]"); process.exit(1); }

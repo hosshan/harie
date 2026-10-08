@@ -7,8 +7,8 @@ import { readHarie, writeHarie } from "./harie-file";
 import { DOC_ID, fixture, sampleDoc } from "./test-utils/fixtures";
 
 const goldens = [
-  { file: "v0.1/sample.anoi.jpg", rendered: "rendered.jpg", base: "base.jpg" },
-  { file: "v0.1/sample.anoi.png", rendered: "rendered.png", base: "base.png" },
+  { file: "v0.1/sample.harie.jpg", rendered: "rendered.jpg", base: "base.jpg" },
+  { file: "v0.1/sample.harie.png", rendered: "rendered.png", base: "base.png" },
 ];
 
 describe.each(goldens)("ゴールデン $file", ({ file, rendered, base }) => {

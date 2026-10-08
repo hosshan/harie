@@ -8,8 +8,8 @@ import { embedPng, extractPng, isPng, pngRenderData } from "./png";
 import { buildXmp, type Descriptor, parseXmp } from "./xmp";
 
 export const FORMAT_VERSION = "0.1";
-export const DOCUMENT_LABEL = "anoi.document";
-export const BASE_LABEL = "anoi.base";
+export const DOCUMENT_LABEL = "harie.document";
+export const BASE_LABEL = "harie.base";
 /** C2PA マニフェストと衝突しないよう、JPEG の Box Instance 番号は 0xA001 から使う。 */
 const FIRST_JPEG_INSTANCE = 0xa001;
 

@@ -2,14 +2,14 @@
 
 - ステータス: 調査完了（決定は [ADR-0004](../adr/0004-image-container-format.md)）
 - 調査日: 2026-10-07
-- PoC: [`poc/anoi-jpeg-poc.mjs`](./poc/anoi-jpeg-poc.mjs)
+- PoC: [`poc/harie-jpeg-poc.mjs`](./poc/harie-jpeg-poc.mjs)
 
 ## 1. 問い
 
 次を同時に満たす保存方式は何か。
 
 1. 一般的なビューア・ブラウザ・CMS で**普通の JPEG / PNG として表示**される（FR-FILE-01, 02）
-2. Anoi で開くと**注釈を個別に再編集**できる（FR-FILE-03）
+2. Harie で開くと**注釈を個別に再編集**できる（FR-FILE-03）
 3. 何度保存しても**下地の画質が劣化しない**（FR-FILE-04）
 4. 1 ファイルで完結し、他人に渡しても編集できる（P4, NFR-DATA-04）
 
@@ -40,15 +40,15 @@ JPEG は `SOI` の後に `APPn`（n=0〜15）セグメントを任意個置け�
 | C. 独自 APPn | 任意の APPn に独自署名で格納 | 実装が最も簡単 | 識別子の衝突リスク。他ツールに保持される期待が持てない |
 | D. EOI 後への追記 | 画像データ末尾の後ろに付ける（Google Motion Photo 方式） | どんなサイズでも 1 ブロック | 規格外。トリミングするツールがある。ストリーミング読み込みで末尾まで読む必要 |
 | E. EXIF（APP1） | EXIF の MakerNote / UserComment | — | 64KB 制限が厳しく、構造化データ向きでない。不採用 |
-| F. サイドカー | `example.jpg` + `example.anoi.json` | 実装が最も簡単。画像サイズが増えない | 2 ファイルを一緒に扱う必要があり、要求「1 ファイルで他人も編集」（P4）を満たさない |
-| G. 独自コンテナ | `.anoi` 形式（zip 等）＋書き出し JPEG | 自由度最大 | 書き出した JPEG からは再編集できない。要求 R1/R2 を同時に満たさない |
+| F. サイドカー | `example.jpg` + `example.harie.json` | 実装が最も簡単。画像サイズが増えない | 2 ファイルを一緒に扱う必要があり、要求「1 ファイルで他人も編集」（P4）を満たさない |
+| G. 独自コンテナ | `.harie` 形式（zip 等）＋書き出し JPEG | 自由度最大 | 書き出した JPEG からは再編集できない。要求 R1/R2 を同時に満たさない |
 
 ### 3.2 PNG の格納場所
 
 PNG はチャンク構造で、サイズ上限は実質なし。
 
 - XMP: `iTXt` チャンク（キーワード `XML:com.adobe.xmp`）
-- バイナリ: 独自のアンシラリチャンク `anOi`（小文字始まり=補助、2 文字目小文字=私用、4 文字目小文字=コピー安全）。C2PA は `caBX` に JUMBF を入れる。
+- バイナリ: 独自のアンシラリチャンク `haRi`（小文字始まり=補助、2 文字目小文字=私用、4 文字目小文字=コピー安全）。C2PA は `caBX` に JUMBF を入れる。
 
 ### 3.3 WebP（Later）
 
@@ -74,7 +74,7 @@ PoC での確認結果（ImageMagick 6 / Pillow 12.3 / Chromium 141 系、2026-1
 - ヘルプ CMS（Zendesk、Intercom、Notion 等）は元ファイルをそのまま配信することが多いが、サムネイル生成時に削除される場合がある。
 - Google Drive・Dropbox・Git はバイト列を保持する。
 
-→ **「Anoi ファイルの原本」は Git・共有ドライブなどバイトを保持する場所に置き、CMS には書き出しコピーを上げる**運用を推奨としてガイドに書く。
+→ **「Harie ファイルの原本」は Git・共有ドライブなどバイトを保持する場所に置き、CMS には書き出しコピーを上げる**運用を推奨としてガイドに書く。
 
 ### 4.1 不整合の検出（FR-FILE-05）
 
@@ -91,11 +91,11 @@ docId をキーにクラウドへ控えを保存すれば、メタデータが�
 
 ## 5. PoC
 
-[`poc/anoi-jpeg-poc.mjs`](./poc/anoi-jpeg-poc.mjs)（依存なし、Node 22）で、B 案（XMP 記述子 + APP11 JUMBF）を実装して確認した。
+[`poc/harie-jpeg-poc.mjs`](./poc/harie-jpeg-poc.mjs)（依存なし、Node 22）で、B 案（XMP 記述子 + APP11 JUMBF）を実装して確認した。
 
 ```sh
-node docs/02-research/poc/anoi-jpeg-poc.mjs write rendered.jpg base.jpg out.anoi.jpg
-node docs/02-research/poc/anoi-jpeg-poc.mjs read out.anoi.jpg extracted-base.jpg
+node docs/02-research/poc/harie-jpeg-poc.mjs write rendered.jpg base.jpg out.harie.jpg
+node docs/02-research/poc/harie-jpeg-poc.mjs read out.harie.jpg extracted-base.jpg
 ```
 
 結果:
@@ -109,12 +109,12 @@ node docs/02-research/poc/anoi-jpeg-poc.mjs read out.anoi.jpg extracted-base.jpg
 
 **JPEG: XMP 記述子（APP1）+ JUMBF ペイロード（APP11）。PNG: XMP（iTXt）+ 同じ JUMBF ペイロード（独自チャンク）。**
 
-- XMP には小さな記述子（docId・バージョン・ハッシュ）だけを置き、exiftool 等の標準ツールから「Anoi ファイルであること」が見える状態にする。
+- XMP には小さな記述子（docId・バージョン・ハッシュ）だけを置き、exiftool 等の標準ツールから「Harie ファイルであること」が見える状態にする。
 - 本体（注釈 JSON・ベース画像）は JUMBF に格納する。バイナリを膨張させず、分割規則が標準化されており、C2PA と同じ入れ物なので将来の来歴証明（「PII 加工済み」の証明など）にも接続しやすい。
 - ベース画像は元のエンコード（JPEG/PNG のバイト列）をそのまま格納し、再エンコードしない。
 - サイドカー・独自コンテナは要求（1 ファイル完結・通常画像）を満たさないため不採用。
 
-仕様は [Anoi ファイル形式仕様](../03-design/harie-format-spec.md) に定義する。
+仕様は [Harie ファイル形式仕様](../03-design/harie-format-spec.md) に定義する。
 
 ## 7. 残課題
 

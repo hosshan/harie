@@ -56,6 +56,6 @@ XMP 名前空間（`https://anoi.app/ns/1.0/`）、JUMBF ラベル（`anoi.docum
 ## 追記（2026-10-08）: 正式名称を Harie に決定
 
 - 正式名称は **Harie**（はりえ。貼り絵から）。Shun が 2026-10-08 に決定。マーカーは `harie`、保存名は `notification-settings.harie.jpg`。
-- 旧マーカー `anoi` は `LEGACY_MARKERS` に移し、`*.anoi.*` も引き続き読み込み・検索する。再保存時は `*.harie.*` に付け替える。
-- 本決定どおり、XMP 名前空間（`https://anoi.app/ns/1.0/`、接頭辞 `anoi`）・JUMBF ラベル（`anoi.document` / `anoi.base`）・PNG チャンク `anOi` は変えない。
-- この追記より前の ADR 本文に出てくる「Anoi」は旧仮名で、現在の Harie と同じものを指す。
+- 公開前で既存ファイルがないため、旧名 `anoi` との後方互換は持たない（Shun の指示）。`LEGACY_MARKERS` は空のまま。
+- 同じ理由で、上の「ファイル形式内の識別子は名称変更の対象外」は適用せず、形式内の識別子も変えた: XMP 名前空間 `https://harie.app/ns/1.0/`（接頭辞 `harie`）、JUMBF ラベル `harie.document` / `harie.base`、PNG チャンク `haRi`。ゴールデンファイルは `v0.1/sample.harie.*` として作り直した。公開後は本 ADR の当初方針どおり形式内の識別子を変えない。
+- この ADR の本文に残る「anoi」は当時の仮名で、現在の Harie と同じものを指す。

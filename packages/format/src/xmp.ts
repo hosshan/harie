@@ -1,5 +1,5 @@
 // XMP 記述子（docs/03-design/harie-format-spec.md §3）
-export const ANOI_XMP_NS = "https://anoi.app/ns/1.0/";
+export const HARIE_XMP_NS = "https://harie.app/ns/1.0/";
 
 export type Descriptor = {
   formatVersion: string;
@@ -12,7 +12,7 @@ export type Descriptor = {
 export function buildXmp(d: Descriptor): string {
   return `<?xpacket begin="﻿" id="W5M0MpCehiHzreSzNTczkc9d"?>
 <x:xmpmeta xmlns:x="adobe:ns:meta/"><rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
-<rdf:Description rdf:about="" xmlns:anoi="${ANOI_XMP_NS}" anoi:formatVersion="${d.formatVersion}" anoi:docId="${d.docId}" anoi:revision="${d.revision}" anoi:payloadSha256="${d.payloadSha256}" anoi:renderSha256="${d.renderSha256}"/>
+<rdf:Description rdf:about="" xmlns:harie="${HARIE_XMP_NS}" harie:formatVersion="${d.formatVersion}" harie:docId="${d.docId}" harie:revision="${d.revision}" harie:payloadSha256="${d.payloadSha256}" harie:renderSha256="${d.renderSha256}"/>
 </rdf:RDF></x:xmpmeta>
 <?xpacket end="w"?>`;
 }
@@ -22,8 +22,8 @@ export function buildXmp(d: Descriptor): string {
  * 他ツールが同じパケットに書いた値は無視する。属性形式のみ対応（Harie が書く形式）。
  */
 export function parseXmp(xmp: string): Descriptor | null {
-  if (!xmp.includes(ANOI_XMP_NS)) return null;
-  const attr = (name: string) => new RegExp(`anoi:${name}="([^"]*)"`).exec(xmp)?.[1];
+  if (!xmp.includes(HARIE_XMP_NS)) return null;
+  const attr = (name: string) => new RegExp(`harie:${name}="([^"]*)"`).exec(xmp)?.[1];
   const formatVersion = attr("formatVersion");
   const docId = attr("docId");
   const revision = Number(attr("revision"));

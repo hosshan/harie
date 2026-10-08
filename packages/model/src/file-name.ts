@@ -8,7 +8,7 @@
 export const PRODUCT_MARKER = "harie";
 
 /** 名称変更前のマーカー。旧名のファイルも読み込み・検索の対象に含めるために残す。 */
-export const LEGACY_MARKERS: readonly string[] = ["anoi"];
+export const LEGACY_MARKERS: readonly string[] = [];
 
 export const KNOWN_MARKERS: readonly string[] = [PRODUCT_MARKER, ...LEGACY_MARKERS];
 

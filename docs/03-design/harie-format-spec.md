@@ -20,23 +20,23 @@ ISO/IEC 19566-5（JUMBF）の superbox を 2 つ使う。
 
 | ラベル | 内容種別 | 中身 |
 |---|---|---|
-| `anoi.document` | JSON（type UUID `6a736f6e-0011-0010-8000-00aa00389b71`） | 注釈ドキュメント（UTF-8 JSON） |
-| `anoi.base` | Embedded File（type UUID `40cb0c32-bb8a-489d-a70b-2ad6f47f4369`） | `bfdb` にメディアタイプ（`image/jpeg` / `image/png`）、`bidb` にベース画像のバイト列 |
+| `harie.document` | JSON（type UUID `6a736f6e-0011-0010-8000-00aa00389b71`） | 注釈ドキュメント（UTF-8 JSON） |
+| `harie.base` | Embedded File（type UUID `40cb0c32-bb8a-489d-a70b-2ad6f47f4369`） | `bfdb` にメディアタイプ（`image/jpeg` / `image/png`）、`bidb` にベース画像のバイト列 |
 
 - `jumd` の toggles は `0x03`（requestable + label）。
-- 将来の追加ボックス（例: `anoi.thumbnail`、`anoi.history`）は、知らないラベルは無視する。
+- 将来の追加ボックス（例: `harie.thumbnail`、`harie.history`）は、知らないラベルは無視する。
 
 ## 3. 共通: XMP 記述子
 
-名前空間 `https://anoi.app/ns/1.0/`（接頭辞 `anoi`）。値はすべて属性で持つ。
+名前空間 `https://harie.app/ns/1.0/`（接頭辞 `harie`）。値はすべて属性で持つ。
 
 | プロパティ | 型 | 説明 |
 |---|---|---|
-| `anoi:formatVersion` | 文字列 | 本仕様のバージョン（`0.1`） |
-| `anoi:docId` | UUID | ドキュメントの永続 ID。複製しても変わらない |
-| `anoi:revision` | 整数 | 保存のたびに +1 |
-| `anoi:payloadSha256` | hex | `anoi.document` と `anoi.base` の superbox バイト列を、この順に連結した SHA-256 |
-| `anoi:renderSha256` | hex | レンダリング画像の圧縮データのハッシュ（JPEG: 最初の `SOS` から `EOI` まで。PNG: 全 `IDAT` の連結） |
+| `harie:formatVersion` | 文字列 | 本仕様のバージョン（`0.1`） |
+| `harie:docId` | UUID | ドキュメントの永続 ID。複製しても変わらない |
+| `harie:revision` | 整数 | 保存のたびに +1 |
+| `harie:payloadSha256` | hex | `harie.document` と `harie.base` の superbox バイト列を、この順に連結した SHA-256 |
+| `harie:renderSha256` | hex | レンダリング画像の圧縮データのハッシュ（JPEG: 最初の `SOS` から `EOI` まで。PNG: 全 `IDAT` の連結） |
 
 XMP は他のメタデータ（`dc:` 等）と同じパケットに共存してよい。
 
@@ -48,8 +48,8 @@ APP0 (JFIF)            … レンダリング画像のもの。あれば保持
 APP1 (EXIF)            … 既定では書かない（位置情報等の漏れ防止）
 APP1 (XMP)             … harie 記述子
 APP2 (ICC)             … レンダリング画像のもの。あれば保持
-APP11 (JUMBF, En=0xA001, Z=1..n)  … anoi.document
-APP11 (JUMBF, En=0xA002, Z=1..n)  … anoi.base
+APP11 (JUMBF, En=0xA001, Z=1..n)  … harie.document
+APP11 (JUMBF, En=0xA002, Z=1..n)  … harie.base
 DQT / SOF / DHT / SOS … EOI   … レンダリング画像の本体
 ```
 
@@ -63,13 +63,13 @@ DQT / SOF / DHT / SOS … EOI   … レンダリング画像の本体
 IHDR
 iCCP / sRGB / ...      … あれば保持
 iTXt "XML:com.adobe.xmp" … harie 記述子
-anOi                   … JUMBF superbox: anoi.document
-anOi                   … JUMBF superbox: anoi.base
+haRi                   … JUMBF superbox: harie.document
+haRi                   … JUMBF superbox: harie.base
 IDAT ...
 IEND
 ```
 
-- `anOi` は補助（ancillary）・私用（private）・コピー安全（safe-to-copy）チャンク。中身は JUMBF superbox 1 つ（分割不要）。
+- `haRi` は補助（ancillary）・私用（private）・コピー安全（safe-to-copy）チャンク。中身は JUMBF superbox 1 つ（分割不要）。
 - `IDAT` より前に置く（ストリーミング読み込みで早く見つけるため）。
 
 ## 6. 読み込み手順
@@ -77,7 +77,7 @@ IEND
 1. 形式判定（マジックナンバー）。JPEG / PNG 以外は非対応として通常画像扱い。
 2. XMP 記述子を探す。無ければ通常画像。
 3. JUMBF ペイロードを集める（JPEG は `En` ごとに `Z` 順で連結）。パケットが欠けている・`LBox` と合わない superbox はその superbox だけ捨てる（ImageMagick は複数セグメントの APP11 のうち先頭だけを残すことがある）。ラベルの揃わない状態は `PayloadMissing`。
-4. `anoi.document` と `anoi.base` が揃わなければ `PayloadMissing`。`payloadSha256` を検証し、不一致なら `PayloadCorrupted`。
+4. `harie.document` と `harie.base` が揃わなければ `PayloadMissing`。`payloadSha256` を検証し、不一致なら `PayloadCorrupted`。
 5. `renderSha256` を検証。不一致 → `RenderedImageModified`（外部で再エンコード・編集された）。
 6. `formatVersion` のメジャーが未知 → 読み取り専用で開くか、通常画像として開く。
 7. 注釈ドキュメントをスキーマ検証し、マイグレーション。
