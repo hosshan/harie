@@ -29,15 +29,20 @@ claude setup-token
 # 2. リポジトリの直下で依存を入れる
 pnpm install
 
-# 3. 評価を回す（トークンはシェルの環境変数で渡し、ファイルに書かない）
-export CLAUDE_CODE_OAUTH_TOKEN=sk-ant-oat...
+# 3. トークンを packages/ai/.env に書く（.env は .gitignore 済みでコミットされない）
+cp packages/ai/.env.example packages/ai/.env
+#    packages/ai/.env を開き、CLAUDE_CODE_OAUTH_TOKEN= の後ろに sk-ant-oat... を貼る
+
+# 4. 評価を回す
 pnpm --filter @harie/ai eval
 
 # モデルを変えるとき（既定は claude-opus-5-5）
 HARIE_AI_MODEL=claude-sonnet-5-5 pnpm --filter @harie/ai eval
 ```
 
-- `ANTHROPIC_API_KEY` が設定されていると、そちらが使われる。OAuth トークンで回すときは `unset ANTHROPIC_API_KEY` しておく。
+- `.env` の代わりに `export CLAUDE_CODE_OAUTH_TOKEN=sk-ant-oat...` でもよい。シェルで設定した値は `.env` より優先される。
+- `.env` は `packages/ai/.env` を読み、なければリポジトリ直下の `.env` を読む。
+- `ANTHROPIC_API_KEY` が設定されていると（シェルでも `.env` でも）、そちらが使われる。OAuth トークンで回すときは `unset ANTHROPIC_API_KEY` しておく。
 - 1 行目に `model: ... / 経由: Claude Code（CLAUDE_CODE_OAUTH_TOKEN）` と出れば、トークンで動いている。
 - 画面ごとに 2 回（PII 検出・提案）呼ぶ。4 画面で 8 回。
 
@@ -45,7 +50,8 @@ HARIE_AI_MODEL=claude-sonnet-5-5 pnpm --filter @harie/ai eval
 
 ```sh
 pnpm install
-ANTHROPIC_API_KEY=sk-ant-api... pnpm --filter @harie/ai eval
+# packages/ai/.env に ANTHROPIC_API_KEY=sk-ant-api... と書く（または、コマンドの前に付ける）
+pnpm --filter @harie/ai eval
 ```
 
 ### 出力の読み方（数値は例）
