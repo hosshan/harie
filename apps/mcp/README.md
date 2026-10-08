@@ -29,7 +29,7 @@ pnpm build   # apps/mcp/dist/index.mjs と dist/fonts/ ができる
 ### Claude Code
 
 ```sh
-claude mcp add harie -- node /path/to/anoi/apps/mcp/dist/index.mjs --root ~/Pictures/guides
+claude mcp add harie -- node /path/to/harie/apps/mcp/dist/index.mjs --root ~/Pictures/guides
 ```
 
 ### Claude Desktop（`claude_desktop_config.json`）
@@ -39,7 +39,7 @@ claude mcp add harie -- node /path/to/anoi/apps/mcp/dist/index.mjs --root ~/Pict
   "mcpServers": {
     "harie": {
       "command": "node",
-      "args": ["/path/to/anoi/apps/mcp/dist/index.mjs", "--root", "/Users/you/Pictures/guides"]
+      "args": ["/path/to/harie/apps/mcp/dist/index.mjs", "--root", "/Users/you/Pictures/guides"]
     }
   }
 }
