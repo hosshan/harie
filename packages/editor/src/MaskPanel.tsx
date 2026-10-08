@@ -1,7 +1,7 @@
 // 個人情報のマスクの設定と適用（FR-EDIT-05, FR-PII-02〜04）
 import type { PiiMethod } from "@harie/model";
 import { useState } from "react";
-import { MASK_METHODS, type MaskDraft } from "./masks";
+import { MASK_METHODS, type MaskDraft, PII_KIND_LABELS } from "./masks";
 
 export type MaskPanelProps = {
   drafts: readonly MaskDraft[];
@@ -37,7 +37,7 @@ export function MaskPanel({ drafts, onChange, onApply }: MaskPanelProps) {
           {drafts.map((d, i) => (
             <li key={d.id}>
               <label>
-                範囲 {i + 1} の隠し方
+                {`範囲 ${i + 1}${d.kind === undefined ? " " : `（${PII_KIND_LABELS[d.kind]}）`}の隠し方`}
                 <select
                   value={d.method}
                   onChange={(e) => update(d.id, { method: e.target.value as PiiMethod })}

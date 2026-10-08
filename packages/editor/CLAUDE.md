@@ -8,3 +8,4 @@
 - 座標は画像のピクセル座標で扱う。画面上の大きさ（ハンドル・当たり判定の幅）は `screenPx` で換算する。
 - 個人情報のマスク範囲（`masks.ts`）は注釈にしない。適用は呼び出し側の `onApplyMasks` が行い、記録は `piiApplied` で履歴中のドキュメントにも反映する（ADR-0007）。
 - ファイル API・`node:*` を使わない。
+- AI の提案（`status: "suggested"`）は点線の枠で区別して表示し、採用・却下は `suggestions.ts` の操作で行う（FR-AI-02）。保存時は未採用の提案を除く（`prepareForSave`）。

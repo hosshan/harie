@@ -1,7 +1,8 @@
-// Web エディタ（M3）。画像を開く → 注釈を編集する → 保存する
-import { Editor, useEditorState } from "@harie/editor";
+// Web エディタ。画像を開く → 注釈を編集する（AI の提案・個人情報の検出を含む） → 保存する
+import { addDetectedMasks, Editor, type MaskDraft, useEditorState } from "@harie/editor";
 import { type PiiMask, recordPiiApplied } from "@harie/model";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { AiPanel } from "./ai/AiPanel";
 import { boldFontUrl, browserRenderer, regularFontUrl } from "./browser-renderer";
 import { loadFile, mismatchMessage, type Opened } from "./load";
 import { buildSaveFile, deliver } from "./save";
@@ -164,6 +165,7 @@ function Workspace({
   const [status, setStatus] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [showWarning, setShowWarning] = useState(opened.warning !== undefined);
+  const [masks, setMasks] = useState<MaskDraft[]>([]);
   const savedDoc = useRef(opened.doc);
   const dirty =
     state.doc.annotations !== savedDoc.current.annotations ||
@@ -263,6 +265,16 @@ function Workspace({
         dispatch={dispatch}
         baseImageUrl={baseImageUrl}
         onApplyMasks={applyMasks}
+        masks={masks}
+        onMasksChange={setMasks}
+        aside={
+          <AiPanel
+            doc={state.doc}
+            dispatch={dispatch}
+            base={opened.base}
+            onPiiFound={(found) => setMasks((current) => addDetectedMasks(current, found))}
+          />
+        }
       />
     </main>
   );

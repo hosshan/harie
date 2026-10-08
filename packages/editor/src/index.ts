@@ -4,3 +4,4 @@ export * from "./geometry";
 export * from "./history";
 export { MaskPanel } from "./MaskPanel";
 export * from "./masks";
+export * from "./suggestions";

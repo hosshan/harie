@@ -214,6 +214,11 @@ export function Canvas({
         onPointerUp={onPointerUp}
       >
         <rect x={0} y={0} width={width} height={height} fill="transparent" />
+        {display.annotations
+          .filter((a) => a.status === "suggested")
+          .map((a) => (
+            <SuggestedOutline key={a.id} annotation={a} stroke={screenPx(1.5)} />
+          ))}
         {masks.map((m, i) => (
           <MaskOutline key={m.id} rect={m.rect} label={String(i + 1)} stroke={screenPx(1.5)} />
         ))}
@@ -276,6 +281,27 @@ function Selection({
         );
       })}
     </g>
+  );
+}
+
+/** AI の提案（未採用）であることを示す枠。保存画像には描かれない編集用の表示（FR-AI-02） */
+function SuggestedOutline({ annotation, stroke }: { annotation: Annotation; stroke: number }) {
+  const b = annotationBounds(annotation);
+  const pad = stroke * 3;
+  return (
+    <rect
+      className="harie-suggested"
+      data-suggested={annotation.id}
+      x={b.x - pad}
+      y={b.y - pad}
+      width={b.w + pad * 2}
+      height={b.h + pad * 2}
+      fill="rgba(110, 86, 207, 0.08)"
+      stroke="#6E56CF"
+      strokeWidth={stroke}
+      strokeDasharray={`${stroke * 2} ${stroke * 2}`}
+      pointerEvents="none"
+    />
   );
 }
 

@@ -1,9 +1,10 @@
-import { createDocument } from "@harie/model";
+import { createDocument, prepareForSave } from "@harie/model";
 import { describe, expect, it } from "vitest";
 import { hitTest } from "./Canvas";
 import { boxFrom, handlesFor, movePatch, resizePatch } from "./geometry";
 import { editorReducer, initialState, newAnnotationId } from "./history";
-import { maskRect, newMaskDraft, toPiiMasks } from "./masks";
+import { addDetectedMasks, maskRect, newMaskDraft, toPiiMasks } from "./masks";
+import { adoptSuggestionOps, pendingSuggestionIds, rejectSuggestionOps } from "./suggestions";
 
 const base = () =>
   createDocument({
@@ -160,5 +161,98 @@ describe("個人情報のマスク（FR-EDIT-05）", () => {
     expect(s.doc.pii.applied).toHaveLength(1);
     s = editorReducer(s, { type: "redo" });
     expect(s.doc.pii.applied).toHaveLength(1);
+  });
+});
+
+describe("AI の提案の採用・却下（FR-AI-02）", () => {
+  const box = { id: "ai-box-1", type: "rect", status: "suggested", x: 10, y: 10, w: 100, h: 40 };
+  const note = {
+    id: "ai-note-1",
+    type: "callout",
+    status: "suggested",
+    x: 200,
+    y: 10,
+    w: 200,
+    text: "保存します",
+  };
+  const withSuggestions = () => {
+    const s = editorReducer(initialState(base()), {
+      type: "apply",
+      ops: [
+        { op: "add", annotation: box },
+        { op: "add", annotation: note },
+      ],
+    });
+    expect(s.error).toBeNull();
+    return s;
+  };
+
+  it("採用するとフラグが外れて保存され、直した内容も残る", () => {
+    let s = withSuggestions();
+    s = editorReducer(s, {
+      type: "apply",
+      ops: [{ op: "update", id: "ai-note-1", patch: { text: "保存ボタンを押します" } }],
+    });
+    s = editorReducer(s, {
+      type: "apply",
+      ops: adoptSuggestionOps(s.doc, ["ai-box-1", "ai-note-1"]),
+    });
+    expect(pendingSuggestionIds(s.doc, ["ai-box-1", "ai-note-1"])).toEqual([]);
+    const saved = prepareForSave(s.doc);
+    expect(saved.annotations.map((a) => a.id)).toEqual(["ai-box-1", "ai-note-1"]);
+    expect(saved.annotations[1]).toMatchObject({ text: "保存ボタンを押します" });
+    expect(JSON.parse(JSON.stringify(saved)).annotations[0].status).toBeUndefined();
+  });
+
+  it("却下すると消え、採用済み・存在しないものには何もしない", () => {
+    let s = withSuggestions();
+    s = editorReducer(s, { type: "apply", ops: adoptSuggestionOps(s.doc, ["ai-box-1"]) });
+    s = editorReducer(s, {
+      type: "apply",
+      ops: rejectSuggestionOps(s.doc, ["ai-box-1", "ai-note-1", "nothing"]),
+    });
+    expect(s.doc.annotations.map((a) => a.id)).toEqual(["ai-box-1"]);
+    expect(adoptSuggestionOps(s.doc, ["ai-box-1"])).toEqual([]);
+  });
+
+  it("未採用の提案は保存しない", () => {
+    expect(prepareForSave(withSuggestions().doc).annotations).toEqual([]);
+  });
+});
+
+describe("検出した個人情報のマスク（FR-PII-01）", () => {
+  it("検出した種別を記録に残す。手で指定した範囲は other", () => {
+    const masks = toPiiMasks([
+      {
+        id: "mask-1",
+        rect: { x: 0, y: 0, w: 10, h: 10 },
+        method: "replace",
+        replacement: "user1@example.com",
+        kind: "email",
+      },
+      { id: "mask-2", rect: { x: 0, y: 0, w: 10, h: 10 }, method: "fill", replacement: "" },
+    ]);
+    expect(masks.map((m) => m.kind)).toEqual(["email", "other"]);
+  });
+
+  it("検出結果を既存の下書きに足し、ID を重ねない", () => {
+    const manual = newMaskDraft([], { x: 0, y: 0, w: 10, h: 10 });
+    const next = addDetectedMasks(
+      [manual],
+      [
+        {
+          rect: { x: 5, y: 5, w: 20, h: 8 },
+          method: "replace",
+          replacement: "佐藤 花子",
+          kind: "name",
+        },
+        { rect: { x: 50, y: 5, w: 20, h: 20 }, method: "fill", replacement: "", kind: "face" },
+      ],
+    );
+    expect(next.map((d) => [d.id, d.kind, d.method])).toEqual([
+      ["mask-1", undefined, "fill"],
+      ["mask-2", "name", "replace"],
+      ["mask-3", "face", "fill"],
+    ]);
   });
 });

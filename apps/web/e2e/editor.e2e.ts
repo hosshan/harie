@@ -250,3 +250,125 @@ test("NFR-PLAT-01: 一度開いたあとはオフラインでも起動し、画�
   const read = readHarie(new Uint8Array(readFileSync(await download.path())));
   expect(read.kind === "harie" && read.doc.annotations).toHaveLength(1);
 });
+
+/** Claude API の代わりに決まった応答を返す。送られたリクエストを記録する */
+async function fakeClaude(page: Page) {
+  const requests: { headers: Record<string, string>; body: Record<string, unknown> }[] = [];
+  await page.route("https://api.anthropic.com/v1/messages*", async (route) => {
+    const body = route.request().postDataJSON() as Record<string, unknown>;
+    requests.push({ headers: route.request().headers(), body });
+    const pii = JSON.stringify(body.output_config).includes("findings");
+    const output = pii
+      ? {
+          findings: [
+            {
+              kind: "email",
+              box: { x: 20, y: 20, width: 200, height: 20 },
+              text: "taro@corp.example",
+            },
+            { kind: "face", box: { x: 300, y: 20, width: 60, height: 60 }, text: "" },
+          ],
+        }
+      : {
+          suggestions: [
+            {
+              target: { x: 40, y: 40, width: 120, height: 40 },
+              elementIndex: null,
+              text: "ここを押します",
+            },
+            {
+              target: { x: 40, y: 200, width: 120, height: 40 },
+              elementIndex: null,
+              text: "次にここを確認します",
+            },
+          ],
+        };
+    await route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      headers: { "access-control-allow-origin": "*" },
+      body: JSON.stringify({
+        id: "msg_test",
+        type: "message",
+        role: "assistant",
+        model: "claude-opus-5-5",
+        content: [{ type: "text", text: JSON.stringify(output) }],
+        stop_reason: "end_turn",
+        stop_sequence: null,
+        usage: { input_tokens: 10, output_tokens: 10 },
+      }),
+    });
+  });
+  return requests;
+}
+
+test("FR-AI-01, 02, NFR-SEC-01, 04: AI の提案は同意してから送り、採用したものだけを保存する", async ({
+  page,
+}) => {
+  const requests = await fakeClaude(page);
+  await openFixture(page, "large-base.jpg");
+  const ai = page.getByRole("region", { name: "AI" });
+  await ai.getByLabel("API キー").fill("sk-ant-e2e-dummy");
+  await ai.getByRole("button", { name: "キーを登録" }).click();
+
+  // 同意するまでは送れない
+  const suggest = ai.getByRole("button", { name: "AI に提案してもらう" });
+  await expect(ai).toContainText("Anthropic の Claude API に送信します");
+  await expect(suggest).toBeDisabled();
+  await ai.getByLabel("この画像を送信してよい").check();
+  await ai.getByLabel("説明したいこと").fill("通知の設定方法");
+  await suggest.click();
+
+  const list = ai.locator(".app-ai-suggestions li");
+  await expect(list).toHaveCount(2);
+  await expect(page.locator("[data-suggested]")).toHaveCount(4);
+  expect(requests).toHaveLength(1);
+  const [request] = requests;
+  if (request === undefined) throw new Error("送られていない");
+  expect(request.headers["x-api-key"]).toBe("sk-ant-e2e-dummy");
+  const content = (request.body.messages as { content: Record<string, unknown>[] }[])[0]?.content;
+  expect(content?.[0]).toMatchObject({
+    type: "image",
+    source: { data: fixture("large-base.jpg").toString("base64") },
+  });
+  expect(JSON.stringify(content?.[1])).toContain("通知の設定方法");
+
+  await list.first().getByRole("button", { name: "採用" }).click();
+  await ai.getByRole("button", { name: "すべて却下" }).click();
+  await expect(list).toHaveCount(0);
+  await expect(page.locator("[data-suggested]")).toHaveCount(0);
+
+  const [download] = await Promise.all([
+    page.waitForEvent("download"),
+    page.getByRole("button", { name: "保存", exact: true }).click(),
+  ]);
+  const file = new Uint8Array(readFileSync(await download.path()));
+  const read = readHarie(file);
+  if (read.kind !== "harie") throw new Error("Harie ファイルではない");
+  expect(read.doc.annotations.map((a) => [a.type, a.status])).toEqual([
+    ["rect", undefined],
+    ["callout", undefined],
+  ]);
+  expect(read.doc.annotations[1]).toMatchObject({ text: "ここを押します" });
+  // API キーはファイルに入らない
+  expect(Buffer.from(file).includes(Buffer.from("sk-ant-e2e-dummy"))).toBe(false);
+});
+
+test("FR-PII-01, 02: 見つけた個人情報はマスクの下書きになり、文字は既定でダミーに置き換える", async ({
+  page,
+}) => {
+  await fakeClaude(page);
+  await page.addInitScript(() => localStorage.setItem("harie.anthropicApiKey", "sk-ant-e2e-dummy"));
+  await openFixture(page, "large-base.jpg");
+  const ai = page.getByRole("region", { name: "AI" });
+  await ai.getByLabel("この画像を送信してよい").check();
+  await ai.getByRole("button", { name: "個人情報を探す" }).click();
+  await expect(ai.getByRole("status")).toContainText("2 か所の候補");
+
+  const panel = page.getByRole("region", { name: "個人情報のマスク" });
+  await expect(panel.getByLabel("範囲 1（メール）の隠し方")).toHaveValue("replace");
+  await expect(panel.getByLabel("置き換える文字")).toHaveValue("user1@example.com");
+  await expect(panel.getByLabel("範囲 2（顔）の隠し方")).toHaveValue("fill");
+  await panel.getByRole("button", { name: "マスクを適用する" }).click();
+  await expect(page.getByRole("status").first()).toContainText("2 か所をマスクしました");
+});

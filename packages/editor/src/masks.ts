@@ -1,9 +1,26 @@
 // 個人情報のマスク（FR-EDIT-05）。範囲は注釈ではなく「適用前の下書き」としてエディタだけが持つ。
 // 適用するとベース画像そのものを書き換え（ADR-0007）、ドキュメントには種別・方法・範囲の記録だけが残る
-import type { PiiMask, PiiMethod, Point, Rect } from "@harie/model";
+import type { PiiKind, PiiMask, PiiMethod, Point, Rect } from "@harie/model";
 import { boxFrom } from "./geometry";
 
-export type MaskDraft = { id: string; rect: Rect; method: PiiMethod; replacement: string };
+export type MaskDraft = {
+  id: string;
+  rect: Rect;
+  method: PiiMethod;
+  replacement: string;
+  /** 個人情報の検出（FR-PII-01）から作った範囲の種別。手で指定した範囲は持たない */
+  kind?: PiiKind;
+};
+
+export const PII_KIND_LABELS: Record<PiiKind, string> = {
+  name: "氏名",
+  email: "メール",
+  phone: "電話番号",
+  address: "住所",
+  id: "番号",
+  face: "顔",
+  other: "その他",
+};
 
 export const MASK_METHODS: { method: PiiMethod; label: string }[] = [
   { method: "fill", label: "塗りつぶし" },
@@ -43,10 +60,27 @@ export function newMaskDraft(drafts: readonly MaskDraft[], rect: Rect): MaskDraf
   return { id: `mask-${n}`, rect, method: DEFAULT_MASK_METHOD, replacement: "" };
 }
 
-/** 適用の指示に変える。手で指定した範囲なので種別は other */
+/** 個人情報の検出結果（FR-PII-01）を下書きに加える。適用は利用者が確認してから行う */
+export function addDetectedMasks(
+  drafts: readonly MaskDraft[],
+  found: readonly { rect: Rect; method: PiiMethod; replacement: string; kind: PiiKind }[],
+): MaskDraft[] {
+  const next = [...drafts];
+  for (const f of found) {
+    next.push({
+      ...newMaskDraft(next, f.rect),
+      method: f.method,
+      replacement: f.replacement,
+      kind: f.kind,
+    });
+  }
+  return next;
+}
+
+/** 適用の指示に変える。手で指定した範囲の種別は other */
 export function toPiiMasks(drafts: readonly MaskDraft[]): PiiMask[] {
   return drafts.map((d) => ({
-    kind: "other",
+    kind: d.kind ?? "other",
     method: d.method,
     rect: d.rect,
     ...(d.method === "replace" && d.replacement !== "" ? { replacement: d.replacement } : {}),
