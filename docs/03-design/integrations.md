@@ -8,16 +8,23 @@
 
 ### 1.1 構成（Manifest V3, WXT）
 
-| 部品 | 役割 |
-|---|---|
-| アクションボタン / ショートカット | キャプチャ開始 |
-| content script（クリック時に注入） | 範囲・要素選択のオーバーレイ、DOM スナップショット取得、（Next）DOM テキストのダミー置換 |
-| service worker | `chrome.tabs.captureVisibleTab` で撮影、エディタページを開く |
-| エディタページ（拡張内 HTML） | `packages/editor` をそのまま載せる。保存は `chrome.downloads` |
+| 部品 | 役割 | 実装 |
+|---|---|---|
+| ポップアップ / ショートカット（Alt+Shift+S） | キャプチャ開始（見えている範囲・範囲を選ぶ・要素を選ぶ） | `entrypoints/popup/` |
+| 選択オーバーレイ（押したときに注入） | 範囲・要素選択。選び終えたらオーバーレイを消してから範囲を送る。（Next）DOM テキストのダミー置換 | `entrypoints/select.ts` |
+| DOM スナップショット（押したときに注入） | 可視範囲の主要要素を取る（1.3） | `lib/collect.ts` |
+| service worker | `chrome.tabs.captureVisibleTab` で撮影し、範囲選択なら切り抜く。キャプチャを IndexedDB に置き、エディタページを開く | `entrypoints/background.ts`, `lib/capture.ts` |
+| エディタページ（拡張内 HTML） | Web と同じ編集画面（`@harie/web` の `Workspace`）を載せる。保存は `chrome.downloads` | `entrypoints/editor/` |
+
+- キャプチャ画像は数 MB になり `chrome.storage.session` の上限に近いため、拡張の IndexedDB に Blob のまま置いてエディタページに渡す。1 日より古いものは次のキャプチャで消す。
+- 拡張ページの CSP に `'wasm-unsafe-eval'` を足す（描画エンジンが WASM のため）。それ以外は既定のまま。
+- 拡張ページではファイルの上書きができないので、保存は毎回新しいファイルになる（同名なら連番）。
 
 ### 1.2 権限
 
-- 既定: `activeTab`, `scripting`, `downloads`, `storage`。ユーザーが拡張を押したタブにだけ一時的にアクセスする（NFR-SEC-03）。
+- `activeTab`, `scripting`, `downloads` のみ。ユーザーがボタン・ショートカットを押したタブにだけ一時的にアクセスする（NFR-SEC-03）。常時のサイト権限（`host_permissions`）は取らない。API キーは拡張ページの localStorage に置くので `storage` も要らない。
+- 各権限の説明（ストア申請用）は `apps/extension/STORE.md`。
+- E2E 用のビルド（`HARIE_E2E=1`）にだけ `<all_urls>` を付ける。テストではツールバーのボタンを押せず、activeTab が付かないため。配布用のビルドに含まれないことを E2E で確かめている。
 - 全体キャプチャ（FR-CAP-04, Next）はスクロール撮影の合成で実装する。`debugger` 権限（CDP の `captureBeyondViewport`）は警告バーが出るため、使うならオプトインにする。
 
 ### 1.3 DOM スナップショット
@@ -39,7 +46,9 @@ type DomSnapshot = {
 ```
 
 - 取得対象は、インタラクティブ要素・見出し・ラベル・表のセルなど。数百要素程度に間引く。
-- スナップショットはエディタのメモリ上でのみ使い、既定ではファイルに保存しない。
+- スナップショットはエディタのメモリ上でのみ使い、既定ではファイルに保存しない。AI を使うときだけ、画像と一緒に要素の一覧（役割・名前・文字・位置）を送る。送信前の案内にもそう書く（NFR-SEC-01）。
+- パスワード欄の値は取らない。入力欄の型・`autocomplete`・名前から個人情報の手がかり（`piiHint`）を付け、個人情報の検出で LLM の結果と合わせる。
+- 座標は撮った画像の幅 ÷ ビューポートの幅を倍率にして画像ピクセルに直す。範囲選択で切り抜いたときは切り抜きの中の座標にし、半分以上が外に出る要素は捨てる（`lib/snapshot.ts`）。
 
 ### 1.4 DOM 置換キャプチャ（FR-PII-05, Next）
 

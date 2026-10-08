@@ -1,6 +1,6 @@
 // AI の補足提案（FR-AI-01, 02）と個人情報の検出（FR-PII-01）。
 // 画像を外部に送るのはボタンを押したときだけで、送る前に送信先を表示し、同意を求める（NFR-SEC-01）
-import type { PiiCandidate, Suggestion } from "@harie/ai";
+import type { DomSnapshot, PiiCandidate, Suggestion } from "@harie/ai";
 import {
   adoptSuggestionOps,
   type EditorAction,
@@ -19,6 +19,8 @@ export type AiPanelProps = {
   base: Base;
   /** 検出した個人情報の候補。マスクの下書きにする（加工は利用者が確認してから） */
   onPiiFound: (candidates: PiiCandidate[]) => void;
+  /** キャプチャ時の DOM 情報。あれば枠を要素に合わせ（FR-AI-03）、DOM のテキストからも個人情報を探す */
+  dom?: DomSnapshot;
 };
 
 const ids = (s: Suggestion) => s.annotations.map((a) => a.id);
@@ -28,7 +30,7 @@ function message(e: unknown): string {
   return e instanceof Error && e.name === "AiError" ? e.message : "AI の呼び出しに失敗しました";
 }
 
-export function AiPanel({ doc, dispatch, base, onPiiFound }: AiPanelProps) {
+export function AiPanel({ doc, dispatch, base, onPiiFound, dom }: AiPanelProps) {
   const [apiKey, setApiKey] = useState<string | null>(loadApiKey);
   const [draftKey, setDraftKey] = useState("");
   const [consent, setConsent] = useState(false);
@@ -83,7 +85,7 @@ export function AiPanel({ doc, dispatch, base, onPiiFound }: AiPanelProps) {
     try {
       const { runDetectPii, runSuggest } = await import("./run");
       if (kind === "suggest") {
-        const found = await runSuggest(apiKey, base, doc, intent);
+        const found = await runSuggest(apiKey, base, doc, intent, dom);
         // 提案はまとめて 1 回の操作として追加する（元に戻すで一度に消せる）
         dispatch({
           type: "apply",
@@ -96,7 +98,7 @@ export function AiPanel({ doc, dispatch, base, onPiiFound }: AiPanelProps) {
             : `${found.length} 件の提案を追加しました。採用したものだけが保存されます`,
         );
       } else {
-        const found = await runDetectPii(apiKey, base, doc);
+        const found = await runDetectPii(apiKey, base, doc, dom);
         onPiiFound(found);
         setStatus(
           found.length === 0
@@ -125,8 +127,7 @@ export function AiPanel({ doc, dispatch, base, onPiiFound }: AiPanelProps) {
         />
       </label>
       <p className="app-ai-notice">
-        ボタンを押すと、この画像を Anthropic の Claude API
-        に送信します。個人情報が写っている場合は、先に隠してから使ってください。
+        {`ボタンを押すと、この画像${dom === undefined ? "" : "と、キャプチャしたページの文字・要素の位置"}を Anthropic の Claude API に送信します。個人情報が写っている場合は、先に隠してから使ってください。`}
       </p>
       <label className="app-ai-consent">
         <input type="checkbox" checked={consent} onChange={(e) => setConsent(e.target.checked)} />
