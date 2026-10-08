@@ -8,8 +8,13 @@ export type Opened = {
   base: { bytes: Uint8Array; mediaType: BaseMediaType };
   /** 元から Harie ファイルだったか（上書き保存してよいかの判断に使う） */
   wasHarie: boolean;
-  /** 不整合だったが、埋め込みの注釈とベース画像から開けた場合の理由 */
+  /** 不整合だった理由。注釈を復元できたときも、画像だけを開いたときも入る */
   warning?: MismatchReason;
+  /**
+   * 画像が外部で編集されていた（RenderedImageModified）ときの、もう一つの開き方:
+   * 今の画像を新しいベース画像にする（保存されていた注釈は使わない）。architecture 3.2
+   */
+  alternative?: Opened;
 };
 
 export type LoadResult = { ok: true; opened: Opened } | { ok: false; message: string };
@@ -18,7 +23,7 @@ const MISMATCH_MESSAGES: Record<MismatchReason, string> = {
   PayloadMissing: "注釈データの一部が失われています。画像だけを開きました。",
   PayloadCorrupted: "注釈データが壊れています。画像だけを開きました。",
   RenderedImageModified:
-    "画像が別のアプリで編集されています。保存されていた注釈と元の画像から開き直しました（別のアプリでの変更は反映されていません）。",
+    "画像が別のアプリで編集されています。保存されていた注釈と元の画像で開きました（別のアプリでの変更は反映されていません）。",
   UnsupportedVersion: "新しいバージョンの Harie で保存されたファイルです。画像だけを開きました。",
   InvalidDocument: "注釈データを読めません。画像だけを開きました。",
 };
@@ -34,6 +39,7 @@ export function loadFile(fileName: string, bytes: Uint8Array, now = new Date()):
       return { ok: true, opened: { fileName, doc: read.doc, base: read.base, wasHarie: true } };
     case "harie-mismatch":
       if (read.doc !== undefined && read.base !== undefined) {
+        const current = plain(fileName, bytes, read.format, now);
         return {
           ok: true,
           opened: {
@@ -42,6 +48,8 @@ export function loadFile(fileName: string, bytes: Uint8Array, now = new Date()):
             base: read.base,
             wasHarie: true,
             warning: read.reason,
+            // 今の画像を下地にしても Harie ファイルなので、開いたファイルへの上書きでよい
+            ...(current.ok ? { alternative: { ...current.opened, wasHarie: true } } : {}),
           },
         };
       }

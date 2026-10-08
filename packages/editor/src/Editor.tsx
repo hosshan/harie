@@ -1,14 +1,16 @@
 // エディタ全体（ツールバー・編集面・選択中の注釈の設定）
-import type { Annotation, HarieDocument } from "@harie/model";
-import { type Dispatch, useEffect, useReducer, useState } from "react";
+import type { Annotation, HarieDocument, PiiMask } from "@harie/model";
+import { type Dispatch, useEffect, useMemo, useReducer, useState } from "react";
 import { Canvas, type Tool } from "./Canvas";
 import { type EditorAction, type EditorState, editorReducer, initialState } from "./history";
+import { MaskPanel } from "./MaskPanel";
+import { type MaskDraft, newMaskDraft, toPiiMasks } from "./masks";
 
 export function useEditorState(doc: HarieDocument) {
   return useReducer(editorReducer, doc, initialState);
 }
 
-const TOOLS: { tool: Tool; label: string; key: string }[] = [
+const TOOLS: readonly { tool: Tool; label: string; key: string }[] = [
   { tool: "select", label: "選択", key: "v" },
   { tool: "rect", label: "四角", key: "r" },
   { tool: "ellipse", label: "楕円", key: "o" },
@@ -17,6 +19,7 @@ const TOOLS: { tool: Tool; label: string; key: string }[] = [
   { tool: "callout", label: "吹き出し", key: "c" },
   { tool: "badge", label: "番号", key: "n" },
 ];
+const MASK_TOOL = { tool: "mask", label: "個人情報を隠す", key: "m" } as const;
 
 const COLORS = [
   { label: "赤", value: "#E5484D" },
@@ -37,10 +40,18 @@ export type EditorProps = {
   state: EditorState;
   dispatch: Dispatch<EditorAction>;
   baseImageUrl: string;
+  /**
+   * 個人情報のマスクをベース画像に適用する（ADR-0007）。描画エンジンを持つ呼び出し側が
+   * `applyMasks` で新しいベース画像を作り、`piiApplied` を dispatch する。省略するとマスクの道具を出さない
+   */
+  onApplyMasks?: (masks: PiiMask[]) => Promise<void>;
 };
 
-export function Editor({ state, dispatch, baseImageUrl }: EditorProps) {
+export function Editor({ state, dispatch, baseImageUrl, onApplyMasks }: EditorProps) {
   const [tool, setTool] = useState<Tool>("select");
+  const [masks, setMasks] = useState<MaskDraft[]>([]);
+  const canMask = onApplyMasks !== undefined;
+  const tools = useMemo(() => (canMask ? [...TOOLS, MASK_TOOL] : TOOLS), [canMask]);
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -59,20 +70,20 @@ export function Editor({ state, dispatch, baseImageUrl }: EditorProps) {
         setTool("select");
         dispatch({ type: "select", id: null });
       } else if (!mod && !e.altKey) {
-        const t = TOOLS.find((x) => x.key === e.key);
+        const t = tools.find((x) => x.key === e.key);
         if (t !== undefined) setTool(t.tool);
       }
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [dispatch, state.selectedId]);
+  }, [dispatch, state.selectedId, tools]);
 
   const selected = state.doc.annotations.find((a) => a.id === state.selectedId);
 
   return (
     <div className="harie-editor">
       <div className="harie-toolbar" role="toolbar" aria-label="ツール">
-        {TOOLS.map((t) => (
+        {tools.map((t) => (
           <button
             key={t.tool}
             type="button"
@@ -106,8 +117,21 @@ export function Editor({ state, dispatch, baseImageUrl }: EditorProps) {
           baseImageUrl={baseImageUrl}
           tool={tool}
           onToolDone={() => setTool("select")}
+          masks={masks}
+          onMaskDrawn={(rect) => setMasks((m) => [...m, newMaskDraft(m, rect)])}
         />
         <aside className="harie-inspector" aria-label="選択中の注釈">
+          {onApplyMasks !== undefined && (tool === "mask" || masks.length > 0) && (
+            <MaskPanel
+              drafts={masks}
+              onChange={setMasks}
+              onApply={async () => {
+                await onApplyMasks(toPiiMasks(masks));
+                setMasks([]);
+                setTool("select");
+              }}
+            />
+          )}
           {selected === undefined ? (
             <p className="harie-muted">注釈を選ぶと、ここで文字や色を変えられます。</p>
           ) : (

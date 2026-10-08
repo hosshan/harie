@@ -18,7 +18,12 @@ export type EditorAction =
   | { type: "select"; id: string | null }
   | { type: "reset"; doc: HarieDocument }
   /** 保存した。以後の保存でリビジョンが戻らないよう、履歴中のドキュメントにも新しいリビジョンを反映する */
-  | { type: "saved"; revision: number; meta: HarieDocument["meta"] };
+  | { type: "saved"; revision: number; meta: HarieDocument["meta"] }
+  /**
+   * PII 加工をベース画像に適用した（ADR-0007）。加工は元に戻せないので、
+   * 元に戻す／やり直すで記録が消えないよう、履歴中のドキュメントにも同じ記録を反映する
+   */
+  | { type: "piiApplied"; pii: HarieDocument["pii"] };
 
 const HISTORY_LIMIT = 100;
 
@@ -80,6 +85,15 @@ export function editorReducer(state: EditorState, action: EditorAction): EditorS
         revision: action.revision,
         meta: action.meta,
       });
+      return {
+        ...state,
+        doc: mark(state.doc),
+        past: state.past.map(mark),
+        future: state.future.map(mark),
+      };
+    }
+    case "piiApplied": {
+      const mark = (d: HarieDocument): HarieDocument => ({ ...d, pii: action.pii });
       return {
         ...state,
         doc: mark(state.doc),

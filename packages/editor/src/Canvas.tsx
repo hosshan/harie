@@ -12,13 +12,16 @@ import {
   resizePatch,
 } from "./geometry";
 import { type EditorAction, type EditorState, newAnnotationId } from "./history";
+import { type MaskDraft, maskRect } from "./masks";
 
-export type Tool = "select" | "rect" | "ellipse" | "arrow" | "text" | "callout" | "badge";
+export type Tool = "select" | "rect" | "ellipse" | "arrow" | "text" | "callout" | "badge" | "mask";
 
 type Drag =
   | { kind: "move"; id: string; start: Point; current: Point }
   | { kind: "resize"; id: string; handle: Handle; current: Point }
-  | { kind: "create"; tool: "rect" | "ellipse" | "arrow"; start: Point; current: Point };
+  | { kind: "create"; tool: "rect" | "ellipse" | "arrow"; start: Point; current: Point }
+  /** 個人情報のマスク範囲。注釈ではないので履歴に積まず、onMaskDrawn で渡す */
+  | { kind: "mask"; start: Point; current: Point };
 
 /** クリックだけで作ったときの大きさ（ドラッグが短すぎる場合） */
 const DEFAULT_BOX = { w: 160, h: 80 };
@@ -41,6 +44,7 @@ export function hitTest(doc: HarieDocument, p: Point, tolerance: number): Annota
 }
 
 function dragOps(doc: HarieDocument, drag: Drag): unknown[] {
+  if (drag.kind === "mask") return [];
   if (drag.kind === "create") {
     const id = newAnnotationId(doc, drag.tool);
     const short =
@@ -75,9 +79,20 @@ export type CanvasProps = {
   baseImageUrl: string;
   tool: Tool;
   onToolDone: () => void;
+  /** 適用前のマスク範囲（下書き）。上の SVG に描く */
+  masks?: readonly MaskDraft[];
+  onMaskDrawn?: (rect: { x: number; y: number; w: number; h: number }) => void;
 };
 
-export function Canvas({ state, dispatch, baseImageUrl, tool, onToolDone }: CanvasProps) {
+export function Canvas({
+  state,
+  dispatch,
+  baseImageUrl,
+  tool,
+  onToolDone,
+  masks = [],
+  onMaskDrawn,
+}: CanvasProps) {
   const overlay = useRef<SVGSVGElement>(null);
   const [drag, setDrag] = useState<Drag | null>(null);
   const { doc } = state;
@@ -85,7 +100,7 @@ export function Canvas({ state, dispatch, baseImageUrl, tool, onToolDone }: Canv
 
   // ドラッグ中は履歴に積まずに途中経過だけを描く
   const display = useMemo(() => {
-    if (drag === null) return doc;
+    if (drag === null || drag.kind === "mask") return doc;
     const r = applyOps(doc, dragOps(doc, drag));
     return r.ok ? r.value : doc;
   }, [doc, drag]);
@@ -113,6 +128,10 @@ export function Canvas({ state, dispatch, baseImageUrl, tool, onToolDone }: Canv
     if (e.button !== 0) return;
     e.currentTarget.setPointerCapture(e.pointerId);
     const p = toPoint(e);
+    if (tool === "mask") {
+      setDrag({ kind: "mask", start: p, current: p });
+      return;
+    }
     if (tool === "rect" || tool === "ellipse" || tool === "arrow") {
       setDrag({ kind: "create", tool, start: p, current: p });
       return;
@@ -154,6 +173,11 @@ export function Canvas({ state, dispatch, baseImageUrl, tool, onToolDone }: Canv
     if (drag === null) return;
     const final = { ...drag, current: toPoint(e) };
     setDrag(null);
+    if (final.kind === "mask") {
+      const rect = maskRect(final.start, final.current, doc.canvas);
+      if (rect !== null) onMaskDrawn?.(rect);
+      return;
+    }
     if (
       final.kind === "move" &&
       final.current.x === final.start.x &&
@@ -190,6 +214,16 @@ export function Canvas({ state, dispatch, baseImageUrl, tool, onToolDone }: Canv
         onPointerUp={onPointerUp}
       >
         <rect x={0} y={0} width={width} height={height} fill="transparent" />
+        {masks.map((m, i) => (
+          <MaskOutline key={m.id} rect={m.rect} label={String(i + 1)} stroke={screenPx(1.5)} />
+        ))}
+        {drag?.kind === "mask" && (
+          <MaskOutline
+            rect={maskRect(drag.start, drag.current, doc.canvas) ?? { x: 0, y: 0, w: 0, h: 0 }}
+            label=""
+            stroke={screenPx(1.5)}
+          />
+        )}
         {selected !== undefined && (
           <Selection annotation={selected} handleSize={handleSize} stroke={screenPx(1.5)} />
         )}
@@ -241,6 +275,43 @@ function Selection({
           />
         );
       })}
+    </g>
+  );
+}
+
+/** 適用前のマスク範囲。保存画像には描かれない編集用の表示 */
+function MaskOutline({
+  rect,
+  label,
+  stroke,
+}: {
+  rect: { x: number; y: number; w: number; h: number };
+  label: string;
+  stroke: number;
+}) {
+  return (
+    <g className="harie-mask-draft" pointerEvents="none">
+      <rect
+        x={rect.x}
+        y={rect.y}
+        width={rect.w}
+        height={rect.h}
+        fill="rgba(229, 72, 77, 0.25)"
+        stroke="#E5484D"
+        strokeWidth={stroke}
+        strokeDasharray={`${stroke * 4} ${stroke * 3}`}
+      />
+      {label !== "" && (
+        <text
+          x={rect.x + stroke * 4}
+          y={rect.y + stroke * 12}
+          fontSize={stroke * 10}
+          fill="#E5484D"
+          fontWeight={700}
+        >
+          {label}
+        </text>
+      )}
     </g>
   );
 }

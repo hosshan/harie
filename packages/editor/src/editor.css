@@ -116,3 +116,30 @@
     grid-template-columns: 1fr;
   }
 }
+.harie-mask-panel {
+  padding-bottom: 12px;
+  margin-bottom: 12px;
+  border-bottom: 1px solid #d0d5dd;
+}
+.harie-mask-panel h2 {
+  font-size: 14px;
+  margin: 0;
+}
+.harie-mask-list {
+  margin: 0;
+  padding-left: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.harie-mask-list li {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.harie-danger {
+  background: #e5484d;
+  color: #fff;
+  border-color: #e5484d;
+}
