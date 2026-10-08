@@ -8,6 +8,7 @@ on:
 jobs:
   check:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
@@ -21,6 +22,8 @@ jobs:
 
   e2e:
     runs-on: ubuntu-latest
+    # ブラウザの依存パッケージ（apt）の取得が止まることがあるため、既定の 6 時間待たずに打ち切る
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
