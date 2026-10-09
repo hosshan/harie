@@ -1,7 +1,15 @@
 // エディタ全体（編集面と、その上に浮かぶ道具のパレット・選択中の注釈の設定）
 import type { Annotation, HarieDocument, PiiMask } from "@harie/model";
 import { THEMES } from "@harie/render";
-import { type Dispatch, type ReactNode, useEffect, useMemo, useReducer, useState } from "react";
+import {
+  type Dispatch,
+  type ReactNode,
+  useCallback,
+  useEffect,
+  useMemo,
+  useReducer,
+  useState,
+} from "react";
 import { Canvas, type Tool } from "./Canvas";
 import { type EditorAction, type EditorState, editorReducer, initialState } from "./history";
 import { MaskPanel } from "./MaskPanel";
@@ -89,6 +97,20 @@ export function Editor({
   };
   const canMask = onApplyMasks !== undefined;
   const tools = useMemo(() => (canMask ? [...TOOLS, MASK_TOOL] : TOOLS), [canMask]);
+  // マスクの範囲を選んでいる間は注釈の選択を外す。右の欄の「削除」や Delete キーで、
+  // マスクの範囲ではなく前に選んでいた注釈が消えてしまうのを防ぐ
+  const selectTool = useCallback(
+    (next: Tool) => {
+      setTool(next);
+      if (next === "mask") dispatch({ type: "select", id: null });
+    },
+    [dispatch],
+  );
+  /** マスクの範囲選びをやめる。適用前の範囲はすべて捨てる */
+  const cancelMasks = () => {
+    setMasks([]);
+    setTool("select");
+  };
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -108,12 +130,12 @@ export function Editor({
         dispatch({ type: "select", id: null });
       } else if (!mod && !e.altKey) {
         const t = tools.find((x) => x.key === e.key);
-        if (t !== undefined) setTool(t.tool);
+        if (t !== undefined) selectTool(t.tool);
       }
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [dispatch, state.selectedId, tools]);
+  }, [dispatch, state.selectedId, tools, selectTool]);
 
   const selected = state.doc.annotations.find((a) => a.id === state.selectedId);
 
@@ -134,7 +156,7 @@ export function Editor({
           <Palette
             tools={tools}
             tool={tool}
-            onTool={setTool}
+            onTool={selectTool}
             canUndo={state.past.length > 0}
             canRedo={state.future.length > 0}
             onUndo={() => dispatch({ type: "undo" })}
@@ -150,6 +172,7 @@ export function Editor({
             <MaskPanel
               drafts={masks}
               onChange={setMasks}
+              onCancel={cancelMasks}
               onApply={async () => {
                 await onApplyMasks(toPiiMasks(masks));
                 setMasks([]);
@@ -158,7 +181,9 @@ export function Editor({
             />
           )}
           {selected === undefined ? (
-            <p className="harie-muted">注釈を選ぶと、ここで文字や色を変えられます。</p>
+            tool !== "mask" && (
+              <p className="harie-muted">注釈を選ぶと、ここで文字や色を変えられます。</p>
+            )
           ) : (
             <Inspector
               key={selected.id}
@@ -271,7 +296,7 @@ function Inspector({
         type="button"
         onClick={() => dispatch({ type: "apply", ops: [{ op: "remove", id: annotation.id }] })}
       >
-        削除
+        この注釈を削除
       </button>
     </div>
   );

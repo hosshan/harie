@@ -6,16 +6,21 @@ import { MASK_METHODS, type MaskDraft, PII_KIND_LABELS } from "./masks";
 export type MaskPanelProps = {
   drafts: readonly MaskDraft[];
   onChange: (drafts: MaskDraft[]) => void;
+  /** 適用せずにやめる（範囲はすべて捨てる） */
+  onCancel: () => void;
   onApply: () => Promise<void>;
 };
 
-export function MaskPanel({ drafts, onChange, onApply }: MaskPanelProps) {
+export function MaskPanel({ drafts, onChange, onCancel, onApply }: MaskPanelProps) {
   const [busy, setBusy] = useState(false);
+  // 適用は元に戻せないので、押し間違いに備えてもう一度確かめる
+  const [confirming, setConfirming] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const update = (id: string, patch: Partial<MaskDraft>) =>
     onChange(drafts.map((d) => (d.id === id ? { ...d, ...patch } : d)));
 
   const apply = async () => {
+    setConfirming(false);
     setBusy(true);
     setError(null);
     try {
@@ -60,7 +65,7 @@ export function MaskPanel({ drafts, onChange, onApply }: MaskPanelProps) {
                 </label>
               )}
               <button type="button" onClick={() => onChange(drafts.filter((x) => x.id !== d.id))}>
-                範囲 {i + 1} を外す
+                範囲 {i + 1} を削除
               </button>
             </li>
           ))}
@@ -69,14 +74,35 @@ export function MaskPanel({ drafts, onChange, onApply }: MaskPanelProps) {
       <p className="harie-muted">
         適用すると画像そのものを書き換えます。元に戻すことはできず、保存したファイルにも元の内容は残りません。
       </p>
-      <button
-        type="button"
-        className="harie-danger"
-        disabled={drafts.length === 0 || busy}
-        onClick={apply}
-      >
-        {busy ? "適用しています…" : "マスクを適用する"}
-      </button>
+      {confirming ? (
+        <div role="alertdialog" aria-label="マスクの適用の確認" className="harie-mask-confirm">
+          <p>
+            <strong>{drafts.length} か所を画像に焼き込みます。元に戻せません。</strong>
+          </p>
+          <p className="harie-mask-actions">
+            <button type="button" onClick={() => setConfirming(false)}>
+              戻る
+            </button>
+            <button type="button" className="harie-danger" onClick={apply}>
+              適用する
+            </button>
+          </p>
+        </div>
+      ) : (
+        <p className="harie-mask-actions">
+          <button type="button" disabled={busy} onClick={onCancel}>
+            キャンセル
+          </button>
+          <button
+            type="button"
+            className="harie-danger"
+            disabled={drafts.length === 0 || busy}
+            onClick={() => setConfirming(true)}
+          >
+            {busy ? "適用しています…" : "マスクを適用する"}
+          </button>
+        </p>
+      )}
       {error !== null && <p role="alert">{error}</p>}
     </section>
   );

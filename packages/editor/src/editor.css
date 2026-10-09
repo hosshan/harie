@@ -239,6 +239,14 @@
   flex-direction: column;
   gap: 4px;
 }
+.harie-mask-actions {
+  display: flex;
+  gap: 8px;
+  margin: 0;
+}
+.harie-mask-confirm p {
+  margin: 0 0 8px;
+}
 .harie-danger {
   background: #e5484d;
   color: #fff;
