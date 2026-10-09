@@ -7,3 +7,7 @@ Annotation Image Application: Web サービス向けのガイド作成などで�
 - AI エージェント向け: [CLAUDE.md](CLAUDE.md)
 
 現在は M0（基盤整備）。`pnpm install && pnpm check` で検証できる。実装計画は [docs/04-plan/implementation-plan.md](docs/04-plan/implementation-plan.md) を参照。
+
+## ライセンス
+
+MIT（[LICENSE](LICENSE)）。同梱するフォント（Noto Sans JP）は SIL Open Font License 1.1。

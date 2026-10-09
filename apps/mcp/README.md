@@ -58,3 +58,7 @@ claude mcp add harie -- node /path/to/harie/apps/mcp/dist/index.mjs --root ~/Pic
 - `src/tools.ts`: ツールの本体。`src/server.ts`: MCP への登録と入力の検証。`src/paths.ts`: root 外へのアクセス防止。
 - テスト（`pnpm test`）は SDK の InMemoryTransport でクライアントとつなぎ、ツールを実際に呼ぶ。
 - 配布物には Noto Sans JP の Regular / Bold だけを同梱する（`scripts/copy-assets.mjs`、ライセンスは `dist/fonts/OFL.txt`）。
+
+## ライセンス
+
+MIT。同梱するフォント（Noto Sans JP の Regular / Bold）は SIL Open Font License 1.1（`dist/fonts/OFL.txt`）。

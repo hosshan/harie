@@ -22,5 +22,5 @@ pnpm --filter @harie/mcp publish
 npm view @harie/mcp version   # 公開した版が出る。あとは README のとおり Claude Code に登録して /mcp で確かめる
 ```
 
-- 中身は `dist/`（1 ファイルにまとめたサーバーと Noto Sans JP の Regular / Bold、フォントのライセンス）と README だけ。`pnpm --filter @harie/mcp pack` で事前に確かめられる。
+- 中身は `dist/`（1 ファイルにまとめたサーバーと Noto Sans JP の Regular / Bold、フォントのライセンス）と README・LICENSE（MIT。リポジトリ直下と同じ内容）だけ。`pnpm --filter @harie/mcp pack` で事前に確かめられる。
 - `@harie/model`・`format`・`render` はビルド時に取り込むので、公開しなくてよい。
