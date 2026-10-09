@@ -12,6 +12,7 @@
 | 設計 | [注釈ドキュメントモデル](03-design/document-model.md) | 注釈 JSON の構造と操作 |
 | 設計 | [連携設計](03-design/integrations.md) | Chrome 拡張、MCP サーバー |
 | 計画 | [実装計画](04-plan/implementation-plan.md) | マイルストーン、リスク |
+| 開発 | [ローカルでの起動と確認](05-development/local-setup.md) | Web・拡張・MCP・CLI・AI 評価を手元で動かす手順 |
 | 開発 | [開発ルール](05-development/development-rules.md) | ブランチ、コミット、テスト、規約 |
 | 開発 | [AI 開発ハーネス](05-development/ai-harness.md) | CLAUDE.md・ADR・フック等の仕組み |
 | 判断 | [ADR 一覧](adr/README.md) | 設計判断の履歴 |

@@ -10,6 +10,7 @@ Harie（はりえ）: SaaS の利用ガイド用スクリーンショットに�
 - 判断の履歴: [docs/adr/README.md](docs/adr/README.md)
 - 実装計画: [docs/04-plan/implementation-plan.md](docs/04-plan/implementation-plan.md)
 - 開発ルール: [docs/05-development/development-rules.md](docs/05-development/development-rules.md)
+- ローカルでの起動と確認: [docs/05-development/local-setup.md](docs/05-development/local-setup.md)
 
 触る領域に関係する ADR と設計書は、作業前に必ず読むこと。
 
