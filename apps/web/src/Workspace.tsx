@@ -8,11 +8,12 @@ import {
   useObjectUrl,
 } from "@harie/editor";
 import { type PiiMask, recordPiiApplied } from "@harie/model";
-import { type ReactNode, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { AiPanel } from "./ai/AiPanel";
 import { browserRenderer } from "./browser-renderer";
-import { Header } from "./Header";
+import { Header, HeaderButton } from "./Header";
 import { mismatchMessage, type Opened } from "./load";
+import { Modal } from "./Modal";
 import { buildSaveFile, type Saved } from "./save";
 
 export type WorkspaceProps = {
@@ -28,17 +29,25 @@ export type WorkspaceProps = {
   onReopen: (opened: Opened) => void;
   /** キャプチャ時の DOM 情報（拡張から開いたとき）。AI の提案・個人情報の検出に使い、保存しない */
   dom?: DomSnapshot;
-  /** ヘッダーで「保存」の左に並べるメニュー（Web の「別の画像を開く」など） */
-  menu?: ReactNode;
+  /** 別の画像を選んで開く（Web）。渡すとヘッダーに「画像を開く」を出し、押すと確認してから呼ぶ */
+  onOpenImage?: () => void;
 };
 
 /** 開いた 1 枚の画像の編集画面（保存・マスク・AI を含む）。Web と Chrome 拡張で共通 */
-export function Workspace({ opened, deliver, onChange, onReopen, dom, menu }: WorkspaceProps) {
+export function Workspace({
+  opened,
+  deliver,
+  onChange,
+  onReopen,
+  dom,
+  onOpenImage,
+}: WorkspaceProps) {
   const [state, dispatch] = useEditorState(opened.doc);
   const [status, setStatus] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [showWarning, setShowWarning] = useState(opened.warning !== undefined);
   const [masks, setMasks] = useState<MaskDraft[]>([]);
+  const [confirmOpen, setConfirmOpen] = useState(false);
   const savedDoc = useRef(opened.doc);
   const dirty =
     state.doc.annotations !== savedDoc.current.annotations ||
@@ -92,11 +101,37 @@ export function Workspace({ opened, deliver, onChange, onReopen, dom, menu }: Wo
   return (
     <>
       <Header fileName={opened.fileName} status={status}>
-        {menu}
-        <button type="button" className="app-primary" disabled={saving} onClick={save}>
+        {onOpenImage !== undefined && (
+          <HeaderButton icon="open" onClick={() => setConfirmOpen(true)}>
+            画像を開く
+          </HeaderButton>
+        )}
+        <HeaderButton icon="save" className="app-primary" disabled={saving} onClick={save}>
           保存
-        </button>
+        </HeaderButton>
       </Header>
+      <Modal open={confirmOpen} label="画像を開く" onClose={() => setConfirmOpen(false)}>
+        <h2>別の画像を開きますか？</h2>
+        <p>
+          今の画像（{opened.fileName}）を閉じて、別の画像を開きます。
+          {dirty && <strong>保存していない変更は失われます。</strong>}
+        </p>
+        <p className="app-modal-actions">
+          <button type="button" onClick={() => setConfirmOpen(false)}>
+            キャンセル
+          </button>
+          <button
+            type="button"
+            className="app-primary"
+            onClick={() => {
+              setConfirmOpen(false);
+              onOpenImage?.();
+            }}
+          >
+            画像を選ぶ
+          </button>
+        </p>
+      </Modal>
       <main className="app-main">
         {showWarning && opened.warning !== undefined && (
           <div className="app-warning" role="alert">

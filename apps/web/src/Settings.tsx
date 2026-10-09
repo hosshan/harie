@@ -1,6 +1,8 @@
 // 設定（ヘッダー右端）。今は AI に関する設定（API キー）だけを持つ
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { storeApiKey, useApiKey } from "./ai/api-key";
+import { HeaderButton } from "./Header";
+import { Modal } from "./Modal";
 
 let openListener: (() => void) | null = null;
 
@@ -10,7 +12,6 @@ export function openSettings(): void {
 }
 
 export function SettingsButton() {
-  const dialog = useRef<HTMLDialogElement>(null);
   const [open, setOpen] = useState(false);
   useEffect(() => {
     openListener = () => setOpen(true);
@@ -18,31 +19,20 @@ export function SettingsButton() {
       openListener = null;
     };
   }, []);
-  useEffect(() => {
-    const d = dialog.current;
-    if (d === null) return;
-    if (open && !d.open) d.showModal();
-    if (!open && d.open) d.close();
-  }, [open]);
 
   return (
     <>
-      <button type="button" onClick={() => setOpen(true)}>
+      <HeaderButton icon="settings" onClick={() => setOpen(true)}>
         設定
-      </button>
-      <dialog
-        ref={dialog}
-        className="app-settings"
-        aria-label="設定"
-        onClose={() => setOpen(false)}
-      >
-        {open && <AiSettings />}
-        <p className="app-settings-actions">
+      </HeaderButton>
+      <Modal open={open} label="設定" onClose={() => setOpen(false)} className="app-settings">
+        <AiSettings />
+        <p className="app-modal-actions">
           <button type="button" onClick={() => setOpen(false)}>
             閉じる
           </button>
         </p>
-      </dialog>
+      </Modal>
     </>
   );
 }

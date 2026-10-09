@@ -1,7 +1,7 @@
 // Web エディタ。画像を開く → 注釈を編集する（AI の提案・個人情報の検出を含む） → 保存する
 import { useCallback, useEffect, useRef, useState } from "react";
 import { loadDisplayFonts } from "./fonts";
-import { Header } from "./Header";
+import { Header, HeaderButton } from "./Header";
 import { loadFile, type Opened } from "./load";
 import { deliver, type Saved } from "./save";
 import { Workspace } from "./Workspace";
@@ -103,9 +103,9 @@ export function App() {
       {opened === null ? (
         <>
           <Header>
-            <button type="button" className="app-primary" onClick={pick}>
+            <HeaderButton icon="open" className="app-primary" onClick={pick}>
               画像を開く
-            </button>
+            </HeaderButton>
           </Header>
           <div className="app-drop">
             <p>
@@ -136,11 +136,7 @@ export function App() {
           }}
           onChange={setOpened}
           onReopen={(next) => show(next, handle)}
-          menu={
-            <button type="button" onClick={pick}>
-              別の画像を開く
-            </button>
-          }
+          onOpenImage={pick}
         />
       )}
     </div>

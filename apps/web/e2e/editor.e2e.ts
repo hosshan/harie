@@ -199,6 +199,27 @@ test("ツールのパレットは描いている間は隠れ、たたむと小�
   await expect(palette.getByRole("button", { name: "四角" })).toBeVisible();
 });
 
+test("ヘッダーの「画像を開く」は、今の画像を閉じる前に確認する", async ({ page }) => {
+  await openFixture(page, "large-base.jpg");
+  const header = page.getByRole("banner");
+  await expect(header.getByRole("button")).toHaveText(["画像を開く", "保存", "設定"]);
+  await header.getByRole("button", { name: "画像を開く" }).click();
+  const confirm = page.getByRole("dialog", { name: "画像を開く" });
+  await expect(confirm).toContainText("large-base.jpg");
+  await expect(confirm).not.toContainText("保存していない変更");
+  await confirm.getByRole("button", { name: "キャンセル" }).click();
+  await expect(confirm).toBeHidden();
+
+  // 保存していない変更があれば、失われることを伝える
+  await page.getByRole("button", { name: "四角" }).click();
+  await drag(page, [40, 40], [240, 120]);
+  await header.getByRole("button", { name: "画像を開く" }).click();
+  await expect(confirm).toContainText("保存していない変更は失われます");
+  await page.keyboard.press("Escape");
+  await expect(confirm).toBeHidden();
+  await expect(annotationRects(page)).toHaveCount(1);
+});
+
 test("FR-CAP-05: ドラッグ＆ドロップと貼り付けで画像を取り込める", async ({ page }) => {
   await page.goto("/");
   const bytes = [...fixture("base.png")];
