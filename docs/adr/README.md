@@ -24,3 +24,4 @@
 | [0006](./0006-file-naming.md) | 保存ファイル名の規則（`<名前>.harie.jpg`） | 承認 |
 | [0007](./0007-pii-masking.md) | PII 加工はベース画像に不可逆に適用する | 承認 |
 | [0008](./0008-ai-development-harness.md) | AI 駆動開発のハーネス（CLAUDE.md / docs / ADR） | 承認 |
+| [0009](./0009-pii-mask-editable-until-save.md) | 個人情報のマスクは保存するまで選んで外せるようにする | 提案中 |
