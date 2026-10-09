@@ -43,7 +43,7 @@ pnpm harie inspect <file>   # 開発用 CLI（`pnpm harie --help` で一覧）
 
 - Node 22 / pnpm 10。TypeScript は 7 系（`tsc` はネイティブ版）。
 - 新しいパッケージは `packages/model` を雛形にする（`package.json` の `typecheck` スクリプト、`tsconfig.json`、`vitest.config.ts` の `name`）。
-- Claude Code のフック（`.claude/settings.json`）: 編集後に Biome で自動整形、クラウド環境では起動時に `pnpm install`。
+- Claude Code のフック（`.claude/settings.json`）: 編集後に Biome で自動整形、停止前に変更ファイルに関係するテスト（`vitest related`）、クラウド環境では起動時に `pnpm install`。
 
 ## 必ず守ること
 
