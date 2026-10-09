@@ -395,8 +395,14 @@ test("FR-AI-01, 02, NFR-SEC-01, 04: AI の提案は同意してから送り、�
   const requests = await fakeClaude(page);
   await openFixture(page, "large-base.jpg");
   const ai = page.getByRole("region", { name: "AI" });
-  await ai.getByLabel("API キー").fill("sk-ant-e2e-dummy");
-  await ai.getByRole("button", { name: "キーを登録" }).click();
+  // API キーはヘッダーの「設定」（AI に関する設定）で登録する。AI の欄からも開ける
+  await ai.getByRole("button", { name: "設定を開く" }).click();
+  const settings = page.getByRole("dialog", { name: "設定" });
+  await settings.getByLabel("API キー").fill("sk-ant-e2e-dummy");
+  await settings.getByRole("button", { name: "キーを登録" }).click();
+  await expect(settings).toContainText("API キーは登録済みです");
+  await settings.getByRole("button", { name: "閉じる" }).click();
+  await expect(settings).toBeHidden();
 
   // 同意するまでは送れない
   const suggest = ai.getByRole("button", { name: "AI に提案してもらう" });

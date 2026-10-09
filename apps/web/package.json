@@ -5,6 +5,7 @@
   "type": "module",
   "exports": {
     "./workspace": "./src/Workspace.tsx",
+    "./header": "./src/Header.tsx",
     "./load": "./src/load.ts",
     "./save": "./src/save.ts",
     "./fonts": "./src/fonts.ts",

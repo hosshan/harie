@@ -40,24 +40,69 @@ input {
   padding: 12px 16px;
   min-height: 100vh;
 }
+/* 1 段のヘッダー: ロゴ | ファイル名 ……… 右側にメニュー（開く・保存・設定） */
 .app-header {
+  order: -1;
   display: flex;
   align-items: center;
   gap: 12px;
+  min-height: 40px;
 }
 .app-header h1 {
   font-size: 18px;
   margin: 0;
 }
+.app-header-sep {
+  width: 1px;
+  height: 20px;
+  background: var(--line);
+}
+.app-header-menu {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.app-header-status {
+  font-size: 13px;
+}
+.app-settings {
+  width: min(440px, calc(100vw - 32px));
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 16px 20px;
+}
+.app-settings::backdrop {
+  background: rgba(0, 0, 0, 0.25);
+}
+.app-settings h2 {
+  font-size: 15px;
+  margin: 0 0 8px;
+}
+.app-settings form,
+.app-settings label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.app-settings form {
+  gap: 10px;
+}
+.app-settings-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+.app-settings-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin: 16px 0 0;
+}
 .app-main {
   display: flex;
   flex-direction: column;
   gap: 8px;
-}
-.app-file {
-  display: flex;
-  align-items: center;
-  gap: 12px;
 }
 .app-file-name {
   font-weight: 600;
@@ -102,6 +147,11 @@ input {
 }
 .harie-muted {
   color: var(--muted);
+}
+.app-ai {
+  padding-bottom: 12px;
+  margin-bottom: 12px;
+  border-bottom: 1px solid var(--line);
 }
 .app-ai h2,
 .app-ai h3 {

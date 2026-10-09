@@ -27,6 +27,8 @@ export function TextEditor({ annotation, frame, onCommit, onCancel }: TextEditor
   const b = annotationBounds(annotation);
   // 吹き出しは枠の内側の余白（描画の calloutLayout と同じ 0.6em）に合わせる
   const pad = annotation.type === "callout" ? fontSize * 0.6 : 0;
+  // 行の高さ 1.4 の上下に付く余白（0.2em）の分だけ上げ、描画と同じ位置・上下中央に文字を置く
+  const leading = fontSize * 0.2;
   const { k, ox, oy } = frame;
 
   const finish = (commit: boolean) => {
@@ -45,10 +47,17 @@ export function TextEditor({ annotation, frame, onCommit, onCancel }: TextEditor
       defaultValue={annotation.text}
       rows={Math.max(1, annotation.text.split("\n").length)}
       style={{
-        left: ox + (b.x + pad) * k,
-        top: oy + (b.y + pad) * k,
-        minWidth: Math.max(b.w - pad * 2, fontSize * 4) * k,
-        ...(annotation.type === "callout" ? { width: (b.w - pad * 2) * k } : {}),
+        left: ox + b.x * k,
+        top: oy + (b.y - (annotation.type === "callout" ? 0 : leading)) * k,
+        ...(annotation.type === "callout"
+          ? {
+              // 吹き出しは枠全体を覆い、余白を描画と揃えて文字を上下中央に置く
+              width: b.w * k,
+              minHeight: b.h * k,
+              padding: `${(pad - leading) * k}px ${pad * k}px`,
+              borderRadius: 8 * k,
+            }
+          : { minWidth: Math.max(b.w, fontSize * 4) * k }),
         fontFamily: `"${FONT_FAMILY}", sans-serif`,
         fontSize: fontSize * k,
         fontWeight: annotation.style?.fontWeight === "bold" ? 700 : 400,

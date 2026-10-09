@@ -23,12 +23,12 @@
   padding: 4px 6px;
   overflow-x: auto;
   border-radius: 16px;
-  background: rgba(236, 237, 240, 0.82);
-  -webkit-backdrop-filter: blur(16px) saturate(1.4);
-  backdrop-filter: blur(16px) saturate(1.4);
+  background: rgba(255, 255, 255, 0.78);
+  -webkit-backdrop-filter: blur(24px) saturate(1.2);
+  backdrop-filter: blur(24px) saturate(1.2);
   box-shadow:
-    0 4px 16px rgba(0, 0, 0, 0.12),
-    inset 0 0 0 1px rgba(255, 255, 255, 0.35);
+    0 4px 20px rgba(0, 0, 0, 0.16),
+    0 0 0 1px rgba(0, 0, 0, 0.06);
   transition:
     opacity 0.15s ease,
     transform 0.15s ease;
@@ -57,10 +57,10 @@
   cursor: pointer;
 }
 .harie-palette button:hover:not(:disabled) {
-  background: rgba(255, 255, 255, 0.7);
+  background: rgba(0, 0, 0, 0.05);
 }
 .harie-palette button[aria-pressed="true"] {
-  background: #fff;
+  background: rgba(11, 107, 203, 0.1);
   color: #0b6bcb;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
 }
@@ -94,7 +94,7 @@
 .harie-text-editor {
   position: absolute;
   z-index: 1;
-  box-sizing: content-box;
+  box-sizing: border-box;
   margin: 0;
   padding: 0;
   border: none;

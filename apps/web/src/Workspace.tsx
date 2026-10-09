@@ -8,9 +8,10 @@ import {
   useObjectUrl,
 } from "@harie/editor";
 import { type PiiMask, recordPiiApplied } from "@harie/model";
-import { useEffect, useRef, useState } from "react";
+import { type ReactNode, useEffect, useRef, useState } from "react";
 import { AiPanel } from "./ai/AiPanel";
 import { browserRenderer } from "./browser-renderer";
+import { Header } from "./Header";
 import { mismatchMessage, type Opened } from "./load";
 import { buildSaveFile, type Saved } from "./save";
 
@@ -27,10 +28,12 @@ export type WorkspaceProps = {
   onReopen: (opened: Opened) => void;
   /** キャプチャ時の DOM 情報（拡張から開いたとき）。AI の提案・個人情報の検出に使い、保存しない */
   dom?: DomSnapshot;
+  /** ヘッダーで「保存」の左に並べるメニュー（Web の「別の画像を開く」など） */
+  menu?: ReactNode;
 };
 
 /** 開いた 1 枚の画像の編集画面（保存・マスク・AI を含む）。Web と Chrome 拡張で共通 */
-export function Workspace({ opened, deliver, onChange, onReopen, dom }: WorkspaceProps) {
+export function Workspace({ opened, deliver, onChange, onReopen, dom, menu }: WorkspaceProps) {
   const [state, dispatch] = useEditorState(opened.doc);
   const [status, setStatus] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
@@ -87,53 +90,50 @@ export function Workspace({ opened, deliver, onChange, onReopen, dom }: Workspac
   };
 
   return (
-    <main className="app-main">
-      <div className="app-file">
-        <span className="app-file-name">{opened.fileName}</span>
+    <>
+      <Header fileName={opened.fileName} status={status}>
+        {menu}
         <button type="button" className="app-primary" disabled={saving} onClick={save}>
           保存
         </button>
-        {status !== null && (
-          <span className="harie-muted" role="status">
-            {status}
-          </span>
+      </Header>
+      <main className="app-main">
+        {showWarning && opened.warning !== undefined && (
+          <div className="app-warning" role="alert">
+            <p>{mismatchMessage(opened.warning)}</p>
+            {opened.alternative !== undefined && (
+              <p className="app-warning-actions">
+                <button type="button" onClick={() => setShowWarning(false)}>
+                  保存されていた注釈で編集する
+                </button>
+                <button
+                  type="button"
+                  onClick={() => opened.alternative !== undefined && onReopen(opened.alternative)}
+                >
+                  今の画像を新しい下地にする（注釈は消えます）
+                </button>
+              </p>
+            )}
+          </div>
         )}
-      </div>
-      {showWarning && opened.warning !== undefined && (
-        <div className="app-warning" role="alert">
-          <p>{mismatchMessage(opened.warning)}</p>
-          {opened.alternative !== undefined && (
-            <p className="app-warning-actions">
-              <button type="button" onClick={() => setShowWarning(false)}>
-                保存されていた注釈で編集する
-              </button>
-              <button
-                type="button"
-                onClick={() => opened.alternative !== undefined && onReopen(opened.alternative)}
-              >
-                今の画像を新しい下地にする（注釈は消えます）
-              </button>
-            </p>
-          )}
-        </div>
-      )}
-      <Editor
-        state={state}
-        dispatch={dispatch}
-        baseImageUrl={baseImageUrl}
-        onApplyMasks={applyMasks}
-        masks={masks}
-        onMasksChange={setMasks}
-        aside={
-          <AiPanel
-            doc={state.doc}
-            dispatch={dispatch}
-            base={opened.base}
-            {...(dom === undefined ? {} : { dom })}
-            onPiiFound={(found) => setMasks((current) => addDetectedMasks(current, found))}
-          />
-        }
-      />
-    </main>
+        <Editor
+          state={state}
+          dispatch={dispatch}
+          baseImageUrl={baseImageUrl}
+          onApplyMasks={applyMasks}
+          masks={masks}
+          onMasksChange={setMasks}
+          aside={
+            <AiPanel
+              doc={state.doc}
+              dispatch={dispatch}
+              base={opened.base}
+              {...(dom === undefined ? {} : { dom })}
+              onPiiFound={(found) => setMasks((current) => addDetectedMasks(current, found))}
+            />
+          }
+        />
+      </main>
+    </>
   );
 }
