@@ -1,6 +1,7 @@
 // Web エディタ。画像を開く → 注釈を編集する（AI の提案・個人情報の検出を含む） → 保存する
 import { useCallback, useEffect, useRef, useState } from "react";
 import { loadDisplayFonts } from "./fonts";
+import { Header, HeaderButton } from "./Header";
 import { loadFile, type Opened } from "./load";
 import { deliver, type Saved } from "./save";
 import { Workspace } from "./Workspace";
@@ -82,39 +83,40 @@ export function App() {
 
   return (
     <div className="app">
-      <header className="app-header">
-        <h1>Harie</h1>
-        <button type="button" onClick={pick}>
-          {opened === null ? "画像を開く" : "別の画像を開く"}
-        </button>
-        <input
-          ref={input}
-          type="file"
-          accept="image/jpeg,image/png"
-          aria-label="画像ファイル"
-          hidden
-          onChange={(e) => {
-            const file = e.target.files?.[0];
-            if (file !== undefined) void open(file, null);
-            e.target.value = "";
-          }}
-        />
-      </header>
+      <input
+        ref={input}
+        type="file"
+        accept="image/jpeg,image/png"
+        aria-label="画像ファイル"
+        hidden
+        onChange={(e) => {
+          const file = e.target.files?.[0];
+          if (file !== undefined) void open(file, null);
+          e.target.value = "";
+        }}
+      />
       {error !== null && (
         <p className="app-error" role="alert">
           {error}
         </p>
       )}
       {opened === null ? (
-        <div className="app-drop">
-          <p>
-            スクリーンショットをドラッグ＆ドロップするか、貼り付け（Ctrl / ⌘ + V）してください。
-          </p>
-          <p className="harie-muted">
-            JPEG と PNG に対応しています。保存した画像は普通の画像として使え、Harie
-            で開けば注釈を直せます。
-          </p>
-        </div>
+        <>
+          <Header>
+            <HeaderButton icon="open" className="app-primary" onClick={pick}>
+              画像を開く
+            </HeaderButton>
+          </Header>
+          <div className="app-drop">
+            <p>
+              スクリーンショットをドラッグ＆ドロップするか、貼り付け（Ctrl / ⌘ + V）してください。
+            </p>
+            <p className="harie-muted">
+              JPEG と PNG に対応しています。保存した画像は普通の画像として使え、Harie
+              で開けば注釈を直せます。
+            </p>
+          </div>
+        </>
       ) : (
         <Workspace
           key={loadId}
@@ -134,6 +136,7 @@ export function App() {
           }}
           onChange={setOpened}
           onReopen={(next) => show(next, handle)}
+          onOpenImage={pick}
         />
       )}
     </div>

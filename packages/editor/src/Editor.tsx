@@ -1,17 +1,19 @@
-// エディタ全体（ツールバー・編集面・選択中の注釈の設定）
+// エディタ全体（編集面と、その上に浮かぶ道具のパレット・選択中の注釈の設定）
 import type { Annotation, HarieDocument, PiiMask } from "@harie/model";
+import { THEMES } from "@harie/render";
 import { type Dispatch, type ReactNode, useEffect, useMemo, useReducer, useState } from "react";
 import { Canvas, type Tool } from "./Canvas";
 import { type EditorAction, type EditorState, editorReducer, initialState } from "./history";
 import { MaskPanel } from "./MaskPanel";
 import { type MaskDraft, newMaskDraft, toPiiMasks } from "./masks";
+import { Palette, type PaletteTool } from "./Palette";
 import { adoptSuggestionOps, rejectSuggestionOps } from "./suggestions";
 
 export function useEditorState(doc: HarieDocument) {
   return useReducer(editorReducer, doc, initialState);
 }
 
-const TOOLS: readonly { tool: Tool; label: string; key: string }[] = [
+const TOOLS: readonly PaletteTool[] = [
   { tool: "select", label: "選択", key: "v" },
   { tool: "rect", label: "四角", key: "r" },
   { tool: "ellipse", label: "楕円", key: "o" },
@@ -29,6 +31,16 @@ const COLORS = [
   { label: "青", value: "#0B6BCB" },
   { label: "黒", value: "#1C2024" },
 ];
+
+/** 文字サイズの候補（画像のピクセル。1pt = 1px として扱う）。既定はテーマの 24 */
+export const FONT_SIZES = [
+  { label: "小", value: 16 },
+  { label: "中", value: 24 },
+  { label: "大", value: 36 },
+  { label: "特大", value: 48 },
+] as const;
+const FONT_SIZE_MIN = 8;
+const FONT_SIZE_MAX = 200;
 
 function isTyping(target: EventTarget | null): boolean {
   return (
@@ -67,6 +79,8 @@ export function Editor({
   aside,
 }: EditorProps) {
   const [tool, setTool] = useState<Tool>("select");
+  const [dragging, setDragging] = useState(false);
+  const [paletteCollapsed, setPaletteCollapsed] = useState(false);
   const [ownMasks, setOwnMasks] = useState<MaskDraft[]>([]);
   const masks = controlledMasks ?? ownMasks;
   const setMasks = (next: MaskDraft[]) => {
@@ -105,44 +119,31 @@ export function Editor({
 
   return (
     <div className="harie-editor">
-      <div className="harie-toolbar" role="toolbar" aria-label="ツール">
-        {tools.map((t) => (
-          <button
-            key={t.tool}
-            type="button"
-            aria-pressed={tool === t.tool}
-            title={`${t.label}（${t.key.toUpperCase()}）`}
-            onClick={() => setTool(t.tool)}
-          >
-            {t.label}
-          </button>
-        ))}
-        <span className="harie-toolbar-sep" />
-        <button
-          type="button"
-          disabled={state.past.length === 0}
-          onClick={() => dispatch({ type: "undo" })}
-        >
-          元に戻す
-        </button>
-        <button
-          type="button"
-          disabled={state.future.length === 0}
-          onClick={() => dispatch({ type: "redo" })}
-        >
-          やり直す
-        </button>
-      </div>
       <div className="harie-workspace">
-        <Canvas
-          state={state}
-          dispatch={dispatch}
-          baseImageUrl={baseImageUrl}
-          tool={tool}
-          onToolDone={() => setTool("select")}
-          masks={masks}
-          onMaskDrawn={(rect) => setMasks([...masks, newMaskDraft(masks, rect)])}
-        />
+        <div className="harie-stage">
+          <Canvas
+            state={state}
+            dispatch={dispatch}
+            baseImageUrl={baseImageUrl}
+            tool={tool}
+            onToolDone={() => setTool("select")}
+            masks={masks}
+            onMaskDrawn={(rect) => setMasks([...masks, newMaskDraft(masks, rect)])}
+            onDraggingChange={setDragging}
+          />
+          <Palette
+            tools={tools}
+            tool={tool}
+            onTool={setTool}
+            canUndo={state.past.length > 0}
+            canRedo={state.future.length > 0}
+            onUndo={() => dispatch({ type: "undo" })}
+            onRedo={() => dispatch({ type: "redo" })}
+            hidden={dragging}
+            collapsed={paletteCollapsed}
+            onCollapsedChange={setPaletteCollapsed}
+          />
+        </div>
         <aside className="harie-inspector" aria-label="選択中の注釈">
           {aside}
           {onApplyMasks !== undefined && (tool === "mask" || masks.length > 0) && (
@@ -185,7 +186,16 @@ function Inspector({
   const update = (patch: Record<string, unknown>) =>
     dispatch({ type: "apply", ops: [{ op: "update", id: annotation.id, patch }] });
   const hasText = annotation.type === "text" || annotation.type === "callout";
-  const [text, setText] = useState(hasText ? annotation.text : "");
+  const annotationText = hasText ? annotation.text : "";
+  const [text, setText] = useState(annotationText);
+  // 編集面でのその場編集・元に戻すで文字が変わったら、入力欄も合わせる
+  useEffect(() => setText(annotationText), [annotationText]);
+  const hasFontSize = hasText || annotation.type === "badge";
+  const fontSize = annotation.style?.fontSize ?? THEMES.default.defaults.fontSize;
+  const setFontSize = (v: number) => {
+    const size = Math.round(Math.min(FONT_SIZE_MAX, Math.max(FONT_SIZE_MIN, v)));
+    if (size !== fontSize) update({ style: { ...annotation.style, fontSize: size } });
+  };
   // 文字は 1 打鍵ごとではなく、入力欄を離れたときに 1 回の操作として確定する（元に戻す単位）
   const commitText = () => {
     if (hasText && text !== annotation.text) update({ text });
@@ -242,6 +252,7 @@ function Inspector({
           />
         </label>
       )}
+      {hasFontSize && <FontSizeField value={fontSize} onChange={setFontSize} />}
       <fieldset>
         <legend>色</legend>
         {COLORS.map((c) => (
@@ -263,5 +274,48 @@ function Inspector({
         削除
       </button>
     </div>
+  );
+}
+
+/** 文字サイズ。候補から選ぶか、pt を直接入れる（入力欄を離れる・Enter で 1 回の操作として確定する） */
+function FontSizeField({ value, onChange }: { value: number; onChange: (v: number) => void }) {
+  const [draft, setDraft] = useState(String(value));
+  useEffect(() => setDraft(String(value)), [value]);
+  const commit = () => {
+    const v = Number.parseFloat(draft);
+    if (Number.isFinite(v) && v > 0) onChange(v);
+    else setDraft(String(value));
+  };
+  return (
+    <fieldset className="harie-font-size">
+      <legend>文字サイズ</legend>
+      {FONT_SIZES.map((s) => (
+        <button
+          key={s.value}
+          type="button"
+          aria-pressed={value === s.value}
+          title={`${s.value}pt`}
+          onClick={() => onChange(s.value)}
+        >
+          {s.label}
+        </button>
+      ))}
+      <label className="harie-font-size-pt">
+        <input
+          type="number"
+          aria-label="文字サイズ（pt）"
+          min={FONT_SIZE_MIN}
+          max={FONT_SIZE_MAX}
+          step={1}
+          value={draft}
+          onChange={(e) => setDraft(e.target.value)}
+          onBlur={commit}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") commit();
+          }}
+        />
+        pt
+      </label>
+    </fieldset>
   );
 }

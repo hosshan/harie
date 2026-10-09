@@ -84,7 +84,7 @@ test("FR-FILE-06: 保存したファイルは普通の JPEG で、開き直す�
   await drag(page, [40, 40], [240, 120]);
   await page.getByRole("button", { name: "吹き出し" }).click();
   await drag(page, [260, 60], [260, 60]);
-  const textarea = page.getByLabel("文字");
+  const textarea = page.getByRole("textbox", { name: "文字", exact: true });
   await textarea.fill("ここで通知を設定します");
   await textarea.blur();
   await page.getByRole("button", { name: "青" }).click();
@@ -125,6 +125,99 @@ test("FR-FILE-06: 保存したファイルは普通の JPEG で、開き直す�
   });
   await expect(page.locator(".harie-canvas-image svg")).toContainText("ここで通知を設定");
   await expect(page.locator(".app-file-name")).toHaveText("large-base.harie.jpg");
+});
+
+test("FR-EDIT-03: テキストは置いた直後とダブルクリックで、その場で文字を直せる。文字サイズは候補と pt で変えられる", async ({
+  page,
+}) => {
+  await openFixture(page, "large-base.jpg");
+  const image = page.locator(".harie-canvas-image svg");
+  await page.getByRole("button", { name: "テキスト" }).click();
+  await drag(page, [60, 200], [60, 200]);
+  // 置いた直後はその場の入力欄が開いている
+  const inline = page.getByLabel("テキストを編集");
+  await expect(inline).toBeFocused();
+  await inline.fill("設定を開く");
+  await inline.press("Control+Enter");
+  await expect(inline).toHaveCount(0);
+  await expect(image).toContainText("設定を開く");
+
+  // ダブルクリックで開き直し、Esc で取りやめると変わらない
+  const box = await page.getByRole("application", { name: "注釈の編集面" }).boundingBox();
+  if (box === null) throw new Error("編集面がない");
+  const k = Math.min(box.width / 520, box.height / 400);
+  const at = (x: number, y: number) =>
+    [
+      box.x + (box.width - 520 * k) / 2 + x * k,
+      box.y + (box.height - 400 * k) / 2 + y * k,
+    ] as const;
+  await page.mouse.dblclick(...at(70, 210));
+  await expect(inline).toBeFocused();
+  await inline.fill("取りやめる文字");
+  await inline.press("Escape");
+  await expect(image).toContainText("設定を開く");
+
+  // 確定は 1 回の操作。元に戻すと前の文字に戻る
+  await page.mouse.dblclick(...at(70, 210));
+  await inline.fill("通知を設定する");
+  await page.getByRole("button", { name: "選択" }).click();
+  await expect(image).toContainText("通知を設定する");
+  await expect(page.getByRole("textbox", { name: "文字", exact: true })).toHaveValue(
+    "通知を設定する",
+  );
+  await page.getByRole("button", { name: "元に戻す" }).click();
+  await expect(image).toContainText("設定を開く");
+
+  // 文字サイズ: 候補から選ぶ・pt を直接入れる
+  const text = image.locator("text").first();
+  await expect(text).toHaveAttribute("font-size", "24");
+  await page.getByRole("button", { name: "特大" }).click();
+  await expect(text).toHaveAttribute("font-size", "48");
+  const pt = page.getByLabel("文字サイズ（pt）");
+  await pt.fill("30");
+  await pt.press("Enter");
+  await expect(text).toHaveAttribute("font-size", "30");
+  await expect(page.getByRole("button", { name: "特大" })).toHaveAttribute("aria-pressed", "false");
+});
+
+test("ツールのパレットは描いている間は隠れ、たたむと小さくなる", async ({ page }) => {
+  await openFixture(page, "large-base.jpg");
+  const palette = page.getByRole("toolbar", { name: "ツール" });
+  await page.getByRole("button", { name: "四角" }).click();
+  const box = await page.getByRole("application", { name: "注釈の編集面" }).boundingBox();
+  if (box === null) throw new Error("編集面がない");
+  await page.mouse.move(box.x + 40, box.y + 40);
+  await page.mouse.down();
+  await page.mouse.move(box.x + 120, box.y + 100);
+  await expect(palette).toHaveAttribute("data-hidden", "true");
+  await page.mouse.up();
+  await expect(palette).toHaveAttribute("data-hidden", "false");
+
+  await palette.getByRole("button", { name: "ツールをたたむ" }).click();
+  await expect(palette.getByRole("button", { name: "四角" })).toHaveCount(0);
+  await palette.getByRole("button", { name: "ツールを表示" }).click();
+  await expect(palette.getByRole("button", { name: "四角" })).toBeVisible();
+});
+
+test("ヘッダーの「画像を開く」は、今の画像を閉じる前に確認する", async ({ page }) => {
+  await openFixture(page, "large-base.jpg");
+  const header = page.getByRole("banner");
+  await expect(header.getByRole("button")).toHaveText(["画像を開く", "保存", "設定"]);
+  await header.getByRole("button", { name: "画像を開く" }).click();
+  const confirm = page.getByRole("dialog", { name: "画像を開く" });
+  await expect(confirm).toContainText("large-base.jpg");
+  await expect(confirm).not.toContainText("保存していない変更");
+  await confirm.getByRole("button", { name: "キャンセル" }).click();
+  await expect(confirm).toBeHidden();
+
+  // 保存していない変更があれば、失われることを伝える
+  await page.getByRole("button", { name: "四角" }).click();
+  await drag(page, [40, 40], [240, 120]);
+  await header.getByRole("button", { name: "画像を開く" }).click();
+  await expect(confirm).toContainText("保存していない変更は失われます");
+  await page.keyboard.press("Escape");
+  await expect(confirm).toBeHidden();
+  await expect(annotationRects(page)).toHaveCount(1);
 });
 
 test("FR-CAP-05: ドラッグ＆ドロップと貼り付けで画像を取り込める", async ({ page }) => {
@@ -323,8 +416,14 @@ test("FR-AI-01, 02, NFR-SEC-01, 04: AI の提案は同意してから送り、�
   const requests = await fakeClaude(page);
   await openFixture(page, "large-base.jpg");
   const ai = page.getByRole("region", { name: "AI" });
-  await ai.getByLabel("API キー").fill("sk-ant-e2e-dummy");
-  await ai.getByRole("button", { name: "キーを登録" }).click();
+  // API キーはヘッダーの「設定」（AI に関する設定）で登録する。AI の欄からも開ける
+  await ai.getByRole("button", { name: "設定を開く" }).click();
+  const settings = page.getByRole("dialog", { name: "設定" });
+  await settings.getByLabel("API キー").fill("sk-ant-e2e-dummy");
+  await settings.getByRole("button", { name: "キーを登録" }).click();
+  await expect(settings).toContainText("API キーは登録済みです");
+  await settings.getByRole("button", { name: "閉じる" }).click();
+  await expect(settings).toBeHidden();
 
   // 同意するまでは送れない
   const suggest = ai.getByRole("button", { name: "AI に提案してもらう" });

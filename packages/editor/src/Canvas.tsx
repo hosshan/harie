@@ -1,7 +1,7 @@
 // 編集面。下層に buildSvg の SVG（保存時と同じ見た目、ADR-0005）、上層に操作用の SVG を重ねる
 import { type Annotation, applyOps, type HarieDocument, type Point } from "@harie/model";
 import { annotationBounds, buildSvg } from "@harie/render";
-import { type Dispatch, type PointerEvent, useMemo, useRef, useState } from "react";
+import { type Dispatch, type PointerEvent, useEffect, useMemo, useRef, useState } from "react";
 import {
   boxFrom,
   contains,
@@ -13,6 +13,7 @@ import {
 } from "./geometry";
 import { type EditorAction, type EditorState, newAnnotationId } from "./history";
 import { type MaskDraft, maskRect } from "./masks";
+import { TextEditor } from "./TextEditor";
 
 export type Tool = "select" | "rect" | "ellipse" | "arrow" | "text" | "callout" | "badge" | "mask";
 
@@ -83,7 +84,13 @@ export type CanvasProps = {
   /** 適用前のマスク範囲（下書き）。上の SVG に描く */
   masks?: readonly MaskDraft[];
   onMaskDrawn?: (rect: { x: number; y: number; w: number; h: number }) => void;
+  /** 描いている・ドラッグしている間か（ツールのパレットを隠すのに使う） */
+  onDraggingChange?: (dragging: boolean) => void;
 };
+
+type TextAnnotation = Extract<Annotation, { type: "text" | "callout" }>;
+const isText = (a: Annotation | undefined): a is TextAnnotation =>
+  a?.type === "text" || a?.type === "callout";
 
 export function Canvas({
   state,
@@ -93,9 +100,12 @@ export function Canvas({
   onToolDone,
   masks = [],
   onMaskDrawn,
+  onDraggingChange,
 }: CanvasProps) {
   const overlay = useRef<SVGSVGElement>(null);
   const [drag, setDrag] = useState<Drag | null>(null);
+  /** その場で文字を編集している注釈（ダブルクリック、またはテキスト・吹き出しを置いた直後） */
+  const [editingId, setEditingId] = useState<string | null>(null);
   const { doc } = state;
   const { width, height } = doc.canvas;
 
@@ -114,7 +124,13 @@ export function Canvas({
     [display, baseImageUrl],
   );
 
-  const toPoint = (e: PointerEvent): Point => {
+  // クリックしただけ（動かしていない）ではパレットを隠さない。ちらつかないように
+  const moved =
+    drag !== null &&
+    (drag.kind === "resize" || drag.current.x !== drag.start.x || drag.current.y !== drag.start.y);
+  useEffect(() => onDraggingChange?.(moved), [moved, onDraggingChange]);
+
+  const toPoint = (e: { clientX: number; clientY: number }): Point => {
     const svg = overlay.current;
     const ctm = svg?.getScreenCTM();
     if (svg === null || ctm === null || ctm === undefined) return { x: 0, y: 0 };
@@ -156,6 +172,12 @@ export function Canvas({
                 number: doc.annotations.filter((a) => a.type === "badge").length + 1,
               };
       dispatch({ type: "apply", ops: [{ op: "add", annotation }], select: id });
+      // 文字を置いたら、すぐに内容を打てるようにする
+      if (tool !== "badge") {
+        // 続く mousedown でフォーカスが編集面に移り、開いた入力欄が閉じないようにする
+        e.preventDefault();
+        setEditingId(id);
+      }
       onToolDone();
       return;
     }
@@ -167,6 +189,15 @@ export function Canvas({
     const hit = hitTest(doc, p, screenPx(6));
     dispatch({ type: "select", id: hit?.id ?? null });
     if (hit !== undefined) setDrag({ kind: "move", id: hit.id, start: p, current: p });
+  };
+
+  // テキスト・吹き出しをダブルクリックすると、その場で文字を編集する（FR-EDIT-03）
+  const onDoubleClick = (e: { clientX: number; clientY: number }) => {
+    if (tool !== "select") return;
+    const hit = hitTest(doc, toPoint(e), screenPx(6));
+    if (!isText(hit)) return;
+    dispatch({ type: "select", id: hit.id });
+    setEditingId(hit.id);
   };
 
   const onPointerMove = (e: PointerEvent<SVGSVGElement>) => {
@@ -198,6 +229,11 @@ export function Canvas({
 
   const selected = display.annotations.find((a) => a.id === state.selectedId);
   const handleSize = screenPx(10);
+  const editing = doc.annotations.find((a) => a.id === editingId);
+  // 元に戻すなどで編集中の注釈がなくなったら、編集をやめる
+  useEffect(() => {
+    if (editingId !== null && !isText(editing)) setEditingId(null);
+  }, [editingId, editing]);
 
   return (
     <div className="harie-canvas" style={{ aspectRatio: `${width} / ${height}` }}>
@@ -217,6 +253,7 @@ export function Canvas({
         onPointerDown={onPointerDown}
         onPointerMove={onPointerMove}
         onPointerUp={onPointerUp}
+        onDoubleClick={onDoubleClick}
       >
         <rect x={0} y={0} width={width} height={height} fill="transparent" />
         {display.annotations
@@ -238,8 +275,34 @@ export function Canvas({
           <Selection annotation={selected} handleSize={handleSize} stroke={screenPx(1.5)} />
         )}
       </svg>
+      {isText(editing) && (
+        <TextEditor
+          key={editing.id}
+          annotation={editing}
+          frame={frame()}
+          onCommit={(text) => {
+            setEditingId(null);
+            if (text === editing.text) return;
+            // 空にしたら注釈ごと消す（見えない注釈を残さない）
+            const op =
+              text.trim() === ""
+                ? { op: "remove", id: editing.id }
+                : { op: "update", id: editing.id, patch: { text } };
+            dispatch({ type: "apply", ops: [op] });
+          }}
+          onCancel={() => setEditingId(null)}
+        />
+      )}
     </div>
   );
+
+  /** 画像の座標 → 編集面の要素内の画面座標（縦横比を保った余白を含む） */
+  function frame() {
+    const rect = overlay.current?.getBoundingClientRect();
+    if (rect === undefined || rect.width === 0) return { k: 1, ox: 0, oy: 0 };
+    const k = Math.min(rect.width / width, rect.height / height);
+    return { k, ox: (rect.width - width * k) / 2, oy: (rect.height - height * k) / 2 };
+  }
 }
 
 function Selection({
