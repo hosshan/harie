@@ -9,7 +9,6 @@ import {
 } from "@harie/editor";
 import type { HarieDocument } from "@harie/model";
 import { type Dispatch, useState } from "react";
-import { openSettings } from "../Settings";
 import { useApiKey } from "./api-key";
 
 type Base = { bytes: Uint8Array; mediaType: "image/jpeg" | "image/png" };
@@ -43,20 +42,8 @@ export function AiPanel({ doc, dispatch, base, onPiiFound, dom }: AiPanelProps) 
   const pending = suggestions.filter((s) => pendingSuggestionIds(doc, ids(s)).length > 0);
   const allIds = pending.flatMap(ids);
 
-  if (apiKey === null) {
-    return (
-      <section className="harie-inspector-body app-ai" aria-label="AI">
-        <h2>AI</h2>
-        <p className="harie-muted">
-          説明の提案と個人情報の検出を使うには、設定の「AI に関する設定」で Anthropic の API
-          キーを登録してください。
-        </p>
-        <button type="button" className="app-ai-forget" onClick={openSettings}>
-          設定を開く
-        </button>
-      </section>
-    );
-  }
+  // API キーはヘッダーの「設定」で登録する。未登録のときは AI の欄を出さない
+  if (apiKey === null) return null;
 
   const run = async (kind: "suggest" | "pii") => {
     setBusy(kind);

@@ -1,24 +1,11 @@
 // 設定（ヘッダー右端）。今は AI に関する設定（API キー）だけを持つ
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { storeApiKey, useApiKey } from "./ai/api-key";
 import { HeaderButton } from "./Header";
 import { Modal } from "./Modal";
 
-let openListener: (() => void) | null = null;
-
-/** ヘッダーの設定を開く（AI のパネルの「設定を開く」から使う） */
-export function openSettings(): void {
-  openListener?.();
-}
-
 export function SettingsButton() {
   const [open, setOpen] = useState(false);
-  useEffect(() => {
-    openListener = () => setOpen(true);
-    return () => {
-      openListener = null;
-    };
-  }, []);
 
   return (
     <>
