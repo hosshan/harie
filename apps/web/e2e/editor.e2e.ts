@@ -38,6 +38,20 @@ async function drag(page: Page, from: [number, number], to: [number, number], si
 
 const annotationRects = (page: Page) => page.locator(".harie-canvas-image rect");
 
+/** 編集面のベース画像の URL が読み込めること（描き直しで破棄済みの URL を使っていない） */
+async function expectBaseImageLoadable(page: Page) {
+  const href = await page.locator(".harie-canvas-image image").first().getAttribute("href");
+  expect(href).toMatch(/^blob:/);
+  const ok = await page.evaluate(async (url) => {
+    try {
+      return (await fetch(url as string)).ok;
+    } catch {
+      return false;
+    }
+  }, href);
+  expect(ok).toBe(true);
+}
+
 test("FR-FILE-08, FR-EDIT-01〜04, 07: 画像を開いて注釈を付け、元に戻す・やり直す", async ({
   page,
 }) => {
@@ -46,6 +60,7 @@ test("FR-FILE-08, FR-EDIT-01〜04, 07: 画像を開いて注釈を付け、元�
   await drag(page, [40, 40], [240, 120]);
   await expect(annotationRects(page)).toHaveCount(1);
   await expect(page.locator("[data-selected]")).toHaveCount(1);
+  await expectBaseImageLoadable(page);
 
   await page.getByRole("button", { name: "元に戻す" }).click();
   await expect(annotationRects(page)).toHaveCount(0);

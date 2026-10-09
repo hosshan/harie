@@ -9,3 +9,4 @@
 - 個人情報のマスク範囲（`masks.ts`）は注釈にしない。適用は呼び出し側の `onApplyMasks` が行い、記録は `piiApplied` で履歴中のドキュメントにも反映する（ADR-0007）。
 - ファイル API・`node:*` を使わない。
 - AI の提案（`status: "suggested"`）は点線の枠で区別して表示し、採用・却下は `suggestions.ts` の操作で行う（FR-AI-02）。保存時は未採用の提案を除く（`prepareForSave`）。
+- ベース画像の blob: URL は `useObjectUrl`（`object-url.ts`）で作る。作成と破棄を同じ effect で行わないと、StrictMode（開発時）で使用中の URL が破棄されて画像が消える。

@@ -76,7 +76,8 @@ function created(ops: unknown[]): string | undefined {
 export type CanvasProps = {
   state: EditorState;
   dispatch: Dispatch<EditorAction>;
-  baseImageUrl: string;
+  /** ベース画像の URL。用意できるまでは undefined（注釈だけを描く） */
+  baseImageUrl: string | undefined;
   tool: Tool;
   onToolDone: () => void;
   /** 適用前のマスク範囲（下書き）。上の SVG に描く */
@@ -105,7 +106,11 @@ export function Canvas({
     return r.ok ? r.value : doc;
   }, [doc, drag]);
   const markup = useMemo(
-    () => buildSvg(display, { baseImageHref: baseImageUrl, includeSuggested: true }),
+    () =>
+      buildSvg(display, {
+        ...(baseImageUrl === undefined ? {} : { baseImageHref: baseImageUrl }),
+        includeSuggested: true,
+      }),
     [display, baseImageUrl],
   );
 
