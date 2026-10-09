@@ -17,19 +17,14 @@ Claude などの MCP クライアントから「この画像に枠を付けて�
 
 操作できるのは `--root` で指定したディレクトリ配下だけ（既定はカレントディレクトリ）。個人情報の加工（ベース画像の書き換え）は誤操作で元画像を失うおそれがあるため、MCP ではまだ提供していない。
 
-## セットアップ（リポジトリから）
+## セットアップ
 
-npm には未公開。リポジトリをビルドして使う。
-
-```sh
-pnpm install
-pnpm build   # apps/mcp/dist/index.mjs と dist/fonts/ ができる
-```
+Node.js 22 以上が要る。npm の `@harie/mcp` を `npx` で起動する。
 
 ### Claude Code
 
 ```sh
-claude mcp add harie -- node /path/to/harie/apps/mcp/dist/index.mjs --root ~/Pictures/guides
+claude mcp add harie -- npx -y @harie/mcp --root ~/Pictures/guides
 ```
 
 ### Claude Desktop（`claude_desktop_config.json`）
@@ -38,11 +33,19 @@ claude mcp add harie -- node /path/to/harie/apps/mcp/dist/index.mjs --root ~/Pic
 {
   "mcpServers": {
     "harie": {
-      "command": "node",
-      "args": ["/path/to/harie/apps/mcp/dist/index.mjs", "--root", "/Users/you/Pictures/guides"]
+      "command": "npx",
+      "args": ["-y", "@harie/mcp", "--root", "/Users/you/Pictures/guides"]
     }
   }
 }
+```
+
+### リポジトリから動かす（開発用）
+
+```sh
+pnpm install
+pnpm build   # apps/mcp/dist/index.mjs と dist/fonts/ ができる
+claude mcp add harie -- node /path/to/harie/apps/mcp/dist/index.mjs --root ~/Pictures/guides
 ```
 
 ### 使い方の例

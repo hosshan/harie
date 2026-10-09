@@ -1,19 +1,38 @@
 {
   "name": "@harie/mcp",
-  "version": "0.0.0",
-  "private": true,
+  "version": "0.1.0",
   "description": "Harie（注釈を再編集できる JPEG/PNG）を読み書きするローカル MCP サーバー",
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "screenshot",
+    "annotation",
+    "harie"
+  ],
+  "homepage": "https://github.com/hosshan/harie/tree/main/apps/mcp#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/hosshan/harie.git",
+    "directory": "apps/mcp"
+  },
   "type": "module",
+  "engines": {
+    "node": ">=22"
+  },
   "bin": {
     "harie-mcp": "./dist/index.mjs"
   },
   "files": [
     "dist"
   ],
+  "publishConfig": {
+    "access": "public"
+  },
   "scripts": {
     "build": "esbuild src/index.ts --bundle --platform=node --format=esm --target=node22 --outfile=dist/index.mjs --banner:js=\"#!/usr/bin/env node\" --external:@modelcontextprotocol/sdk --external:zod --external:@resvg/resvg-wasm --external:@jsquash/jpeg && node scripts/copy-assets.mjs",
     "start": "node dist/index.mjs",
-    "typecheck": "tsc -p tsconfig.json"
+    "typecheck": "tsc -p tsconfig.json",
+    "prepublishOnly": "pnpm build"
   },
   "dependencies": {
     "@jsquash/jpeg": "^1.6.0",
