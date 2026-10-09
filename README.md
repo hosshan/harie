@@ -6,4 +6,10 @@ Annotation Image Application: Web サービス向けのガイド作成などで�
 - 設計判断: [docs/adr/](docs/adr/README.md)
 - AI エージェント向け: [CLAUDE.md](CLAUDE.md)
 
-現在は M0（基盤整備）。`pnpm install && pnpm check` で検証できる。実装計画は [docs/04-plan/implementation-plan.md](docs/04-plan/implementation-plan.md) を参照。
+MVP（M0〜M5: Web エディタ・Chrome 拡張・MCP サーバー・AI 提案と個人情報の加工）を実装済み。手元で動かす手順は [ローカルでの起動と確認](docs/05-development/local-setup.md)、今後の計画は [実装計画](docs/04-plan/implementation-plan.md) を参照。
+
+```sh
+pnpm install
+pnpm check                      # lint + typecheck + test
+pnpm --filter @harie/web dev    # Web エディタ（http://localhost:5173/）
+```
