@@ -1,7 +1,7 @@
 # AI 開発ハーネス
 
 - ステータス: ドラフト
-- 最終更新: 2026-10-07
+- 最終更新: 2026-10-09
 - 関連: [ADR-0008](../adr/0008-ai-development-harness.md) / [開発ルール](./development-rules.md)
 
 Claude Code などの AI エージェントが、少ない指示で正しく開発を進められるようにするための仕組みの一覧。何をどこに置くか、作業がどう流れるかを定める。
@@ -46,13 +46,14 @@ flowchart TD
 
 ## 3. 検証の自動化
 
-| 仕組み | 内容 | 導入時期 |
+| 仕組み | 内容 | 状態 |
 |---|---|---|
-| `pnpm check` | lint + typecheck + test を 1 コマンドで | M0 |
-| GitHub Actions | PR ごとに `pnpm check` | M0 |
-| Claude Code フック（`.claude/settings.json`） | ファイル編集後に Biome format、停止前に変更パッケージのテスト | M0（コード導入時） |
-| SessionStart フック | クラウド環境で依存をインストール | M0 |
-| AI レビュー | PR に Claude のコードレビュー（要件 ID・ADR との矛盾も確認） | M0 以降 |
+| `pnpm check` | lint + typecheck + test を 1 コマンドで | 導入済み（M0） |
+| GitHub Actions（`.github/workflows/ci.yml`） | PR と main への push ごとに `check` ジョブ（`pnpm check` + `pnpm build`）と `e2e` ジョブ（Playwright） | 導入済み（M0） |
+| ブランチ保護 | `main` へのマージに `check` と `e2e` の成功を必須にする | リポジトリ設定（GitHub の Settings → Branches）。管理者が設定する |
+| Claude Code フック（`.claude/settings.json`） | ファイル編集後に Biome で整形（PostToolUse）、停止前に変更ファイルに関係するテストを実行（Stop。`vitest related`、失敗したら停止を止めて直させる） | 導入済み |
+| SessionStart フック | クラウド環境で依存をインストール | 導入済み（M0） |
+| AI レビュー | PR に Claude のコードレビュー（要件 ID・ADR との矛盾も確認） | 未導入。GitHub Actions で動かすにはリポジトリのシークレットに認証情報の登録が要る |
 
 フックは「AI が忘れても機械的に守られる」ことに使う。判断が必要なものはフックにしない。
 
