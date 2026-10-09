@@ -40,7 +40,8 @@ function isTyping(target: EventTarget | null): boolean {
 export type EditorProps = {
   state: EditorState;
   dispatch: Dispatch<EditorAction>;
-  baseImageUrl: string;
+  /** ベース画像の URL。用意できるまでは undefined（注釈だけを描く） */
+  baseImageUrl: string | undefined;
   /**
    * 個人情報のマスクをベース画像に適用する（ADR-0007）。描画エンジンを持つ呼び出し側が
    * `applyMasks` で新しいベース画像を作り、`piiApplied` を dispatch する。省略するとマスクの道具を出さない

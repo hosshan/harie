@@ -1,8 +1,14 @@
 // 開いた画像の編集画面。保存・個人情報のマスク・AI の提案と検出をまとめる（Web と Chrome 拡張で共通）
 import type { DomSnapshot } from "@harie/ai";
-import { addDetectedMasks, Editor, type MaskDraft, useEditorState } from "@harie/editor";
+import {
+  addDetectedMasks,
+  Editor,
+  type MaskDraft,
+  useEditorState,
+  useObjectUrl,
+} from "@harie/editor";
 import { type PiiMask, recordPiiApplied } from "@harie/model";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { AiPanel } from "./ai/AiPanel";
 import { browserRenderer } from "./browser-renderer";
 import { mismatchMessage, type Opened } from "./load";
@@ -35,14 +41,7 @@ export function Workspace({ opened, deliver, onChange, onReopen, dom }: Workspac
     state.doc.annotations !== savedDoc.current.annotations ||
     state.doc.pii !== savedDoc.current.pii;
 
-  const baseImageUrl = useMemo(
-    () =>
-      URL.createObjectURL(
-        new Blob([opened.base.bytes as Uint8Array<ArrayBuffer>], { type: opened.base.mediaType }),
-      ),
-    [opened.base],
-  );
-  useEffect(() => () => URL.revokeObjectURL(baseImageUrl), [baseImageUrl]);
+  const baseImageUrl = useObjectUrl(opened.base.bytes, opened.base.mediaType);
 
   // 保存していない変更があるときはページを閉じる前に確認する
   useEffect(() => {
