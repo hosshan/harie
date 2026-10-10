@@ -257,6 +257,7 @@ test("FR-EDIT-05, FR-PII-04: 個人情報のマスクはベース画像に焼き
   await panel.getByLabel("範囲 2 の隠し方").selectOption("replace");
   await panel.getByLabel("置き換える文字").fill("佐藤 花子");
   await panel.getByRole("button", { name: "マスクを適用する" }).click();
+  await panel.getByRole("button", { name: "適用する", exact: true }).click();
   await expect(page.getByRole("status")).toContainText("2 か所をマスクしました");
 
   const [download] = await Promise.all([
@@ -485,5 +486,45 @@ test("FR-PII-01, 02: 見つけた個人情報はマスクの下書きになり�
   await expect(panel.getByLabel("置き換える文字")).toHaveValue("user1@example.com");
   await expect(panel.getByLabel("範囲 2（顔）の隠し方")).toHaveValue("fill");
   await panel.getByRole("button", { name: "マスクを適用する" }).click();
+  await panel.getByRole("button", { name: "適用する", exact: true }).click();
   await expect(page.getByRole("status").first()).toContainText("2 か所をマスクしました");
+});
+
+test("FR-EDIT-05: 個人情報を隠すを押し間違えたら、キャンセルで範囲を捨てて元の道具に戻れる", async ({
+  page,
+}) => {
+  await openFixture(page, "large-base.jpg");
+  await page.getByRole("button", { name: "個人情報を隠す" }).click();
+  await drag(page, [20, 20], [220, 60]);
+  const panel = page.getByRole("region", { name: "個人情報のマスク" });
+  // 適用は確認してから。戻るを押せば何も変わらない
+  await panel.getByRole("button", { name: "マスクを適用する" }).click();
+  await expect(panel.getByRole("alertdialog", { name: "マスクの適用の確認" })).toBeVisible();
+  await panel.getByRole("button", { name: "戻る" }).click();
+  await panel.getByRole("button", { name: "キャンセル" }).click();
+  await expect(panel).toBeHidden();
+  await expect(page.locator(".harie-mask-draft")).toHaveCount(0);
+  await expect(page.getByRole("button", { name: "選択" })).toHaveAttribute("aria-pressed", "true");
+});
+
+test("FR-EDIT-05: マスクの範囲を選んでいる間に削除しても、前に選んでいた注釈は消えない", async ({
+  page,
+}) => {
+  await openFixture(page, "large-base.jpg");
+  await page.getByRole("button", { name: "四角" }).click();
+  await drag(page, [40, 40], [240, 120]);
+  await expect(annotationRects(page)).toHaveCount(1);
+  await page.getByRole("button", { name: "個人情報を隠す" }).click();
+  await drag(page, [20, 200], [220, 240]);
+  // 四角の選択は外れ、右の欄には注釈の「削除」が出ない
+  await expect(page.locator(".harie-selection")).toHaveCount(0);
+  await expect(page.getByRole("button", { name: "この注釈を削除" })).toHaveCount(0);
+  await page.keyboard.press("Delete");
+  await expect(annotationRects(page)).toHaveCount(1);
+  await page
+    .getByRole("region", { name: "個人情報のマスク" })
+    .getByRole("button", { name: "範囲 1 を削除" })
+    .click();
+  await expect(page.locator(".harie-mask-draft")).toHaveCount(0);
+  await expect(annotationRects(page)).toHaveCount(1);
 });
