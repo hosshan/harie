@@ -41,7 +41,7 @@
 |---|---|---|
 | ✅ `harie_open` / `harie_create` / `harie_edit` / `harie_preview`（＋ `harie_list`） | FR-MCP-01〜04 | Claude Code / Claude Desktop から「この画像に枠を付けて」が通る |
 | ✅ ルートディレクトリ制限、楽観的ロック | — | テスト |
-| `npx` で起動できるパッケージ化 | — | README の手順で起動（✅ ビルドと README。npm への公開は未実施） |
+| `npx` で起動できるパッケージ化 | — | README の手順で起動（✅ ビルドと README。`@harie/mcp` 0.1.0 として公開できる形にした。公開は手元の端末で行う） |
 
 > M2 を早めに置く理由: UI がなくても「AI が注釈を付けて、後から変更できる画像」という中心価値を確認でき、形式と描画の実戦テストになる。
 

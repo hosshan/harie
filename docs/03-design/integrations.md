@@ -58,7 +58,7 @@ type DomSnapshot = {
 
 ### 2.1 方針
 
-- **ローカル stdio サーバー**として提供する（FR-MCP-01）。実装は `apps/mcp`。`pnpm build` で 1 ファイルにまとめ、npm に公開すれば `npx @harie/mcp` で起動できる形にしてある（公開は未実施。パッケージ名の確保と合わせて判断する）。
+- **ローカル stdio サーバー**として提供する（FR-MCP-01）。実装は `apps/mcp`。`pnpm build` で 1 ファイルにまとめ、npm の `@harie/mcp` として公開して `npx -y @harie/mcp` で起動する（手順は `apps/mcp/CLAUDE.md`）。
 - LLM は呼ばない。画像の「見る」「考える」はクライアント側（Claude 等）の LLM が担当し、サーバーは読み書きと描画に徹する。
 - 操作できるのは起動時に許可したディレクトリ配下のみ（`--root` 引数。既定はカレントディレクトリ）。
 
