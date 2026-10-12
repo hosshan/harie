@@ -4,10 +4,9 @@ import { OpSchema } from "@harie/model";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import type { CallToolResult } from "@modelcontextprotocol/sdk/types.js";
 import { z } from "zod";
+import pkg from "../package.json" with { type: "json" };
 import { createRootGuard, PathError } from "./paths";
 import { create, edit, list, open, preview, ToolError, type ToolOutput } from "./tools";
-
-const VERSION = "0.0.0";
 
 const OPS_HELP = `ops は操作の配列。座標はベース画像のピクセル（canvas.width × canvas.height）で、左上が原点。
 例: [{"op":"add","annotation":{"id":"r1","type":"rect","x":40,"y":40,"w":200,"h":80}},
@@ -44,7 +43,7 @@ async function run(fn: () => ToolOutput | Promise<ToolOutput>): Promise<CallTool
 
 export function createServer(options: { root: string }): McpServer {
   const guard = createRootGuard(options.root);
-  const server = new McpServer({ name: "harie", version: VERSION });
+  const server = new McpServer({ name: "harie", version: pkg.version });
   const path = z.string().describe(`ファイルのパス（${guard.root} からの相対パスか絶対パス）`);
   const ops = z.array(OpSchema).describe(OPS_HELP);
 

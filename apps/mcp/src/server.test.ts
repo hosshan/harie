@@ -157,6 +157,12 @@ describe("harie MCP server", () => {
     ).toBe(true);
   });
 
+  it("FR-MCP-01: サーバーのバージョンは package.json の version と同じ", async () => {
+    const { client } = await setup();
+    const pkg = JSON.parse(readFileSync(new URL("../package.json", import.meta.url), "utf8"));
+    expect(client.getServerVersion()?.version).toBe(pkg.version);
+  });
+
   it("harie_list は Harie ファイルだけを一覧する", async () => {
     const { root, call } = await setup();
     mkdirSync(join(root, "sub"));
