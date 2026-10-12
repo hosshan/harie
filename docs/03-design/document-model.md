@@ -28,8 +28,7 @@ Harie ファイルに埋め込む注釈ドキュメント（JSON）の構造。�
     { "id": "a2", "type": "badge", "x": 96, "y": 316, "number": 1 },
     { "id": "a3", "type": "callout", "x": 640, "y": 360, "w": 420,
       "text": "「メール通知」をオンにすると、議事録の完成時にメールが届きます",
-      "anchor": { "annotationId": "a1", "side": "right" } },
-    { "id": "a4", "type": "arrow", "from": { "x": 640, "y": 388 }, "to": { "x": 604, "y": 388 } }
+      "anchor": { "annotationId": "a1", "side": "right" } }
   ],
   "pii": {
     "applied": [ { "kind": "email", "method": "replace", "rect": { "x": 1800, "y": 92, "w": 320, "h": 40 } } ]
@@ -63,7 +62,7 @@ Harie ファイルに埋め込む注釈ドキュメント（JSON）の構造。�
 | `ellipse` | `x, y, w, h` | |
 | `arrow` | `from, to` | `style.head`（`end` / `both` / `none`） |
 | `text` | `x, y, text` | 枠なしラベル。`style.fontWeight`（`normal` / `bold`） |
-| `callout` | `x, y, w, text` | 吹き出し。`anchor` で他注釈に紐付け可能 |
+| `callout` | `x, y, w, text` | 吹き出し。`anchor`（`annotationId`, `side`）で他の注釈に紐付けると、吹き出しから対象へ矢印を描く。矢印は実際の位置関係から決め（離れている向きの向かい合う辺どうしを結び、範囲が重なる向きでは重なりの中央でまっすぐ引く）、`side` は配置の目安。重なっている・対象が描かれないときは描かない |
 | `badge` | `x, y, number` | 番号付き丸 |
 | `spotlight` | `x, y, w, h` | 範囲外を暗くする（Next） |
 | `blur` | `x, y, w, h, method` | **可逆マスク**。PII 以外（見せたくないだけの UI）向け。PII には使わない。`method: mosaic` は SVG で表現できないため、描画では強めのぼかしで代替する |
