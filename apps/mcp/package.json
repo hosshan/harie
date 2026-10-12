@@ -1,6 +1,6 @@
 {
   "name": "@harie/mcp",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Harie（注釈を再編集できる JPEG/PNG）を読み書きするローカル MCP サーバー",
   "license": "MIT",
   "keywords": [

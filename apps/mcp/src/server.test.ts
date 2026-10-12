@@ -35,18 +35,28 @@ async function setup() {
 const rect = { id: "r1", type: "rect", x: 4, y: 4, w: 30, h: 16 };
 
 describe("harie MCP server", () => {
-  it("FR-MCP-01: 5 つのツールを公開する", async () => {
+  it("FR-MCP-01: 6 つのツールを公開する", async () => {
     const { client } = await setup();
     const { tools } = await client.listTools();
     expect(tools.map((t) => t.name).sort()).toEqual([
       "harie_create",
       "harie_edit",
       "harie_list",
+      "harie_mask",
       "harie_open",
       "harie_preview",
     ]);
     const edit = tools.find((t) => t.name === "harie_edit");
     expect(edit?.inputSchema.required).toEqual(["path", "ops"]);
+  });
+
+  it("FR-MCP-01: ツール定義は共通の定義を $ref で共有し、小さく保つ", async () => {
+    const { client } = await setup();
+    const { tools } = await client.listTools();
+    const edit = JSON.stringify(tools.find((t) => t.name === "harie_edit")?.inputSchema);
+    // style は注釈の種類ごとに繰り返さず、1 か所の定義を参照する
+    expect(edit.match(/"strokeWidth"/g)).toHaveLength(1);
+    expect(JSON.stringify(tools).length).toBeLessThan(12_000);
   });
 
   it("FR-MCP-04 → 02 → 03: 画像から作り、開き、注釈を付けて保存する", async () => {
@@ -96,6 +106,13 @@ describe("harie MCP server", () => {
     expect(p.json()).toMatchObject({ saved: false, annotations: [rect] });
     expect(p.image?.mimeType).toBe("image/jpeg");
     expect(readFileSync(join(root, "screen.harie.jpg"))).toEqual(before);
+    // ツール定義では形だけ示し、中身は harie_edit と同じく検証する
+    const bad = await call("harie_preview", {
+      path: "screen.harie.jpg",
+      ops: [{ op: "add", annotation: { ...rect, w: -1 } }],
+    });
+    expect(bad.isError).toBe(true);
+    expect(bad.text).toContain("ops[0]");
   });
 
   it("楽観的ロック: expectedRevision が古ければ保存しない", async () => {
@@ -161,6 +178,60 @@ describe("harie MCP server", () => {
     const { client } = await setup();
     const pkg = JSON.parse(readFileSync(new URL("../package.json", import.meta.url), "utf8"));
     expect(client.getServerVersion()?.version).toBe(pkg.version);
+  });
+
+  it("FR-PII-02〜04: harie_mask は confirm がなければ保存せず、confirm: true でベース画像を書き換える", async () => {
+    const { root, call } = await setup();
+    await call("harie_create", { imagePath: "screen.png" });
+    await call("harie_edit", { path: "screen.harie.png", ops: [{ op: "add", annotation: rect }] });
+    const file = join(root, "screen.harie.png");
+    const before = readFileSync(file);
+    const masks = [{ kind: "email", method: "fill", rect: { x: 0, y: 0, w: 32, h: 20 } }];
+
+    const dry = await call("harie_mask", { path: "screen.harie.png", masks });
+    expect(dry.isError).toBe(false);
+    expect(dry.json()).toMatchObject({ saved: false, applied: masks });
+    expect(dry.image?.mimeType).toBe("image/png");
+    expect(readFileSync(file)).toEqual(before);
+
+    const done = await call("harie_mask", {
+      path: "screen.harie.png",
+      masks,
+      confirm: true,
+      expectedRevision: 2,
+    });
+    expect(done.json()).toMatchObject({ saved: true, revision: 3, annotations: [rect] });
+    const read = readHarie(new Uint8Array(readFileSync(file)));
+    expect(read.kind === "harie" && read.doc.pii.applied).toEqual(masks);
+    expect(read.kind === "harie" && read.base.bytes).not.toEqual(
+      new Uint8Array(readFileSync(join(root, "screen.png"))),
+    );
+  });
+
+  it("harie_mask は画像の外の範囲・古い revision・既存の outPath を拒否する", async () => {
+    const { call } = await setup();
+    await call("harie_create", { imagePath: "screen.png" });
+    const masks = [{ kind: "name", method: "fill", rect: { x: 100, y: 100, w: 10, h: 10 } }];
+    expect((await call("harie_mask", { path: "screen.harie.png", masks })).text).toContain(
+      "画像（64×40）の外",
+    );
+    const inside = [{ kind: "name", method: "fill", rect: { x: 0, y: 0, w: 10, h: 10 } }];
+    const stale = { path: "screen.harie.png", masks: inside, confirm: true, expectedRevision: 9 };
+    expect((await call("harie_mask", stale)).isError).toBe(true);
+    const exists = {
+      path: "screen.harie.png",
+      masks: inside,
+      confirm: true,
+      outPath: "screen.png",
+    };
+    expect((await call("harie_mask", exists)).isError).toBe(true);
+    const copy = {
+      path: "screen.harie.png",
+      masks: inside,
+      confirm: true,
+      outPath: "masked.harie.png",
+    };
+    expect((await call("harie_mask", copy)).json()).toMatchObject({ path: "masked.harie.png" });
   });
 
   it("harie_list は Harie ファイルだけを一覧する", async () => {
