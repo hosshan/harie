@@ -10,6 +10,7 @@ Harie（はりえ）: SaaS の利用ガイド用スクリーンショットに�
 - 判断の履歴: [docs/adr/README.md](docs/adr/README.md)
 - 実装計画: [docs/04-plan/implementation-plan.md](docs/04-plan/implementation-plan.md)
 - 開発ルール: [docs/05-development/development-rules.md](docs/05-development/development-rules.md)
+- ローカルでの起動と確認: [docs/05-development/local-setup.md](docs/05-development/local-setup.md)
 
 触る領域に関係する ADR と設計書は、作業前に必ず読むこと。
 
@@ -43,7 +44,7 @@ pnpm harie inspect <file>   # 開発用 CLI（`pnpm harie --help` で一覧）
 
 - Node 22 / pnpm 10。TypeScript は 7 系（`tsc` はネイティブ版）。
 - 新しいパッケージは `packages/model` を雛形にする（`package.json` の `typecheck` スクリプト、`tsconfig.json`、`vitest.config.ts` の `name`）。
-- Claude Code のフック（`.claude/settings.json`）: 編集後に Biome で自動整形、クラウド環境では起動時に `pnpm install`。
+- Claude Code のフック（`.claude/settings.json`）: 編集後に Biome で自動整形、停止前に変更ファイルに関係するテスト（`vitest related`）、クラウド環境では起動時に `pnpm install`。
 
 ## 必ず守ること
 

@@ -9,7 +9,7 @@ import {
 } from "@harie/editor";
 import type { HarieDocument } from "@harie/model";
 import { type Dispatch, useState } from "react";
-import { loadApiKey, storeApiKey } from "./api-key";
+import { useApiKey } from "./api-key";
 
 type Base = { bytes: Uint8Array; mediaType: "image/jpeg" | "image/png" };
 
@@ -31,8 +31,7 @@ function message(e: unknown): string {
 }
 
 export function AiPanel({ doc, dispatch, base, onPiiFound, dom }: AiPanelProps) {
-  const [apiKey, setApiKey] = useState<string | null>(loadApiKey);
-  const [draftKey, setDraftKey] = useState("");
+  const apiKey = useApiKey();
   const [consent, setConsent] = useState(false);
   const [intent, setIntent] = useState("");
   const [busy, setBusy] = useState<"suggest" | "pii" | null>(null);
@@ -43,40 +42,8 @@ export function AiPanel({ doc, dispatch, base, onPiiFound, dom }: AiPanelProps) 
   const pending = suggestions.filter((s) => pendingSuggestionIds(doc, ids(s)).length > 0);
   const allIds = pending.flatMap(ids);
 
-  if (apiKey === null) {
-    return (
-      <section className="harie-inspector-body app-ai" aria-label="AI">
-        <h2>AI</h2>
-        <p className="harie-muted">
-          説明の提案と個人情報の検出には、Anthropic の API
-          キーが必要です。キーはこのブラウザにだけ保存し、ファイルには含めません。
-        </p>
-        <form
-          onSubmit={(e) => {
-            e.preventDefault();
-            const key = draftKey.trim();
-            if (key === "") return;
-            storeApiKey(key);
-            setApiKey(key);
-            setDraftKey("");
-          }}
-        >
-          <label>
-            API キー
-            <input
-              type="password"
-              autoComplete="off"
-              value={draftKey}
-              onChange={(e) => setDraftKey(e.target.value)}
-            />
-          </label>
-          <button type="submit" disabled={draftKey.trim() === ""}>
-            キーを登録
-          </button>
-        </form>
-      </section>
-    );
-  }
+  // API キーはヘッダーの「設定」で登録する。未登録のときは AI の欄を出さない
+  if (apiKey === null) return null;
 
   const run = async (kind: "suggest" | "pii") => {
     setBusy(kind);
@@ -185,16 +152,6 @@ export function AiPanel({ doc, dispatch, base, onPiiFound, dom }: AiPanelProps) 
           </p>
         </div>
       )}
-      <button
-        type="button"
-        className="app-ai-forget"
-        onClick={() => {
-          storeApiKey(null);
-          setApiKey(null);
-        }}
-      >
-        API キーを削除
-      </button>
     </section>
   );
 }

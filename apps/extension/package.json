@@ -9,7 +9,8 @@
     "build:e2e": "HARIE_E2E=1 wxt build",
     "zip": "wxt zip",
     "typecheck": "wxt prepare && tsc -p tsconfig.json && tsc -p tsconfig.e2e.json",
-    "e2e": "pnpm build && pnpm build:e2e && playwright test"
+    "e2e": "pnpm build && pnpm build:e2e && playwright test",
+    "postinstall": "wxt prepare"
   },
   "dependencies": {
     "@harie/ai": "workspace:*",

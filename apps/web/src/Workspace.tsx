@@ -1,11 +1,19 @@
 // 開いた画像の編集画面。保存・個人情報のマスク・AI の提案と検出をまとめる（Web と Chrome 拡張で共通）
 import type { DomSnapshot } from "@harie/ai";
-import { addDetectedMasks, Editor, type MaskDraft, useEditorState } from "@harie/editor";
+import {
+  addDetectedMasks,
+  Editor,
+  type MaskDraft,
+  useEditorState,
+  useObjectUrl,
+} from "@harie/editor";
 import { type PiiMask, recordPiiApplied } from "@harie/model";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { AiPanel } from "./ai/AiPanel";
 import { browserRenderer } from "./browser-renderer";
+import { Header, HeaderButton } from "./Header";
 import { mismatchMessage, type Opened } from "./load";
+import { Modal } from "./Modal";
 import { buildSaveFile, type Saved } from "./save";
 
 export type WorkspaceProps = {
@@ -21,28 +29,31 @@ export type WorkspaceProps = {
   onReopen: (opened: Opened) => void;
   /** キャプチャ時の DOM 情報（拡張から開いたとき）。AI の提案・個人情報の検出に使い、保存しない */
   dom?: DomSnapshot;
+  /** 別の画像を選んで開く（Web）。渡すとヘッダーに「画像を開く」を出し、押すと確認してから呼ぶ */
+  onOpenImage?: () => void;
 };
 
 /** 開いた 1 枚の画像の編集画面（保存・マスク・AI を含む）。Web と Chrome 拡張で共通 */
-export function Workspace({ opened, deliver, onChange, onReopen, dom }: WorkspaceProps) {
+export function Workspace({
+  opened,
+  deliver,
+  onChange,
+  onReopen,
+  dom,
+  onOpenImage,
+}: WorkspaceProps) {
   const [state, dispatch] = useEditorState(opened.doc);
   const [status, setStatus] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [showWarning, setShowWarning] = useState(opened.warning !== undefined);
   const [masks, setMasks] = useState<MaskDraft[]>([]);
+  const [confirmOpen, setConfirmOpen] = useState(false);
   const savedDoc = useRef(opened.doc);
   const dirty =
     state.doc.annotations !== savedDoc.current.annotations ||
     state.doc.pii !== savedDoc.current.pii;
 
-  const baseImageUrl = useMemo(
-    () =>
-      URL.createObjectURL(
-        new Blob([opened.base.bytes as Uint8Array<ArrayBuffer>], { type: opened.base.mediaType }),
-      ),
-    [opened.base],
-  );
-  useEffect(() => () => URL.revokeObjectURL(baseImageUrl), [baseImageUrl]);
+  const baseImageUrl = useObjectUrl(opened.base.bytes, opened.base.mediaType);
 
   // 保存していない変更があるときはページを閉じる前に確認する
   useEffect(() => {
@@ -88,53 +99,76 @@ export function Workspace({ opened, deliver, onChange, onReopen, dom }: Workspac
   };
 
   return (
-    <main className="app-main">
-      <div className="app-file">
-        <span className="app-file-name">{opened.fileName}</span>
-        <button type="button" className="app-primary" disabled={saving} onClick={save}>
-          保存
-        </button>
-        {status !== null && (
-          <span className="harie-muted" role="status">
-            {status}
-          </span>
+    <>
+      <Header fileName={opened.fileName} status={status}>
+        {onOpenImage !== undefined && (
+          <HeaderButton icon="open" onClick={() => setConfirmOpen(true)}>
+            画像を開く
+          </HeaderButton>
         )}
-      </div>
-      {showWarning && opened.warning !== undefined && (
-        <div className="app-warning" role="alert">
-          <p>{mismatchMessage(opened.warning)}</p>
-          {opened.alternative !== undefined && (
-            <p className="app-warning-actions">
-              <button type="button" onClick={() => setShowWarning(false)}>
-                保存されていた注釈で編集する
-              </button>
-              <button
-                type="button"
-                onClick={() => opened.alternative !== undefined && onReopen(opened.alternative)}
-              >
-                今の画像を新しい下地にする（注釈は消えます）
-              </button>
-            </p>
-          )}
-        </div>
-      )}
-      <Editor
-        state={state}
-        dispatch={dispatch}
-        baseImageUrl={baseImageUrl}
-        onApplyMasks={applyMasks}
-        masks={masks}
-        onMasksChange={setMasks}
-        aside={
-          <AiPanel
-            doc={state.doc}
-            dispatch={dispatch}
-            base={opened.base}
-            {...(dom === undefined ? {} : { dom })}
-            onPiiFound={(found) => setMasks((current) => addDetectedMasks(current, found))}
-          />
-        }
-      />
-    </main>
+        <HeaderButton icon="save" className="app-primary" disabled={saving} onClick={save}>
+          保存
+        </HeaderButton>
+      </Header>
+      <Modal open={confirmOpen} label="画像を開く" onClose={() => setConfirmOpen(false)}>
+        <h2>別の画像を開きますか？</h2>
+        <p>
+          今の画像（{opened.fileName}）を閉じて、別の画像を開きます。
+          {dirty && <strong>保存していない変更は失われます。</strong>}
+        </p>
+        <p className="app-modal-actions">
+          <button type="button" onClick={() => setConfirmOpen(false)}>
+            キャンセル
+          </button>
+          <button
+            type="button"
+            className="app-primary"
+            onClick={() => {
+              setConfirmOpen(false);
+              onOpenImage?.();
+            }}
+          >
+            画像を選ぶ
+          </button>
+        </p>
+      </Modal>
+      <main className="app-main">
+        {showWarning && opened.warning !== undefined && (
+          <div className="app-warning" role="alert">
+            <p>{mismatchMessage(opened.warning)}</p>
+            {opened.alternative !== undefined && (
+              <p className="app-warning-actions">
+                <button type="button" onClick={() => setShowWarning(false)}>
+                  保存されていた注釈で編集する
+                </button>
+                <button
+                  type="button"
+                  onClick={() => opened.alternative !== undefined && onReopen(opened.alternative)}
+                >
+                  今の画像を新しい下地にする（注釈は消えます）
+                </button>
+              </p>
+            )}
+          </div>
+        )}
+        <Editor
+          state={state}
+          dispatch={dispatch}
+          baseImageUrl={baseImageUrl}
+          onApplyMasks={applyMasks}
+          masks={masks}
+          onMasksChange={setMasks}
+          aside={
+            <AiPanel
+              doc={state.doc}
+              dispatch={dispatch}
+              base={opened.base}
+              {...(dom === undefined ? {} : { dom })}
+              onPiiFound={(found) => setMasks((current) => addDetectedMasks(current, found))}
+            />
+          }
+        />
+      </main>
+    </>
   );
 }

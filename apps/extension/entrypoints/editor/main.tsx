@@ -2,6 +2,7 @@
 import "@harie/editor/editor.css";
 import "@harie/web/styles.css";
 import { loadDisplayFonts } from "@harie/web/fonts";
+import { Header } from "@harie/web/header";
 import { loadFile, type Opened } from "@harie/web/load";
 import type { Saved } from "@harie/web/save";
 import { Workspace } from "@harie/web/workspace";
@@ -51,9 +52,8 @@ function App() {
 
   return (
     <div className="app">
-      <header className="app-header">
-        <h1>Harie</h1>
-      </header>
+      {/* 開いた後は Workspace がファイル名と保存の入ったヘッダーを出す */}
+      {opened === null && <Header />}
       {loaded === null && <p className="harie-muted">読み込んでいます…</p>}
       {loaded !== null && "error" in loaded && (
         <p className="app-error" role="alert">
