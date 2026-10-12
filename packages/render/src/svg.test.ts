@@ -1,6 +1,6 @@
 import { applyOps, createDocument } from "@harie/model";
 import { describe, expect, it } from "vitest";
-import { buildSvg, estimateTextWidth, wrapText } from "./svg";
+import { buildSvg, calloutConnector, estimateTextWidth, wrapText } from "./svg";
 
 function doc(annotations: unknown[]) {
   const d = createDocument({
@@ -63,6 +63,54 @@ describe("buildSvg", () => {
     expect(buildSvg(d, { baseImageHref: "data:image/png;base64,AA==" })).toContain(
       "feGaussianBlur",
     );
+  });
+});
+
+describe("吹き出しの anchor（FR-EDIT-03）", () => {
+  const target = { x: 100, y: 100, w: 200, h: 50 };
+
+  it("縦の範囲が重なれば、向かい合う辺を重なりの中央で水平に結ぶ", () => {
+    expect(calloutConnector({ x: 400, y: 110, w: 100, h: 80 }, target)).toEqual({
+      from: { x: 400, y: 130 },
+      to: { x: 300, y: 130 },
+    });
+    expect(calloutConnector({ x: 0, y: 60, w: 50, h: 60 }, target)?.to).toEqual({
+      x: 100,
+      y: 110,
+    });
+  });
+
+  it("下にあれば上辺から対象の下辺へ、横の範囲が重ならなければ近い角へ向ける", () => {
+    expect(calloutConnector({ x: 150, y: 200, w: 300, h: 40 }, target)).toEqual({
+      from: { x: 225, y: 200 },
+      to: { x: 225, y: 150 },
+    });
+    expect(calloutConnector({ x: 320, y: 300, w: 100, h: 40 }, target)).toEqual({
+      from: { x: 320, y: 300 },
+      to: { x: 300, y: 150 },
+    });
+  });
+
+  it("重なっていれば線を引かない", () => {
+    expect(calloutConnector({ x: 150, y: 120, w: 50, h: 20 }, target)).toBeNull();
+  });
+
+  it("anchor の対象へ矢印を描き、対象がない・提案中で非表示なら描かない", () => {
+    const callout = {
+      id: "c",
+      type: "callout",
+      x: 400,
+      y: 100,
+      w: 200,
+      text: "説明",
+      anchor: { annotationId: "r", side: "right" },
+    };
+    const lines = (svg: string) => (svg.match(/<line /g) ?? []).length;
+    expect(lines(buildSvg(doc([{ id: "r", type: "rect", ...target }, callout])))).toBe(1);
+    expect(lines(buildSvg(doc([callout])))).toBe(0);
+    const hidden = doc([{ id: "r", type: "rect", ...target, status: "suggested" }, callout]);
+    expect(lines(buildSvg(hidden))).toBe(0);
+    expect(lines(buildSvg(hidden, { includeSuggested: true }))).toBe(1);
   });
 });
 

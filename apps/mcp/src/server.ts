@@ -1,13 +1,12 @@
 // MCP サーバーの組み立て。ツールの入力は zod で検証してから本体に渡す（CLAUDE.md）
 
-import { OpSchema } from "@harie/model";
+import { OpSchema, PiiMaskSchema } from "@harie/model";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import type { CallToolResult } from "@modelcontextprotocol/sdk/types.js";
 import { z } from "zod";
+import pkg from "../package.json" with { type: "json" };
 import { createRootGuard, PathError } from "./paths";
-import { create, edit, list, open, preview, ToolError, type ToolOutput } from "./tools";
-
-const VERSION = "0.0.0";
+import { create, edit, list, mask, open, preview, ToolError, type ToolOutput } from "./tools";
 
 const OPS_HELP = `ops は操作の配列。座標はベース画像のピクセル（canvas.width × canvas.height）で、左上が原点。
 例: [{"op":"add","annotation":{"id":"r1","type":"rect","x":40,"y":40,"w":200,"h":80}},
@@ -44,9 +43,14 @@ async function run(fn: () => ToolOutput | Promise<ToolOutput>): Promise<CallTool
 
 export function createServer(options: { root: string }): McpServer {
   const guard = createRootGuard(options.root);
-  const server = new McpServer({ name: "harie", version: VERSION });
+  const server = new McpServer({ name: "harie", version: pkg.version });
   const path = z.string().describe(`ファイルのパス（${guard.root} からの相対パスか絶対パス）`);
   const ops = z.array(OpSchema).describe(OPS_HELP);
+  // harie_preview の ops は harie_edit と同じ。定義の重複でツール一覧が大きくならないよう形だけ示し、
+  // 中身は applyOps が OpSchema で検証する
+  const sameOps = z
+    .array(z.looseObject({ op: z.enum(OpSchema.options.map((o) => o.shape.op.value)) }))
+    .describe("harie_edit の ops と同じ形式");
 
   server.registerTool(
     "harie_open",
@@ -100,10 +104,40 @@ export function createServer(options: { root: string }): McpServer {
     {
       title: "注釈の変更を保存せずに確認する",
       description: "ops を適用した結果の画像を返す。ファイルは変更しない",
-      inputSchema: { path, ops },
+      inputSchema: { path, ops: sameOps },
       annotations: { readOnlyHint: true },
     },
     async (input) => run(() => preview(guard, input)),
+  );
+
+  server.registerTool(
+    "harie_mask",
+    {
+      title: "個人情報をマスクする（元に戻せない）",
+      description: `画像内の個人情報（氏名・メール・電話番号など）を、ベース画像を書き換えて隠す。保存すると元に戻せず、ファイルのどこにも元の情報は残らない。
+まず confirm を付けずに呼ぶと、保存せずに加工後の画像を返す。範囲と方法を確かめてから、同じ masks に confirm: true を付けて保存する。
+method: replace（ダミー文字列に置き換える。replacement に同じ種類のダミー値を渡す。例: 山田 花子 / hanako@example.com）/ fill（塗りつぶし）/ mosaic / blur。文字は replace か fill を使う。
+rect はベース画像のピクセル（左上原点）で、文字より少し広めに取る。注釈の blur とは別物で、個人情報にはこちらを使う。`,
+      inputSchema: {
+        path,
+        masks: z.array(PiiMaskSchema).min(1).describe("隠す範囲と方法"),
+        confirm: z
+          .boolean()
+          .optional()
+          .describe("true で保存する（元に戻せない）。省略時は保存せずに結果だけ返す"),
+        outPath: z
+          .string()
+          .optional()
+          .describe("別のファイルとして保存する場合の保存先。省略時は上書き"),
+        expectedRevision: z
+          .int()
+          .nonnegative()
+          .optional()
+          .describe("harie_open で得た revision。他で先に保存されていたら失敗させる"),
+      },
+      annotations: { destructiveHint: true, idempotentHint: false },
+    },
+    async (input) => run(() => mask(guard, input)),
   );
 
   server.registerTool(

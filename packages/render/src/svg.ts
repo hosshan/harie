@@ -98,7 +98,9 @@ function calloutLayout(a: Extract<Annotation, { type: "callout" }>, s: Resolved)
   return { pad, lines, h: pad * 2 + s.fontSize * (1 + (lines.length - 1) * LINE_HEIGHT) };
 }
 
-function arrow(a: Extract<Annotation, { type: "arrow" }>, s: Resolved): string {
+type Point = { x: number; y: number };
+
+function arrow(a: { from: Point; to: Point }, s: Resolved): string {
   const dx = a.to.x - a.from.x;
   const dy = a.to.y - a.from.y;
   const len = Math.hypot(dx, dy) || 1;
@@ -134,11 +136,51 @@ function arrow(a: Extract<Annotation, { type: "arrow" }>, s: Resolved): string {
   );
 }
 
+const clamp = (v: number, lo: number, hi: number) => Math.min(hi, Math.max(lo, v));
+
+/**
+ * 吹き出しから anchor の注釈へ引く線（矢印）。`side` は配置の目安で、線は実際の位置関係から決める。
+ * 離れている向き（横・縦）の向かい合う辺どうしを結び、範囲が重なる向きでは重なりの中央でまっすぐ引く。
+ * 重なっている・近すぎるときは引かない。
+ */
+export function calloutConnector(
+  callout: Bounds,
+  target: Bounds,
+): { from: Point; to: Point } | null {
+  const c = callout;
+  const t = target;
+  const gapX = Math.max(t.x - (c.x + c.w), c.x - (t.x + t.w), 0);
+  const gapY = Math.max(t.y - (c.y + c.h), c.y - (t.y + t.h), 0);
+  if (gapX === 0 && gapY === 0) return null;
+  // 交差軸の位置: 範囲が重なれば重なりの中央、重ならなければ相手に近い端
+  const cross = (c0: number, c1: number, t0: number, t1: number) => {
+    const lo = Math.max(c0, t0);
+    const hi = Math.min(c1, t1);
+    if (lo <= hi) return { c: (lo + hi) / 2, t: (lo + hi) / 2 };
+    return { c: clamp((t0 + t1) / 2, c0, c1), t: clamp((c0 + c1) / 2, t0, t1) };
+  };
+  if (gapX >= gapY) {
+    const right = c.x >= t.x + t.w;
+    const y = cross(c.y, c.y + c.h, t.y, t.y + t.h);
+    return {
+      from: { x: right ? c.x : c.x + c.w, y: y.c },
+      to: { x: right ? t.x + t.w : t.x, y: y.t },
+    };
+  }
+  const below = c.y >= t.y + t.h;
+  const x = cross(c.x, c.x + c.w, t.x, t.x + t.w);
+  return {
+    from: { x: x.c, y: below ? c.y : c.y + c.h },
+    to: { x: x.t, y: below ? t.y + t.h : t.y },
+  };
+}
+
 function annotation(
   a: Annotation,
   theme: Theme,
   doc: HarieDocument,
   baseImageHref: string | undefined,
+  visible: ReadonlyMap<string, Annotation>,
 ): string {
   const s = resolve(theme, a);
   const common = { opacity: s.opacity };
@@ -153,7 +195,18 @@ function annotation(
       return `<g ${attrs(common)}>${textLines(a.text.split("\n"), a.x, a.y, s)}</g>`;
     case "callout": {
       const { pad, lines, h } = calloutLayout(a, s);
-      return `<g ${attrs(common)}><rect ${attrs({ x: a.x, y: a.y, width: a.w, height: h, rx: s.radius ?? theme.calloutRadius, fill: s.fill ?? theme.calloutFill, stroke: s.stroke, "stroke-width": Math.max(1, s.strokeWidth / 2) })}/>${textLines(lines, a.x + pad, a.y + pad, s)}</g>`;
+      const target = a.anchor === undefined ? undefined : visible.get(a.anchor.annotationId);
+      const link =
+        target === undefined || target.id === a.id
+          ? null
+          : calloutConnector({ x: a.x, y: a.y, w: a.w, h }, annotationBounds(target, theme));
+      // 線は吹き出しの下に描き、枠の縁から出ているように見せる
+      const connector =
+        link === null ||
+        Math.hypot(link.to.x - link.from.x, link.to.y - link.from.y) < s.strokeWidth * 2
+          ? ""
+          : arrow(link, { ...s, head: "end" });
+      return `<g ${attrs(common)}>${connector}<rect ${attrs({ x: a.x, y: a.y, width: a.w, height: h, rx: s.radius ?? theme.calloutRadius, fill: s.fill ?? theme.calloutFill, stroke: s.stroke, "stroke-width": Math.max(1, s.strokeWidth / 2) })}/>${textLines(lines, a.x + pad, a.y + pad, s)}</g>`;
     }
     case "badge": {
       const r = s.fontSize * 0.8;
@@ -214,10 +267,9 @@ export function buildSvg(doc: HarieDocument, options: BuildSvgOptions = {}): str
   const theme = THEMES[doc.theme.preset] ?? THEMES.default;
   const { width, height, crop } = doc.canvas;
   const view = crop ?? { x: 0, y: 0, w: width, h: height };
-  const body = doc.annotations
-    .filter((a) => options.includeSuggested || a.status !== "suggested")
-    .map((a) => annotation(a, theme, doc, options.baseImageHref))
-    .join("");
+  const shown = doc.annotations.filter((a) => options.includeSuggested || a.status !== "suggested");
+  const visible = new Map(shown.map((a) => [a.id, a]));
+  const body = shown.map((a) => annotation(a, theme, doc, options.baseImageHref, visible)).join("");
   const base =
     options.baseImageHref === undefined
       ? ""

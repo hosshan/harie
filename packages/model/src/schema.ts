@@ -15,17 +15,20 @@ export type Rect = z.infer<typeof RectSchema>;
 
 const color = z.string().regex(/^#[0-9a-fA-F]{6}([0-9a-fA-F]{2})?$/, "#RRGGBB または #RRGGBBAA");
 
-export const StyleSchema = z.looseObject({
-  stroke: color.optional(),
-  strokeWidth: nonNegative.optional(),
-  fill: color.optional(),
-  radius: nonNegative.optional(),
-  opacity: finite.min(0).max(1).optional(),
-  color: color.optional(),
-  fontSize: finite.positive().optional(),
-  fontWeight: z.enum(["normal", "bold"]).optional(),
-  head: z.enum(["end", "both", "none"]).optional(),
-});
+// id は JSON Schema に変換したとき（MCP のツール定義など）に $ref で共有し、定義を繰り返さないため
+export const StyleSchema = z
+  .looseObject({
+    stroke: color.optional(),
+    strokeWidth: nonNegative.optional(),
+    fill: color.optional(),
+    radius: nonNegative.optional(),
+    opacity: finite.min(0).max(1).optional(),
+    color: color.optional(),
+    fontSize: finite.positive().optional(),
+    fontWeight: z.enum(["normal", "bold"]).optional(),
+    head: z.enum(["end", "both", "none"]).optional(),
+  })
+  .meta({ id: "HarieStyle" });
 export type Style = z.infer<typeof StyleSchema>;
 
 // 新しいバージョンで追加されたフィールドを古いアプリが保存時に消さないよう、loose にする
@@ -85,16 +88,18 @@ export const BlurAnnotationSchema = z.looseObject({
   method: z.enum(["blur", "mosaic"]),
 });
 
-export const AnnotationSchema = z.discriminatedUnion("type", [
-  RectAnnotationSchema,
-  EllipseAnnotationSchema,
-  ArrowAnnotationSchema,
-  TextAnnotationSchema,
-  CalloutAnnotationSchema,
-  BadgeAnnotationSchema,
-  SpotlightAnnotationSchema,
-  BlurAnnotationSchema,
-]);
+export const AnnotationSchema = z
+  .discriminatedUnion("type", [
+    RectAnnotationSchema,
+    EllipseAnnotationSchema,
+    ArrowAnnotationSchema,
+    TextAnnotationSchema,
+    CalloutAnnotationSchema,
+    BadgeAnnotationSchema,
+    SpotlightAnnotationSchema,
+    BlurAnnotationSchema,
+  ])
+  .meta({ id: "HarieAnnotation" });
 export type Annotation = z.infer<typeof AnnotationSchema>;
 export type AnnotationType = Annotation["type"];
 

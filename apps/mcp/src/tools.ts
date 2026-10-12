@@ -7,7 +7,9 @@ import {
   applyOps,
   createDocument,
   type HarieDocument,
+  type PiiMask,
   prepareForSave,
+  recordPiiApplied,
   renameForSave,
 } from "@harie/model";
 import type { RootGuard } from "./paths";
@@ -177,15 +179,73 @@ export async function edit(
   input: { path: string; ops: readonly unknown[]; expectedRevision?: number | undefined },
 ): Promise<ToolOutput> {
   const loaded = load(guard, input.path);
-  if (input.expectedRevision !== undefined && input.expectedRevision !== loaded.doc.revision) {
-    // 楽観的ロック: 先に別の人・ツールが保存していたら上書きしない
-    throw new ToolError(
-      `リビジョンが一致しません（期待 ${input.expectedRevision}、現在 ${loaded.doc.revision}）。harie_open で開き直してください`,
-    );
-  }
+  checkRevision(loaded, input.expectedRevision);
   const next = applyOrThrow(loaded.doc, input.ops);
   const { saved, rendered } = await save(loaded.path, next, loaded.base);
   return { summary: { path: guard.display(loaded.path), ...docSummary(saved) }, image: rendered };
+}
+
+/**
+ * PII 加工（ADR-0007）。ベース画像を不可逆に書き換えるので、`confirm: true` のときだけ保存する。
+ * `confirm` がなければ加工後の見た目だけを返し、ファイルは変えない（integrations.md 2.2）。
+ */
+export async function mask(
+  guard: RootGuard,
+  input: {
+    path: string;
+    masks: readonly PiiMask[];
+    confirm?: boolean | undefined;
+    outPath?: string | undefined;
+    expectedRevision?: number | undefined;
+  },
+): Promise<ToolOutput> {
+  const loaded = load(guard, input.path);
+  checkRevision(loaded, input.expectedRevision);
+  const { width, height } = loaded.doc.canvas;
+  const result = await (await nodeRenderer()).applyMasks({
+    base: loaded.base,
+    width,
+    height,
+    masks: input.masks,
+  });
+  if (result.applied.length < input.masks.length) {
+    throw new ToolError(
+      `画像（${width}×${height}）の外を指す範囲があります。rect を画像の中に収めてください`,
+    );
+  }
+  const next = recordPiiApplied(loaded.doc, result.applied);
+  if (input.confirm !== true) {
+    return {
+      summary: {
+        path: guard.display(loaded.path),
+        saved: false,
+        applied: result.applied,
+        hint: "加工後の見た目です。保存すると元に戻せません。範囲がよければ同じ masks に confirm: true を付けて呼んでください",
+      },
+      image: await renderImage(next, result.base),
+    };
+  }
+  const target = input.outPath === undefined ? loaded.path : guard.resolve(input.outPath);
+  if (target !== loaded.path) {
+    if (extname(target).toLowerCase() !== extname(loaded.path).toLowerCase()) {
+      throw new ToolError(`outPath の拡張子は ${extname(loaded.path)} にしてください`);
+    }
+    if (statSafe(target)) throw new ToolError(`既にファイルがあります: ${guard.display(target)}`);
+  }
+  const { saved, rendered } = await save(target, next, result.base);
+  return {
+    summary: { path: guard.display(target), saved: true, ...docSummary(saved) },
+    image: rendered,
+  };
+}
+
+function checkRevision(loaded: Loaded, expected: number | undefined): void {
+  if (expected !== undefined && expected !== loaded.doc.revision) {
+    // 楽観的ロック: 先に別の人・ツールが保存していたら上書きしない
+    throw new ToolError(
+      `リビジョンが一致しません（期待 ${expected}、現在 ${loaded.doc.revision}）。harie_open で開き直してください`,
+    );
+  }
 }
 
 export async function preview(

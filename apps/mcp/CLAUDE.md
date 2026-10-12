@@ -6,7 +6,8 @@
 - ファイルパスは必ず `RootGuard.resolve()` を通す。root の外（`..`・絶対パス・シンボリックリンク）を扱わない。
 - 利用者（LLM）の入力ミスは `ToolError` で返し、ツール結果の `isError` にする。
 - stdout は MCP の通信に使う。ログは `console.error` に出す。
-- PII 加工のツールは確認付きの専用ツールとして Next で追加する（integrations.md）。それまで追加しない。
+- PII 加工は確認付きの専用ツール `harie_mask` だけで行う。`confirm: true` のときだけ保存する（integrations.md 2.2）。
+- tools/list を小さく保つ（server.test.ts で上限を確かめている）。同じ定義を繰り返すスキーマは、`packages/model` 側で `.meta({ id })` を付けて `$ref` で共有する。
 
 ## npm への公開（`@harie/mcp`）
 
