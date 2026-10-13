@@ -14,6 +14,17 @@ pnpm --filter @harie/web dev    # Web エディタ（http://localhost:5173/）
 
 実装計画は [docs/04-plan/implementation-plan.md](docs/04-plan/implementation-plan.md) を参照。
 
+## パッケージ
+
+| パッケージ | 内容 |
+|---|---|
+| [packages/model](packages/model/README.md) | 注釈ドキュメントのスキーマと操作 |
+| [packages/format](packages/format/README.md) | JPEG / PNG への埋め込み・読み出し |
+| [packages/render](packages/render/README.md) | 注釈 → SVG → ピクセルの描画 |
+| [packages/ai](packages/ai/README.md) | AI の補足提案と個人情報の検出 |
+| [packages/editor](packages/editor/README.md) | エディタ UI（React） |
+| [apps/mcp](apps/mcp/README.md) | MCP サーバー |
+
 ## ライセンス
 
 MIT（[LICENSE](LICENSE)）。同梱するフォント（Noto Sans JP）は SIL Open Font License 1.1。
