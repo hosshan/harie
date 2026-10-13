@@ -202,7 +202,7 @@ test("ツールのパレットは描いている間は隠れ、たたむと小�
 test("ヘッダーの「画像を開く」は、今の画像を閉じる前に確認する", async ({ page }) => {
   await openFixture(page, "large-base.jpg");
   const header = page.getByRole("banner");
-  await expect(header.getByRole("button")).toHaveText(["画像を開く", "保存", "設定"]);
+  await expect(header.getByRole("button")).toHaveText(["画像を開く", "保存", "連携", "設定"]);
   await header.getByRole("button", { name: "画像を開く" }).click();
   const confirm = page.getByRole("dialog", { name: "画像を開く" });
   await expect(confirm).toContainText("large-base.jpg");
@@ -527,4 +527,34 @@ test("FR-EDIT-05: マスクの範囲を選んでいる間に削除しても、�
     .click();
   await expect(page.locator(".harie-mask-draft")).toHaveCount(0);
   await expect(annotationRects(page)).toHaveCount(1);
+});
+
+test("FR-CAP-07, FR-MCP-07: ヘッダーの「連携」で、Chrome 拡張の入れ方と MCP の登録方法を案内する", async ({
+  page,
+  context,
+}) => {
+  await context.grantPermissions(["clipboard-read", "clipboard-write"]);
+  await page.goto("/");
+  await page.getByRole("banner").getByRole("button", { name: "連携" }).click();
+  const guide = page.getByRole("dialog", { name: "ほかのツールと使う" });
+  await expect(guide).toContainText("chrome://extensions");
+  await expect(guide).toContainText("apps/extension/.output/chrome-mv3");
+  const command = "claude mcp add harie -- npx -y @harie/mcp --root ~/Pictures/guides";
+  await expect(
+    guide.getByRole("figure", { name: "Claude Code に登録するコマンド" }).locator("pre"),
+  ).toHaveText(command);
+  await guide.getByRole("button", { name: "Claude Code に登録するコマンドをコピー" }).click();
+  await expect(
+    guide.getByRole("button", { name: "Claude Code に登録するコマンドをコピー" }),
+  ).toHaveText("コピーしました");
+  expect(await page.evaluate(() => navigator.clipboard.readText())).toBe(command);
+  await guide.getByRole("button", { name: "閉じる" }).click();
+  await expect(guide).toBeHidden();
+
+  // 画像を開いた後の編集画面にも出る
+  await openFixture(page, "large-base.jpg");
+  await page.getByRole("banner").getByRole("button", { name: "連携" }).click();
+  await expect(page.getByRole("dialog", { name: "ほかのツールと使う" })).toContainText(
+    "@harie/mcp",
+  );
 });

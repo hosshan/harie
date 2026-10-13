@@ -1,6 +1,7 @@
 // Web エディタ。画像を開く → 注釈を編集する（AI の提案・個人情報の検出を含む） → 保存する
 import { useCallback, useEffect, useRef, useState } from "react";
 import { loadDisplayFonts } from "./fonts";
+import { GuideButton } from "./Guide";
 import { Header, HeaderButton } from "./Header";
 import { loadFile, type Opened } from "./load";
 import { deliver, type Saved } from "./save";
@@ -106,6 +107,7 @@ export function App() {
             <HeaderButton icon="open" className="app-primary" onClick={pick}>
               画像を開く
             </HeaderButton>
+            <GuideButton />
           </Header>
           <div className="app-drop">
             <p>
@@ -114,6 +116,10 @@ export function App() {
             <p className="harie-muted">
               JPEG と PNG に対応しています。保存した画像は普通の画像として使え、Harie
               で開けば注釈を直せます。
+            </p>
+            <p className="harie-muted">
+              Chrome 拡張でのキャプチャと、Claude
+              からの編集（MCP）の始め方は、右上の「連携」にあります。
             </p>
           </div>
         </>
@@ -137,6 +143,7 @@ export function App() {
           onChange={setOpened}
           onReopen={(next) => show(next, handle)}
           onOpenImage={pick}
+          menu={<GuideButton />}
         />
       )}
     </div>

@@ -8,7 +8,7 @@ import {
   useObjectUrl,
 } from "@harie/editor";
 import { type PiiMask, recordPiiApplied } from "@harie/model";
-import { useEffect, useRef, useState } from "react";
+import { type ReactNode, useEffect, useRef, useState } from "react";
 import { AiPanel } from "./ai/AiPanel";
 import { browserRenderer } from "./browser-renderer";
 import { Header, HeaderButton } from "./Header";
@@ -31,6 +31,8 @@ export type WorkspaceProps = {
   dom?: DomSnapshot;
   /** 別の画像を選んで開く（Web）。渡すとヘッダーに「画像を開く」を出し、押すと確認してから呼ぶ */
   onOpenImage?: () => void;
+  /** ヘッダーで「保存」の右に足すメニュー（Web の「連携」など） */
+  menu?: ReactNode;
 };
 
 /** 開いた 1 枚の画像の編集画面（保存・マスク・AI を含む）。Web と Chrome 拡張で共通 */
@@ -41,6 +43,7 @@ export function Workspace({
   onReopen,
   dom,
   onOpenImage,
+  menu,
 }: WorkspaceProps) {
   const [state, dispatch] = useEditorState(opened.doc);
   const [status, setStatus] = useState<string | null>(null);
@@ -109,6 +112,7 @@ export function Workspace({
         <HeaderButton icon="save" className="app-primary" disabled={saving} onClick={save}>
           保存
         </HeaderButton>
+        {menu}
       </Header>
       <Modal open={confirmOpen} label="画像を開く" onClose={() => setConfirmOpen(false)}>
         <h2>別の画像を開きますか？</h2>
