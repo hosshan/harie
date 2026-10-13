@@ -128,8 +128,9 @@ export function App() {
           key={loadId}
           opened={opened}
           deliver={async (saved: Saved, current: Opened) => {
-            // Harie ファイルを開いていたら上書き。普通の画像なら元の画像は残し、名前を変えて保存する
-            let target = current.wasHarie ? handle : null;
+            // Harie ファイルを開いていたら上書き。普通の画像なら元の画像は残し、名前を変えて保存する。
+            // 保存形式を変えたときも、拡張子が変わるので上書きせず別のファイルにする
+            let target = current.wasHarie && saved.format === current.format ? handle : null;
             const w = window as PickerWindow;
             if (target === null && handle !== null && w.showSaveFilePicker !== undefined) {
               target = await w.showSaveFilePicker({

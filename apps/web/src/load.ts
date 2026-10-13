@@ -1,11 +1,19 @@
 // 開いたファイルを、エディタで扱える状態にする（FR-FILE-05, FR-FILE-08）
-import { type BaseMediaType, type MismatchReason, readHarie, readImageSize } from "@harie/format";
+import {
+  type BaseMediaType,
+  type ImageFormat,
+  type MismatchReason,
+  readHarie,
+  readImageSize,
+} from "@harie/format";
 import { createDocument, type HarieDocument } from "@harie/model";
 
 export type Opened = {
   fileName: string;
   doc: HarieDocument;
   base: { bytes: Uint8Array; mediaType: BaseMediaType };
+  /** 開いたファイルの形式。保存形式の既定にする（ベース画像の形式とは違うことがある） */
+  format: ImageFormat;
   /** 元から Harie ファイルだったか（上書き保存してよいかの判断に使う） */
   wasHarie: boolean;
   /** 不整合だった理由。注釈を復元できたときも、画像だけを開いたときも入る */
@@ -36,7 +44,16 @@ export function loadFile(fileName: string, bytes: Uint8Array, now = new Date()):
   const read = readHarie(bytes);
   switch (read.kind) {
     case "harie":
-      return { ok: true, opened: { fileName, doc: read.doc, base: read.base, wasHarie: true } };
+      return {
+        ok: true,
+        opened: {
+          fileName,
+          doc: read.doc,
+          base: read.base,
+          format: read.format,
+          wasHarie: true,
+        },
+      };
     case "harie-mismatch":
       if (read.doc !== undefined && read.base !== undefined) {
         const current = plain(fileName, bytes, read.format, now);
@@ -46,6 +63,7 @@ export function loadFile(fileName: string, bytes: Uint8Array, now = new Date()):
             fileName,
             doc: read.doc,
             base: read.base,
+            format: read.format,
             wasHarie: true,
             warning: read.reason,
             // 今の画像を下地にしても Harie ファイルなので、開いたファイルへの上書きでよい
@@ -66,7 +84,7 @@ export function loadFile(fileName: string, bytes: Uint8Array, now = new Date()):
 function plain(
   fileName: string,
   bytes: Uint8Array,
-  format: "jpeg" | "png",
+  format: ImageFormat,
   now: Date,
   warning?: MismatchReason,
 ): LoadResult {
@@ -78,6 +96,7 @@ function plain(
       fileName,
       doc: createDocument({ ...size, now }),
       base: { bytes, mediaType: format === "png" ? "image/png" : "image/jpeg" },
+      format,
       wasHarie: false,
       ...(warning === undefined ? {} : { warning }),
     },

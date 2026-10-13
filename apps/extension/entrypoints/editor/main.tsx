@@ -14,7 +14,7 @@ import { type CaptureRecord, getCapture } from "@/lib/capture-store";
 /** 保存は chrome.downloads で行う（拡張ページではファイルの上書きができないため、毎回新しいファイルにする） */
 async function deliver(saved: Saved): Promise<void> {
   const blob = new Blob([saved.bytes as Uint8Array<ArrayBuffer>], {
-    type: saved.fileName.endsWith(".png") ? "image/png" : "image/jpeg",
+    type: saved.format === "png" ? "image/png" : "image/jpeg",
   });
   const url = URL.createObjectURL(blob);
   try {

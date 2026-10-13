@@ -2,7 +2,13 @@
 // LLM は呼ばない。画像を見て注釈を考えるのはクライアント側の LLM で、ここは読み書きと描画に徹する
 import { readdirSync, readFileSync, renameSync, statSync, writeFileSync } from "node:fs";
 import { basename, dirname, extname, join } from "node:path";
-import { type BaseMediaType, readHarie, readImageSize, writeHarie } from "@harie/format";
+import {
+  type BaseMediaType,
+  type ImageFormat,
+  readHarie,
+  readImageSize,
+  writeHarie,
+} from "@harie/format";
 import {
   applyOps,
   createDocument,
@@ -25,9 +31,11 @@ type Loaded = {
   path: string;
   doc: HarieDocument;
   base: { bytes: Uint8Array; mediaType: BaseMediaType };
+  /** ファイルの形式。保存し直すときもこの形式で書く（ベース画像の形式とは違うことがある） */
+  format: ImageFormat;
 };
 
-const mediaTypeOf = (format: "jpeg" | "png"): BaseMediaType =>
+const mediaTypeOf = (format: ImageFormat): BaseMediaType =>
   format === "png" ? "image/png" : "image/jpeg";
 
 function readBytes(path: string): Uint8Array {
@@ -48,10 +56,12 @@ function writeAtomic(path: string, bytes: Uint8Array): void {
 function load(guard: RootGuard, path: string): Loaded {
   const absolute = guard.resolve(path);
   const read = readHarie(readBytes(absolute));
-  if (read.kind === "harie") return { path: absolute, doc: read.doc, base: read.base };
+  if (read.kind === "harie") {
+    return { path: absolute, doc: read.doc, base: read.base, format: read.format };
+  }
   if (read.kind === "harie-mismatch" && read.doc !== undefined && read.base !== undefined) {
     // 画像だけ外部ツールで変わった場合など。埋め込みの注釈とベースから描き直せば整合が戻る
-    return { path: absolute, doc: read.doc, base: read.base };
+    return { path: absolute, doc: read.doc, base: read.base, format: read.format };
   }
   if (read.kind === "plain") {
     throw new ToolError(
@@ -72,20 +82,27 @@ function docSummary(doc: HarieDocument) {
   };
 }
 
-async function renderImage(doc: HarieDocument, base: Loaded["base"]): Promise<ImageOut> {
-  const output = base.mediaType === "image/png" ? "png" : "jpeg";
+async function renderImage(
+  doc: HarieDocument,
+  base: Loaded["base"],
+  output: ImageFormat,
+): Promise<ImageOut> {
   const data = await (await nodeRenderer()).render({ doc, base, output, includeSuggested: true });
-  return { data, mediaType: base.mediaType };
+  return { data, mediaType: mediaTypeOf(output) };
 }
 
-/** 保存する。描画した画像に注釈データを埋め込んで書き出し、保存したドキュメントを返す。 */
-async function save(target: string, doc: HarieDocument, base: Loaded["base"]) {
+/**
+ * 保存する。描画した画像に注釈データを埋め込んで書き出し、保存したドキュメントを返す。
+ * output は保存形式。ベース画像は形式に関わらず読み込んだバイト列のまま埋め込む（ADR-0004）。
+ */
+async function save(target: string, doc: HarieDocument, base: Loaded["base"], output: ImageFormat) {
   const saved = prepareForSave(doc);
-  const output = base.mediaType === "image/png" ? "png" : "jpeg";
   const rendered = await (await nodeRenderer()).render({ doc: saved, base, output });
   writeAtomic(target, writeHarie({ rendered, base: base.bytes, doc: saved }));
-  return { saved, rendered: { data: rendered, mediaType: base.mediaType } };
+  return { saved, rendered: { data: rendered, mediaType: mediaTypeOf(output) } };
 }
+
+const EXT_FORMATS: Record<string, ImageFormat> = { ".jpg": "jpeg", ".jpeg": "jpeg", ".png": "png" };
 
 function applyOrThrow(doc: HarieDocument, ops: readonly unknown[]): HarieDocument {
   const result = applyOps(doc, ops);
@@ -136,7 +153,12 @@ export function open(guard: RootGuard, input: { path: string }): ToolOutput {
 
 export async function create(
   guard: RootGuard,
-  input: { imagePath: string; outPath?: string | undefined; title?: string | undefined },
+  input: {
+    imagePath: string;
+    outPath?: string | undefined;
+    title?: string | undefined;
+    format?: ImageFormat | undefined;
+  },
 ): Promise<ToolOutput> {
   const source = guard.resolve(input.imagePath);
   const bytes = readBytes(source);
@@ -147,13 +169,18 @@ export async function create(
   const size = readImageSize(bytes);
   if (size === null) throw new ToolError("画像の大きさを読めません");
   const mediaType = mediaTypeOf(read.format);
-  const ext = read.format === "png" ? "png" : "jpg";
+  // 保存形式: format の指定 → outPath の拡張子 → 元画像の形式 の順に決める
+  const outFormat =
+    input.format ??
+    (input.outPath === undefined ? undefined : EXT_FORMATS[extname(input.outPath).toLowerCase()]) ??
+    read.format;
+  const ext = outFormat === "png" ? "png" : "jpg";
   const target = guard.resolve(
     input.outPath ?? join(dirname(source), renameForSave(basename(source), ext)),
   );
-  if (extname(target).toLowerCase() !== `.${ext}`) {
+  if (EXT_FORMATS[extname(target).toLowerCase()] !== outFormat) {
     throw new ToolError(
-      `outPath の拡張子は .${ext} にしてください（元画像と同じ形式で保存します）`,
+      `outPath の拡張子は ${outFormat === "png" ? ".png" : ".jpg"} にしてください（${outFormat.toUpperCase()} で保存します）`,
     );
   }
   if (statSafe(target)) throw new ToolError(`既にファイルがあります: ${guard.display(target)}`);
@@ -161,7 +188,7 @@ export async function create(
     ...size,
     ...(input.title === undefined ? {} : { title: input.title }),
   });
-  const { saved } = await save(target, doc, { bytes, mediaType });
+  const { saved } = await save(target, doc, { bytes, mediaType }, outFormat);
   return { summary: { path: guard.display(target), ...docSummary(saved) } };
 }
 
@@ -181,7 +208,7 @@ export async function edit(
   const loaded = load(guard, input.path);
   checkRevision(loaded, input.expectedRevision);
   const next = applyOrThrow(loaded.doc, input.ops);
-  const { saved, rendered } = await save(loaded.path, next, loaded.base);
+  const { saved, rendered } = await save(loaded.path, next, loaded.base, loaded.format);
   return { summary: { path: guard.display(loaded.path), ...docSummary(saved) }, image: rendered };
 }
 
@@ -222,7 +249,7 @@ export async function mask(
         applied: result.applied,
         hint: "加工後の見た目です。保存すると元に戻せません。範囲がよければ同じ masks に confirm: true を付けて呼んでください",
       },
-      image: await renderImage(next, result.base),
+      image: await renderImage(next, result.base, loaded.format),
     };
   }
   const target = input.outPath === undefined ? loaded.path : guard.resolve(input.outPath);
@@ -232,7 +259,7 @@ export async function mask(
     }
     if (statSafe(target)) throw new ToolError(`既にファイルがあります: ${guard.display(target)}`);
   }
-  const { saved, rendered } = await save(target, next, result.base);
+  const { saved, rendered } = await save(target, next, result.base, loaded.format);
   return {
     summary: { path: guard.display(target), saved: true, ...docSummary(saved) },
     image: rendered,
@@ -256,7 +283,7 @@ export async function preview(
   const next = applyOrThrow(loaded.doc, input.ops);
   return {
     summary: { path: guard.display(loaded.path), saved: false, ...docSummary(next) },
-    image: await renderImage(next, loaded.base),
+    image: await renderImage(next, loaded.base, loaded.format),
   };
 }
 

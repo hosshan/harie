@@ -71,6 +71,14 @@ input {
   align-items: center;
   gap: 6px;
 }
+.app-save-format {
+  font: inherit;
+  padding: 4px 6px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: #fff;
+  cursor: pointer;
+}
 .app-header-button svg {
   fill: none;
   stroke: currentColor;
