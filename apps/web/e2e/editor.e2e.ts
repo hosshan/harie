@@ -127,6 +127,45 @@ test("FR-FILE-06: 保存したファイルは普通の JPEG で、開き直す�
   await expect(page.locator(".app-file-name")).toHaveText("large-base.harie.jpg");
 });
 
+test("FR-FILE-01, 02: 保存形式を選べ、JPEG を PNG で保存してもベース画像はそのまま残る", async ({
+  page,
+}) => {
+  await openFixture(page, "large-base.jpg");
+  const format = page.getByRole("combobox", { name: "保存形式" });
+  // 既定は開いたファイルの形式
+  await expect(format).toHaveValue("jpeg");
+  await page.getByRole("button", { name: "四角" }).click();
+  await drag(page, [40, 40], [240, 120]);
+  await format.selectOption("png");
+
+  const [download] = await Promise.all([
+    page.waitForEvent("download"),
+    page.getByRole("button", { name: "保存" }).click(),
+  ]);
+  expect(download.suggestedFilename()).toBe("large-base.harie.png");
+  const file = new Uint8Array(readFileSync(await download.path()));
+  const read = readHarie(file);
+  expect(read).toMatchObject({ kind: "harie", format: "png", base: { mediaType: "image/jpeg" } });
+  if (read.kind !== "harie") return;
+  expect(read.base.bytes).toEqual(new Uint8Array(fixture("large-base.jpg")));
+  // NFR-PLAT-05: PNG で保存しても Node の結果とバイト単位で一致する
+  const rendered = await (await nodeRenderer()).render({
+    doc: read.doc,
+    base: read.base,
+    output: "png",
+  });
+  expect(writeHarie({ rendered, base: read.base.bytes, doc: read.doc })).toEqual(file);
+
+  // 保存したファイルを開き直すと、既定の保存形式は PNG になる
+  await page.getByLabel("画像ファイル").setInputFiles({
+    name: "large-base.harie.png",
+    mimeType: "image/png",
+    buffer: Buffer.from(file),
+  });
+  await expect(page.locator(".app-file-name")).toHaveText("large-base.harie.png");
+  await expect(format).toHaveValue("png");
+});
+
 test("FR-EDIT-03: テキストは置いた直後とダブルクリックで、その場で文字を直せる。文字サイズは候補と pt で変えられる", async ({
   page,
 }) => {

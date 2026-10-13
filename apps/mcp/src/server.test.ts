@@ -95,6 +95,36 @@ describe("harie MCP server", () => {
     );
   });
 
+  it("FR-FILE-01, 02: format で保存形式を選べ、ベース画像はそのまま埋め込み、以後もその形式で保存する", async () => {
+    const { root, call } = await setup();
+    const created = await call("harie_create", { imagePath: "screen.jpg", format: "png" });
+    expect(created.json()).toMatchObject({ path: "screen.harie.png" });
+    const edited = await call("harie_edit", {
+      path: "screen.harie.png",
+      ops: [{ op: "add", annotation: rect }],
+    });
+    expect(edited.image?.mimeType).toBe("image/png");
+    const read = readHarie(new Uint8Array(readFileSync(join(root, "screen.harie.png"))));
+    expect(read).toMatchObject({ kind: "harie", format: "png", base: { mediaType: "image/jpeg" } });
+    if (read.kind !== "harie") throw new Error(read.kind);
+    expect(read.base.bytes).toEqual(new Uint8Array(readFileSync(join(root, "screen.jpg"))));
+
+    // format がなければ outPath の拡張子に従う。食い違えば保存しない
+    const byExt = await call("harie_create", { imagePath: "screen.png", outPath: "out.jpg" });
+    expect(readHarie(new Uint8Array(readFileSync(join(root, "out.jpg"))))).toMatchObject({
+      kind: "harie",
+      format: "jpeg",
+    });
+    expect(byExt.isError).toBe(false);
+    const conflict = await call("harie_create", {
+      imagePath: "screen.png",
+      outPath: "x.png",
+      format: "jpeg",
+    });
+    expect(conflict.isError).toBe(true);
+    expect(conflict.text).toContain(".jpg");
+  });
+
   it("FR-MCP-03: preview はファイルを変えずに画像を返す", async () => {
     const { root, call } = await setup();
     await call("harie_create", { imagePath: "screen.jpg" });
@@ -165,12 +195,12 @@ describe("harie MCP server", () => {
     expect(r.isError).toBe(true);
   });
 
-  it("create は既存ファイルを上書きせず、拡張子の不一致も拒否する", async () => {
+  it("create は既存ファイルを上書きせず、JPEG / PNG 以外の拡張子も拒否する", async () => {
     const { call } = await setup();
     await call("harie_create", { imagePath: "screen.png" });
     expect((await call("harie_create", { imagePath: "screen.png" })).isError).toBe(true);
     expect(
-      (await call("harie_create", { imagePath: "screen.png", outPath: "x.harie.jpg" })).isError,
+      (await call("harie_create", { imagePath: "screen.png", outPath: "x.harie.webp" })).isError,
     ).toBe(true);
   });
 

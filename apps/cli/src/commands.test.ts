@@ -34,6 +34,16 @@ describe("harie CLI", () => {
     },
   );
 
+  it("FR-FILE-01, 02: --format で保存形式を選べ、描き直してもその形式を保つ", async () => {
+    const dir = workdir();
+    const file = await create(join(dir, "screen.jpg"), { format: "png", now: NOW });
+    expect(file).toBe(join(dir, "screen.harie.png"));
+    await render(file, { now: NOW });
+    const read = readFile(file);
+    expect(read).toMatchObject({ kind: "harie", format: "png", base: { mediaType: "image/jpeg" } });
+    await expect(create(join(dir, "screen.png"), { format: "webp" })).rejects.toThrow("--format");
+  });
+
   it("extract した JSON を編集して render すると、注釈が反映されリビジョンが進む", async () => {
     const dir = workdir();
     const file = await create(join(dir, "screen.png"), { now: NOW });

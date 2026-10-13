@@ -10,7 +10,7 @@ Claude などの MCP クライアントから「この画像に枠を付けて�
 | ツール | 内容 |
 |---|---|
 | `harie_open` | ファイルを開き、注釈の一覧と画像を返す。普通の画像なら `status: plain` |
-| `harie_create` | 普通の JPEG / PNG から Harie ファイルを作る（既定は `<名前>.harie.<拡張子>`。元画像は残す） |
+| `harie_create` | 普通の JPEG / PNG から Harie ファイルを作る（既定は `<名前>.harie.<拡張子>`。元画像は残す）。`format`（`jpeg` / `png`）で保存形式を選べる |
 | `harie_preview` | 注釈の変更（ops）を適用した画像を返す。ファイルは変えない |
 | `harie_edit` | 注釈の変更を適用し、描き直して上書き保存する。`expectedRevision` で楽観的ロック |
 | `harie_list` | ディレクトリ内の Harie ファイルを一覧する |

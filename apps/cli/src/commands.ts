@@ -1,7 +1,13 @@
 // 開発用 CLI のコマンド本体。手元で Harie ファイルを作る・検査する・描き直すためのもの（実装計画 M1）
 import { readFileSync, writeFileSync } from "node:fs";
 import { basename, dirname, join } from "node:path";
-import { type BaseMediaType, readHarie, readImageSize, writeHarie } from "@harie/format";
+import {
+  type BaseMediaType,
+  type ImageFormat,
+  readHarie,
+  readImageSize,
+  writeHarie,
+} from "@harie/format";
 import {
   createDocument,
   type HarieDocument,
@@ -16,17 +22,22 @@ import { nodeRenderer } from "./runtime";
 /** 利用者に見せるエラー。スタックトレースを出さずにメッセージだけ表示する。 */
 export class CliError extends Error {}
 
-type Loaded = { doc: HarieDocument; base: { bytes: Uint8Array; mediaType: BaseMediaType } };
+type Loaded = {
+  doc: HarieDocument;
+  base: { bytes: Uint8Array; mediaType: BaseMediaType };
+  /** 保存形式。描き直すときもファイルの形式を保つ（ベース画像の形式とは違うことがある） */
+  format: ImageFormat;
+};
 
 function loadHarie(path: string): Loaded {
   const read = readHarie(new Uint8Array(readFileSync(path)));
   switch (read.kind) {
     case "harie":
-      return { doc: read.doc, base: read.base };
+      return { doc: read.doc, base: read.base, format: read.format };
     case "harie-mismatch":
       if (read.doc !== undefined && read.base !== undefined) {
         // 外部ツールで画像だけ変わった場合など。埋め込みの注釈とベースから描き直せば整合が戻る
-        return { doc: read.doc, base: read.base };
+        return { doc: read.doc, base: read.base, format: read.format };
       }
       throw new CliError(`${path}: Harie のデータを復元できません（${read.reason}）`);
     case "plain":
@@ -40,16 +51,14 @@ function loadHarie(path: string): Loaded {
   }
 }
 
-const extOf = (mediaType: BaseMediaType) => (mediaType === "image/png" ? "png" : "jpg");
-
-function defaultOut(input: string, mediaType: BaseMediaType): string {
-  return join(dirname(input), renameForSave(basename(input), extOf(mediaType)));
+function defaultOut(input: string, format: ImageFormat): string {
+  return join(dirname(input), renameForSave(basename(input), format === "png" ? "png" : "jpg"));
 }
 
-/** ドキュメントとベース画像から描き、Harie ファイルとして書き出す。出力形式はベース画像に合わせる。 */
+/** ドキュメントとベース画像から描き、Harie ファイルとして書き出す。出力形式は loaded.format。 */
 async function save(loaded: Loaded, out: string, now?: Date): Promise<string> {
   const doc = prepareForSave(loaded.doc, now === undefined ? {} : { now });
-  const output = loaded.base.mediaType === "image/png" ? "png" : "jpeg";
+  const output = loaded.format;
   const rendered = await (await nodeRenderer()).render({ doc, base: loaded.base, output });
   writeFileSync(out, writeHarie({ rendered, base: loaded.base.bytes, doc }));
   return out;
@@ -110,8 +119,11 @@ export function inspect(path: string, options: { json?: boolean } = {}): string 
 /** 普通の画像から、注釈のない Harie ファイルを作る（FR-FILE-08）。 */
 export async function create(
   imagePath: string,
-  options: { out?: string; title?: string; now?: Date } = {},
+  options: { out?: string; title?: string; format?: string; now?: Date } = {},
 ): Promise<string> {
+  if (options.format !== undefined && options.format !== "jpeg" && options.format !== "png") {
+    throw new CliError("--format は jpeg か png で指定してください");
+  }
   const bytes = new Uint8Array(readFileSync(imagePath));
   const read = readHarie(bytes);
   if (read.kind === "harie") throw new CliError(`${imagePath}: すでに Harie ファイルです`);
@@ -126,8 +138,10 @@ export async function create(
     ...(options.title === undefined ? {} : { title: options.title }),
     ...(options.now === undefined ? {} : { now: options.now }),
   });
-  const out = options.out ?? defaultOut(imagePath, mediaType);
-  return save({ doc, base: { bytes, mediaType } }, out, options.now);
+  // 保存形式は --format、なければ元画像と同じ。ベース画像は形式に関わらずそのまま埋め込む
+  const format = options.format ?? read.format;
+  const out = options.out ?? defaultOut(imagePath, format);
+  return save({ doc, base: { bytes, mediaType }, format }, out, options.now);
 }
 
 /** 埋め込みの注釈（または `--doc` で渡した JSON）で描き直す。 */
@@ -211,6 +225,10 @@ export async function mask(
     masks: [parsed.data],
   });
   if (result.applied.length === 0) throw new CliError("範囲が画像の外です");
-  const masked = { doc: recordPiiApplied(loaded.doc, result.applied), base: result.base };
+  const masked = {
+    doc: recordPiiApplied(loaded.doc, result.applied),
+    base: result.base,
+    format: loaded.format,
+  };
   return save(masked, options.out ?? path, options.now);
 }

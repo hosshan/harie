@@ -5,7 +5,8 @@ const USAGE = `harie — Harie ファイルの開発用 CLI
 
 使い方:
   harie inspect <file> [--json]                 ファイルの状態・注釈の概要を表示する
-  harie create <image> [-o out] [--title t]     普通の画像から Harie ファイルを作る
+  harie create <image> [-o out] [--title t] [--format jpeg|png]
+                                               普通の画像から Harie ファイルを作る（既定は元画像と同じ形式）
   harie render <file> [--doc doc.json] [-o out] 注釈（または JSON）で描き直す。-o 省略時は上書き
   harie extract <file> [--doc out.json] [--base out.jpg]
                                                注釈 JSON とベース画像を取り出す
@@ -20,6 +21,7 @@ export async function main(argv: string[]): Promise<number> {
       out: { type: "string", short: "o" },
       json: { type: "boolean" },
       title: { type: "string" },
+      format: { type: "string" },
       doc: { type: "string" },
       base: { type: "string" },
       rect: { type: "string" },
@@ -46,7 +48,9 @@ export async function main(argv: string[]): Promise<number> {
         console.log(inspect(file, opt("json")));
         return 0;
       case "create":
-        console.log(`作成: ${await create(file, { ...opt("out"), ...opt("title") })}`);
+        console.log(
+          `作成: ${await create(file, { ...opt("out"), ...opt("title"), ...opt("format") })}`,
+        );
         return 0;
       case "render":
         console.log(`保存: ${await render(file, { ...opt("out"), ...opt("doc") })}`);

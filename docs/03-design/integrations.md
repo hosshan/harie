@@ -69,7 +69,7 @@ type DomSnapshot = {
 | `harie_open` | `path` | 注釈ドキュメント（JSON）、レンダリング画像（image content）、整合性の状態 | FR-MCP-02 |
 | `harie_list` | `dir`, `recursive?` | Harie ファイルの一覧（パス・タイトル・注釈数） | FR-MCP-05 |
 | `harie_search` | `query`, `dir` | 注釈テキストに一致したファイルと注釈 ID | FR-MCP-05 |
-| `harie_create` | `imagePath`, `outPath?`, `title?` | 新規 Harie ファイルのパスと docId | FR-MCP-04 |
+| `harie_create` | `imagePath`, `outPath?`, `title?`, `format?` | 新規 Harie ファイルのパスと docId | FR-MCP-04 |
 | `harie_edit` | `path`, `ops: Op[]`, `expectedRevision?` | 新しいリビジョン、レンダリング画像のプレビュー | FR-MCP-03 |
 | `harie_preview` | `path`, `ops: Op[]` | 保存せずにレンダリング結果だけ返す | FR-MCP-03 |
 | `harie_mask` | `path`, `masks: PiiMask[]`, `confirm?`, `outPath?`, `expectedRevision?` | `confirm` なしは加工後の画像だけ（保存しない）。`confirm: true` で保存 | FR-PII-02〜04 |
@@ -79,6 +79,7 @@ type DomSnapshot = {
 - `harie_edit` は `applyOps()` と同じ操作列（[注釈ドキュメントモデル](./document-model.md)）を受け取る。ツールの入力スキーマは zod（`OpSchema`）から生成し、座標の決まり（ベース画像のピクセル、左上原点）と例をツールの説明に含める。
 - 画像は MCP の image content で返す。`harie_open` はファイルそのもの、`harie_edit` / `harie_preview` は描き直した画像（`harie_preview` は AI 提案中の注釈も描く）。
 - 保存は一時ファイルに書いてから置き換える（書き込み途中で落ちても元のファイルを壊さない）。`harie_create` は既存ファイルを上書きしない。
+- 保存形式は `harie_create` で決める（`format` → `outPath` の拡張子 → 元画像の形式の順）。ベース画像は形式に関わらず元のバイト列のまま埋め込む。以後の `harie_edit` / `harie_mask` は開いたファイルの形式で保存し直す（ベース画像の形式には合わせない）。
 - パスは `--root` からの相対パスか絶対パス。`..`・絶対パス・シンボリックリンクで root の外を指すものは拒否する。
 - `expectedRevision` を渡すと、別の人・別のツールが先に保存していた場合に失敗させる（楽観的ロック）。
 - PII 加工（ベース画像の書き換え、ADR-0007）は確認付きの専用ツール `harie_mask` で行う。誤って元の画像を失わないよう、`confirm` を付けない呼び出しは加工後の見た目を返すだけでファイルを変えない。`confirm: true` で保存し、`outPath` を渡せば別のファイルとして保存する（既存ファイルは上書きしない）。範囲が画像の外にはみ出す指示は拒否する。

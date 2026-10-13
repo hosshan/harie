@@ -69,10 +69,16 @@ export function createServer(options: { root: string }): McpServer {
     {
       title: "画像から Harie ファイルを作る",
       description:
-        "普通の JPEG/PNG から注釈のない Harie ファイルを作る。元の画像はそのまま残し、既定では <名前>.harie.<拡張子> に保存する",
+        "普通の JPEG/PNG から注釈のない Harie ファイルを作る。元の画像はそのまま残し、既定では <名前>.harie.<拡張子> に保存する。以後の保存もこの形式になる",
       inputSchema: {
         imagePath: path,
         outPath: z.string().optional().describe("保存先。省略時は <名前>.harie.<拡張子>"),
+        format: z
+          .enum(["jpeg", "png"])
+          .optional()
+          .describe(
+            "保存形式。省略時は outPath の拡張子、なければ元画像と同じ。文字の多い画面は png",
+          ),
         title: z.string().optional().describe("画像のタイトル（例: 通知設定の画面）"),
       },
     },

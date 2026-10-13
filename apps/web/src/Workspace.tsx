@@ -7,6 +7,7 @@ import {
   useEditorState,
   useObjectUrl,
 } from "@harie/editor";
+import type { ImageFormat } from "@harie/format";
 import { type PiiMask, recordPiiApplied } from "@harie/model";
 import { type ReactNode, useEffect, useRef, useState } from "react";
 import { AiPanel } from "./ai/AiPanel";
@@ -48,6 +49,7 @@ export function Workspace({
   const [state, dispatch] = useEditorState(opened.doc);
   const [status, setStatus] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
+  const [format, setFormat] = useState<ImageFormat>(opened.format);
   const [showWarning, setShowWarning] = useState(opened.warning !== undefined);
   const [masks, setMasks] = useState<MaskDraft[]>([]);
   const [confirmOpen, setConfirmOpen] = useState(false);
@@ -70,12 +72,18 @@ export function Workspace({
     setSaving(true);
     setStatus("保存しています…");
     try {
-      const saved = await buildSaveFile(opened, state.doc);
+      const saved = await buildSaveFile(opened, state.doc, format);
       await deliver(saved, opened);
       dispatch({ type: "saved", revision: saved.doc.revision, meta: saved.doc.meta });
       savedDoc.current = { ...state.doc, revision: saved.doc.revision };
       setStatus(`${saved.fileName} を保存しました`);
-      onChange({ ...opened, fileName: saved.fileName, wasHarie: true, doc: saved.doc });
+      onChange({
+        ...opened,
+        fileName: saved.fileName,
+        format: saved.format,
+        wasHarie: true,
+        doc: saved.doc,
+      });
     } catch (e) {
       setStatus(
         e instanceof DOMException && e.name === "AbortError" ? null : `保存できませんでした: ${e}`,
@@ -109,6 +117,17 @@ export function Workspace({
             画像を開く
           </HeaderButton>
         )}
+        <select
+          className="app-save-format"
+          aria-label="保存形式"
+          title="JPEG はファイルが小さく、PNG は文字がくっきり残ります"
+          value={format}
+          disabled={saving}
+          onChange={(e) => setFormat(e.target.value as ImageFormat)}
+        >
+          <option value="jpeg">JPEG</option>
+          <option value="png">PNG</option>
+        </select>
         <HeaderButton icon="save" className="app-primary" disabled={saving} onClick={save}>
           保存
         </HeaderButton>
