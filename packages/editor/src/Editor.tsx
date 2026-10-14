@@ -13,7 +13,7 @@ import {
 import { Canvas, type Tool } from "./Canvas";
 import { type EditorAction, type EditorState, editorReducer, initialState } from "./history";
 import { MaskPanel } from "./MaskPanel";
-import { type MaskDraft, newMaskDraft, toPiiMasks } from "./masks";
+import { type AppliedMask, type MaskDraft, newMaskDraft, toPiiMasks } from "./masks";
 import { Palette, type PaletteTool } from "./Palette";
 import { adoptSuggestionOps, rejectSuggestionOps } from "./suggestions";
 
@@ -73,6 +73,10 @@ export type EditorProps = {
    */
   masks?: MaskDraft[];
   onMasksChange?: (masks: MaskDraft[]) => void;
+  /** 適用済みで、まだ保存していないマスク。選択の道具で選んで外せる（ADR-0009） */
+  appliedMasks?: readonly AppliedMask[];
+  /** 適用済みのマスクを外す（加工前の画像から、残りのマスクをかけ直す） */
+  onUnmask?: (id: string) => Promise<void>;
   /** 右側の欄の先頭に出す内容（AI のパネルなど） */
   aside?: ReactNode;
 };
@@ -84,6 +88,8 @@ export function Editor({
   onApplyMasks,
   masks: controlledMasks,
   onMasksChange,
+  appliedMasks = [],
+  onUnmask,
   aside,
 }: EditorProps) {
   const [tool, setTool] = useState<Tool>("select");
@@ -95,6 +101,32 @@ export function Editor({
     if (controlledMasks === undefined) setOwnMasks(next);
     onMasksChange?.(next);
   };
+  const [selectedMaskId, setSelectedMaskId] = useState<string | null>(null);
+  const selectedMask = appliedMasks.find((m) => m.id === selectedMaskId);
+  const [unmasking, setUnmasking] = useState(false);
+  const [unmaskError, setUnmaskError] = useState<string | null>(null);
+  const unmask = useCallback(
+    async (id: string) => {
+      if (onUnmask === undefined) return;
+      setUnmasking(true);
+      setUnmaskError(null);
+      try {
+        await onUnmask(id);
+        setSelectedMaskId(null);
+      } catch (e) {
+        setUnmaskError(
+          `隠すのをやめられませんでした: ${e instanceof Error ? e.message : String(e)}`,
+        );
+      } finally {
+        setUnmasking(false);
+      }
+    },
+    [onUnmask],
+  );
+  // 注釈を選んだら、適用済みのマスクの選択は外す（右の欄に出すのはどちらか一方）
+  useEffect(() => {
+    if (state.selectedId !== null) setSelectedMaskId(null);
+  }, [state.selectedId]);
   const canMask = onApplyMasks !== undefined;
   const tools = useMemo(() => (canMask ? [...TOOLS, MASK_TOOL] : TOOLS), [canMask]);
   // マスクの範囲を選んでいる間は注釈の選択を外す。右の欄の「削除」や Delete キーで、
@@ -102,7 +134,10 @@ export function Editor({
   const selectTool = useCallback(
     (next: Tool) => {
       setTool(next);
-      if (next === "mask") dispatch({ type: "select", id: null });
+      if (next === "mask") {
+        dispatch({ type: "select", id: null });
+        setSelectedMaskId(null);
+      }
     },
     [dispatch],
   );
@@ -125,9 +160,13 @@ export function Editor({
       } else if ((e.key === "Delete" || e.key === "Backspace") && state.selectedId !== null) {
         e.preventDefault();
         dispatch({ type: "apply", ops: [{ op: "remove", id: state.selectedId }] });
+      } else if ((e.key === "Delete" || e.key === "Backspace") && selectedMask !== undefined) {
+        e.preventDefault();
+        if (!unmasking) void unmask(selectedMask.id);
       } else if (e.key === "Escape") {
         setTool("select");
         dispatch({ type: "select", id: null });
+        setSelectedMaskId(null);
       } else if (!mod && !e.altKey) {
         const t = tools.find((x) => x.key === e.key);
         if (t !== undefined) selectTool(t.tool);
@@ -135,7 +174,7 @@ export function Editor({
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [dispatch, state.selectedId, tools, selectTool]);
+  }, [dispatch, state.selectedId, tools, selectTool, selectedMask, unmask, unmasking]);
 
   const selected = state.doc.annotations.find((a) => a.id === state.selectedId);
 
@@ -151,6 +190,13 @@ export function Editor({
             onToolDone={() => setTool("select")}
             masks={masks}
             onMaskDrawn={(rect) => setMasks([...masks, newMaskDraft(masks, rect)])}
+            {...(onUnmask === undefined
+              ? {}
+              : {
+                  appliedMasks,
+                  selectedAppliedMaskId: selectedMask?.id ?? null,
+                  onSelectAppliedMask: setSelectedMaskId,
+                })}
             onDraggingChange={setDragging}
           />
           <Palette
@@ -180,7 +226,22 @@ export function Editor({
               }}
             />
           )}
-          {selected === undefined ? (
+          {selected === undefined && selectedMask !== undefined ? (
+            <section className="harie-inspector-body" aria-label="隠した範囲">
+              <h2>隠した範囲 {appliedMasks.indexOf(selectedMask) + 1}</h2>
+              <p className="harie-muted">
+                保存するまでは、隠すのをやめられます。保存すると元に戻せません。
+              </p>
+              <button
+                type="button"
+                disabled={unmasking}
+                onClick={() => void unmask(selectedMask.id)}
+              >
+                {unmasking ? "元に戻しています…" : "隠すのをやめる"}
+              </button>
+              {unmaskError !== null && <p role="alert">{unmaskError}</p>}
+            </section>
+          ) : selected === undefined ? (
             tool !== "mask" && (
               <p className="harie-muted">注釈を選ぶと、ここで文字や色を変えられます。</p>
             )
