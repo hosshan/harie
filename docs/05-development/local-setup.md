@@ -45,7 +45,7 @@ pnpm build    # apps/mcp/dist/index.mjs ができる
 claude mcp add harie -- node "$PWD/apps/mcp/dist/index.mjs" --root ~/Pictures/guides
 ```
 
-Claude Code（または Claude Desktop）から「`settings.png` を Harie ファイルにして、保存ボタンを赤枠で囲んで」のように頼む。操作できるのは `--root` 配下だけ。Claude Desktop の設定とツール一覧は [apps/mcp/README.md](../../apps/mcp/README.md)。
+Claude Code（または Claude Desktop）から「`settings.png` を Harie ファイルにして、保存ボタンを赤枠で囲んで」のように頼む。操作できるのは `--root` 配下だけ。Claude Desktop の設定とツール一覧は [apps/mcp/README.ja.md](../../apps/mcp/README.ja.md)。
 
 ## 4. 開発用 CLI（apps/cli）
 

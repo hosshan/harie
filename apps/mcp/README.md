@@ -1,26 +1,30 @@
 # @harie/mcp
 
-Harie ファイル（保存後も注釈を再編集できる JPEG / PNG）を読み書きするローカル MCP サーバー（stdio）。
-Claude などの MCP クライアントから「この画像に枠を付けて」「この説明文を直して」と頼めるようにする。
+English | [日本語](https://github.com/hosshan/harie/blob/main/apps/mcp/README.ja.md)
 
-サーバーは LLM を呼ばない。画像を見て注釈を考えるのはクライアント側の LLM で、サーバーは読み書きと描画だけを行う。
+A local MCP server (stdio) for reading and writing Harie files: screenshots saved as ordinary JPEG / PNG images whose annotations (boxes, arrows, callouts, text) stay editable after saving.
+It lets MCP clients such as Claude handle requests like "put a red box around the save button" or "fix the wording of this callout".
 
-## ツール
+Harie is a tool for annotating screenshots in SaaS user guides. A Harie file opens in any image viewer as a normal picture, and Harie can reopen it to edit the annotations again and again.
 
-| ツール | 内容 |
+The server never calls an LLM. The client's LLM looks at the image and decides what to annotate; the server only reads, writes and renders files.
+
+## Tools
+
+| Tool | What it does |
 |---|---|
-| `harie_open` | ファイルを開き、注釈の一覧と画像を返す。普通の画像なら `status: plain` |
-| `harie_create` | 普通の JPEG / PNG から Harie ファイルを作る（既定は `<名前>.harie.<拡張子>`。元画像は残す）。`format`（`jpeg` / `png`）で保存形式を選べる |
-| `harie_preview` | 注釈の変更（ops）を適用した画像を返す。ファイルは変えない |
-| `harie_edit` | 注釈の変更を適用し、描き直して上書き保存する。`expectedRevision` で楽観的ロック |
-| `harie_list` | ディレクトリ内の Harie ファイルを一覧する |
-| `harie_mask` | 個人情報をベース画像に焼き込んで隠す（元に戻せない）。`confirm: true` を付けたときだけ保存し、付けなければ加工後の画像を返すだけ |
+| `harie_open` | Opens a file and returns its annotations and the image. A plain image returns `status: plain` |
+| `harie_create` | Creates a Harie file from a plain JPEG / PNG (default `<name>.harie.<ext>`; the original is kept). `format` (`jpeg` / `png`) picks the output format |
+| `harie_preview` | Returns the image with annotation changes (ops) applied. The file is not changed |
+| `harie_edit` | Applies annotation changes, re-renders and overwrites the file. `expectedRevision` provides optimistic locking |
+| `harie_list` | Lists Harie files in a directory |
+| `harie_mask` | Hides personal information by burning it into the base image (irreversible). Saves only with `confirm: true`; without it, only the masked image is returned |
 
-操作できるのは `--root` で指定したディレクトリ配下だけ（既定はカレントディレクトリ）。個人情報の加工（`harie_mask`）はベース画像を書き換えるので、保存後は元に戻せない。元の画像を残したいときは `outPath` で別のファイルに保存する。
+The server can only access files under the directory given by `--root` (default: the current directory). `harie_mask` rewrites the base image, so the change cannot be undone once saved. To keep the original, save to another file with `outPath`.
 
-## セットアップ
+## Setup
 
-Node.js 22 以上が要る。npm の `@harie/mcp` を `npx` で起動する。
+Requires Node.js 22 or later. Launch `@harie/mcp` from npm with `npx`.
 
 ### Claude Code
 
@@ -28,7 +32,7 @@ Node.js 22 以上が要る。npm の `@harie/mcp` を `npx` で起動する。
 claude mcp add harie -- npx -y @harie/mcp --root ~/Pictures/guides
 ```
 
-### Claude Desktop（`claude_desktop_config.json`）
+### Claude Desktop (`claude_desktop_config.json`)
 
 ```json
 {
@@ -41,25 +45,27 @@ claude mcp add harie -- npx -y @harie/mcp --root ~/Pictures/guides
 }
 ```
 
-### リポジトリから動かす（開発用）
+### Run from the repository (development)
 
 ```sh
 pnpm install
-pnpm build   # apps/mcp/dist/index.mjs と dist/fonts/ ができる
+pnpm build   # produces apps/mcp/dist/index.mjs and dist/fonts/
 claude mcp add harie -- node /path/to/harie/apps/mcp/dist/index.mjs --root ~/Pictures/guides
 ```
 
-### 使い方の例
+### Example prompts
 
-- 「`settings.png` を Harie ファイルにして、保存ボタンを赤枠で囲み、『ここで保存します』と吹き出しを付けて」
-- 「`guides/` の Harie ファイルを一覧して、タイトルのないものにタイトルを付けて」
+- "Turn `settings.png` into a Harie file, draw a red box around the save button, and add a callout saying 'Click here to save'."
+- "List the Harie files in `guides/` and add a title to any that don't have one."
 
-## 開発
+Tool descriptions and the bundled font (Noto Sans JP) are currently Japanese-first, but annotation text can be written in any language the font covers, including English.
 
-- `src/tools.ts`: ツールの本体。`src/server.ts`: MCP への登録と入力の検証。`src/paths.ts`: root 外へのアクセス防止。
-- テスト（`pnpm test`）は SDK の InMemoryTransport でクライアントとつなぎ、ツールを実際に呼ぶ。
-- 配布物には Noto Sans JP の Regular / Bold だけを同梱する（`scripts/copy-assets.mjs`、ライセンスは `dist/fonts/OFL.txt`）。
+## Development
 
-## ライセンス
+- `src/tools.ts`: tool implementations. `src/server.ts`: MCP registration and input validation. `src/paths.ts`: prevents access outside the root.
+- Tests (`pnpm test`) connect a client through the SDK's InMemoryTransport and call the tools for real.
+- The package bundles only the Regular / Bold weights of Noto Sans JP (`scripts/copy-assets.mjs`; license in `dist/fonts/OFL.txt`).
 
-MIT。同梱するフォント（Noto Sans JP の Regular / Bold）は SIL Open Font License 1.1（`dist/fonts/OFL.txt`）。
+## License
+
+MIT. The bundled font (Noto Sans JP Regular / Bold) is licensed under the SIL Open Font License 1.1 (`dist/fonts/OFL.txt`).

@@ -10,4 +10,4 @@ Web エディタ（Vite + React）。画像を開く → `packages/editor` で�
 - 個人情報のマスクは `applyMasks` でベース画像を書き換え、`Opened.base` を差し替える。加工前のバイト列（`alternative` を含む）を残さない（ADR-0007）。
 - AI（`src/ai/`）: 提案と個人情報の検出は利用者の API キー（BYOK、localStorage）で Claude API をブラウザから直接呼ぶ。送信先の表示と同意がないと送れない（NFR-SEC-01）。SDK を含む `run.ts` は使うときにだけ `import()` する。E2E は `page.route` で API を差し替える。
 - 編集画面（`src/Workspace.tsx`）は Chrome 拡張のエディタページからも使う（`package.json` の `exports`）。保存先は `deliver` で呼び出し側が決める。Web 固有のこと（ファイルを開く・File System Access API）は `App.tsx` に置く。
-- 連携の案内（`src/Guide.tsx`、ヘッダーの「連携」）: Chrome 拡張の入れ方と MCP の登録コマンドを出す。Web だけに出し、拡張のエディタには出さない（`Workspace` の `menu` で渡す）。拡張のストア公開や `apps/mcp/README.md` のセットアップ手順が変わったら、ここも合わせて直す（FR-CAP-07, FR-MCP-07）。
+- 連携の案内（`src/Guide.tsx`、ヘッダーの「連携」）: Chrome 拡張の入れ方と MCP の登録コマンドを出す。Web だけに出し、拡張のエディタには出さない（`Workspace` の `menu` で渡す）。拡張のストア公開や `apps/mcp/README.md`（英語）/ `README.ja.md` のセットアップ手順が変わったら、ここも合わせて直す（FR-CAP-07, FR-MCP-07）。
