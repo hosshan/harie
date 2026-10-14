@@ -16,6 +16,15 @@ const IMAGE_TYPES = [
   { description: "画像", accept: { "image/jpeg": [".jpg", ".jpeg"], "image/png": [".png"] } },
 ];
 
+/**
+ * 保存ダイアログの種類は、保存する形式の 1 つだけにする。
+ * 両方を渡すと、ダイアログの既定の形式が先頭（JPEG）になり、PNG を保存するときに拡張子がずれることがある
+ */
+const SAVE_TYPES = {
+  jpeg: [{ description: "JPEG 画像", accept: { "image/jpeg": [".jpg", ".jpeg"] } }],
+  png: [{ description: "PNG 画像", accept: { "image/png": [".png"] } }],
+} as const;
+
 export function App() {
   const [opened, setOpened] = useState<Opened | null>(null);
   const [handle, setHandle] = useState<FileSystemFileHandle | null>(null);
@@ -104,7 +113,7 @@ export function App() {
       {opened === null ? (
         <>
           <Header>
-            <HeaderButton icon="open" className="app-primary" onClick={pick}>
+            <HeaderButton icon="open" variant="default" onClick={pick}>
               画像を開く
             </HeaderButton>
             <GuideButton />
@@ -135,7 +144,7 @@ export function App() {
             if (target === null && handle !== null && w.showSaveFilePicker !== undefined) {
               target = await w.showSaveFilePicker({
                 suggestedName: saved.fileName,
-                types: IMAGE_TYPES,
+                types: SAVE_TYPES[saved.format],
               });
             }
             await deliver(saved, target);

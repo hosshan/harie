@@ -1,3 +1,26 @@
+/*
+ * Tailwind CSS（ADR-0010）。shadcn/ui の部品（src/components/ui）が使う。
+ * preflight（リセット）は入れず、既存のスタイルを壊さない。utilities は layer に入れないので、
+ * 下の要素セレクタ（button など）より部品のクラスが優先される
+ */
+@import "tailwindcss/theme.css" layer(theme);
+@import "tailwindcss/utilities.css";
+@source "./";
+
+@theme inline {
+  --color-background: var(--bg);
+  --color-foreground: var(--fg);
+  --color-primary: var(--accent);
+  --color-primary-foreground: #ffffff;
+  --color-accent: #f1f3f5;
+  --color-accent-foreground: var(--fg);
+  --color-popover: #ffffff;
+  --color-popover-foreground: var(--fg);
+  --color-muted-foreground: var(--muted);
+  --color-input: var(--line);
+  --color-ring: var(--accent);
+}
+
 :root {
   --fg: #1c2024;
   --muted: #687076;
@@ -66,20 +89,7 @@ input {
 .app-header-status {
   font-size: 13px;
 }
-.app-header-button {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-}
-.app-save-format {
-  font: inherit;
-  padding: 4px 6px;
-  border: 1px solid var(--line);
-  border-radius: 6px;
-  background: #fff;
-  cursor: pointer;
-}
-.app-header-button svg {
+.app-header-menu svg {
   fill: none;
   stroke: currentColor;
   stroke-width: 1.8;

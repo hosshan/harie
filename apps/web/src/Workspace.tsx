@@ -15,6 +15,7 @@ import { browserRenderer } from "./browser-renderer";
 import { Header, HeaderButton } from "./Header";
 import { mismatchMessage, type Opened } from "./load";
 import { Modal } from "./Modal";
+import { SaveFormatMenu } from "./SaveFormatMenu";
 import { buildSaveFile, type Saved } from "./save";
 
 export type WorkspaceProps = {
@@ -117,18 +118,8 @@ export function Workspace({
             画像を開く
           </HeaderButton>
         )}
-        <select
-          className="app-save-format"
-          aria-label="保存形式"
-          title="JPEG はファイルが小さく、PNG は文字がくっきり残ります"
-          value={format}
-          disabled={saving}
-          onChange={(e) => setFormat(e.target.value as ImageFormat)}
-        >
-          <option value="jpeg">JPEG</option>
-          <option value="png">PNG</option>
-        </select>
-        <HeaderButton icon="save" className="app-primary" disabled={saving} onClick={save}>
+        <SaveFormatMenu value={format} onChange={setFormat} disabled={saving} />
+        <HeaderButton icon="save" variant="default" disabled={saving} onClick={save}>
           保存
         </HeaderButton>
         {menu}
