@@ -118,20 +118,26 @@
   overflow: hidden;
   field-sizing: content;
 }
-.harie-font-size button {
+.harie-choices button {
   min-width: 36px;
 }
-.harie-font-size button[aria-pressed="true"] {
+.harie-choices button[aria-pressed="true"] {
   background: var(--harie-accent);
   color: var(--harie-accent-fg);
   border-color: var(--harie-accent);
 }
-.harie-inspector-body .harie-font-size-pt {
+.harie-inspector-body .harie-line-dash {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 6px;
+}
+.harie-inspector-body .harie-size-input {
   flex-direction: row;
   align-items: center;
   gap: 4px;
 }
-.harie-font-size-pt input {
+.harie-size-input input {
   width: 64px;
 }
 .harie-workspace {
@@ -190,6 +196,12 @@
   display: flex;
   flex-direction: column;
   gap: 12px;
+}
+/* 右の欄のボタン・入力欄は見出しと同じ大きさにする（ブラウザ既定の 16px だと大きすぎる） */
+.harie-inspector-body button,
+.harie-inspector-body input,
+.harie-inspector-body textarea {
+  font-size: 13px;
 }
 .harie-inspector-body label {
   display: flex;

@@ -58,9 +58,9 @@ Harie ファイルに埋め込む注釈ドキュメント（JSON）の構造。�
 
 | type | 必須プロパティ | 備考 |
 |---|---|---|
-| `rect` | `x, y, w, h` | `style.radius`, `style.fill` 任意 |
-| `ellipse` | `x, y, w, h` | |
-| `arrow` | `from, to` | `style.head`（`end` / `both` / `none`） |
+| `rect` | `x, y, w, h` | `style.radius`, `style.fill` 任意。線の太さ `style.strokeWidth`、線の種類 `style.dash`（`solid` / `dashed` / `dotted`。省略は実線）は楕円・矢印も同じ |
+| `ellipse` | `x, y, w, h` | `style.strokeWidth`, `style.dash` |
+| `arrow` | `from, to` | `style.head`（`end` / `both` / `none`）。`style.dash` は線だけに効き、矢じりは塗りつぶしのまま |
 | `text` | `x, y, text` | 枠なしラベル。`style.fontWeight`（`normal` / `bold`） |
 | `callout` | `x, y, w, text` | 吹き出し。`anchor`（`annotationId`, `side`）で他の注釈に紐付けると、吹き出しから対象へ矢印を描く。矢印は実際の位置関係から決め（離れている向きの向かい合う辺どうしを結び、範囲が重なる向きでは重なりの中央でまっすぐ引く）、`side` は配置の目安。重なっている・対象が描かれないときは描かない |
 | `badge` | `x, y, number` | 番号付き丸 |

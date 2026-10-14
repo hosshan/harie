@@ -1,6 +1,6 @@
 // 注釈ドキュメント → SVG（ADR-0005）
 // 純粋関数。エディタの表示と保存時のラスタライズの両方がこの SVG を使い、見た目を一致させる。
-import type { Annotation, HarieDocument, Style } from "@harie/model";
+import type { Annotation, HarieDocument, LineDash, Style } from "@harie/model";
 import { THEMES, type Theme } from "./theme";
 import { attrs, esc, n } from "./xml";
 
@@ -23,6 +23,7 @@ type Resolved = {
   opacity?: number | undefined;
   fontWeight?: "normal" | "bold" | undefined;
   head?: "end" | "both" | "none" | undefined;
+  dash?: LineDash | undefined;
 };
 
 function resolve(theme: Theme, a: Annotation): Resolved {
@@ -37,7 +38,25 @@ function resolve(theme: Theme, a: Annotation): Resolved {
     opacity: st.opacity,
     fontWeight: st.fontWeight,
     head: st.head,
+    dash: st.dash,
   };
+}
+
+/**
+ * 線の種類の属性。間隔は線の太さに比例させ、太さを変えても見た目の比率を保つ。
+ * 点線は長さ 0 の線分を丸い端で描いて点にする。`roundCap` は端が丸い線（矢印）で、
+ * 端の分だけ破線が伸びるのを間隔で打ち消す。
+ */
+function dashAttrs(s: Resolved, roundCap = false): Record<string, string | undefined> {
+  const w = s.strokeWidth;
+  if (s.dash === "dashed") {
+    return {
+      "stroke-dasharray": roundCap ? `${n(w * 2)} ${n(w * 3)}` : `${n(w * 3)} ${n(w * 2)}`,
+    };
+  }
+  if (s.dash === "dotted")
+    return { "stroke-dasharray": `0 ${n(w * 2)}`, "stroke-linecap": "round" };
+  return {};
 }
 
 /** 等幅でないフォントの幅を厳密には測れないため、全角 1em・半角 0.6em で見積もる。 */
@@ -130,6 +149,7 @@ function arrow(a: { from: Point; to: Point }, s: Resolved): string {
     stroke: s.stroke,
     "stroke-width": s.strokeWidth,
     "stroke-linecap": "round",
+    ...dashAttrs(s, true),
   })}/>`;
   return (
     line + (headMode !== "none" ? tip(a.to, 1) : "") + (headMode === "both" ? tip(a.from, -1) : "")
@@ -186,9 +206,9 @@ function annotation(
   const common = { opacity: s.opacity };
   switch (a.type) {
     case "rect":
-      return `<rect ${attrs({ x: a.x, y: a.y, width: a.w, height: a.h, rx: s.radius, fill: s.fill ?? "none", stroke: s.stroke, "stroke-width": s.strokeWidth, ...common })}/>`;
+      return `<rect ${attrs({ x: a.x, y: a.y, width: a.w, height: a.h, rx: s.radius, fill: s.fill ?? "none", stroke: s.stroke, "stroke-width": s.strokeWidth, ...dashAttrs(s), ...common })}/>`;
     case "ellipse":
-      return `<ellipse ${attrs({ cx: a.x + a.w / 2, cy: a.y + a.h / 2, rx: a.w / 2, ry: a.h / 2, fill: s.fill ?? "none", stroke: s.stroke, "stroke-width": s.strokeWidth, ...common })}/>`;
+      return `<ellipse ${attrs({ cx: a.x + a.w / 2, cy: a.y + a.h / 2, rx: a.w / 2, ry: a.h / 2, fill: s.fill ?? "none", stroke: s.stroke, "stroke-width": s.strokeWidth, ...dashAttrs(s), ...common })}/>`;
     case "arrow":
       return `<g ${attrs(common)}>${arrow(a, s)}</g>`;
     case "text":
@@ -205,7 +225,7 @@ function annotation(
         link === null ||
         Math.hypot(link.to.x - link.from.x, link.to.y - link.from.y) < s.strokeWidth * 2
           ? ""
-          : arrow(link, { ...s, head: "end" });
+          : arrow(link, { ...s, head: "end", dash: undefined });
       return `<g ${attrs(common)}>${connector}<rect ${attrs({ x: a.x, y: a.y, width: a.w, height: h, rx: s.radius ?? theme.calloutRadius, fill: s.fill ?? theme.calloutFill, stroke: s.stroke, "stroke-width": Math.max(1, s.strokeWidth / 2) })}/>${textLines(lines, a.x + pad, a.y + pad, s)}</g>`;
     }
     case "badge": {

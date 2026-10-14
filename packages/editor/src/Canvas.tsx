@@ -2,6 +2,7 @@
 import { type Annotation, applyOps, type HarieDocument, type Point } from "@harie/model";
 import { annotationBounds, buildSvg } from "@harie/render";
 import { type Dispatch, type PointerEvent, useEffect, useMemo, useRef, useState } from "react";
+import { type DrawDefaults, styleForNew } from "./draw-defaults";
 import {
   boxFrom,
   contains,
@@ -46,21 +47,23 @@ export function hitTest(doc: HarieDocument, p: Point, tolerance: number): Annota
   });
 }
 
-function dragOps(doc: HarieDocument, drag: Drag): unknown[] {
+function dragOps(doc: HarieDocument, drag: Drag, defaults: DrawDefaults = {}): unknown[] {
   if (drag.kind === "mask") return [];
   if (drag.kind === "create") {
     const id = newAnnotationId(doc, drag.tool);
+    const style = styleForNew(drag.tool, defaults);
+    const styled = style === undefined ? {} : { style };
     const short =
       Math.abs(drag.current.x - drag.start.x) < MIN_DRAG &&
       Math.abs(drag.current.y - drag.start.y) < MIN_DRAG;
     if (drag.tool === "arrow") {
       const to = short ? { x: drag.start.x + DEFAULT_BOX.w, y: drag.start.y } : drag.current;
-      return [{ op: "add", annotation: { id, type: "arrow", from: drag.start, to } }];
+      return [{ op: "add", annotation: { id, type: "arrow", from: drag.start, to, ...styled } }];
     }
     const box = short
       ? { x: Math.round(drag.start.x), y: Math.round(drag.start.y), ...DEFAULT_BOX }
       : boxFrom(drag.start, drag.current);
-    return [{ op: "add", annotation: { id, type: drag.tool, ...box } }];
+    return [{ op: "add", annotation: { id, type: drag.tool, ...box, ...styled } }];
   }
   const target = doc.annotations.find((a) => a.id === drag.id);
   if (target === undefined) return [];
@@ -92,6 +95,8 @@ export type CanvasProps = {
   onSelectAppliedMask?: (id: string | null) => void;
   /** 描いている・ドラッグしている間か（ツールのパレットを隠すのに使う） */
   onDraggingChange?: (dragging: boolean) => void;
+  /** 新しく描く注釈の初期値（前回選んだ線の太さ・文字サイズ） */
+  drawDefaults?: DrawDefaults;
 };
 
 type TextAnnotation = Extract<Annotation, { type: "text" | "callout" }>;
@@ -110,6 +115,7 @@ export function Canvas({
   selectedAppliedMaskId = null,
   onSelectAppliedMask,
   onDraggingChange,
+  drawDefaults = {},
 }: CanvasProps) {
   const overlay = useRef<SVGSVGElement>(null);
   const [drag, setDrag] = useState<Drag | null>(null);
@@ -121,9 +127,9 @@ export function Canvas({
   // ドラッグ中は履歴に積まずに途中経過だけを描く
   const display = useMemo(() => {
     if (drag === null || drag.kind === "mask") return doc;
-    const r = applyOps(doc, dragOps(doc, drag));
+    const r = applyOps(doc, dragOps(doc, drag, drawDefaults));
     return r.ok ? r.value : doc;
-  }, [doc, drag]);
+  }, [doc, drag, drawDefaults]);
   const markup = useMemo(
     () =>
       buildSvg(display, {
@@ -168,7 +174,12 @@ export function Canvas({
     }
     if (tool === "text" || tool === "callout" || tool === "badge") {
       const id = newAnnotationId(doc, tool);
-      const at = { x: Math.round(p.x), y: Math.round(p.y) };
+      const style = styleForNew(tool, drawDefaults);
+      const at = {
+        x: Math.round(p.x),
+        y: Math.round(p.y),
+        ...(style === undefined ? {} : { style }),
+      };
       const annotation =
         tool === "text"
           ? { id, type: "text", ...at, text: "テキスト" }
@@ -232,7 +243,7 @@ export function Canvas({
     ) {
       return;
     }
-    const ops = dragOps(doc, final);
+    const ops = dragOps(doc, final, drawDefaults);
     const id = created(ops);
     dispatch({ type: "apply", ops, ...(id === undefined ? {} : { select: id }) });
     if (final.kind === "create") onToolDone();

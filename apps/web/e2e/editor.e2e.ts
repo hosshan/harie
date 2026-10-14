@@ -264,6 +264,48 @@ test("FR-EDIT-03: テキストは置いた直後とダブルクリックで、�
   await expect(page.getByRole("button", { name: "特大" })).toHaveAttribute("aria-pressed", "false");
 });
 
+test("FR-EDIT-01: 四角の線の太さと種類を変えられ、選んだ太さ・文字サイズは次に描くときの初期値になる", async ({
+  page,
+}) => {
+  await openFixture(page, "large-base.jpg");
+  await page.getByRole("button", { name: "四角" }).click();
+  await drag(page, [40, 40], [240, 120]);
+  const rect = annotationRects(page).first();
+  await expect(rect).toHaveAttribute("stroke-width", "4");
+  // 右の欄の操作は見出しと同じ 13px（ブラウザ既定の 16px にしない）
+  await expect(page.getByRole("button", { name: "この注釈を削除" })).toHaveCSS("font-size", "13px");
+
+  await page.getByRole("button", { name: "太", exact: true }).click();
+  await expect(rect).toHaveAttribute("stroke-width", "6");
+  await page.getByRole("button", { name: "破線" }).click();
+  await expect(rect).toHaveAttribute("stroke-dasharray", "18 12");
+  await page.getByRole("button", { name: "点線" }).click();
+  await expect(rect).toHaveAttribute("stroke-dasharray", "0 12");
+  await page.getByRole("button", { name: "実線" }).click();
+  await expect(rect).not.toHaveAttribute("stroke-dasharray", /.*/);
+  const width = page.getByLabel("線の太さ（px）");
+  await width.fill("8");
+  await width.press("Enter");
+  await expect(rect).toHaveAttribute("stroke-width", "8");
+
+  // 吹き出しの文字サイズを選ぶ
+  await page.getByRole("button", { name: "吹き出し" }).click();
+  await drag(page, [260, 200], [260, 200]);
+  await page.keyboard.press("Escape");
+  await page.getByRole("button", { name: "大", exact: true }).click();
+
+  // 開き直しても、次に描く四角・吹き出しは前回の太さ・文字サイズで描かれる
+  await page.reload();
+  await openFixture(page, "large-base.jpg");
+  await page.getByRole("button", { name: "四角" }).click();
+  await drag(page, [40, 40], [240, 120]);
+  await expect(annotationRects(page).first()).toHaveAttribute("stroke-width", "8");
+  await expect(page.getByLabel("線の太さ（px）")).toHaveValue("8");
+  await page.getByRole("button", { name: "吹き出し" }).click();
+  await drag(page, [260, 200], [260, 200]);
+  await expect(page.getByLabel("文字サイズ（pt）")).toHaveValue("36");
+});
+
 test("ツールのパレットは描いている間は隠れ、たたむと小さくなる", async ({ page }) => {
   await openFixture(page, "large-base.jpg");
   const palette = page.getByRole("toolbar", { name: "ツール" });

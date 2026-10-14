@@ -45,6 +45,22 @@ describe("Renderer", () => {
     expect(px(drawn, 28, 18)).toEqual(px(plain, 28, 18));
   });
 
+  it("FR-EDIT-01: 点線は線の太さの間隔で点を描く（点の間はベースのまま）", async () => {
+    const r = await nodeRenderer();
+    const line = {
+      id: "l",
+      type: "arrow",
+      from: { x: 4, y: 20 },
+      to: { x: 60, y: 20 },
+      style: { stroke: "#FF0000", strokeWidth: 4, head: "none", dash: "dotted" },
+    };
+    const plain = r.renderPixels({ doc: doc(64, 40, []), base });
+    const drawn = r.renderPixels({ doc: doc(64, 40, [line]), base });
+    // 点の中心は x = 4, 12, 20, …（間隔は太さの 2 倍）。半径 2 なので x = 8 は点の間
+    expect(px(drawn, 12, 20)).toEqual([255, 0, 0, 255]);
+    expect(px(drawn, 8, 20)).toEqual(px(plain, 8, 20));
+  });
+
   it("NFR-PLAT-05: 同じ入力からは常に同じバイト列が出る（決定的）", async () => {
     const r = await nodeRenderer();
     const input = { doc: doc(64, 40, [red]), base, output: "jpeg" as const };

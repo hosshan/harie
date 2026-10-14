@@ -15,6 +15,9 @@ export type Rect = z.infer<typeof RectSchema>;
 
 const color = z.string().regex(/^#[0-9a-fA-F]{6}([0-9a-fA-F]{2})?$/, "#RRGGBB または #RRGGBBAA");
 
+export const LineDashSchema = z.enum(["solid", "dashed", "dotted"]);
+export type LineDash = z.infer<typeof LineDashSchema>;
+
 // id は JSON Schema に変換したとき（MCP のツール定義など）に $ref で共有し、定義を繰り返さないため
 export const StyleSchema = z
   .looseObject({
@@ -27,6 +30,8 @@ export const StyleSchema = z
     fontSize: finite.positive().optional(),
     fontWeight: z.enum(["normal", "bold"]).optional(),
     head: z.enum(["end", "both", "none"]).optional(),
+    /** 線の種類（四角・楕円・矢印）。省略は実線 */
+    dash: LineDashSchema.optional(),
   })
   .meta({ id: "HarieStyle" });
 export type Style = z.infer<typeof StyleSchema>;
