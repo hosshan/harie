@@ -1,0 +1,19 @@
+// 子の claude -p に渡す環境変数。親のセッションの文脈（メモリ・CLAUDE.md・スキル）が子に入らないようにする
+const STRIP_ENV = [
+  "CLAUDECODE",
+  "CLAUDE_CODE_SESSION_ID",
+  "CLAUDE_CODE_REMOTE_SESSION_ID",
+  "CLAUDE_CODE_PROJECTS_SESSION",
+  "CLAUDE_CODE_ADDITIONAL_DIRECTORIES_CLAUDE_MD",
+  "CLAUDE_ADDITIONAL_DIRECTORIES",
+  "CLAUDE_CODE_COORDINATOR_EXTRA_TOOLS",
+  "CLAUDE_MEMORY_STORES",
+  "CLAUDE_COWORK_MEMORY_PATH_OVERRIDE",
+  "CLAUDE_CODE_SYNC_SKILLS",
+  "CLAUDE_CODE_SYNC_PLUGINS",
+  "CLAUDE_CODE_SKILL_PROPOSALS",
+];
+
+export const childEnv = Object.fromEntries(
+  Object.entries(process.env).filter(([k]) => !STRIP_ENV.includes(k)),
+);

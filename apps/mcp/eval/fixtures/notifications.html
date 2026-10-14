@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<title>通知設定 - Tasklane</title>
+<style>
+  * { box-sizing: border-box; }
+  body { margin: 0; font-family: "IPAGothic", "Noto Sans JP", sans-serif; color: #1f2937; background: #f3f4f6; font-size: 14px; }
+  header { height: 56px; background: #fff; border-bottom: 1px solid #e5e7eb; display: flex; align-items: center; padding: 0 24px; gap: 24px; }
+  .logo { font-weight: bold; font-size: 18px; color: #4f46e5; }
+  .nav { display: flex; gap: 20px; color: #6b7280; }
+  .spacer { flex: 1; }
+  .help { width: 28px; height: 28px; border-radius: 50%; border: 1px solid #d1d5db; display: grid; place-items: center; color: #6b7280; }
+  .user { display: flex; align-items: center; gap: 10px; }
+  .avatar { width: 32px; height: 32px; border-radius: 50%; background: #c7d2fe; display: grid; place-items: center; font-weight: bold; color: #3730a3; }
+  .user small { display: block; color: #6b7280; font-size: 12px; }
+  .layout { display: flex; }
+  aside { width: 220px; padding: 24px 12px; }
+  aside .item { display: block; padding: 8px 12px; border-radius: 6px; color: #374151; text-decoration: none; margin-bottom: 2px; }
+  aside .item.active { background: #e0e7ff; color: #3730a3; font-weight: bold; }
+  main { flex: 1; padding: 24px 32px; }
+  h1 { font-size: 22px; margin: 0 0 4px; }
+  .lead { color: #6b7280; margin: 0 0 20px; }
+  .tabs { display: flex; gap: 4px; border-bottom: 1px solid #e5e7eb; margin-bottom: 20px; }
+  .tab { padding: 10px 16px; color: #6b7280; border-bottom: 2px solid transparent; }
+  .tab.active { color: #4f46e5; border-color: #4f46e5; font-weight: bold; }
+  .card { background: #fff; border: 1px solid #e5e7eb; border-radius: 8px; padding: 20px 24px; margin-bottom: 16px; max-width: 760px; }
+  .row { display: flex; align-items: center; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid #f3f4f6; }
+  .row:last-child { border-bottom: none; }
+  .row .label b { display: block; margin-bottom: 2px; }
+  .row .label span { color: #6b7280; font-size: 13px; }
+  .toggle { width: 44px; height: 24px; border-radius: 12px; background: #d1d5db; position: relative; }
+  .toggle::after { content: ""; position: absolute; top: 3px; left: 3px; width: 18px; height: 18px; border-radius: 50%; background: #fff; }
+  .toggle.on { background: #4f46e5; }
+  .toggle.on::after { left: 23px; }
+  select { width: 240px; padding: 8px 10px; border: 1px solid #d1d5db; border-radius: 6px; font: inherit; background: #fff; color: #9ca3af; }
+  .actions { display: flex; justify-content: flex-end; gap: 8px; max-width: 760px; }
+  .btn { padding: 9px 18px; border-radius: 6px; border: 1px solid #d1d5db; background: #fff; }
+  .btn.primary { background: #4f46e5; border-color: #4f46e5; color: #fff; font-weight: bold; }
+</style>
+</head>
+<body>
+<header>
+  <div class="logo">Tasklane</div>
+  <div class="nav"><span>ダッシュボード</span><span>プロジェクト</span><span>レポート</span></div>
+  <div class="spacer"></div>
+  <div class="help" data-gt="help">?</div>
+  <div class="user" data-gt="user"><div class="avatar">山</div><div>山田 太郎<small>taro.yamada@example.com</small></div></div>
+</header>
+<div class="layout">
+  <aside>
+    <div class="item">プロフィール</div>
+    <div class="item">チーム</div>
+    <div class="item active">通知</div>
+    <div class="item">請求</div>
+    <div class="item">セキュリティ</div>
+  </aside>
+  <main>
+    <h1>通知設定</h1>
+    <p class="lead">タスクの更新をどこに通知するかを設定します。</p>
+    <div class="tabs">
+      <div class="tab">メール</div>
+      <div class="tab">アプリ内</div>
+      <div class="tab active">外部サービス連携</div>
+    </div>
+    <div class="card">
+      <div class="row">
+        <div class="label"><b>Slack に通知する</b><span>タスクの作成・完了・コメントを Slack に送ります</span></div>
+        <div class="toggle" data-gt="slack-toggle"></div>
+      </div>
+      <div class="row">
+        <div class="label"><b>通知先チャンネル</b><span>通知を送る Slack のチャンネル</span></div>
+        <select data-gt="channel-select"><option>チャンネルを選択</option></select>
+      </div>
+      <div class="row">
+        <div class="label"><b>Microsoft Teams に通知する</b><span>Teams のチャネルに送ります</span></div>
+        <div class="toggle"></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="row">
+        <div class="label" data-gt="owner-pii"><b>担当者: 佐藤 花子</b><span>hanako.sato@example.com ・ 最終更新 2026/10/01</span></div>
+        <div class="btn" data-gt="owner">変更</div>
+      </div>
+    </div>
+    <div class="actions">
+      <div class="btn">キャンセル</div>
+      <div class="btn primary" data-gt="save">保存</div>
+    </div>
+  </main>
+</div>
+</body>
+</html>
