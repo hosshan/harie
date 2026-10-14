@@ -63,7 +63,7 @@ Harie ファイルに埋め込む注釈ドキュメント（JSON）の構造。�
 | `arrow` | `from, to` | `style.head`（`end` / `both` / `none`） |
 | `text` | `x, y, text` | 枠なしラベル。`style.fontWeight`（`normal` / `bold`） |
 | `callout` | `x, y, w, text` | 吹き出し。`anchor`（`annotationId`, `side`）で他の注釈に紐付けると、吹き出しから対象へ矢印を描く。矢印は実際の位置関係から決め（離れている向きの向かい合う辺どうしを結び、範囲が重なる向きでは重なりの中央でまっすぐ引く）、`side` は配置の目安。重なっている・対象が描かれないときは描かない |
-| `badge` | `x, y, number` | 番号付き丸 |
+| `badge` | `x, y, number` | 番号付き丸。`anchor`（`annotationId`）で枠などに紐付けると、描画時に紐付け先の左上の角の完全に外側へ置く（ADR-0011。既定の大きさで角から 40 ずらす。画像の外に出るときは左の辺、次に上の辺の外側）。`x, y` は紐付け先がないときの位置で、紐付けている場合も計算した位置を保存する。エディタで番号だけを動かすと紐付けを外す |
 | `spotlight` | `x, y, w, h` | 範囲外を暗くする（Next） |
 | `blur` | `x, y, w, h, method` | **可逆マスク**。PII 以外（見せたくないだけの UI）向け。PII には使わない。`method: mosaic` は SVG で表現できないため、描画では強めのぼかしで代替する |
 

@@ -1,6 +1,13 @@
 import { applyOps, createDocument } from "@harie/model";
 import { describe, expect, it } from "vitest";
-import { buildSvg, calloutConnector, estimateTextWidth, wrapText } from "./svg";
+import {
+  badgeAnchorPosition,
+  buildSvg,
+  calloutConnector,
+  estimateTextWidth,
+  layoutAnchors,
+  wrapText,
+} from "./svg";
 
 function doc(annotations: unknown[]) {
   const d = createDocument({
@@ -111,6 +118,40 @@ describe("吹き出しの anchor（FR-EDIT-03）", () => {
     const hidden = doc([{ id: "r", type: "rect", ...target, status: "suggested" }, callout]);
     expect(lines(buildSvg(hidden))).toBe(0);
     expect(lines(buildSvg(hidden, { includeSuggested: true }))).toBe(1);
+  });
+});
+
+describe("番号の anchor（ADR-0011）", () => {
+  const box = { id: "r", type: "rect", x: 200, y: 200, w: 100, h: 40 } as const;
+  const badge = {
+    id: "b",
+    type: "badge",
+    x: 0,
+    y: 0,
+    number: 1,
+    anchor: { annotationId: "r" },
+  } as const;
+
+  it("枠の左上の角の完全に外側に置く（既定の大きさで角から 40 ずらす）", () => {
+    // 直径 = 24 × 1.6 = 38.4、線の太さの半分 = 2
+    expect(badgeAnchorPosition(badge, box)).toEqual({ x: 200 - 38.4 - 2, y: 200 - 38.4 - 2 });
+  });
+
+  it("画像の外に出るときは左の辺の外側、それも出るときは上の辺の外側に置く", () => {
+    expect(badgeAnchorPosition(badge, { ...box, y: 10 })).toEqual({ x: 200 - 40.4, y: 10 });
+    expect(badgeAnchorPosition(badge, { ...box, x: 10 })).toEqual({ x: 10, y: 200 - 40.4 });
+  });
+
+  it("x, y を計算した位置にそろえ、紐付け先がなければそのままにする", () => {
+    const laid = layoutAnchors(doc([box, badge]));
+    expect(laid.annotations[1]).toMatchObject({ x: 160, y: 160 });
+    const orphan = doc([{ ...badge, x: 5, y: 6 }]);
+    expect(layoutAnchors(orphan)).toBe(orphan);
+  });
+
+  it("描画は保存されている x, y でなく紐付け先から決める", () => {
+    const stale = doc([box, { ...badge, x: 0, y: 0 }]);
+    expect(buildSvg(stale)).toBe(buildSvg(layoutAnchors(stale)));
   });
 });
 

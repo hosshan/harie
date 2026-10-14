@@ -263,8 +263,51 @@ export function annotationBounds(a: Annotation, theme: Theme = THEMES.default): 
   }
 }
 
-export function buildSvg(doc: HarieDocument, options: BuildSvgOptions = {}): string {
-  const theme = THEMES[doc.theme.preset] ?? THEMES.default;
+/**
+ * 紐付けた番号の位置（ADR-0011）。紐付け先の左上の角の完全に外側に置き、円の外接矩形の右下を
+ * 角から紐付け先の線の太さの半分だけ離す。画像の外に出るときは左の辺の外側（上端をそろえる）、
+ * それも出るときは上の辺の外側（左端をそろえる）に置く。
+ */
+export function badgeAnchorPosition(
+  badge: Extract<Annotation, { type: "badge" }>,
+  target: Annotation,
+  theme: Theme = THEMES.default,
+): Point {
+  const d = resolve(theme, badge).fontSize * 1.6;
+  const t = annotationBounds(target, theme);
+  const g = resolve(theme, target).strokeWidth / 2;
+  const outsideX = t.x - d - g;
+  const outsideY = t.y - d - g;
+  if (outsideX >= 0 && outsideY >= 0) return { x: outsideX, y: outsideY };
+  if (outsideX >= 0) return { x: outsideX, y: Math.max(0, t.y) };
+  return { x: Math.max(0, t.x), y: Math.max(0, outsideY) };
+}
+
+/**
+ * 紐付けた番号の x, y を、紐付け先から計算した位置にそろえたドキュメントを返す（ADR-0011）。
+ * 紐付け先がない・自分自身・番号どうしのときは x, y のまま。変更がなければ同じオブジェクトを返す。
+ */
+export function layoutAnchors(doc: HarieDocument, theme?: Theme): HarieDocument {
+  const th = theme ?? THEMES[doc.theme.preset] ?? THEMES.default;
+  const byId = new Map(doc.annotations.map((a) => [a.id, a]));
+  let changed = false;
+  const annotations = doc.annotations.map((a) => {
+    if (a.type !== "badge" || a.anchor === undefined) return a;
+    const target = byId.get(a.anchor.annotationId);
+    if (target === undefined || target.id === a.id || target.type === "badge") return a;
+    const p = badgeAnchorPosition(a, target, th);
+    const x = Math.round(p.x);
+    const y = Math.round(p.y);
+    if (x === a.x && y === a.y) return a;
+    changed = true;
+    return { ...a, x, y };
+  });
+  return changed ? { ...doc, annotations } : doc;
+}
+
+export function buildSvg(input: HarieDocument, options: BuildSvgOptions = {}): string {
+  const theme = THEMES[input.theme.preset] ?? THEMES.default;
+  const doc = layoutAnchors(input, theme);
   const { width, height, crop } = doc.canvas;
   const view = crop ?? { x: 0, y: 0, w: width, h: height };
   const shown = doc.annotations.filter((a) => options.includeSuggested || a.status !== "suggested");

@@ -34,7 +34,10 @@ export function movePatch(a: Annotation, dx: number, dy: number): Record<string,
       to: { x: round(a.to.x + dx), y: round(a.to.y + dy) },
     };
   }
-  return { x: round(a.x + dx), y: round(a.y + dy) };
+  const moved = { x: round(a.x + dx), y: round(a.y + dy) };
+  // 紐付けた番号だけを動かしたら、紐付けを外して置いた位置に残す（ADR-0011）
+  if (a.type === "badge" && a.anchor !== undefined) return { ...moved, anchor: undefined };
+  return moved;
 }
 
 /** 2 点から正規化した枠（幅・高さが負にならない）を作る */

@@ -1,6 +1,7 @@
 // エディタの状態と元に戻す／やり直す（FR-EDIT-07）
 // 変更はすべて applyOps の操作として適用する。ドラッグ中の途中経過は履歴に積まず、離したときに 1 回だけ積む
 import { applyOps, type HarieDocument, type OpError } from "@harie/model";
+import { layoutAnchors } from "@harie/render";
 
 export type EditorState = {
   doc: HarieDocument;
@@ -41,7 +42,8 @@ export function editorReducer(state: EditorState, action: EditorAction): EditorS
       if (action.ops.length === 0) return state;
       const result = applyOps(state.doc, action.ops);
       if (!result.ok) return { ...state, error: result.error };
-      const doc = result.value;
+      // 枠を動かしたら、紐付けた番号も付いてくる（ADR-0011）
+      const doc = layoutAnchors(result.value);
       const select = action.select === undefined ? state.selectedId : action.select;
       return {
         doc,

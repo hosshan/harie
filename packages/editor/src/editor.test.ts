@@ -1,6 +1,6 @@
 import { createDocument, prepareForSave } from "@harie/model";
 import { describe, expect, it } from "vitest";
-import { hitTest } from "./Canvas";
+import { badgeAnchorAt, hitTest } from "./Canvas";
 import { boxFrom, handlesFor, movePatch, resizePatch } from "./geometry";
 import { editorReducer, initialState, newAnnotationId } from "./history";
 import { addDetectedMasks, maskRect, newMaskDraft, toPiiMasks } from "./masks";
@@ -103,6 +103,50 @@ describe("geometry", () => {
     expect(hitTest(s.doc, { x: 60, y: 20 }, 4)?.id).toBe("rect-2");
     expect(hitTest(s.doc, { x: 100, y: 203 }, 4)?.id).toBe("arrow-1");
     expect(hitTest(s.doc, { x: 100, y: 260 }, 4)).toBeUndefined();
+  });
+});
+
+describe("番号の anchor（ADR-0011）", () => {
+  const badge = {
+    id: "badge-1",
+    type: "badge",
+    x: 0,
+    y: 0,
+    number: 1,
+    anchor: { annotationId: "rect-1" },
+  };
+
+  it("枠を動かすと、紐付けた番号も枠の左上の外側に付いてくる", () => {
+    const placed = editorReducer(initialState(base()), {
+      type: "apply",
+      ops: [
+        { op: "add", annotation: { ...rect, x: 200, y: 200 } },
+        { op: "add", annotation: badge },
+      ],
+    });
+    expect(placed.doc.annotations[1]).toMatchObject({ x: 160, y: 160 });
+    const moved = editorReducer(placed, {
+      type: "apply",
+      ops: [{ op: "update", id: "rect-1", patch: { x: 300 } }],
+    });
+    expect(moved.doc.annotations[1]).toMatchObject({ x: 260, y: 160 });
+  });
+
+  it("番号だけを動かすと紐付けを外す", () => {
+    expect(movePatch({ ...badge, type: "badge" } as const, 5, 5)).toEqual({
+      x: 5,
+      y: 5,
+      anchor: undefined,
+    });
+  });
+
+  it("枠の上で番号を置くと、その枠に紐付ける", () => {
+    const doc = editorReducer(initialState(base()), {
+      type: "apply",
+      ops: [{ op: "add", annotation: rect }],
+    }).doc;
+    expect(badgeAnchorAt(doc, { x: 20, y: 20 }, 0)).toEqual({ anchor: { annotationId: "rect-1" } });
+    expect(badgeAnchorAt(doc, { x: 500, y: 500 }, 0)).toEqual({});
   });
 });
 
