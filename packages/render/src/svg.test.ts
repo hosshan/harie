@@ -40,6 +40,65 @@ describe("buildSvg", () => {
     expect(svg).toMatchSnapshot();
   });
 
+  it("FR-EDIT-01: 線の種類（破線・点線）を線の太さに比例した間隔で描く", () => {
+    const svg = buildSvg(
+      doc([
+        {
+          id: "r",
+          type: "rect",
+          x: 0,
+          y: 0,
+          w: 100,
+          h: 50,
+          style: { strokeWidth: 4, dash: "dashed" },
+        },
+        {
+          id: "e",
+          type: "ellipse",
+          x: 0,
+          y: 0,
+          w: 100,
+          h: 50,
+          style: { strokeWidth: 6, dash: "dotted" },
+        },
+        {
+          id: "a",
+          type: "arrow",
+          from: { x: 0, y: 0 },
+          to: { x: 100, y: 0 },
+          style: { strokeWidth: 2, dash: "dashed" },
+        },
+        { id: "s", type: "rect", x: 0, y: 0, w: 10, h: 10, style: { dash: "solid" } },
+      ]),
+    );
+    expect(svg).toMatch(/<rect [^>]*stroke-width="4" stroke-dasharray="12 8"/);
+    expect(svg).toMatch(/<ellipse [^>]*stroke-dasharray="0 12" stroke-linecap="round"/);
+    // 矢印の線は端が丸いので、その分だけ破線を短く・間隔を広くする。矢じりは実線のまま
+    expect(svg).toMatch(/<line [^>]*stroke-dasharray="4 6"/);
+    expect(svg).not.toMatch(/<polygon [^>]*dasharray/);
+    expect(svg.match(/stroke-dasharray/g)).toHaveLength(3);
+  });
+
+  it("吹き出しから対象への線は、吹き出しの線の種類によらず実線で描く", () => {
+    const svg = buildSvg(
+      doc([
+        { id: "r", type: "rect", x: 0, y: 0, w: 100, h: 50 },
+        {
+          id: "c",
+          type: "callout",
+          x: 300,
+          y: 0,
+          w: 100,
+          text: "説明",
+          anchor: { annotationId: "r", side: "right" },
+          style: { dash: "dashed" },
+        },
+      ]),
+    );
+    expect(svg).toContain("<line ");
+    expect(svg).not.toContain("stroke-dasharray");
+  });
+
   it("テキストを XML エスケープする", () => {
     const svg = buildSvg(doc([{ id: "t", type: "text", x: 0, y: 0, text: '<script>"&' }]));
     expect(svg).toContain("&lt;script&gt;&quot;&amp;");

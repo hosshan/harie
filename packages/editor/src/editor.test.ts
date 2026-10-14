@@ -1,6 +1,12 @@
 import { createDocument, prepareForSave } from "@harie/model";
 import { describe, expect, it } from "vitest";
 import { hitTest } from "./Canvas";
+import {
+  DRAW_DEFAULTS_KEY,
+  loadDrawDefaults,
+  saveDrawDefaults,
+  styleForNew,
+} from "./draw-defaults";
 import { boxFrom, handlesFor, movePatch, resizePatch } from "./geometry";
 import { editorReducer, initialState, newAnnotationId } from "./history";
 import { addDetectedMasks, maskRect, newMaskDraft, toPiiMasks } from "./masks";
@@ -254,5 +260,40 @@ describe("検出した個人情報のマスク（FR-PII-01）", () => {
       ["mask-2", "name", "replace"],
       ["mask-3", "face", "fill"],
     ]);
+  });
+});
+
+describe("次に描く注釈の初期値（FR-EDIT-01・FR-EDIT-03）", () => {
+  const memory = () => {
+    const m = new Map<string, string>();
+    return {
+      getItem: (k: string) => m.get(k) ?? null,
+      setItem: (k: string, v: string) => void m.set(k, v),
+    };
+  };
+
+  it("記録した線の太さ・文字サイズを読み戻す", () => {
+    const storage = memory();
+    saveDrawDefaults({ strokeWidth: 6, fontSize: 36 }, storage);
+    expect(loadDrawDefaults(storage)).toEqual({ strokeWidth: 6, fontSize: 36 });
+  });
+
+  it("未記録・壊れた値・範囲外の値は無視する", () => {
+    const storage = memory();
+    expect(loadDrawDefaults(storage)).toEqual({});
+    storage.setItem(DRAW_DEFAULTS_KEY, "{");
+    expect(loadDrawDefaults(storage)).toEqual({});
+    storage.setItem(DRAW_DEFAULTS_KEY, JSON.stringify({ strokeWidth: -1 }));
+    expect(loadDrawDefaults(storage)).toEqual({});
+    expect(loadDrawDefaults(undefined)).toEqual({});
+  });
+
+  it("線の太さは四角・楕円・矢印に、文字サイズは文字のある注釈と番号に付ける", () => {
+    const d = { strokeWidth: 6, fontSize: 36 };
+    expect(styleForNew("rect", d)).toEqual({ strokeWidth: 6 });
+    expect(styleForNew("arrow", d)).toEqual({ strokeWidth: 6 });
+    expect(styleForNew("callout", d)).toEqual({ fontSize: 36 });
+    expect(styleForNew("badge", d)).toEqual({ fontSize: 36 });
+    expect(styleForNew("rect", { fontSize: 36 })).toBeUndefined();
   });
 });
