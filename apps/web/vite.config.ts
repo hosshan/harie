@@ -1,3 +1,4 @@
+import tailwindcss from "@tailwindcss/vite";
 import react from "@vitejs/plugin-react";
 import { defineConfig } from "vite";
 import { VitePWA } from "vite-plugin-pwa";
@@ -5,6 +6,7 @@ import { VitePWA } from "vite-plugin-pwa";
 export default defineConfig({
   plugins: [
     react(),
+    tailwindcss(),
     // PWA（NFR-PLAT-01）。描画エンジン（WASM）とフォントも含めて最初の訪問でキャッシュし、オフラインでも開いて保存できるようにする
     VitePWA({
       registerType: "autoUpdate",

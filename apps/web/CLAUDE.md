@@ -4,6 +4,7 @@ Web エディタ（Vite + React）。画像を開く → `packages/editor` で�
 
 - 描画エンジン（resvg-wasm・mozjpeg）とフォントは `src/browser-renderer.ts` で読み込む。描画の処理そのものは `packages/render` を使い、ここで分岐させない（ADR-0005）。
 - 読み込みは `src/load.ts`、保存ファイルの組み立ては `src/save.ts`。ベース画像は読み込んだバイト列のまま埋め込む（ADR-0004）。
+- UI 部品は shadcn/ui（`src/components/ui/`、Tailwind CSS v4 + Radix UI。ADR-0010）。preflight は入れていないので既存の CSS はそのまま効く。部品の import は相対パスにする（拡張の WXT では `@/` が拡張のルートを指すため）。
 - E2E は `e2e/`（Playwright）。`pnpm e2e` でビルドしたものをプレビューして動かす。ローカルでは `HARIE_CHROMIUM_PATH` でブラウザを指定できる。
 - ブラウザと Node の保存結果がバイト単位で一致することを E2E で確認している（NFR-PLAT-05）。描画や保存を変えたらこのテストを通す。
 - PWA は `vite-plugin-pwa`（`vite.config.ts`）。ビルドに含まれる WASM・フォントも precache する。アイコンの元は `public/icon.svg`。

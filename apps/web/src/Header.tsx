@@ -1,6 +1,7 @@
 // 1 段のヘッダー。ロゴ | ファイル名 と、右側にファイル操作・設定のメニューを置く
 // （注釈の道具は編集面の上のパレットに分け、どちらの操作か迷わないようにする）
-import type { ButtonHTMLAttributes, ReactNode } from "react";
+import type { ComponentProps, ReactNode } from "react";
+import { Button } from "./components/ui/button";
 import { SettingsButton } from "./Settings";
 
 export type HeaderProps = {
@@ -50,6 +51,7 @@ const ICONS = {
       <path d="M14 10a4 4 0 00-5.7 0l-3 3a4 4 0 005.7 5.7l1.2-1.2" />
     </>
   ),
+  chevron: <path d="M7 10l5 5 5-5" />,
   settings: (
     <>
       <circle cx="12" cy="12" r="3" />
@@ -58,19 +60,24 @@ const ICONS = {
   ),
 } as const;
 
-/** ヘッダーのボタン（アイコン + 文字） */
+/** ヘッダーのボタン（アイコン + 文字）。shadcn/ui の Button なので、メニューの開閉ボタンとも高さが揃う */
 export function HeaderButton({
   icon,
   children,
-  className,
   ...props
-}: { icon: keyof typeof ICONS } & ButtonHTMLAttributes<HTMLButtonElement>) {
+}: { icon: keyof typeof ICONS } & ComponentProps<typeof Button>) {
   return (
-    <button type="button" className={`app-header-button ${className ?? ""}`} {...props}>
-      <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
-        {ICONS[icon]}
-      </svg>
+    <Button {...props}>
+      <HeaderIcon icon={icon} />
       {children}
-    </button>
+    </Button>
+  );
+}
+
+export function HeaderIcon({ icon }: { icon: keyof typeof ICONS }) {
+  return (
+    <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
+      {ICONS[icon]}
+    </svg>
   );
 }

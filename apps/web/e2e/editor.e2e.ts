@@ -131,12 +131,19 @@ test("FR-FILE-01, 02: 保存形式を選べ、JPEG を PNG で保存してもベ
   page,
 }) => {
   await openFixture(page, "large-base.jpg");
-  const format = page.getByRole("combobox", { name: "保存形式" });
+  const header = page.getByRole("banner");
   // 既定は開いたファイルの形式
-  await expect(format).toHaveValue("jpeg");
+  await expect(header.getByRole("button", { name: "ファイル形式: JPEG" })).toBeVisible();
+  // メニューの開閉ボタンは、ほかのヘッダーのボタンと同じ高さ
+  const heights = await header
+    .getByRole("button")
+    .evaluateAll((els) => els.map((el) => el.getBoundingClientRect().height));
+  expect(new Set(heights).size).toBe(1);
   await page.getByRole("button", { name: "四角" }).click();
   await drag(page, [40, 40], [240, 120]);
-  await format.selectOption("png");
+  await header.getByRole("button", { name: "ファイル形式: JPEG" }).click();
+  await page.getByRole("menuitemradio", { name: /^PNG/ }).click();
+  await expect(header.getByRole("button", { name: "ファイル形式: PNG" })).toBeVisible();
 
   const [download] = await Promise.all([
     page.waitForEvent("download"),
@@ -163,7 +170,45 @@ test("FR-FILE-01, 02: 保存形式を選べ、JPEG を PNG で保存してもベ
     buffer: Buffer.from(file),
   });
   await expect(page.locator(".app-file-name")).toHaveText("large-base.harie.png");
-  await expect(format).toHaveValue("png");
+  await expect(header.getByRole("button", { name: "ファイル形式: PNG" })).toBeVisible();
+});
+
+test("FR-FILE-02: 保存ダイアログは、保存する形式（既定は開いたファイルの形式）の拡張子を既定にする", async ({
+  page,
+}) => {
+  // File System Access API を差し替え、保存ダイアログに渡した指定を記録する
+  await page.addInitScript(
+    (png: number[]) => {
+      const w = window as unknown as Record<string, unknown>;
+      const calls: unknown[] = [];
+      w.__saveCalls = calls;
+      const writable = { write: async () => {}, close: async () => {} };
+      w.showOpenFilePicker = async () => [
+        {
+          getFile: async () => new File([new Uint8Array(png)], "screen.png", { type: "image/png" }),
+          createWritable: async () => writable,
+        },
+      ];
+      w.showSaveFilePicker = async (options: unknown) => {
+        calls.push(options);
+        return { createWritable: async () => writable };
+      };
+    },
+    [...fixture("base.png")],
+  );
+  await page.goto("/");
+  await page.getByRole("banner").getByRole("button", { name: "画像を開く" }).click();
+  const header = page.getByRole("banner");
+  await expect(header.getByRole("button", { name: "ファイル形式: PNG" })).toBeVisible();
+  await header.getByRole("button", { name: "保存", exact: true }).click();
+  await expect(page.getByRole("status")).toContainText("screen.harie.png を保存しました");
+  const [call] = await page.evaluate(
+    () => (window as unknown as { __saveCalls: unknown[] }).__saveCalls,
+  );
+  expect(call).toEqual({
+    suggestedName: "screen.harie.png",
+    types: [{ description: "PNG 画像", accept: { "image/png": [".png"] } }],
+  });
 });
 
 test("FR-EDIT-03: テキストは置いた直後とダブルクリックで、その場で文字を直せる。文字サイズは候補と pt で変えられる", async ({
@@ -241,7 +286,13 @@ test("ツールのパレットは描いている間は隠れ、たたむと小�
 test("ヘッダーの「画像を開く」は、今の画像を閉じる前に確認する", async ({ page }) => {
   await openFixture(page, "large-base.jpg");
   const header = page.getByRole("banner");
-  await expect(header.getByRole("button")).toHaveText(["画像を開く", "保存", "連携", "設定"]);
+  await expect(header.getByRole("button")).toHaveText([
+    "画像を開く",
+    "JPEG",
+    "保存",
+    "連携",
+    "設定",
+  ]);
   await header.getByRole("button", { name: "画像を開く" }).click();
   const confirm = page.getByRole("dialog", { name: "画像を開く" });
   await expect(confirm).toContainText("large-base.jpg");

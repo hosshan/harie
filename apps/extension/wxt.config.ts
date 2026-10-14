@@ -1,3 +1,4 @@
+import tailwindcss from "@tailwindcss/vite";
 import react from "@vitejs/plugin-react";
 import { defineConfig } from "wxt";
 
@@ -27,7 +28,7 @@ export default defineConfig({
     icons: { 16: "icon/16.png", 32: "icon/32.png", 48: "icon/48.png", 128: "icon/128.png" },
   },
   vite: () => ({
-    plugins: [react()],
+    plugins: [react(), tailwindcss()],
     // WASM を含むパッケージは事前バンドルしない（?url で読み込む .wasm の位置が変わるため）
     optimizeDeps: { exclude: ["@resvg/resvg-wasm", "@jsquash/jpeg"] },
     build: { target: "es2022" },
