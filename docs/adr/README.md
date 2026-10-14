@@ -26,3 +26,4 @@
 | [0008](./0008-ai-development-harness.md) | AI 駆動開発のハーネス（CLAUDE.md / docs / ADR） | 承認 |
 | [0009](./0009-pii-mask-editable-until-save.md) | 個人情報のマスクは保存するまで選んで外せるようにする | 提案中 |
 | [0010](./0010-ui-components.md) | UI 部品に shadcn/ui（Tailwind CSS + Radix UI）を使う | 承認 |
+| [0011](./0011-badge-anchor.md) | 番号バッジを枠に紐付け、描画時に枠の左上へ置く | 提案中 |
