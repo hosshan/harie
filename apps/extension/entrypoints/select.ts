@@ -21,7 +21,7 @@ export default defineUnlistedScript(() => {
     "position:fixed;inset:0;z-index:2147483647;cursor:crosshair;background:rgba(15,23,42,0.15);";
   const box = document.createElement("div");
   box.style.cssText =
-    "position:fixed;display:none;border:2px solid #0B6BCB;background:rgba(11,107,203,0.12);pointer-events:none;box-sizing:border-box;";
+    "position:fixed;display:none;border:2px solid #B0861A;background:rgba(212,167,44,0.16);pointer-events:none;box-sizing:border-box;";
   const hint = document.createElement("div");
   hint.textContent =
     mode === "region"

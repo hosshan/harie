@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <title>Harie</title>
+  <defs><clipPath id="harie-sq"><rect x="72" y="72" width="184" height="184" rx="25.8"/></clipPath></defs>
+  <rect x="72" y="72" width="184" height="184" rx="25.8" fill="#EBD08A"/>
+  <circle cx="309.9" cy="309.9" r="130.1" fill="#D4A72C"/>
+  <circle cx="309.9" cy="309.9" r="130.1" fill="#B0861A" clip-path="url(#harie-sq)"/>
+</svg>
