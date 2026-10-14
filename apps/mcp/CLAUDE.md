@@ -1,7 +1,8 @@
 # apps/mcp
 
-ローカル MCP サーバー（stdio）。設計は [docs/03-design/integrations.md 2 章](../../docs/03-design/integrations.md)、使い方は [README.md](./README.md)。
+ローカル MCP サーバー（stdio）。設計は [docs/03-design/integrations.md 2 章](../../docs/03-design/integrations.md)、使い方は [README.md](./README.md)（英語。npm のページに出る）と [README.ja.md](./README.ja.md)（日本語）。
 
+- README は npm 向けに英語の `README.md` を主にし、日本語版を `README.ja.md` に置く。片方を直したらもう片方も同じ PR で直す。`package.json` の `description`・`keywords` も英語で書く（npm の検索と一覧に出る）。
 - ツールの入力は `src/server.ts` で zod スキーマとして宣言し、`packages/model` のスキーマ（`OpSchema` など）を再利用する。
 - ファイルパスは必ず `RootGuard.resolve()` を通す。root の外（`..`・絶対パス・シンボリックリンク）を扱わない。
 - 利用者（LLM）の入力ミスは `ToolError` で返し、ツール結果の `isError` にする。

@@ -1,16 +1,25 @@
 {
   "name": "@harie/mcp",
   "version": "0.2.0",
-  "description": "Harie（注釈を再編集できる JPEG/PNG）を読み書きするローカル MCP サーバー",
+  "description": "Local MCP server for Harie: annotate screenshots for user guides with boxes, arrows and callouts, saved as plain JPEG/PNG that stay re-editable",
   "license": "MIT",
   "keywords": [
     "mcp",
+    "mcp-server",
     "model-context-protocol",
+    "claude",
     "screenshot",
     "annotation",
+    "image-annotation",
+    "user-guide",
+    "documentation",
+    "jpeg",
+    "png",
+    "pii",
     "harie"
   ],
   "homepage": "https://github.com/hosshan/harie/tree/main/apps/mcp#readme",
+  "bugs": "https://github.com/hosshan/harie/issues",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/hosshan/harie.git",
