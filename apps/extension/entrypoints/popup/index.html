@@ -4,16 +4,17 @@
     <meta charset="UTF-8" />
     <title>Harie でキャプチャ</title>
     <style>
-      body { margin: 0; padding: 12px; width: 240px; font: 13px/1.5 "Hiragino Sans", "Noto Sans JP", system-ui, sans-serif; color: #1c2024; }
-      h1 { font-size: 14px; margin: 0 0 8px; }
-      button { display: block; width: 100%; margin: 0 0 6px; padding: 8px 10px; border: 1px solid #d0d5dd; border-radius: 6px; background: #fff; font: inherit; text-align: left; cursor: pointer; }
-      button:hover { border-color: #0b6bcb; }
-      .muted { color: #687076; font-size: 12px; margin: 6px 0 0; }
+      body { margin: 0; padding: 12px; width: 240px; font: 13px/1.5 "Hiragino Sans", "Noto Sans JP", system-ui, sans-serif; color: #2b2620; }
+      h1 { display: flex; align-items: center; gap: 6px; font-size: 14px; margin: 0 0 8px; }
+      h1 img { width: 20px; height: 20px; }
+      button { display: block; width: 100%; margin: 0 0 6px; padding: 8px 10px; border: 1px solid #e6dcc6; border-radius: 6px; background: #fff; font: inherit; text-align: left; cursor: pointer; }
+      button:hover { border-color: #b0861a; background: #fbf6e9; }
+      .muted { color: #7a7064; font-size: 12px; margin: 6px 0 0; }
       [role="alert"] { color: #b42318; margin: 6px 0 0; }
     </style>
   </head>
   <body>
-    <h1>Harie でキャプチャ</h1>
+    <h1><img src="/icon/32.png" alt="" />Harie でキャプチャ</h1>
     <button type="button" data-mode="visible">見えている範囲</button>
     <button type="button" data-mode="region">範囲を選ぶ</button>
     <button type="button" data-mode="element">要素を選ぶ</button>

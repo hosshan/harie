@@ -27,6 +27,8 @@ type Drag =
 /** クリックだけで作ったときの大きさ（ドラッグが短すぎる場合） */
 const DEFAULT_BOX = { w: 160, h: 80 };
 const MIN_DRAG = 4;
+/** 選択枠とつまみの色（ブランドの濃い黄土色。docs/brand/README.md） */
+const SELECTION_COLOR = "#B0861A";
 
 function distanceToSegment(p: Point, a: Point, b: Point): number {
   const dx = b.x - a.x;
@@ -325,7 +327,7 @@ function Selection({
           width={b.w + pad * 2}
           height={b.h + pad * 2}
           fill="none"
-          stroke="#0B6BCB"
+          stroke={SELECTION_COLOR}
           strokeWidth={stroke}
           strokeDasharray={`${stroke * 4} ${stroke * 3}`}
           pointerEvents="none"
@@ -342,7 +344,7 @@ function Selection({
             width={handleSize}
             height={handleSize}
             fill="#FFFFFF"
-            stroke="#0B6BCB"
+            stroke={SELECTION_COLOR}
             strokeWidth={stroke}
             className={`harie-handle harie-handle-${h}`}
           />

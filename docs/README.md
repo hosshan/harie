@@ -15,6 +15,7 @@
 | 開発 | [ローカルでの起動と確認](05-development/local-setup.md) | Web・拡張・MCP・CLI・AI 評価を手元で動かす手順 |
 | 開発 | [開発ルール](05-development/development-rules.md) | ブランチ、コミット、テスト、規約 |
 | 開発 | [AI 開発ハーネス](05-development/ai-harness.md) | CLAUDE.md・ADR・フック等の仕組み |
+| ブランド | [ロゴと配色](brand/README.md) | ロゴの形・比率、配色と使い方 |
 | 判断 | [ADR 一覧](adr/README.md) | 設計判断の履歴 |
 | 共通 | [用語集](glossary.md) | |
 
