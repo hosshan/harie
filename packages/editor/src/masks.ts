@@ -77,6 +77,25 @@ export function addDetectedMasks(
   return next;
 }
 
+/**
+ * 適用済みで、まだ保存していないマスク（ADR-0009）。保存するまでは選んで外せる。
+ * 加工前の画像は呼び出し側がメモリにだけ持ち、保存した時点で捨てる
+ */
+export type AppliedMask = { id: string; rect: Rect };
+
+/** 適用済みのマスクのうち、点 p を含む一番上（後から適用した）もの */
+export function hitAppliedMask(masks: readonly AppliedMask[], p: Point): AppliedMask | undefined {
+  return [...masks]
+    .reverse()
+    .find(
+      (m) =>
+        p.x >= m.rect.x &&
+        p.x <= m.rect.x + m.rect.w &&
+        p.y >= m.rect.y &&
+        p.y <= m.rect.y + m.rect.h,
+    );
+}
+
 /** 適用の指示に変える。手で指定した範囲の種別は other */
 export function toPiiMasks(drafts: readonly MaskDraft[]): PiiMask[] {
   return drafts.map((d) => ({

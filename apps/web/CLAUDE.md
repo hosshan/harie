@@ -8,7 +8,7 @@ Web エディタ（Vite + React）。画像を開く → `packages/editor` で�
 - E2E は `e2e/`（Playwright）。`pnpm e2e` でビルドしたものをプレビューして動かす。ローカルでは `HARIE_CHROMIUM_PATH` でブラウザを指定できる。
 - ブラウザと Node の保存結果がバイト単位で一致することを E2E で確認している（NFR-PLAT-05）。描画や保存を変えたらこのテストを通す。
 - PWA は `vite-plugin-pwa`（`vite.config.ts`）。ビルドに含まれる WASM・フォントも precache する。アイコンの元は `public/icon.svg`。
-- 個人情報のマスクは `applyMasks` でベース画像を書き換え、`Opened.base` を差し替える。加工前のバイト列（`alternative` を含む）を残さない（ADR-0007）。
+- 個人情報のマスクは `applyMasks` でベース画像を書き換え、`Opened.base` を差し替える。加工前のバイト列は保存するまで `Workspace` の state（`src/unsaved-masks.ts`）にだけ持ち、適用したマスクを外せるようにする。保存したら捨てる。`alternative` は適用した時点で捨てる（ADR-0007, ADR-0009）。
 - AI（`src/ai/`）: 提案と個人情報の検出は利用者の API キー（BYOK、localStorage）で Claude API をブラウザから直接呼ぶ。送信先の表示と同意がないと送れない（NFR-SEC-01）。SDK を含む `run.ts` は使うときにだけ `import()` する。E2E は `page.route` で API を差し替える。
 - 編集画面（`src/Workspace.tsx`）は Chrome 拡張のエディタページからも使う（`package.json` の `exports`）。保存先は `deliver` で呼び出し側が決める。Web 固有のこと（ファイルを開く・File System Access API）は `App.tsx` に置く。
 - 連携の案内（`src/Guide.tsx`、ヘッダーの「連携」）: Chrome 拡張の入れ方と MCP の登録コマンドを出す。Web だけに出し、拡張のエディタには出さない（`Workspace` の `menu` で渡す）。拡張のストア公開や `apps/mcp/README.md`（英語）/ `README.ja.md` のセットアップ手順が変わったら、ここも合わせて直す（FR-CAP-07, FR-MCP-07）。

@@ -1,5 +1,5 @@
 // エディタ全体（編集面と、その上に浮かぶ道具のパレット・選択中の注釈の設定）
-import type { Annotation, HarieDocument, PiiMask } from "@harie/model";
+import type { Annotation, HarieDocument, LineDash, PiiMask } from "@harie/model";
 import { THEMES } from "@harie/render";
 import {
   type Dispatch,
@@ -11,9 +11,10 @@ import {
   useState,
 } from "react";
 import { Canvas, type Tool } from "./Canvas";
+import { type DrawDefaults, loadDrawDefaults, saveDrawDefaults } from "./draw-defaults";
 import { type EditorAction, type EditorState, editorReducer, initialState } from "./history";
 import { MaskPanel } from "./MaskPanel";
-import { type MaskDraft, newMaskDraft, toPiiMasks } from "./masks";
+import { type AppliedMask, type MaskDraft, newMaskDraft, toPiiMasks } from "./masks";
 import { Palette, type PaletteTool } from "./Palette";
 import { adoptSuggestionOps, rejectSuggestionOps } from "./suggestions";
 
@@ -50,6 +51,22 @@ export const FONT_SIZES = [
 const FONT_SIZE_MIN = 8;
 const FONT_SIZE_MAX = 200;
 
+/** 線の太さの候補（画像のピクセル）。既定はテーマの 4 */
+export const STROKE_WIDTHS = [
+  { label: "細", value: 2 },
+  { label: "中", value: 4 },
+  { label: "太", value: 6 },
+  { label: "極太", value: 10 },
+] as const;
+const STROKE_WIDTH_MIN = 1;
+const STROKE_WIDTH_MAX = 40;
+
+const LINE_DASHES: readonly { label: string; value: LineDash; dasharray?: string }[] = [
+  { label: "実線", value: "solid" },
+  { label: "破線", value: "dashed", dasharray: "5 3" },
+  { label: "点線", value: "dotted", dasharray: "0 4.5" },
+];
+
 function isTyping(target: EventTarget | null): boolean {
   return (
     target instanceof HTMLElement &&
@@ -73,6 +90,10 @@ export type EditorProps = {
    */
   masks?: MaskDraft[];
   onMasksChange?: (masks: MaskDraft[]) => void;
+  /** 適用済みで、まだ保存していないマスク。選択の道具で選んで外せる（ADR-0009） */
+  appliedMasks?: readonly AppliedMask[];
+  /** 適用済みのマスクを外す（加工前の画像から、残りのマスクをかけ直す） */
+  onUnmask?: (id: string) => Promise<void>;
   /** 右側の欄の先頭に出す内容（AI のパネルなど） */
   aside?: ReactNode;
 };
@@ -84,17 +105,54 @@ export function Editor({
   onApplyMasks,
   masks: controlledMasks,
   onMasksChange,
+  appliedMasks = [],
+  onUnmask,
   aside,
 }: EditorProps) {
   const [tool, setTool] = useState<Tool>("select");
   const [dragging, setDragging] = useState(false);
   const [paletteCollapsed, setPaletteCollapsed] = useState(false);
+  // 前回選んだ線の太さ・文字サイズを、次に描く注釈の初期値にする
+  const [drawDefaults, setDrawDefaults] = useState<DrawDefaults>(() => loadDrawDefaults());
+  const rememberDrawDefaults = useCallback((patch: DrawDefaults) => {
+    setDrawDefaults((prev) => {
+      const next = { ...prev, ...patch };
+      saveDrawDefaults(next);
+      return next;
+    });
+  }, []);
   const [ownMasks, setOwnMasks] = useState<MaskDraft[]>([]);
   const masks = controlledMasks ?? ownMasks;
   const setMasks = (next: MaskDraft[]) => {
     if (controlledMasks === undefined) setOwnMasks(next);
     onMasksChange?.(next);
   };
+  const [selectedMaskId, setSelectedMaskId] = useState<string | null>(null);
+  const selectedMask = appliedMasks.find((m) => m.id === selectedMaskId);
+  const [unmasking, setUnmasking] = useState(false);
+  const [unmaskError, setUnmaskError] = useState<string | null>(null);
+  const unmask = useCallback(
+    async (id: string) => {
+      if (onUnmask === undefined) return;
+      setUnmasking(true);
+      setUnmaskError(null);
+      try {
+        await onUnmask(id);
+        setSelectedMaskId(null);
+      } catch (e) {
+        setUnmaskError(
+          `隠すのをやめられませんでした: ${e instanceof Error ? e.message : String(e)}`,
+        );
+      } finally {
+        setUnmasking(false);
+      }
+    },
+    [onUnmask],
+  );
+  // 注釈を選んだら、適用済みのマスクの選択は外す（右の欄に出すのはどちらか一方）
+  useEffect(() => {
+    if (state.selectedId !== null) setSelectedMaskId(null);
+  }, [state.selectedId]);
   const canMask = onApplyMasks !== undefined;
   const tools = useMemo(() => (canMask ? [...TOOLS, MASK_TOOL] : TOOLS), [canMask]);
   // マスクの範囲を選んでいる間は注釈の選択を外す。右の欄の「削除」や Delete キーで、
@@ -102,7 +160,10 @@ export function Editor({
   const selectTool = useCallback(
     (next: Tool) => {
       setTool(next);
-      if (next === "mask") dispatch({ type: "select", id: null });
+      if (next === "mask") {
+        dispatch({ type: "select", id: null });
+        setSelectedMaskId(null);
+      }
     },
     [dispatch],
   );
@@ -125,9 +186,13 @@ export function Editor({
       } else if ((e.key === "Delete" || e.key === "Backspace") && state.selectedId !== null) {
         e.preventDefault();
         dispatch({ type: "apply", ops: [{ op: "remove", id: state.selectedId }] });
+      } else if ((e.key === "Delete" || e.key === "Backspace") && selectedMask !== undefined) {
+        e.preventDefault();
+        if (!unmasking) void unmask(selectedMask.id);
       } else if (e.key === "Escape") {
         setTool("select");
         dispatch({ type: "select", id: null });
+        setSelectedMaskId(null);
       } else if (!mod && !e.altKey) {
         const t = tools.find((x) => x.key === e.key);
         if (t !== undefined) selectTool(t.tool);
@@ -135,7 +200,7 @@ export function Editor({
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [dispatch, state.selectedId, tools, selectTool]);
+  }, [dispatch, state.selectedId, tools, selectTool, selectedMask, unmask, unmasking]);
 
   const selected = state.doc.annotations.find((a) => a.id === state.selectedId);
 
@@ -151,7 +216,15 @@ export function Editor({
             onToolDone={() => setTool("select")}
             masks={masks}
             onMaskDrawn={(rect) => setMasks([...masks, newMaskDraft(masks, rect)])}
+            {...(onUnmask === undefined
+              ? {}
+              : {
+                  appliedMasks,
+                  selectedAppliedMaskId: selectedMask?.id ?? null,
+                  onSelectAppliedMask: setSelectedMaskId,
+                })}
             onDraggingChange={setDragging}
+            drawDefaults={drawDefaults}
           />
           <Palette
             tools={tools}
@@ -180,7 +253,22 @@ export function Editor({
               }}
             />
           )}
-          {selected === undefined ? (
+          {selected === undefined && selectedMask !== undefined ? (
+            <section className="harie-inspector-body" aria-label="隠した範囲">
+              <h2>隠した範囲 {appliedMasks.indexOf(selectedMask) + 1}</h2>
+              <p className="harie-muted">
+                保存するまでは、隠すのをやめられます。保存すると元に戻せません。
+              </p>
+              <button
+                type="button"
+                disabled={unmasking}
+                onClick={() => void unmask(selectedMask.id)}
+              >
+                {unmasking ? "元に戻しています…" : "隠すのをやめる"}
+              </button>
+              {unmaskError !== null && <p role="alert">{unmaskError}</p>}
+            </section>
+          ) : selected === undefined ? (
             tool !== "mask" && (
               <p className="harie-muted">注釈を選ぶと、ここで文字や色を変えられます。</p>
             )
@@ -190,6 +278,7 @@ export function Editor({
               doc={state.doc}
               annotation={selected}
               dispatch={dispatch}
+              onDrawDefaults={rememberDrawDefaults}
             />
           )}
           {state.error !== null && <p role="alert">{state.error.message}</p>}
@@ -203,10 +292,13 @@ function Inspector({
   doc,
   annotation,
   dispatch,
+  onDrawDefaults,
 }: {
   doc: HarieDocument;
   annotation: Annotation;
   dispatch: Dispatch<EditorAction>;
+  /** 選んだ線の太さ・文字サイズを、次に描く注釈の初期値として記録する */
+  onDrawDefaults: (patch: DrawDefaults) => void;
 }) {
   const update = (patch: Record<string, unknown>) =>
     dispatch({ type: "apply", ops: [{ op: "update", id: annotation.id, patch }] });
@@ -219,7 +311,23 @@ function Inspector({
   const fontSize = annotation.style?.fontSize ?? THEMES.default.defaults.fontSize;
   const setFontSize = (v: number) => {
     const size = Math.round(Math.min(FONT_SIZE_MAX, Math.max(FONT_SIZE_MIN, v)));
+    onDrawDefaults({ fontSize: size });
     if (size !== fontSize) update({ style: { ...annotation.style, fontSize: size } });
+  };
+  const hasLine =
+    annotation.type === "rect" || annotation.type === "ellipse" || annotation.type === "arrow";
+  const strokeWidth = annotation.style?.strokeWidth ?? THEMES.default.defaults.strokeWidth;
+  const setStrokeWidth = (v: number) => {
+    const width = Math.round(Math.min(STROKE_WIDTH_MAX, Math.max(STROKE_WIDTH_MIN, v)));
+    onDrawDefaults({ strokeWidth: width });
+    if (width !== strokeWidth) update({ style: { ...annotation.style, strokeWidth: width } });
+  };
+  const dash = annotation.style?.dash ?? "solid";
+  const setDash = (v: LineDash) => {
+    if (v === dash) return;
+    // 実線は既定なので、フィールドごと外す
+    const { dash: _, ...rest } = annotation.style ?? {};
+    update({ style: v === "solid" ? rest : { ...rest, dash: v } });
   };
   // 文字は 1 打鍵ごとではなく、入力欄を離れたときに 1 回の操作として確定する（元に戻す単位）
   const commitText = () => {
@@ -277,7 +385,56 @@ function Inspector({
           />
         </label>
       )}
-      {hasFontSize && <FontSizeField value={fontSize} onChange={setFontSize} />}
+      {hasFontSize && (
+        <SizeField
+          legend="文字サイズ"
+          unit="pt"
+          options={FONT_SIZES}
+          min={FONT_SIZE_MIN}
+          max={FONT_SIZE_MAX}
+          value={fontSize}
+          onChange={setFontSize}
+        />
+      )}
+      {hasLine && (
+        <SizeField
+          legend="線の太さ"
+          unit="px"
+          options={STROKE_WIDTHS}
+          min={STROKE_WIDTH_MIN}
+          max={STROKE_WIDTH_MAX}
+          value={strokeWidth}
+          onChange={setStrokeWidth}
+        />
+      )}
+      {hasLine && (
+        <fieldset className="harie-choices">
+          <legend>線の種類</legend>
+          {LINE_DASHES.map((d) => (
+            <button
+              key={d.value}
+              type="button"
+              className="harie-line-dash"
+              aria-pressed={dash === d.value}
+              onClick={() => setDash(d.value)}
+            >
+              <svg viewBox="0 0 20 8" width="20" height="8" aria-hidden="true">
+                <line
+                  x1="2"
+                  y1="4"
+                  x2="18"
+                  y2="4"
+                  stroke="currentColor"
+                  strokeWidth="2.5"
+                  strokeLinecap={d.value === "dotted" ? "round" : "butt"}
+                  strokeDasharray={d.dasharray}
+                />
+              </svg>
+              {d.label}
+            </button>
+          ))}
+        </fieldset>
+      )}
       <fieldset>
         <legend>色</legend>
         {COLORS.map((c) => (
@@ -302,8 +459,24 @@ function Inspector({
   );
 }
 
-/** 文字サイズ。候補から選ぶか、pt を直接入れる（入力欄を離れる・Enter で 1 回の操作として確定する） */
-function FontSizeField({ value, onChange }: { value: number; onChange: (v: number) => void }) {
+/** 文字サイズ・線の太さ。候補から選ぶか、値を直接入れる（入力欄を離れる・Enter で 1 回の操作として確定する） */
+function SizeField({
+  legend,
+  unit,
+  options,
+  min,
+  max,
+  value,
+  onChange,
+}: {
+  legend: string;
+  unit: string;
+  options: readonly { label: string; value: number }[];
+  min: number;
+  max: number;
+  value: number;
+  onChange: (v: number) => void;
+}) {
   const [draft, setDraft] = useState(String(value));
   useEffect(() => setDraft(String(value)), [value]);
   const commit = () => {
@@ -312,25 +485,25 @@ function FontSizeField({ value, onChange }: { value: number; onChange: (v: numbe
     else setDraft(String(value));
   };
   return (
-    <fieldset className="harie-font-size">
-      <legend>文字サイズ</legend>
-      {FONT_SIZES.map((s) => (
+    <fieldset className="harie-choices">
+      <legend>{legend}</legend>
+      {options.map((s) => (
         <button
           key={s.value}
           type="button"
           aria-pressed={value === s.value}
-          title={`${s.value}pt`}
+          title={`${s.value}${unit}`}
           onClick={() => onChange(s.value)}
         >
           {s.label}
         </button>
       ))}
-      <label className="harie-font-size-pt">
+      <label className="harie-size-input">
         <input
           type="number"
-          aria-label="文字サイズ（pt）"
-          min={FONT_SIZE_MIN}
-          max={FONT_SIZE_MAX}
+          aria-label={`${legend}（${unit}）`}
+          min={min}
+          max={max}
           step={1}
           value={draft}
           onChange={(e) => setDraft(e.target.value)}
@@ -339,7 +512,7 @@ function FontSizeField({ value, onChange }: { value: number; onChange: (v: numbe
             if (e.key === "Enter") commit();
           }}
         />
-        pt
+        {unit}
       </label>
     </fieldset>
   );

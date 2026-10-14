@@ -2,6 +2,7 @@
 import { type Annotation, applyOps, type HarieDocument, type Point } from "@harie/model";
 import { annotationBounds, buildSvg, layoutAnchors } from "@harie/render";
 import { type Dispatch, type PointerEvent, useEffect, useMemo, useRef, useState } from "react";
+import { type DrawDefaults, styleForNew } from "./draw-defaults";
 import {
   boxFrom,
   contains,
@@ -12,7 +13,7 @@ import {
   resizePatch,
 } from "./geometry";
 import { type EditorAction, type EditorState, newAnnotationId } from "./history";
-import { type MaskDraft, maskRect } from "./masks";
+import { type AppliedMask, hitAppliedMask, type MaskDraft, maskRect } from "./masks";
 import { TextEditor } from "./TextEditor";
 
 export type Tool = "select" | "rect" | "ellipse" | "arrow" | "text" | "callout" | "badge" | "mask";
@@ -61,21 +62,23 @@ export function hitTest(doc: HarieDocument, p: Point, tolerance: number): Annota
   });
 }
 
-function dragOps(doc: HarieDocument, drag: Drag): unknown[] {
+function dragOps(doc: HarieDocument, drag: Drag, defaults: DrawDefaults = {}): unknown[] {
   if (drag.kind === "mask") return [];
   if (drag.kind === "create") {
     const id = newAnnotationId(doc, drag.tool);
+    const style = styleForNew(drag.tool, defaults);
+    const styled = style === undefined ? {} : { style };
     const short =
       Math.abs(drag.current.x - drag.start.x) < MIN_DRAG &&
       Math.abs(drag.current.y - drag.start.y) < MIN_DRAG;
     if (drag.tool === "arrow") {
       const to = short ? { x: drag.start.x + DEFAULT_BOX.w, y: drag.start.y } : drag.current;
-      return [{ op: "add", annotation: { id, type: "arrow", from: drag.start, to } }];
+      return [{ op: "add", annotation: { id, type: "arrow", from: drag.start, to, ...styled } }];
     }
     const box = short
       ? { x: Math.round(drag.start.x), y: Math.round(drag.start.y), ...DEFAULT_BOX }
       : boxFrom(drag.start, drag.current);
-    return [{ op: "add", annotation: { id, type: drag.tool, ...box } }];
+    return [{ op: "add", annotation: { id, type: drag.tool, ...box, ...styled } }];
   }
   const target = doc.annotations.find((a) => a.id === drag.id);
   if (target === undefined) return [];
@@ -101,8 +104,14 @@ export type CanvasProps = {
   /** 適用前のマスク範囲（下書き）。上の SVG に描く */
   masks?: readonly MaskDraft[];
   onMaskDrawn?: (rect: { x: number; y: number; w: number; h: number }) => void;
+  /** 適用済みで、まだ保存していないマスク。選択の道具で、注釈のない所をクリックすると選べる（ADR-0009） */
+  appliedMasks?: readonly AppliedMask[];
+  selectedAppliedMaskId?: string | null;
+  onSelectAppliedMask?: (id: string | null) => void;
   /** 描いている・ドラッグしている間か（ツールのパレットを隠すのに使う） */
   onDraggingChange?: (dragging: boolean) => void;
+  /** 新しく描く注釈の初期値（前回選んだ線の太さ・文字サイズ） */
+  drawDefaults?: DrawDefaults;
 };
 
 type TextAnnotation = Extract<Annotation, { type: "text" | "callout" }>;
@@ -117,7 +126,11 @@ export function Canvas({
   onToolDone,
   masks = [],
   onMaskDrawn,
+  appliedMasks = [],
+  selectedAppliedMaskId = null,
+  onSelectAppliedMask,
   onDraggingChange,
+  drawDefaults = {},
 }: CanvasProps) {
   const overlay = useRef<SVGSVGElement>(null);
   const [drag, setDrag] = useState<Drag | null>(null);
@@ -129,9 +142,9 @@ export function Canvas({
   // ドラッグ中は履歴に積まずに途中経過だけを描く
   const display = useMemo(() => {
     if (drag === null || drag.kind === "mask") return doc;
-    const r = applyOps(doc, dragOps(doc, drag));
+    const r = applyOps(doc, dragOps(doc, drag, drawDefaults));
     return r.ok ? layoutAnchors(r.value) : doc;
-  }, [doc, drag]);
+  }, [doc, drag, drawDefaults]);
   const markup = useMemo(
     () =>
       buildSvg(display, {
@@ -176,7 +189,12 @@ export function Canvas({
     }
     if (tool === "text" || tool === "callout" || tool === "badge") {
       const id = newAnnotationId(doc, tool);
-      const at = { x: Math.round(p.x), y: Math.round(p.y) };
+      const style = styleForNew(tool, drawDefaults);
+      const at = {
+        x: Math.round(p.x),
+        y: Math.round(p.y),
+        ...(style === undefined ? {} : { style }),
+      };
       const annotation =
         tool === "text"
           ? { id, type: "text", ...at, text: "テキスト" }
@@ -208,6 +226,8 @@ export function Canvas({
     const hit = hitTest(doc, p, screenPx(6));
     dispatch({ type: "select", id: hit?.id ?? null });
     if (hit !== undefined) setDrag({ kind: "move", id: hit.id, start: p, current: p });
+    // 注釈の上でなければ、適用済みのマスクを選ぶ（注釈が重なっていれば注釈を優先する）
+    onSelectAppliedMask?.(hit === undefined ? (hitAppliedMask(appliedMasks, p)?.id ?? null) : null);
   };
 
   // テキスト・吹き出しをダブルクリックすると、その場で文字を編集する（FR-EDIT-03）
@@ -240,7 +260,7 @@ export function Canvas({
     ) {
       return;
     }
-    const ops = dragOps(doc, final);
+    const ops = dragOps(doc, final, drawDefaults);
     const id = created(ops);
     dispatch({ type: "apply", ops, ...(id === undefined ? {} : { select: id }) });
     if (final.kind === "create") onToolDone();
@@ -280,6 +300,15 @@ export function Canvas({
           .map((a) => (
             <SuggestedOutline key={a.id} annotation={a} stroke={screenPx(1.5)} />
           ))}
+        {appliedMasks.map((m) => (
+          <AppliedMaskOutline
+            key={m.id}
+            id={m.id}
+            rect={m.rect}
+            selected={m.id === selectedAppliedMaskId}
+            stroke={screenPx(1.5)}
+          />
+        ))}
         {masks.map((m, i) => (
           <MaskOutline key={m.id} rect={m.rect} label={String(i + 1)} stroke={screenPx(1.5)} />
         ))}
@@ -387,6 +416,37 @@ function SuggestedOutline({ annotation, stroke }: { annotation: Annotation; stro
       stroke="#6E56CF"
       strokeWidth={stroke}
       strokeDasharray={`${stroke * 2} ${stroke * 2}`}
+      pointerEvents="none"
+    />
+  );
+}
+
+/** 適用済みで、まだ保存していないマスク（選んで外せる）。保存画像には描かれない編集用の表示 */
+function AppliedMaskOutline({
+  id,
+  rect,
+  selected,
+  stroke,
+}: {
+  id: string;
+  rect: { x: number; y: number; w: number; h: number };
+  selected: boolean;
+  stroke: number;
+}) {
+  return (
+    <rect
+      className="harie-mask-applied"
+      data-applied-mask={id}
+      data-selected={selected ? "true" : undefined}
+      x={rect.x}
+      y={rect.y}
+      width={rect.w}
+      height={rect.h}
+      fill="none"
+      stroke={selected ? "#0B6BCB" : "#E5484D"}
+      strokeOpacity={selected ? 1 : 0.6}
+      strokeWidth={stroke * (selected ? 2 : 1)}
+      strokeDasharray={selected ? undefined : `${stroke * 2} ${stroke * 2}`}
       pointerEvents="none"
     />
   );

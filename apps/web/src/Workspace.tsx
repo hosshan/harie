@@ -17,6 +17,7 @@ import { mismatchMessage, type Opened } from "./load";
 import { Modal } from "./Modal";
 import { SaveFormatMenu } from "./SaveFormatMenu";
 import { buildSaveFile, type Saved } from "./save";
+import { addUnsaved, masksInImage, removeUnsaved, type UnsavedMasks } from "./unsaved-masks";
 
 export type WorkspaceProps = {
   opened: Opened;
@@ -53,6 +54,8 @@ export function Workspace({
   const [format, setFormat] = useState<ImageFormat>(opened.format);
   const [showWarning, setShowWarning] = useState(opened.warning !== undefined);
   const [masks, setMasks] = useState<MaskDraft[]>([]);
+  // 保存するまでは、適用したマスクを外せるように加工前の画像を持つ（ADR-0009）
+  const [unsaved, setUnsaved] = useState<UnsavedMasks | null>(null);
   const [confirmOpen, setConfirmOpen] = useState(false);
   const savedDoc = useRef(opened.doc);
   const dirty =
@@ -78,6 +81,8 @@ export function Workspace({
       dispatch({ type: "saved", revision: saved.doc.revision, meta: saved.doc.meta });
       savedDoc.current = { ...state.doc, revision: saved.doc.revision };
       setStatus(`${saved.fileName} を保存しました`);
+      // 保存したら、加工前の画像はメモリからも捨てる。以後は適用したマスクを外せない
+      setUnsaved(null);
       onChange({
         ...opened,
         fileName: saved.fileName,
@@ -94,20 +99,51 @@ export function Workspace({
     }
   };
 
-  // 個人情報のマスクはベース画像そのものを書き換える（ADR-0007）。加工前の画像はどこにも残さない
-  const applyMasks = async (masks: PiiMask[]) => {
+  // 個人情報のマスクはベース画像そのものを書き換える（ADR-0007）。加工前の画像は保存するまでメモリにだけ持ち、
+  // 保存したファイルには残さない（ADR-0009）
+  const applyMasks = async (requested: PiiMask[]) => {
     const { width, height } = state.doc.canvas;
+    const masks = masksInImage(requested, state.doc.canvas);
     const result = await (await browserRenderer()).applyMasks({
       base: opened.base,
       width,
       height,
       masks,
     });
+    setUnsaved(
+      addUnsaved(unsaved, { before: opened.base, pii: state.doc.pii }, masks, result.applied),
+    );
     dispatch({ type: "piiApplied", pii: recordPiiApplied(state.doc, result.applied).pii });
     // 外部で編集された画像の「今の画像で開き直す」も、加工前の画像を持つので捨てる
     const { alternative: _, ...rest } = opened;
     onChange({ ...rest, base: result.base });
-    setStatus(`${result.applied.length} か所をマスクしました。保存するとファイルに反映されます`);
+    setStatus(
+      `${result.applied.length} か所をマスクしました。保存するまでは、範囲を選んで隠すのをやめられます`,
+    );
+  };
+
+  // 適用したマスクを外す。加工前の画像に、残りのマスクをかけ直す
+  const unmask = async (id: string) => {
+    if (unsaved === null) return;
+    const { rest, pii } = removeUnsaved(unsaved, id);
+    const { width, height } = state.doc.canvas;
+    const base =
+      rest.length === 0
+        ? unsaved.before
+        : (
+            await (
+              await browserRenderer()
+            ).applyMasks({
+              base: unsaved.before,
+              width,
+              height,
+              masks: rest.map((e) => e.mask),
+            })
+          ).base;
+    setUnsaved(rest.length === 0 ? null : { ...unsaved, entries: rest });
+    dispatch({ type: "piiApplied", pii });
+    onChange({ ...opened, base });
+    setStatus("隠すのをやめました");
   };
 
   return (
@@ -172,6 +208,8 @@ export function Workspace({
           onApplyMasks={applyMasks}
           masks={masks}
           onMasksChange={setMasks}
+          appliedMasks={unsaved?.entries.map((e) => ({ id: e.id, rect: e.record.rect })) ?? []}
+          onUnmask={unmask}
           aside={
             <AiPanel
               doc={state.doc}

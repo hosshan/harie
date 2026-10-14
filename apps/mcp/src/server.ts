@@ -15,7 +15,7 @@ const OPS_HELP = `ops は操作の配列。座標はベース画像のピクセ�
      {"op":"update","id":"r1","patch":{"w":220}}, {"op":"remove","id":"c1"}]
 注釈の type: rect / ellipse / arrow(from,to) / text(x,y,text) / callout(x,y,w,text,anchor?) / badge(x,y,number,anchor?) / spotlight / blur(method: blur|mosaic)。
 badge に anchor: {"annotationId": 枠の id} を付けると、枠の左上の外側に自動で置かれる（x, y は 0 でよい）。
-style（任意）: stroke, strokeWidth, fill, color, fontSize, fontWeight, radius, opacity, head。
+style（任意）: stroke, strokeWidth, fill, color, fontSize, fontWeight, radius, opacity, head, dash（solid / dashed / dotted。四角・楕円・矢印の線の種類）。
 blur は可逆なぼかしで、個人情報の加工には使わないこと。`;
 
 function toResult(out: ToolOutput): CallToolResult {
