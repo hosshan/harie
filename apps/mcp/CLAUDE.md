@@ -8,6 +8,7 @@
 - 利用者（LLM）の入力ミスは `ToolError` で返し、ツール結果の `isError` にする。
 - stdout は MCP の通信に使う。ログは `console.error` に出す。
 - PII 加工は確認付きの専用ツール `harie_mask` だけで行う。`confirm: true` のときだけ保存する（integrations.md 2.2）。
+- 補足の基準（何を強調し、どう書くか）は `packages/ai/src/guide.ts` を正とし、プロンプト `harie_guide` と instructions（`src/guide.ts`）はそこから組み立てる。MCP 側で基準を書き換えない。`@harie/ai` は `@harie/ai/guide` だけを import する（Claude API の SDK をバンドルしない）。
 - tools/list を小さく保つ（server.test.ts で上限を確かめている）。同じ定義を繰り返すスキーマは、`packages/model` 側で `.meta({ id })` を付けて `$ref` で共有する。
 
 ## npm への公開（`@harie/mcp`）

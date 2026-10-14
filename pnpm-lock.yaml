@@ -121,6 +121,9 @@ importers:
       '@expo-google-fonts/noto-sans-jp':
         specifier: ^0.4.4
         version: 0.4.4
+      '@harie/ai':
+        specifier: workspace:*
+        version: link:../../packages/ai
       '@harie/format':
         specifier: workspace:*
         version: link:../../packages/format

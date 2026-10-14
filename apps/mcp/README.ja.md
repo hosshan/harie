@@ -51,6 +51,10 @@ pnpm build   # apps/mcp/dist/index.mjs と dist/fonts/ ができる
 claude mcp add harie -- node /path/to/harie/apps/mcp/dist/index.mjs --root ~/Pictures/guides
 ```
 
+### 手引きのプロンプト（`harie_guide`）
+
+Web エディタの AI 提案と同じ基準を、プロンプト `harie_guide`（引数: `path`、任意で `intent`）として提供する。どの UI 要素を強調するか（説明に必要なものだけ、多くても 8 か所、操作の順）、吹き出しをどう書くか（読者がすることを 1〜2 文で。画面にない機能を作らず、個人情報を書き写さない）、このツールでの手順（開く → 個人情報を隠す → 枠・anchor 付きの吹き出し・番号を置く → 確かめる → 保存）をまとめている。Claude Code では `/mcp__harie__harie_guide` で呼べる。同じ基準の短い版をサーバーの `instructions` でも渡すので、instructions を読むクライアントはプロンプトを使わなくても基準に沿う。
+
 ### 使い方の例
 
 - 「`settings.png` を Harie ファイルにして、保存ボタンを赤枠で囲み、『ここで保存します』と吹き出しを付けて」

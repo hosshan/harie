@@ -53,6 +53,10 @@ pnpm build   # produces apps/mcp/dist/index.mjs and dist/fonts/
 claude mcp add harie -- node /path/to/harie/apps/mcp/dist/index.mjs --root ~/Pictures/guides
 ```
 
+### Guide prompt (`harie_guide`)
+
+The server ships a prompt, `harie_guide` (arguments: `path`, optional `intent`), with the same rules the web editor's AI suggestions use: which UI elements to highlight (only what the explanation needs, at most 8, in the order of operation), how to write each callout (1–2 sentences saying what the reader does; never invent features or copy personal data), and the steps with these tools (open → mask personal data → add box + anchored callout + number badge → preview → save). In Claude Code it appears as `/mcp__harie__harie_guide`. A short version of the same rules is also sent as the server's `instructions`, so clients that read them follow the rules even without the prompt.
+
 ### Example prompts
 
 - "Turn `settings.png` into a Harie file, draw a red box around the save button, and add a callout saying 'Click here to save'."
