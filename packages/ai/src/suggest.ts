@@ -5,6 +5,7 @@ import { annotationBounds } from "@harie/render";
 import { z } from "zod";
 import { type DomSnapshot, describeElements, MAX_PROMPT_ELEMENTS, snapToElement } from "./dom";
 import { pad, toCanvasRect } from "./geometry";
+import { GUIDE_TARGET_RULE, GUIDE_TEXT_RULES, MAX_SUGGESTIONS, MAX_TEXT_LENGTH } from "./guide";
 import { AiError, type ImageInput, type LlmClient } from "./llm";
 
 /** LLM の出力。数値の範囲などの細かい検証は受け取った後で行う */
@@ -22,17 +23,16 @@ export const SuggestOutputSchema = z.object({
 });
 export type SuggestOutput = z.infer<typeof SuggestOutputSchema>;
 
-export const MAX_SUGGESTIONS = 8;
-const MAX_TEXT_LENGTH = 120;
-
 const SYSTEM = `あなたは SaaS の利用ガイドを書くテクニカルライターです。
 画面のスクリーンショットと「何を説明したいか」を受け取り、読者が迷わず操作できるよう、画像のどこを強調し、どんな説明文を添えるべきかを提案します。
 
-- 強調するのは、説明に必要な UI 要素（ボタン・入力欄・メニュー・タブ・設定項目など）だけにする。多くても ${MAX_SUGGESTIONS} か所。操作の順に並べる。
-- target はその要素をちょうど囲む矩形。座標は渡した画像のピクセル（左上が原点）で答える。
-- text は日本語で、1〜2 文、${MAX_TEXT_LENGTH} 文字以内。「〇〇をクリックします」のように、読者がすることを具体的に書く。画面にない機能や値を作らない。
-- 画面に写っている個人情報（氏名・メールアドレスなど）を説明文に書き写さない。
-- 既に付いている注釈と同じ箇所・同じ内容は提案しない。`;
+${[
+  GUIDE_TARGET_RULE,
+  "target はその要素をちょうど囲む矩形。座標は渡した画像のピクセル（左上が原点）で答える。",
+  ...GUIDE_TEXT_RULES,
+]
+  .map((rule) => `- ${rule}`)
+  .join("\n")}`;
 
 export type SuggestInput = {
   client: LlmClient;

@@ -5,6 +5,7 @@ import { z } from "zod";
 import type { DomSnapshot } from "./dom";
 import { dummyFor } from "./dummy";
 import { iou, pad, toCanvasRect } from "./geometry";
+import { PII_KIND_RULE, PII_SCOPE_RULES } from "./guide";
 import type { ImageInput, LlmClient } from "./llm";
 
 export const PiiOutputSchema = z.object({
@@ -33,11 +34,14 @@ export type PiiCandidate = {
 const SYSTEM = `あなたは、公開するスクリーンショットから個人情報を見つける担当者です。
 画像の中の個人情報らしきものをすべて挙げてください。見落としは、余分な候補よりも重い問題です。
 
-- kind: name（人の氏名・ユーザー名）, email, phone, address（住所・郵便番号）, id（会員番号・カード番号・社員番号など個人を特定できる番号）, face（顔写真・アバターの顔）, other（その他の個人情報）
-- box: その文字列・顔をちょうど囲む矩形。座標は渡した画像のピクセル（左上が原点）で答える。同じ人の情報でも、離れた場所にあれば別々に挙げる。
-- text: 読み取った文字列そのもの。顔は空文字。
-- 個人ではない情報（会社名・製品名・ボタンの文言・見出し）は挙げない。
-- 値がダミーやテスト用に見えても（0 が並ぶ番号、example.com のメール、テスト用のカード番号、架空の地名など）、個人情報の形をしていれば挙げる。公開してよいかは利用者が判断する。`;
+${[
+  PII_KIND_RULE,
+  "box: その文字列・顔をちょうど囲む矩形。座標は渡した画像のピクセル（左上が原点）で答える。同じ人の情報でも、離れた場所にあれば別々に挙げる。",
+  "text: 読み取った文字列そのもの。顔は空文字。",
+  ...PII_SCOPE_RULES,
+]
+  .map((rule) => `- ${rule}`)
+  .join("\n")}`;
 
 const PATTERNS: { kind: PiiKind; re: RegExp }[] = [
   { kind: "email", re: /[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}/ },

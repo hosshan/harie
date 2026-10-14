@@ -1,0 +1,27 @@
+// 「どこに何を補足するか」の手引き。AI 提案（suggest.ts）・PII 検出（pii.ts）と、MCP のプロンプト（apps/mcp）で同じ文面を使う。
+// 外部に依存しない（MCP は `@harie/ai/guide` だけを取り込む）
+
+/** 1 枚の画像で強調する箇所の上限 */
+export const MAX_SUGGESTIONS = 8;
+/** 説明文 1 つの上限（文字） */
+export const MAX_TEXT_LENGTH = 120;
+
+/** 強調する箇所の選び方 */
+export const GUIDE_TARGET_RULE = `強調するのは、説明に必要な UI 要素（ボタン・入力欄・メニュー・タブ・設定項目など）だけにする。多くても ${MAX_SUGGESTIONS} か所。操作の順に並べる。`;
+
+/** 説明文の書き方と、避けること */
+export const GUIDE_TEXT_RULES = [
+  `text は日本語で、1〜2 文、${MAX_TEXT_LENGTH} 文字以内。「〇〇をクリックします」のように、読者がすることを具体的に書く。画面にない機能や値を作らない。`,
+  "画面に写っている個人情報（氏名・メールアドレスなど）を説明文に書き写さない。",
+  "既に付いている注釈と同じ箇所・同じ内容は提案しない。",
+] as const;
+
+/** 個人情報の種類（PiiKind と同じ値） */
+export const PII_KIND_RULE =
+  "kind: name（人の氏名・ユーザー名）, email, phone, address（住所・郵便番号）, id（会員番号・カード番号・社員番号など個人を特定できる番号）, face（顔写真・アバターの顔）, other（その他の個人情報）";
+
+/** 個人情報として扱うもの・扱わないもの */
+export const PII_SCOPE_RULES = [
+  "個人ではない情報（会社名・製品名・ボタンの文言・見出し）は挙げない。",
+  "値がダミーやテスト用に見えても（0 が並ぶ番号、example.com のメール、テスト用のカード番号、架空の地名など）、個人情報の形をしていれば挙げる。公開してよいかは利用者が判断する。",
+] as const;

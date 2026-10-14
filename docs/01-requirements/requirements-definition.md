@@ -95,6 +95,7 @@
 | FR-MCP-05 | 複数ファイルを横断して注釈テキストを検索できる | Next |
 | FR-MCP-06 | リモート MCP（Streamable HTTP + OAuth）でクラウド上のファイルを扱える | Later |
 | FR-MCP-07 | Web エディタから MCP サーバーを Claude Code / Claude Desktop に登録する方法を案内し、コマンドと設定をコピーできる | MVP |
+| FR-MCP-08 | 「どこに何を補足するか」の手引き（AI 提案と同じ基準）と作業手順を、MCP のプロンプトとサーバーの instructions でクライアントの LLM に渡す | MVP |
 
 ## 3. 非機能要件
 
