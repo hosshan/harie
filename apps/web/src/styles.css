@@ -11,22 +11,27 @@
   --color-background: var(--bg);
   --color-foreground: var(--fg);
   --color-primary: var(--accent);
-  --color-primary-foreground: #ffffff;
-  --color-accent: #f1f3f5;
+  --color-primary-foreground: var(--accent-fg);
+  --color-accent: var(--surface);
   --color-accent-foreground: var(--fg);
   --color-popover: #ffffff;
   --color-popover-foreground: var(--fg);
   --color-muted-foreground: var(--muted);
   --color-input: var(--line);
-  --color-ring: var(--accent);
+  --color-ring: var(--accent-strong);
 }
 
+/* ブランドの配色（docs/brand/README.md）。黄土色は背景に使い、文字色には濃い --accent-text を使う */
 :root {
-  --fg: #1c2024;
-  --muted: #687076;
+  --fg: #2b2620;
+  --muted: #7a7064;
   --bg: #ffffff;
-  --line: #d0d5dd;
-  --accent: #0b6bcb;
+  --surface: #fbf6e9;
+  --line: #e6dcc6;
+  --accent: #d4a72c;
+  --accent-strong: #b0861a;
+  --accent-fg: #2b2620;
+  --accent-text: #86650f;
   font-family: "Hiragino Sans", "Noto Sans JP", system-ui, sans-serif;
   color: var(--fg);
   background: var(--bg);
@@ -74,6 +79,12 @@ input {
 .app-header h1 {
   font-size: 18px;
   margin: 0;
+}
+.app-logo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  letter-spacing: -0.01em;
 }
 .app-header-sep {
   width: 1px;
@@ -144,7 +155,7 @@ input {
 }
 .app-primary {
   background: var(--accent);
-  color: #fff;
+  color: var(--accent-fg);
   border-color: var(--accent);
 }
 .app-drop {
@@ -267,7 +278,7 @@ input {
   font-size: 12px;
   white-space: pre-wrap;
   overflow-wrap: anywhere;
-  background: #f5f6f8;
+  background: var(--surface);
   border: 1px solid var(--line);
   border-radius: 6px;
 }

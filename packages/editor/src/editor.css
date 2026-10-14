@@ -1,4 +1,15 @@
 /* エディタの最小限の見た目。アプリ側で上書きできるよう、クラス名は harie- で始める */
+/* ブランドの配色（docs/brand/README.md）。アプリ側で --harie-* を上書きできる */
+:root {
+  --harie-fg: #2b2620;
+  --harie-muted: #7a7064;
+  --harie-line: #e6dcc6;
+  --harie-surface: #fbf6e9;
+  --harie-accent: #d4a72c;
+  --harie-accent-strong: #b0861a;
+  --harie-accent-fg: #2b2620;
+  --harie-accent-text: #86650f;
+}
 .harie-editor {
   display: flex;
   flex-direction: column;
@@ -50,7 +61,7 @@
   border: none;
   border-radius: 10px;
   background: transparent;
-  color: #1c2024;
+  color: var(--harie-fg);
   font-size: 10px;
   line-height: 1.2;
   white-space: nowrap;
@@ -60,8 +71,8 @@
   background: rgba(0, 0, 0, 0.05);
 }
 .harie-palette button[aria-pressed="true"] {
-  background: rgba(11, 107, 203, 0.1);
-  color: #0b6bcb;
+  background: rgba(212, 167, 44, 0.18);
+  color: var(--harie-accent-text);
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
 }
 .harie-palette button:disabled {
@@ -88,7 +99,7 @@
   width: 1px;
   height: 28px;
   margin: 0 4px;
-  background: rgba(28, 32, 36, 0.18);
+  background: rgba(43, 38, 32, 0.18);
 }
 /* ダブルクリックで開く、その場の文字編集。行の高さは描画（LINE_HEIGHT）に合わせる */
 .harie-text-editor {
@@ -99,7 +110,7 @@
   padding: 0;
   border: none;
   border-radius: 2px;
-  outline: 2px solid #0b6bcb;
+  outline: 2px solid var(--harie-accent-strong);
   outline-offset: 2px;
   background: rgba(255, 255, 255, 0.92);
   line-height: 1.4;
@@ -111,9 +122,9 @@
   min-width: 36px;
 }
 .harie-font-size button[aria-pressed="true"] {
-  background: #0b6bcb;
-  color: #fff;
-  border-color: #0b6bcb;
+  background: var(--harie-accent);
+  color: var(--harie-accent-fg);
+  border-color: var(--harie-accent);
 }
 .harie-inspector-body .harie-font-size-pt {
   flex-direction: row;
@@ -133,7 +144,7 @@
   position: relative;
   width: 100%;
   max-height: calc(100vh - 160px);
-  background: #f1f3f5;
+  background: var(--harie-surface);
 }
 .harie-canvas-image,
 .harie-canvas-image > svg {
@@ -203,13 +214,13 @@
   height: 24px;
   border-radius: 50%;
   border: 2px solid #fff;
-  box-shadow: 0 0 0 1px #d0d5dd;
+  box-shadow: 0 0 0 1px var(--harie-line);
 }
 .harie-swatch[aria-pressed="true"] {
-  box-shadow: 0 0 0 2px #0b6bcb;
+  box-shadow: 0 0 0 2px var(--harie-accent-strong);
 }
 .harie-muted {
-  color: #687076;
+  color: var(--harie-muted);
   font-size: 13px;
 }
 @media (max-width: 720px) {
@@ -220,7 +231,7 @@
 .harie-mask-panel {
   padding-bottom: 12px;
   margin-bottom: 12px;
-  border-bottom: 1px solid #d0d5dd;
+  border-bottom: 1px solid var(--harie-line);
 }
 .harie-mask-panel h2 {
   font-size: 14px;

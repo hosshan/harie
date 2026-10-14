@@ -1,6 +1,7 @@
 import { mkdirSync, mkdtempSync, readFileSync, symlinkSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import { GUIDE_TARGET_RULE, GUIDE_TEXT_RULES } from "@harie/ai/guide";
 import { readHarie } from "@harie/format";
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { InMemoryTransport } from "@modelcontextprotocol/sdk/inMemory.js";
@@ -57,6 +58,23 @@ describe("harie MCP server", () => {
     // style は注釈の種類ごとに繰り返さず、1 か所の定義を参照する
     expect(edit.match(/"strokeWidth"/g)).toHaveLength(1);
     expect(JSON.stringify(tools).length).toBeLessThan(12_000);
+  });
+
+  it("FR-MCP-08: AI 提案と同じ手引きをプロンプトと instructions で渡す", async () => {
+    const { client } = await setup();
+    expect(client.getInstructions()).toContain(GUIDE_TARGET_RULE);
+    const { prompts } = await client.listPrompts();
+    expect(prompts.map((p) => p.name)).toEqual(["harie_guide"]);
+    const got = await client.getPrompt({
+      name: "harie_guide",
+      arguments: { path: "screen.png", intent: "通知設定の変え方" },
+    });
+    const message = got.messages[0]?.content;
+    const text = message?.type === "text" ? message.text : "";
+    expect(text).toContain("screen.png");
+    expect(text).toContain("説明したいこと: 通知設定の変え方");
+    for (const rule of [GUIDE_TARGET_RULE, ...GUIDE_TEXT_RULES]) expect(text).toContain(rule);
+    expect(text).toContain("harie_mask");
   });
 
   it("FR-MCP-04 → 02 → 03: 画像から作り、開き、注釈を付けて保存する", async () => {

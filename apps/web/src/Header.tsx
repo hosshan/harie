@@ -1,6 +1,6 @@
 // 1 段のヘッダー。ロゴ | ファイル名 と、右側にファイル操作・設定のメニューを置く
 // （注釈の道具は編集面の上のパレットに分け、どちらの操作か迷わないようにする）
-import type { ComponentProps, ReactNode } from "react";
+import { type ComponentProps, type ReactNode, useId } from "react";
 import { Button } from "./components/ui/button";
 import { SettingsButton } from "./Settings";
 
@@ -15,7 +15,10 @@ export type HeaderProps = {
 export function Header({ fileName, status, children }: HeaderProps) {
   return (
     <header className="app-header">
-      <h1>Harie</h1>
+      <h1 className="app-logo">
+        <BrandMark />
+        Harie
+      </h1>
       {fileName !== undefined && (
         <>
           <span className="app-header-sep" aria-hidden="true" />
@@ -32,6 +35,23 @@ export function Header({ fileName, status, children }: HeaderProps) {
         <SettingsButton />
       </div>
     </header>
+  );
+}
+
+/** ロゴのシンボル（docs/brand/harie-symbol.svg と同じ形）。四角と丸を大和比（1:√2）で重ねる */
+function BrandMark() {
+  const clip = useId();
+  return (
+    <svg viewBox="0 0 512 512" width="28" height="28" aria-hidden="true">
+      <defs>
+        <clipPath id={clip}>
+          <rect x="72" y="72" width="184" height="184" rx="25.8" />
+        </clipPath>
+      </defs>
+      <rect x="72" y="72" width="184" height="184" rx="25.8" fill="#EBD08A" />
+      <circle cx="309.9" cy="309.9" r="130.1" fill="#D4A72C" />
+      <circle cx="309.9" cy="309.9" r="130.1" fill="#B0861A" clipPath={`url(#${clip})`} />
+    </svg>
   );
 }
 

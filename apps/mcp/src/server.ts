@@ -5,6 +5,7 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import type { CallToolResult } from "@modelcontextprotocol/sdk/types.js";
 import { z } from "zod";
 import pkg from "../package.json" with { type: "json" };
+import { guidePrompt, SERVER_INSTRUCTIONS } from "./guide";
 import { createRootGuard, PathError } from "./paths";
 import { create, edit, list, mask, open, preview, ToolError, type ToolOutput } from "./tools";
 
@@ -43,7 +44,10 @@ async function run(fn: () => ToolOutput | Promise<ToolOutput>): Promise<CallTool
 
 export function createServer(options: { root: string }): McpServer {
   const guard = createRootGuard(options.root);
-  const server = new McpServer({ name: "harie", version: pkg.version });
+  const server = new McpServer(
+    { name: "harie", version: pkg.version },
+    { instructions: SERVER_INSTRUCTIONS },
+  );
   const path = z.string().describe(`ファイルのパス（${guard.root} からの相対パスか絶対パス）`);
   const ops = z.array(OpSchema).describe(OPS_HELP);
   // harie_preview の ops は harie_edit と同じ。定義の重複でツール一覧が大きくならないよう形だけ示し、
@@ -159,6 +163,25 @@ rect はベース画像のピクセル（左上原点）で、文字より少し
       annotations: { readOnlyHint: true },
     },
     async (input) => run(() => list(guard, input)),
+  );
+
+  server.registerPrompt(
+    "harie_guide",
+    {
+      title: "ガイド用の注釈を付ける",
+      description:
+        "スクリーンショットのどこを強調し、どんな説明を添えるかの手引きと、Harie のツールでの手順を返す",
+      argsSchema: {
+        path: z.string().describe("注釈を付ける画像のパス（--root からの相対パスか絶対パス）"),
+        intent: z
+          .string()
+          .optional()
+          .describe("何を説明したいか（例: 通知設定の変え方）。省略時は画面の主な操作"),
+      },
+    },
+    (args) => ({
+      messages: [{ role: "user", content: { type: "text", text: guidePrompt(args) } }],
+    }),
   );
 
   return server;

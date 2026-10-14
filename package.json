@@ -15,6 +15,7 @@
     "test": "vitest run",
     "build": "pnpm -r --if-present build",
     "harie": "node apps/cli/bin/harie.mjs",
+    "brand:icons": "node scripts/brand-icons.mjs",
     "e2e": "pnpm --filter @harie/web e2e && pnpm --filter @harie/extension e2e"
   },
   "devDependencies": {
