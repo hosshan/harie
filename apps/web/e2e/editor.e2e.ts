@@ -648,3 +648,67 @@ test("FR-CAP-07, FR-MCP-07: ヘッダーの「連携」で、Chrome 拡張の入
     "@harie/mcp",
   );
 });
+
+/** 編集面のベース画像のバイト列 */
+async function baseImageBytes(page: Page): Promise<Buffer> {
+  const href = await page.locator(".harie-canvas-image image").first().getAttribute("href");
+  const bytes = await page.evaluate(
+    async (url) => [...new Uint8Array(await (await fetch(url as string)).arrayBuffer())],
+    href,
+  );
+  return Buffer.from(bytes);
+}
+
+/** 画像の座標（px）を画面の座標に直してクリックする */
+async function clickAt(page: Page, at: [number, number], size = [520, 400]) {
+  await drag(page, at, at, size);
+}
+
+test("FR-EDIT-05, ADR-0009: 適用したマスクは保存するまで選んで外せ、保存すると外せない", async ({
+  page,
+}) => {
+  await openFixture(page, "large-base.jpg");
+  const original = fixture("large-base.jpg");
+  await page.getByRole("button", { name: "個人情報を隠す" }).click();
+  await drag(page, [20, 20], [220, 60]);
+  await drag(page, [20, 100], [220, 140]);
+  const panel = page.getByRole("region", { name: "個人情報のマスク" });
+  await panel.getByRole("button", { name: "マスクを適用する" }).click();
+  await panel.getByRole("button", { name: "適用する", exact: true }).click();
+  await expect(page.getByRole("status")).toContainText("2 か所をマスクしました");
+  await expect(page.locator(".harie-mask-applied")).toHaveCount(2);
+
+  // 1 つ目を選んで外す
+  await clickAt(page, [120, 40]);
+  const selected = page.getByRole("region", { name: "隠した範囲" });
+  await expect(selected).toContainText("隠した範囲 1");
+  await selected.getByRole("button", { name: "隠すのをやめる" }).click();
+  await expect(page.getByRole("status")).toContainText("隠すのをやめました");
+  await expect(page.locator(".harie-mask-applied")).toHaveCount(1);
+
+  // 残りも Delete キーで外すと、読み込んだ画像のバイト列に戻る
+  await clickAt(page, [120, 120]);
+  await expect(page.getByRole("region", { name: "隠した範囲" })).toBeVisible();
+  await page.keyboard.press("Delete");
+  await expect(page.locator(".harie-mask-applied")).toHaveCount(0);
+  await expect.poll(async () => (await baseImageBytes(page)).equals(original)).toBe(true);
+
+  // もう一度隠して保存すると、記録が残り、外せなくなる
+  await page.getByRole("button", { name: "個人情報を隠す" }).click();
+  await drag(page, [20, 20], [220, 60]);
+  await panel.getByRole("button", { name: "マスクを適用する" }).click();
+  await panel.getByRole("button", { name: "適用する", exact: true }).click();
+  const [download] = await Promise.all([
+    page.waitForEvent("download"),
+    page.getByRole("button", { name: "保存" }).click(),
+  ]);
+  const read = readHarie(new Uint8Array(readFileSync(await download.path())));
+  expect(read.kind).toBe("harie");
+  if (read.kind !== "harie") return;
+  expect(read.doc.pii.applied).toEqual([
+    { kind: "other", method: "fill", rect: { x: 20, y: 20, w: 200, h: 40 } },
+  ]);
+  await expect(page.locator(".harie-mask-applied")).toHaveCount(0);
+  await clickAt(page, [120, 40]);
+  await expect(page.getByRole("region", { name: "隠した範囲" })).toHaveCount(0);
+});

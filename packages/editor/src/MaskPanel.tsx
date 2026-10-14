@@ -13,7 +13,7 @@ export type MaskPanelProps = {
 
 export function MaskPanel({ drafts, onChange, onCancel, onApply }: MaskPanelProps) {
   const [busy, setBusy] = useState(false);
-  // 適用は元に戻せないので、押し間違いに備えてもう一度確かめる
+  // 適用は画像そのものを書き換える（保存すると戻せない）ので、押し間違いに備えてもう一度確かめる
   const [confirming, setConfirming] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const update = (id: string, patch: Partial<MaskDraft>) =>
@@ -72,12 +72,12 @@ export function MaskPanel({ drafts, onChange, onCancel, onApply }: MaskPanelProp
         </ol>
       )}
       <p className="harie-muted">
-        適用すると画像そのものを書き換えます。元に戻すことはできず、保存したファイルにも元の内容は残りません。
+        適用すると画像そのものを書き換えます。保存するまでは、範囲を選んで隠すのをやめられます。保存すると元に戻せず、ファイルにも元の内容は残りません。
       </p>
       {confirming ? (
         <div role="alertdialog" aria-label="マスクの適用の確認" className="harie-mask-confirm">
           <p>
-            <strong>{drafts.length} か所を画像に焼き込みます。元に戻せません。</strong>
+            <strong>{drafts.length} か所を画像に焼き込みます。保存すると元に戻せません。</strong>
           </p>
           <p className="harie-mask-actions">
             <button type="button" onClick={() => setConfirming(false)}>

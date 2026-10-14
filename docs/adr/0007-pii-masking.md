@@ -1,6 +1,6 @@
 # ADR-0007: PII 加工はベース画像に不可逆に適用する
 
-- ステータス: 承認
+- ステータス: 承認（「メモリにも残さない」は [ADR-0009](./0009-pii-mask-editable-until-save.md) で「保存した時点でメモリからも捨てる」に改めた）
 - 日付: 2026-10-07
 - 決定者: Shun（2026-10-07 PR #1 のマージで承認）
 - 関連: FR-PII-01〜05 / NFR-SEC-02 / [ADR-0004](./0004-image-container-format.md) / [注釈ドキュメントモデル](../03-design/document-model.md)

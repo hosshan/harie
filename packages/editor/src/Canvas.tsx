@@ -12,7 +12,7 @@ import {
   resizePatch,
 } from "./geometry";
 import { type EditorAction, type EditorState, newAnnotationId } from "./history";
-import { type MaskDraft, maskRect } from "./masks";
+import { type AppliedMask, hitAppliedMask, type MaskDraft, maskRect } from "./masks";
 import { TextEditor } from "./TextEditor";
 
 export type Tool = "select" | "rect" | "ellipse" | "arrow" | "text" | "callout" | "badge" | "mask";
@@ -86,6 +86,10 @@ export type CanvasProps = {
   /** 適用前のマスク範囲（下書き）。上の SVG に描く */
   masks?: readonly MaskDraft[];
   onMaskDrawn?: (rect: { x: number; y: number; w: number; h: number }) => void;
+  /** 適用済みで、まだ保存していないマスク。選択の道具で、注釈のない所をクリックすると選べる（ADR-0009） */
+  appliedMasks?: readonly AppliedMask[];
+  selectedAppliedMaskId?: string | null;
+  onSelectAppliedMask?: (id: string | null) => void;
   /** 描いている・ドラッグしている間か（ツールのパレットを隠すのに使う） */
   onDraggingChange?: (dragging: boolean) => void;
 };
@@ -102,6 +106,9 @@ export function Canvas({
   onToolDone,
   masks = [],
   onMaskDrawn,
+  appliedMasks = [],
+  selectedAppliedMaskId = null,
+  onSelectAppliedMask,
   onDraggingChange,
 }: CanvasProps) {
   const overlay = useRef<SVGSVGElement>(null);
@@ -191,6 +198,8 @@ export function Canvas({
     const hit = hitTest(doc, p, screenPx(6));
     dispatch({ type: "select", id: hit?.id ?? null });
     if (hit !== undefined) setDrag({ kind: "move", id: hit.id, start: p, current: p });
+    // 注釈の上でなければ、適用済みのマスクを選ぶ（注釈が重なっていれば注釈を優先する）
+    onSelectAppliedMask?.(hit === undefined ? (hitAppliedMask(appliedMasks, p)?.id ?? null) : null);
   };
 
   // テキスト・吹き出しをダブルクリックすると、その場で文字を編集する（FR-EDIT-03）
@@ -263,6 +272,15 @@ export function Canvas({
           .map((a) => (
             <SuggestedOutline key={a.id} annotation={a} stroke={screenPx(1.5)} />
           ))}
+        {appliedMasks.map((m) => (
+          <AppliedMaskOutline
+            key={m.id}
+            id={m.id}
+            rect={m.rect}
+            selected={m.id === selectedAppliedMaskId}
+            stroke={screenPx(1.5)}
+          />
+        ))}
         {masks.map((m, i) => (
           <MaskOutline key={m.id} rect={m.rect} label={String(i + 1)} stroke={screenPx(1.5)} />
         ))}
@@ -370,6 +388,37 @@ function SuggestedOutline({ annotation, stroke }: { annotation: Annotation; stro
       stroke="#6E56CF"
       strokeWidth={stroke}
       strokeDasharray={`${stroke * 2} ${stroke * 2}`}
+      pointerEvents="none"
+    />
+  );
+}
+
+/** 適用済みで、まだ保存していないマスク（選んで外せる）。保存画像には描かれない編集用の表示 */
+function AppliedMaskOutline({
+  id,
+  rect,
+  selected,
+  stroke,
+}: {
+  id: string;
+  rect: { x: number; y: number; w: number; h: number };
+  selected: boolean;
+  stroke: number;
+}) {
+  return (
+    <rect
+      className="harie-mask-applied"
+      data-applied-mask={id}
+      data-selected={selected ? "true" : undefined}
+      x={rect.x}
+      y={rect.y}
+      width={rect.w}
+      height={rect.h}
+      fill="none"
+      stroke={selected ? "#0B6BCB" : "#E5484D"}
+      strokeOpacity={selected ? 1 : 0.6}
+      strokeWidth={stroke * (selected ? 2 : 1)}
+      strokeDasharray={selected ? undefined : `${stroke * 2} ${stroke * 2}`}
       pointerEvents="none"
     />
   );
