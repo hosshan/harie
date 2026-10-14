@@ -1,7 +1,7 @@
 # ローカルでの起動と確認
 
 - ステータス: 確定
-- 最終更新: 2026-10-09
+- 最終更新: 2026-10-14
 - 関連: [開発ルール](./development-rules.md) / [連携設計](../03-design/integrations.md)
 
 手元で Harie の各アプリを動かして確かめる手順。細かい内容は各アプリの文書に書き、ここからリンクする。
@@ -27,7 +27,7 @@ pnpm --filter @harie/web dev        # http://localhost:5173/
 - 画像を開く → 注釈を付ける → 保存 → 保存したファイルを開き直して注釈を直せることを確かめる。
 - 本番と同じビルド（PWA・WASM の precache を含む）で見るときは `pnpm --filter @harie/web build && pnpm --filter @harie/web preview`。
 - AI の提案・個人情報の検出は、画面で自分の Claude API キーを入れると使える（BYOK、ブラウザの localStorage に保存）。
-- 詳細: [apps/web/CLAUDE.md](../../apps/web/CLAUDE.md)
+- 詳細（テスト・リリース）: [apps/web/README.md](../../apps/web/README.md)
 
 ## 2. Chrome 拡張（apps/extension）
 
@@ -36,7 +36,7 @@ pnpm --filter @harie/extension dev      # WXT が拡張入りの Chromium を起
 pnpm --filter @harie/extension build    # 実際の Chrome で試す配布用 → apps/extension/.output/chrome-mv3/
 ```
 
-実際の Chrome では `chrome://extensions` →「デベロッパーモード」→「パッケージ化されていない拡張機能を読み込む」で `.output/chrome-mv3` を選ぶ。確認項目は [apps/extension/CLAUDE.md の「手動テスト」](../../apps/extension/CLAUDE.md#手動テスト実際の-chrome-で) にある。
+実際の Chrome では `chrome://extensions` →「デベロッパーモード」→「パッケージ化されていない拡張機能を読み込む」で `.output/chrome-mv3` を選ぶ。確認項目は [apps/extension/CLAUDE.md の「手動テスト」](../../apps/extension/CLAUDE.md#手動テスト実際の-chrome-で)、ストアへの提出手順は [apps/extension/README.md](../../apps/extension/README.md) にある。
 
 ## 3. MCP サーバー（apps/mcp）
 
@@ -58,7 +58,7 @@ pnpm harie inspect /tmp/sample.harie.png       # 状態・注釈・PII 加工の
 pnpm harie extract /tmp/sample.harie.png --doc /tmp/doc.json
 ```
 
-相対パスはリポジトリの直下から見たもの。詳細: [apps/cli/CLAUDE.md](../../apps/cli/CLAUDE.md)
+相対パスはリポジトリの直下から見たもの。コマンド一覧: [apps/cli/README.md](../../apps/cli/README.md)
 
 ## 5. AI の評価（packages/ai）
 
