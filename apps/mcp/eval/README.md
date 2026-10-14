@@ -27,7 +27,7 @@ node apps/mcp/eval/run.mjs --runs 8 --out /tmp/eval-a
 # 手元のビルドを測る（pnpm --filter @harie/mcp build の後）
 node apps/mcp/eval/run.mjs --runs 8 --conditions mcp --mcp "node $PWD/apps/mcp/dist/index.mjs" --out /tmp/eval-b
 
-# 採点（既に採点したものは飛ばす。--force で採点し直す）
+# 採点（既に採点したものは飛ばす。--force で採点し直す。--tasks create で作成だけ）
 node apps/mcp/eval/judge.mjs /tmp/eval-a
 node apps/mcp/eval/judge.mjs /tmp/eval-b
 

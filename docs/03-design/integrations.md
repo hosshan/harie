@@ -83,7 +83,7 @@ type DomSnapshot = {
 - パスは `--root` からの相対パスか絶対パス。`..`・絶対パス・シンボリックリンクで root の外を指すものは拒否する。
 - `expectedRevision` を渡すと、別の人・別のツールが先に保存していた場合に失敗させる（楽観的ロック）。
 - PII 加工（ベース画像の書き換え、ADR-0007）は確認付きの専用ツール `harie_mask` で行う。誤って元の画像を失わないよう、`confirm` を付けない呼び出しは加工後の見た目を返すだけでファイルを変えない。`confirm: true` で保存し、`outPath` を渡せば別のファイルとして保存する（既存ファイルは上書きしない）。範囲が画像の外にはみ出す指示は拒否する。
-- 「どこに何を補足するか」の手引き（FR-MCP-08）は、プロンプト `harie_guide`（引数 `path`, `intent?`）とサーバーの `instructions`（短い版）で渡す。基準の文面は `packages/ai/src/guide.ts` に置き、Web エディタの AI 提案・PII 検出のシステムプロンプトと共有する（MCP は `@harie/ai/guide` だけをバンドルし、Claude API の SDK は取り込まない）。手順（開く → `harie_mask` → 枠＋anchor 付きの吹き出し＋番号 → `harie_preview` → `harie_edit`）と座標・大きさの目安は MCP 側で足す。サーバー自身は LLM を呼ばない方針のまま。
+- 「どこに何を補足するか」の手引き（FR-MCP-08）は、プロンプト `harie_guide`（引数 `path`, `intent?`）とサーバーの `instructions`（短い版）で渡す。基準の文面は `packages/ai/src/guide.ts` に置き、Web エディタの AI 提案・PII 検出のシステムプロンプトと共有する（MCP は `@harie/ai/guide` だけをバンドルし、Claude API の SDK は取り込まない）。見た目の決まり（枠・番号・吹き出しを組で置き、吹き出しは矢印で枠を指す。番号は枠の左上の角の外側にそろえ、UI 要素に重ねない）も `guide.ts` に置く。手順（開く → `harie_mask` → 枠＋番号＋anchor 付きの吹き出し → `harie_preview` → `harie_edit`）と座標・大きさの目安（番号の座標の計算式など）は MCP 側で足す。サーバー自身は LLM を呼ばない方針のまま。
 - ツール一覧（tools/list）はクライアントのコンテキストを使うので小さく保つ。`StyleSchema` と `AnnotationSchema` は zod のメタデータに id を付け、JSON Schema では `definitions` の 1 か所を `$ref` で参照する。`harie_preview` の `ops` は `harie_edit` と同じ形式なので、ツール定義では形（`op` の種類）だけを示し、中身はサーバー側の `applyOps` が `OpSchema` で検証する。
 
 ### 2.3 将来（Later）

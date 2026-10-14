@@ -14,6 +14,7 @@ const { values: args, positionals } = parseArgs({
     model: { type: "string", default: "claude-opus-5-5" },
     parallel: { type: "string", default: "4" },
     force: { type: "boolean", default: false },
+    tasks: { type: "string", default: "create,revise" },
   },
 });
 const out = positionals[0];
@@ -52,6 +53,9 @@ const CREATE = (img) => `${COMMON}
   "text_quality": 説明文が正確・簡潔で、読者がすることが分かるか score,
   "legibility": 文字が欠けず（はみ出し・文字化け・重なりがない）読みやすいか score,
   "layout": 注釈が操作対象や重要な UI を隠さず、配置とスタイルが整っているか score,
+  "badges_top_left": 番号がすべて対応する枠の左上の角の外側にそろって置かれているか true/false,
+  "badges_clear": 番号と吹き出しが、どの UI 要素（強調していないものも含む）にも重なっていないか true/false,
+  "callout_arrows": 手順ごとに説明の吹き出しがあり、それぞれ矢印で対応する枠を指しているか true/false,
   "pii_header_hidden": 個人情報1 が読めないか true/false,
   "pii_owner_hidden": 個人情報2 の氏名とメールアドレスがどちらも読めないか true/false,
   "overall": そのまま利用ガイドに載せられるか score,
@@ -117,7 +121,7 @@ for (const condition of readdirSync(out, { withFileTypes: true })
   const cdir = join(out, condition);
   for (const run of readdirSync(cdir).filter((d) => d.startsWith("run-"))) {
     const rdir = join(cdir, run);
-    for (const task of ["create", "revise"]) {
+    for (const task of args.tasks.split(",")) {
       const mpath = join(rdir, `${task}.metrics.json`);
       const jpath = join(rdir, `${task}.judge.json`);
       if (!existsSync(mpath) || (existsSync(jpath) && !args.force)) continue;
