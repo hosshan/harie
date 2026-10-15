@@ -1,0 +1,48 @@
+name: Release Chrome extension
+
+# `extension-v<version>` のタグを push すると、検証してからストア提出用の zip を作り、GitHub Release に添付する。
+# Chrome ウェブストアへのアップロードは手動（apps/extension/README.md の「リリース」）。
+on:
+  push:
+    tags: ["extension-v*"]
+
+permissions:
+  contents: read
+
+jobs:
+  package:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: write # GitHub Release の作成
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+
+      - name: タグと package.json の版が一致するか確かめる
+        id: version
+        run: |
+          version=$(node -p "require('./apps/extension/package.json').version")
+          tag="${GITHUB_REF_NAME#extension-v}"
+          if [ "$version" != "$tag" ]; then
+            echo "::error::タグ ($GITHUB_REF_NAME) と apps/extension/package.json の version ($version) が一致しません"
+            exit 1
+          fi
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+
+      - run: pnpm check
+      - run: pnpm --filter @harie/web exec playwright install --with-deps chromium
+      - run: pnpm --filter @harie/extension e2e
+      - run: pnpm --filter @harie/extension zip
+
+      - name: GitHub Release を作る
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "$GITHUB_REF_NAME" apps/extension/.output/*.zip \
+            --title "Chrome 拡張 ${{ steps.version.outputs.version }}" --generate-notes

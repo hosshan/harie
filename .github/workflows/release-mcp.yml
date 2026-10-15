@@ -1,0 +1,78 @@
+name: Release @harie/mcp
+
+# `mcp-v<version>` のタグを push すると、検証してから npm に公開し、GitHub Release を作る。
+# npm への認証は Trusted Publishing（OIDC）。長期トークンはシークレットに置かない。
+# npm 側の設定: @harie/mcp → Settings → Trusted Publisher に
+#   GitHub Actions / hosshan / harie / release-mcp.yml / 環境 npm を登録する。
+on:
+  push:
+    tags: ["mcp-v*"]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: release-mcp
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    environment: npm
+    permissions:
+      contents: write # GitHub Release の作成
+      id-token: write # npm Trusted Publishing（OIDC）と provenance
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+          registry-url: https://registry.npmjs.org
+      # Trusted Publishing には npm 11.5.1 以上が要る（Node 22 同梱の npm は 10 系）
+      - run: npm install -g npm@11
+      - run: pnpm install --frozen-lockfile
+
+      - name: タグと package.json の版が一致するか確かめる
+        id: version
+        run: |
+          version=$(node -p "require('./apps/mcp/package.json').version")
+          tag="${GITHUB_REF_NAME#mcp-v}"
+          if [ "$version" != "$tag" ]; then
+            echo "::error::タグ ($GITHUB_REF_NAME) と apps/mcp/package.json の version ($version) が一致しません"
+            exit 1
+          fi
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          if npm view "@harie/mcp@$version" version >/dev/null 2>&1; then
+            echo "published=true" >> "$GITHUB_OUTPUT"
+            echo "::notice::@harie/mcp@$version は公開済みなので npm への公開は飛ばします"
+          else
+            echo "published=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - run: pnpm check
+
+      # pnpm pack で workspace: 指定を実際の版に置き換えた tarball を作り、npm で公開する
+      - name: パッケージを作る
+        run: |
+          pnpm --filter @harie/mcp build
+          mkdir -p "$RUNNER_TEMP/pack"
+          pnpm --filter @harie/mcp pack --pack-destination "$RUNNER_TEMP/pack"
+          ls -l "$RUNNER_TEMP/pack"
+
+      - name: npm に公開する
+        if: steps.version.outputs.published == 'false'
+        run: npm publish "$RUNNER_TEMP"/pack/*.tgz --access public --provenance
+
+      - name: GitHub Release を作る
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if gh release view "$GITHUB_REF_NAME" >/dev/null 2>&1; then
+            echo "::notice::Release $GITHUB_REF_NAME は作成済み"
+          else
+            gh release create "$GITHUB_REF_NAME" "$RUNNER_TEMP"/pack/*.tgz \
+              --title "@harie/mcp ${{ steps.version.outputs.version }}" --generate-notes
+          fi

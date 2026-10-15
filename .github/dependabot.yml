@@ -1,0 +1,12 @@
+version: 2
+updates:
+  # ワークフローで使う Action の版を月 1 回まとめて上げる（npm 依存は対象外）
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: monthly
+    groups:
+      actions:
+        patterns: ["*"]
+    commit-message:
+      prefix: ci
