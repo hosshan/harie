@@ -7,6 +7,7 @@
 | 調査 | [アプリ基盤](02-research/app-platform.md) | Tauri 2 / Flutter / Electron などの比較 |
 | 調査 | [画像保存方式](02-research/image-storage.md) | 通常画像のまま再編集可能にする方式、PoC |
 | 調査 | [描画・保存の性能](02-research/rendering-performance.md) | resvg-wasm と mozjpeg での保存時間（NFR-PERF-01）、ライセンス |
+| 調査 | [MCP の効果検証](02-research/mcp-effectiveness.md) | MCP あり／なしでのコンテキスト効率と品質の比較 |
 | 設計 | [アーキテクチャ](03-design/architecture.md) | 全体構成、パッケージ、主要フロー |
 | 設計 | [ファイル形式仕様](03-design/harie-format-spec.md) | Harie ファイルのバイナリ仕様 |
 | 設計 | [注釈ドキュメントモデル](03-design/document-model.md) | 注釈 JSON の構造と操作 |

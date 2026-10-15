@@ -18,6 +18,7 @@ import {
   recordPiiApplied,
   renameForSave,
 } from "@harie/model";
+import { layoutAnchors } from "@harie/render";
 import type { RootGuard } from "./paths";
 import { nodeRenderer } from "./runtime";
 
@@ -109,7 +110,8 @@ function applyOrThrow(doc: HarieDocument, ops: readonly unknown[]): HarieDocumen
   if (!result.ok) {
     throw new ToolError(`ops[${result.error.opIndex}] を適用できません: ${result.error.message}`);
   }
-  return result.value;
+  // 紐付けた番号の x, y を紐付け先から計算した位置にして保存する（ADR-0011）
+  return layoutAnchors(result.value);
 }
 
 export function open(guard: RootGuard, input: { path: string }): ToolOutput {

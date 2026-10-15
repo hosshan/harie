@@ -1,7 +1,7 @@
 import { mkdirSync, mkdtempSync, readFileSync, symlinkSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { GUIDE_TARGET_RULE, GUIDE_TEXT_RULES } from "@harie/ai/guide";
+import { GUIDE_LAYOUT_RULES, GUIDE_TARGET_RULE, GUIDE_TEXT_RULES } from "@harie/ai/guide";
 import { readHarie } from "@harie/format";
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { InMemoryTransport } from "@modelcontextprotocol/sdk/inMemory.js";
@@ -62,7 +62,9 @@ describe("harie MCP server", () => {
 
   it("FR-MCP-08: AI 提案と同じ手引きをプロンプトと instructions で渡す", async () => {
     const { client } = await setup();
-    expect(client.getInstructions()).toContain(GUIDE_TARGET_RULE);
+    for (const rule of [GUIDE_TARGET_RULE, ...GUIDE_LAYOUT_RULES]) {
+      expect(client.getInstructions()).toContain(rule);
+    }
     const { prompts } = await client.listPrompts();
     expect(prompts.map((p) => p.name)).toEqual(["harie_guide"]);
     const got = await client.getPrompt({
@@ -73,7 +75,9 @@ describe("harie MCP server", () => {
     const text = message?.type === "text" ? message.text : "";
     expect(text).toContain("screen.png");
     expect(text).toContain("説明したいこと: 通知設定の変え方");
-    for (const rule of [GUIDE_TARGET_RULE, ...GUIDE_TEXT_RULES]) expect(text).toContain(rule);
+    for (const rule of [GUIDE_TARGET_RULE, ...GUIDE_TEXT_RULES, ...GUIDE_LAYOUT_RULES]) {
+      expect(text).toContain(rule);
+    }
     expect(text).toContain("harie_mask");
   });
 
@@ -111,6 +115,30 @@ describe("harie MCP server", () => {
     expect(read.kind === "harie" && read.base.bytes).toEqual(
       new Uint8Array(readFileSync(join(root, "screen.png"))),
     );
+  });
+
+  it("ADR-0011: anchor を付けた番号は、枠の左上の外側の位置で保存する", async () => {
+    const { call } = await setup();
+    await call("harie_create", { imagePath: "screen.png" });
+    const box = { id: "r1", type: "rect", x: 50, y: 20, w: 10, h: 10 };
+    const badge = {
+      id: "b1",
+      type: "badge",
+      x: 0,
+      y: 0,
+      number: 1,
+      anchor: { annotationId: "r1" },
+    };
+    const edited = await call("harie_edit", {
+      path: "screen.harie.png",
+      ops: [
+        { op: "add", annotation: box },
+        { op: "add", annotation: badge },
+      ],
+    });
+    expect(edited.isError).toBe(false);
+    // 直径 38.4 と線の太さの半分 2 だけ左上へ。上は画像の外に出るので左の辺の外側に置く
+    expect(edited.json()).toMatchObject({ annotations: [box, { ...badge, x: 10, y: 20 }] });
   });
 
   it("FR-FILE-01, 02: format で保存形式を選べ、ベース画像はそのまま埋め込み、以後もその形式で保存する", async () => {

@@ -1,6 +1,6 @@
 // 編集面。下層に buildSvg の SVG（保存時と同じ見た目、ADR-0005）、上層に操作用の SVG を重ねる
 import { type Annotation, applyOps, type HarieDocument, type Point } from "@harie/model";
-import { annotationBounds, buildSvg } from "@harie/render";
+import { annotationBounds, buildSvg, layoutAnchors } from "@harie/render";
 import { type Dispatch, type PointerEvent, useEffect, useMemo, useRef, useState } from "react";
 import { type DrawDefaults, styleForNew } from "./draw-defaults";
 import {
@@ -37,6 +37,21 @@ function distanceToSegment(p: Point, a: Point, b: Point): number {
   const len2 = dx * dx + dy * dy || 1;
   const t = Math.max(0, Math.min(1, ((p.x - a.x) * dx + (p.y - a.y) * dy) / len2));
   return Math.hypot(p.x - (a.x + t * dx), p.y - (a.y + t * dy));
+}
+
+/** 番号を置いた点の下にある枠（rect・ellipse）。あればその枠に紐付ける（ADR-0011） */
+export function badgeAnchorAt(
+  doc: HarieDocument,
+  p: Point,
+  tolerance: number,
+): { anchor: { annotationId: string } } | Record<string, never> {
+  const box = [...doc.annotations]
+    .reverse()
+    .find(
+      (a) =>
+        (a.type === "rect" || a.type === "ellipse") && contains(annotationBounds(a), p, tolerance),
+    );
+  return box === undefined ? {} : { anchor: { annotationId: box.id } };
 }
 
 /** 上に描かれているものから順に当たり判定する */
@@ -128,7 +143,7 @@ export function Canvas({
   const display = useMemo(() => {
     if (drag === null || drag.kind === "mask") return doc;
     const r = applyOps(doc, dragOps(doc, drag, drawDefaults));
-    return r.ok ? r.value : doc;
+    return r.ok ? layoutAnchors(r.value) : doc;
   }, [doc, drag, drawDefaults]);
   const markup = useMemo(
     () =>
@@ -190,6 +205,8 @@ export function Canvas({
                 type: "badge",
                 ...at,
                 number: doc.annotations.filter((a) => a.type === "badge").length + 1,
+                // 枠の上で置いたら枠に紐付け、枠の左上の外側に置く（ADR-0011）
+                ...badgeAnchorAt(doc, p, screenPx(6)),
               };
       dispatch({ type: "apply", ops: [{ op: "add", annotation }], select: id });
       // 文字を置いたら、すぐに内容を打てるようにする

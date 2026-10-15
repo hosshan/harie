@@ -75,12 +75,17 @@ export const CalloutAnnotationSchema = z.looseObject({
     })
     .optional(),
 });
+/**
+ * 番号付きの丸。`anchor` で枠などに紐付けると、描画時に紐付け先の左上の角の外側へ置く（ADR-0011）。
+ * `x, y` は紐付け先がないときの位置で、紐付けている場合も計算した位置を保存しておく（古い版向け）。
+ */
 export const BadgeAnnotationSchema = z.looseObject({
   ...base,
   type: z.literal("badge"),
   x: finite,
   y: finite,
   number: z.int().positive(),
+  anchor: z.object({ annotationId: z.string() }).optional(),
 });
 export const SpotlightAnnotationSchema = z.looseObject({ ...boxed, type: z.literal("spotlight") });
 /**
