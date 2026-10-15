@@ -264,7 +264,7 @@ test("FR-EDIT-03: テキストは置いた直後とダブルクリックで、�
   await expect(page.getByRole("button", { name: "特大" })).toHaveAttribute("aria-pressed", "false");
 });
 
-test("FR-EDIT-01: 四角の線の太さと種類を変えられ、選んだ太さ・文字サイズは次に描くときの初期値になる", async ({
+test("FR-EDIT-01: 四角の線の太さと種類を変えられ、選んだ太さ・文字サイズ・番号の大きさは次に描くときの初期値になる", async ({
   page,
 }) => {
   await openFixture(page, "large-base.jpg");
@@ -303,6 +303,19 @@ test("FR-EDIT-01: 四角の線の太さと種類を変えられ、選んだ太�
   await expect(page.getByLabel("線の太さ（px）")).toHaveValue("8");
   await page.getByRole("button", { name: "吹き出し" }).click();
   await drag(page, [260, 200], [260, 200]);
+  await expect(page.getByLabel("文字サイズ（pt）")).toHaveValue("36");
+  await page.keyboard.press("Escape");
+
+  // 番号の大きさは吹き出しの文字サイズと別に記録する
+  await page.getByRole("button", { name: "番号" }).click();
+  await drag(page, [40, 300], [40, 300]);
+  await expect(page.getByLabel("文字サイズ（pt）")).toHaveValue("24");
+  await page.getByRole("button", { name: "小", exact: true }).click();
+  await page.getByRole("button", { name: "番号" }).click();
+  await drag(page, [120, 300], [120, 300]);
+  await expect(page.getByLabel("文字サイズ（pt）")).toHaveValue("16");
+  await page.getByRole("button", { name: "吹き出し" }).click();
+  await drag(page, [260, 320], [260, 320]);
   await expect(page.getByLabel("文字サイズ（pt）")).toHaveValue("36");
 });
 

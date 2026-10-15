@@ -318,8 +318,8 @@ describe("次に描く注釈の初期値（FR-EDIT-01・FR-EDIT-03）", () => {
 
   it("記録した線の太さ・文字サイズを読み戻す", () => {
     const storage = memory();
-    saveDrawDefaults({ strokeWidth: 6, fontSize: 36 }, storage);
-    expect(loadDrawDefaults(storage)).toEqual({ strokeWidth: 6, fontSize: 36 });
+    saveDrawDefaults({ strokeWidth: 6, fontSize: 36, badgeFontSize: 16 }, storage);
+    expect(loadDrawDefaults(storage)).toEqual({ strokeWidth: 6, fontSize: 36, badgeFontSize: 16 });
   });
 
   it("未記録・壊れた値・範囲外の値は無視する", () => {
@@ -332,12 +332,14 @@ describe("次に描く注釈の初期値（FR-EDIT-01・FR-EDIT-03）", () => {
     expect(loadDrawDefaults(undefined)).toEqual({});
   });
 
-  it("線の太さは四角・楕円・矢印に、文字サイズは文字のある注釈と番号に付ける", () => {
-    const d = { strokeWidth: 6, fontSize: 36 };
+  it("線の太さは四角・楕円・矢印に、文字サイズはテキスト・吹き出しに、番号の大きさは番号に付ける", () => {
+    const d = { strokeWidth: 6, fontSize: 36, badgeFontSize: 16 };
     expect(styleForNew("rect", d)).toEqual({ strokeWidth: 6 });
     expect(styleForNew("arrow", d)).toEqual({ strokeWidth: 6 });
     expect(styleForNew("callout", d)).toEqual({ fontSize: 36 });
-    expect(styleForNew("badge", d)).toEqual({ fontSize: 36 });
+    expect(styleForNew("badge", d)).toEqual({ fontSize: 16 });
+    // 吹き出しの文字サイズは番号に引き継がない
+    expect(styleForNew("badge", { fontSize: 36 })).toBeUndefined();
     expect(styleForNew("rect", { fontSize: 36 })).toBeUndefined();
   });
 });
