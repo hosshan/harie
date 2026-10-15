@@ -311,7 +311,7 @@ function Inspector({
   const fontSize = annotation.style?.fontSize ?? THEMES.default.defaults.fontSize;
   const setFontSize = (v: number) => {
     const size = Math.round(Math.min(FONT_SIZE_MAX, Math.max(FONT_SIZE_MIN, v)));
-    onDrawDefaults({ fontSize: size });
+    onDrawDefaults(annotation.type === "badge" ? { badgeFontSize: size } : { fontSize: size });
     if (size !== fontSize) update({ style: { ...annotation.style, fontSize: size } });
   };
   const hasLine =
