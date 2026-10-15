@@ -14,7 +14,7 @@ Harie（はりえ）: SaaS の利用ガイド用スクリーンショットに�
 
 触る領域に関係する ADR と設計書は、作業前に必ず読むこと。
 
-## リポジトリ構成（`apps/desktop` は未作成。実装計画の順に追加する）
+## リポジトリ構成
 
 ```
 apps/web         Web エディタ（Vite + React, PWA）
@@ -40,6 +40,7 @@ pnpm e2e          # Web エディタと Chrome 拡張の E2E（Playwright。ロ�
 pnpm format       # Biome で整形・import 整理
 pnpm build        # 配布物のビルド（apps/mcp → dist/、apps/web → dist/、apps/extension → .output/chrome-mv3/）
 pnpm harie inspect <file>   # 開発用 CLI（`pnpm harie --help` で一覧）
+pnpm --filter @harie/desktop app:dev   # デスクトップ版を起動（Rust と各 OS の前提が要る。apps/desktop/README.md）
 ```
 
 - Node 22 / pnpm 10。TypeScript は 7 系（`tsc` はネイティブ版）。

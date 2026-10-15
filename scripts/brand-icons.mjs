@@ -28,3 +28,6 @@ png(appIcon, 512, "apps/web/public/icon-maskable-512.png");
 png(appIcon, 180, "apps/web/public/apple-touch-icon.png");
 // Chrome 拡張: ツールバーに置くので背景なし
 for (const size of [16, 32, 48, 128]) png(symbol, size, `apps/extension/public/icon/${size}.png`);
+// デスクトップ: 1024px の元画像を作る。各 OS 向けのアイコンは
+// `pnpm --filter @harie/desktop tauri icon src-tauri/icons/app-icon.png` で作り直す
+png(appIcon, 1024, "apps/desktop/src-tauri/icons/app-icon.png");
