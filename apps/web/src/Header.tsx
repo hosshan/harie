@@ -1,39 +1,106 @@
 // 1 段のヘッダー。ロゴ | ファイル名 と、右側にファイル操作・設定のメニューを置く
-// （注釈の道具は編集面の上のパレットに分け、どちらの操作か迷わないようにする）
+// （注釈の道具は編集面の上のパレットに分け、どちらの操作か迷わないようにする）。
+// 狭い画面（スマホ）では主な操作（primary）だけを残し、ほかは三点メニューにまとめる
 import { type ComponentProps, type ReactNode, useId } from "react";
 import { Button } from "./components/ui/button";
-import { SettingsButton } from "./Settings";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "./components/ui/dropdown-menu";
+import { useSettingsDialog } from "./Settings";
+
+/** 広い画面ではボタン、狭い画面では三点メニューの項目として出す操作 */
+export type HeaderAction = {
+  icon: HeaderIconName;
+  label: string;
+  onSelect: () => void;
+  disabled?: boolean;
+  /** start は主な操作の左、end（既定）は右に置く。三点メニューでもこの順に並べる */
+  placement?: "start" | "end";
+};
 
 export type HeaderProps = {
   fileName?: string;
-  /** 保存の状況など、メニューの左に出す短い文 */
+  /** 保存の状況など、メニューの左に出す短い文（狭い画面では 2 行目に出す） */
   status?: string | null;
-  /** 右側のメニュー（設定の左に並べる） */
+  /** どの幅でも出す主な操作（「保存」や「画像を開く」） */
+  primary?: ReactNode;
+  /** 画面の幅に合わせて、ボタンか三点メニューの項目にする操作 */
+  actions?: readonly HeaderAction[];
+  /** 広い画面だけで、主な操作の左に出す部品（保存形式のメニューなど） */
   children?: ReactNode;
+  /** 狭い画面で children の代わりに三点メニューへ入れる項目 */
+  menu?: ReactNode;
 };
 
-export function Header({ fileName, status, children }: HeaderProps) {
+export function Header({ fileName, status, primary, actions = [], children, menu }: HeaderProps) {
+  const settings = useSettingsDialog();
+  const start = actions.filter((a) => a.placement === "start");
+  const end = actions.filter((a) => a.placement !== "start");
+  const button = (a: HeaderAction) => (
+    <HeaderButton key={a.label} icon={a.icon} disabled={a.disabled} onClick={a.onSelect}>
+      {a.label}
+    </HeaderButton>
+  );
+  const item = (a: HeaderAction) => (
+    <DropdownMenuItem key={a.label} disabled={a.disabled} onSelect={a.onSelect}>
+      <HeaderIcon icon={a.icon} />
+      {a.label}
+    </DropdownMenuItem>
+  );
   return (
-    <header className="app-header">
+    <header className="app-header" data-has-file={fileName !== undefined}>
       <h1 className="app-logo">
         <BrandMark />
-        Harie
+        <span className="app-logo-name">Harie</span>
       </h1>
       {fileName !== undefined && (
         <>
           <span className="app-header-sep" aria-hidden="true" />
-          <span className="app-file-name">{fileName}</span>
+          <span className="app-file-name" title={fileName}>
+            {fileName}
+          </span>
         </>
       )}
+      {status != null && (
+        <span className="harie-muted app-header-status" role="status" title={status}>
+          {status}
+        </span>
+      )}
       <div className="app-header-menu">
-        {status != null && (
-          <span className="harie-muted app-header-status" role="status">
-            {status}
-          </span>
-        )}
-        {children}
-        <SettingsButton />
+        <div className="app-header-wide">
+          {start.map(button)}
+          {children}
+        </div>
+        {primary}
+        <div className="app-header-wide">
+          {end.map(button)}
+          <HeaderButton icon="settings" onClick={settings.open}>
+            設定
+          </HeaderButton>
+        </div>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button className="app-header-more px-2" aria-label="その他の操作">
+              <HeaderIcon icon="more" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="min-w-48">
+            {start.map(item)}
+            {menu}
+            {(start.length > 0 || menu !== undefined) && <DropdownMenuSeparator />}
+            {end.map(item)}
+            <DropdownMenuItem onSelect={settings.open}>
+              <HeaderIcon icon="settings" />
+              設定
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
+      {settings.dialog}
     </header>
   );
 }
@@ -72,6 +139,13 @@ const ICONS = {
     </>
   ),
   chevron: <path d="M7 10l5 5 5-5" />,
+  more: (
+    <>
+      <circle cx="5.5" cy="12" r="1.2" fill="currentColor" />
+      <circle cx="12" cy="12" r="1.2" fill="currentColor" />
+      <circle cx="18.5" cy="12" r="1.2" fill="currentColor" />
+    </>
+  ),
   settings: (
     <>
       <circle cx="12" cy="12" r="3" />
@@ -81,11 +155,13 @@ const ICONS = {
 } as const;
 
 /** ヘッダーのボタン（アイコン + 文字）。shadcn/ui の Button なので、メニューの開閉ボタンとも高さが揃う */
+export type HeaderIconName = keyof typeof ICONS;
+
 export function HeaderButton({
   icon,
   children,
   ...props
-}: { icon: keyof typeof ICONS } & ComponentProps<typeof Button>) {
+}: { icon: HeaderIconName } & ComponentProps<typeof Button>) {
   return (
     <Button {...props}>
       <HeaderIcon icon={icon} />
@@ -94,9 +170,20 @@ export function HeaderButton({
   );
 }
 
-export function HeaderIcon({ icon }: { icon: keyof typeof ICONS }) {
+/** 線で描くアイコン。メニュー（body 直下に出る）の中でも同じ見た目になるよう、線の指定を属性で持つ */
+export function HeaderIcon({ icon }: { icon: HeaderIconName }) {
   return (
-    <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
+    <svg
+      viewBox="0 0 24 24"
+      width="16"
+      height="16"
+      aria-hidden="true"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.8"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
       {ICONS[icon]}
     </svg>
   );

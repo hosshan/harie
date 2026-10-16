@@ -1,4 +1,5 @@
-// 保存形式（JPEG / PNG）を選ぶメニュー（FR-FILE-01, 02）。ヘッダーの「保存」の左に置く
+// 保存形式（JPEG / PNG）を選ぶメニュー（FR-FILE-01, 02）。ヘッダーの「保存」の左に置き、
+// 狭い画面では三点メニューの中に同じ選択肢を出す
 import type { ImageFormat } from "@harie/format";
 import { Button } from "./components/ui/button";
 import {
@@ -35,19 +36,36 @@ export function SaveFormatMenu({
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
-        <DropdownMenuLabel>保存形式</DropdownMenuLabel>
-        <DropdownMenuRadioGroup
-          value={value}
-          onValueChange={(v) => onChange(v === "png" ? "png" : "jpeg")}
-        >
-          {FORMATS.map((f) => (
-            <DropdownMenuRadioItem key={f.value} value={f.value}>
-              {f.label}
-              <span className="text-xs text-muted-foreground">{f.note}</span>
-            </DropdownMenuRadioItem>
-          ))}
-        </DropdownMenuRadioGroup>
+        <SaveFormatMenuItems value={value} onChange={onChange} />
       </DropdownMenuContent>
     </DropdownMenu>
+  );
+}
+
+/** 保存形式の選択肢（見出し + ラジオ）。メニューの中に置く */
+export function SaveFormatMenuItems({
+  value,
+  onChange,
+  disabled,
+}: {
+  value: ImageFormat;
+  onChange: (format: ImageFormat) => void;
+  disabled?: boolean;
+}) {
+  return (
+    <>
+      <DropdownMenuLabel>保存形式</DropdownMenuLabel>
+      <DropdownMenuRadioGroup
+        value={value}
+        onValueChange={(v) => onChange(v === "png" ? "png" : "jpeg")}
+      >
+        {FORMATS.map((f) => (
+          <DropdownMenuRadioItem key={f.value} value={f.value} disabled={disabled}>
+            {f.label}
+            <span className="text-xs text-muted-foreground">{f.note}</span>
+          </DropdownMenuRadioItem>
+        ))}
+      </DropdownMenuRadioGroup>
+    </>
   );
 }

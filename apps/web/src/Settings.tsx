@@ -1,17 +1,14 @@
-// 設定（ヘッダー右端）。今は AI に関する設定（API キー）だけを持つ
-import { useState } from "react";
+// 設定（ヘッダー右端、狭い画面では三点メニュー）。今は AI に関する設定（API キー）だけを持つ
+import { type ReactNode, useState } from "react";
 import { storeApiKey, useApiKey } from "./ai/api-key";
-import { HeaderButton } from "./Header";
 import { Modal } from "./Modal";
 
-export function SettingsButton() {
+/** 設定のダイアログ。開くボタンはヘッダーが画面の幅に合わせて出す（ボタンか、三点メニューの項目） */
+export function useSettingsDialog(): { open: () => void; dialog: ReactNode } {
   const [open, setOpen] = useState(false);
-
-  return (
-    <>
-      <HeaderButton icon="settings" onClick={() => setOpen(true)}>
-        設定
-      </HeaderButton>
+  return {
+    open: () => setOpen(true),
+    dialog: (
       <Modal open={open} label="設定" onClose={() => setOpen(false)} className="app-settings">
         <AiSettings />
         <p className="app-modal-actions">
@@ -20,8 +17,8 @@ export function SettingsButton() {
           </button>
         </p>
       </Modal>
-    </>
-  );
+    ),
+  };
 }
 
 function AiSettings() {

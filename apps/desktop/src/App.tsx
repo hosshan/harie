@@ -107,11 +107,13 @@ export function App() {
       )}
       {opened === null ? (
         <>
-          <Header>
-            <HeaderButton icon="open" variant="default" onClick={pick}>
-              画像を開く
-            </HeaderButton>
-          </Header>
+          <Header
+            primary={
+              <HeaderButton icon="open" variant="default" onClick={pick}>
+                画像を開く
+              </HeaderButton>
+            }
+          />
           <div className="app-drop">
             <p>
               スクリーンショットをドラッグ＆ドロップするか、貼り付け（Ctrl / ⌘ + V）してください。

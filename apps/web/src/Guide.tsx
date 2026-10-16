@@ -1,7 +1,7 @@
 // 連携の案内（Web のヘッダー）。MCP サーバーを Claude に登録する方法と、Chrome 拡張の入れ方を示す
 // （FR-CAP-07, FR-MCP-07）。拡張の中のエディタでは出さない
-import { useState } from "react";
-import { HeaderButton } from "./Header";
+import { type ReactNode, useState } from "react";
+import type { HeaderAction } from "./Header";
 import { Modal } from "./Modal";
 
 const REPO_URL = "https://github.com/hosshan/harie";
@@ -22,13 +22,12 @@ cd harie
 pnpm install
 pnpm --filter @harie/extension build`;
 
-export function GuideButton() {
+/** 「連携」の操作（ヘッダーのボタン、狭い画面では三点メニューの項目）と、その案内のダイアログ */
+export function useGuide(): { action: HeaderAction; dialog: ReactNode } {
   const [open, setOpen] = useState(false);
-  return (
-    <>
-      <HeaderButton icon="link" onClick={() => setOpen(true)}>
-        連携
-      </HeaderButton>
+  return {
+    action: { icon: "link", label: "連携", onSelect: () => setOpen(true) },
+    dialog: (
       <Modal
         open={open}
         label="ほかのツールと使う"
@@ -43,8 +42,8 @@ export function GuideButton() {
           </button>
         </p>
       </Modal>
-    </>
-  );
+    ),
+  };
 }
 
 function ExtensionGuide() {
