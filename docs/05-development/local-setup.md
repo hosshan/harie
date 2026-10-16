@@ -1,7 +1,7 @@
 # ローカルでの起動と確認
 
 - ステータス: 確定
-- 最終更新: 2026-10-14
+- 最終更新: 2026-10-15
 - 関連: [開発ルール](./development-rules.md) / [連携設計](../03-design/integrations.md)
 
 手元で Harie の各アプリを動かして確かめる手順。細かい内容は各アプリの文書に書き、ここからリンクする。
@@ -71,7 +71,18 @@ pnpm --filter @harie/ai eval
 
 トークンの作り方・出力の読み方・過去の結果: [packages/ai/CLAUDE.md の「評価」](../../packages/ai/CLAUDE.md#評価)
 
-## 6. E2E
+## 6. デスクトップ版（apps/desktop）
+
+Rust（stable）と、各 OS の Tauri の前提（macOS は Xcode Command Line Tools、Windows は WebView2 と MSVC ビルドツール）が要る。
+
+```sh
+pnpm --filter @harie/desktop app:dev     # 画面を Vite で配信し、アプリのウィンドウを開く
+pnpm --filter @harie/desktop app:build   # 配布物（.app / .dmg、.msi / .exe）。署名はまだしない
+```
+
+確認項目と、Linux の仮想画面で試す手順: [apps/desktop/README.md](../../apps/desktop/README.md)
+
+## 7. E2E
 
 ```sh
 pnpm e2e    # Web エディタと Chrome 拡張の Playwright テスト

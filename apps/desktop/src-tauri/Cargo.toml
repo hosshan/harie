@@ -1,0 +1,23 @@
+[package]
+name = "harie-desktop"
+version = "0.1.0"
+description = "Harie desktop app"
+license = "MIT"
+edition = "2021"
+publish = false
+
+[lib]
+# Tauri の雛形と同じ名前の付け方（main.rs から呼ぶ）
+name = "harie_desktop_lib"
+crate-type = ["staticlib", "cdylib", "rlib"]
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+tauri = { version = "2", features = [] }
+tauri-plugin-dialog = "2"
+percent-encoding = "2"
+
+[dev-dependencies]
+tempfile = "3"

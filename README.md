@@ -24,8 +24,7 @@ MVP（M0〜M5: Web エディタ・Chrome 拡張・MCP サーバー・AI 提案�
 | [apps/extension](apps/extension/README.md) | Chrome 拡張。表示中のページをキャプチャして、そのまま注釈を付ける |
 | [apps/mcp](apps/mcp/README.md) | MCP サーバー（npm の `@harie/mcp`）。Claude などから注釈を読み書きする |
 | [apps/cli](apps/cli/README.md) | 開発用 CLI（`pnpm harie`）。ファイルの中身の確認・作成・描き直し |
-
-デスクトップ版（`apps/desktop`、Tauri 2）は未作成。
+| [apps/desktop](apps/desktop/README.md) | デスクトップ版（Tauri 2、macOS / Windows）。OS のダイアログで開き、上書き保存する |
 
 ## パッケージ
 
