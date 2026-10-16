@@ -208,24 +208,27 @@ export function Editor({
     <div className="harie-editor">
       <div className="harie-workspace">
         <div className="harie-stage">
-          <Canvas
-            state={state}
-            dispatch={dispatch}
-            baseImageUrl={baseImageUrl}
-            tool={tool}
-            onToolDone={() => setTool("select")}
-            masks={masks}
-            onMaskDrawn={(rect) => setMasks([...masks, newMaskDraft(masks, rect)])}
-            {...(onUnmask === undefined
-              ? {}
-              : {
-                  appliedMasks,
-                  selectedAppliedMaskId: selectedMask?.id ?? null,
-                  onSelectAppliedMask: setSelectedMaskId,
-                })}
-            onDraggingChange={setDragging}
-            drawDefaults={drawDefaults}
-          />
+          <div className="harie-stage-fit">
+            <Canvas
+              state={state}
+              dispatch={dispatch}
+              baseImageUrl={baseImageUrl}
+              tool={tool}
+              onToolDone={() => setTool("select")}
+              masks={masks}
+              onMaskDrawn={(rect) => setMasks([...masks, newMaskDraft(masks, rect)])}
+              {...(onUnmask === undefined
+                ? {}
+                : {
+                    appliedMasks,
+                    selectedAppliedMaskId: selectedMask?.id ?? null,
+                    onSelectAppliedMask: setSelectedMaskId,
+                  })}
+              onDraggingChange={setDragging}
+              drawDefaults={drawDefaults}
+            />
+          </div>
+          {/* 道具のパレットは台の下端中央に浮かべる（画像の大きさに左右されない） */}
           <Palette
             tools={tools}
             tool={tool}
