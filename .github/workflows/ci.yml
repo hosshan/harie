@@ -18,9 +18,9 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
-      - uses: actions/checkout@v4
-      - uses: pnpm/action-setup@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v7
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v7
         with:
           node-version-file: .nvmrc
           cache: pnpm
@@ -28,12 +28,12 @@ jobs:
       - run: pnpm check
       - run: pnpm build
       # PR の拡張・Web をローカルにビルドせず試せるように、ビルド結果を残す（Actions の実行ページから取得）
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: harie-extension-chrome-mv3
           path: apps/extension/.output/chrome-mv3/
           retention-days: 14
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: harie-web-dist
           path: apps/web/dist/
@@ -44,9 +44,9 @@ jobs:
     # ブラウザの依存パッケージ（apt）の取得が止まることがあるため、既定の 6 時間待たずに打ち切る
     timeout-minutes: 15
     steps:
-      - uses: actions/checkout@v4
-      - uses: pnpm/action-setup@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v7
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v7
         with:
           node-version-file: .nvmrc
           cache: pnpm
