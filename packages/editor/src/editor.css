@@ -25,6 +25,7 @@
  * 下の余白は画面下端に浮かぶパレットの分を空け、パレットが画像に重ならないようにする
  */
 .harie-stage {
+  position: relative;
   display: flex;
   min-width: 0;
   min-height: 0;
@@ -43,9 +44,9 @@
   display: grid;
   place-items: center;
 }
-/* 道具のパレット。画面全体の下端中央に浮かべ、半透明の白でファイル操作のボタンと見分ける */
+/* 道具のパレット。台（画像エリア）の下端中央に浮かべ、半透明の白でファイル操作のボタンと見分ける */
 .harie-palette {
-  position: fixed;
+  position: absolute;
   left: 50%;
   bottom: 20px;
   transform: translateX(-50%);
@@ -53,7 +54,7 @@
   display: flex;
   align-items: center;
   gap: 2px;
-  max-width: calc(100vw - 32px);
+  max-width: calc(100% - 32px);
   padding: 4px 6px;
   overflow-x: auto;
   border-radius: 16px;
@@ -283,7 +284,6 @@
   }
   .harie-inspector {
     overflow-y: visible;
-    padding-bottom: 88px;
   }
 }
 .harie-mask-panel {

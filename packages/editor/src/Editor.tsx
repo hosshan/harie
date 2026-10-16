@@ -228,6 +228,19 @@ export function Editor({
               drawDefaults={drawDefaults}
             />
           </div>
+          {/* 道具のパレットは台の下端中央に浮かべる（画像の大きさに左右されない） */}
+          <Palette
+            tools={tools}
+            tool={tool}
+            onTool={selectTool}
+            canUndo={state.past.length > 0}
+            canRedo={state.future.length > 0}
+            onUndo={() => dispatch({ type: "undo" })}
+            onRedo={() => dispatch({ type: "redo" })}
+            hidden={dragging}
+            collapsed={paletteCollapsed}
+            onCollapsedChange={setPaletteCollapsed}
+          />
         </div>
         <aside className="harie-inspector" aria-label="選択中の注釈">
           {aside}
@@ -274,19 +287,6 @@ export function Editor({
           {state.error !== null && <p role="alert">{state.error.message}</p>}
         </aside>
       </div>
-      {/* 道具のパレットは画面全体の下端中央に浮かべる（編集面の大きさに左右されない） */}
-      <Palette
-        tools={tools}
-        tool={tool}
-        onTool={selectTool}
-        canUndo={state.past.length > 0}
-        canRedo={state.future.length > 0}
-        onUndo={() => dispatch({ type: "undo" })}
-        onRedo={() => dispatch({ type: "redo" })}
-        hidden={dragging}
-        collapsed={paletteCollapsed}
-        onCollapsedChange={setPaletteCollapsed}
-      />
     </div>
   );
 }
