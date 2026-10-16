@@ -1,7 +1,15 @@
 // 編集面。下層に buildSvg の SVG（保存時と同じ見た目、ADR-0005）、上層に操作用の SVG を重ねる
 import { type Annotation, applyOps, type HarieDocument, type Point } from "@harie/model";
 import { annotationBounds, buildSvg, layoutAnchors } from "@harie/render";
-import { type Dispatch, type PointerEvent, useEffect, useMemo, useRef, useState } from "react";
+import {
+  type CSSProperties,
+  type Dispatch,
+  type PointerEvent,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { type DrawDefaults, styleForNew } from "./draw-defaults";
 import {
   boxFrom,
@@ -275,7 +283,15 @@ export function Canvas({
   }, [editingId, editing]);
 
   return (
-    <div className="harie-canvas" style={{ aspectRatio: `${width} / ${height}` }}>
+    <div
+      className="harie-canvas"
+      style={
+        {
+          aspectRatio: `${width} / ${height}`,
+          "--harie-canvas-ratio": width / height,
+        } as CSSProperties
+      }
+    >
       {/* buildSvg の出力（エスケープ済みの SVG 文字列） */}
       <div
         className="harie-canvas-image"
