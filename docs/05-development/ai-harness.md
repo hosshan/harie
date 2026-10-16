@@ -49,7 +49,9 @@ flowchart TD
 | 仕組み | 内容 | 状態 |
 |---|---|---|
 | `pnpm check` | lint + typecheck + test を 1 コマンドで | 導入済み（M0） |
-| GitHub Actions（`.github/workflows/ci.yml`） | PR と main への push ごとに `check` ジョブ（`pnpm check` + `pnpm build`）と `e2e` ジョブ（Playwright） | 導入済み（M0） |
+| GitHub Actions（`.github/workflows/ci.yml`） | PR と main への push ごとに `check` ジョブ（`pnpm check` + `pnpm build`）と `e2e` ジョブ（Playwright） | 導入済み（M0）。同じ PR の古い実行は自動で止め、拡張と Web のビルド結果を 14 日間 Artifacts に残す |
+| リリース（`.github/workflows/release-*.yml`） | タグ `mcp-v*` で `@harie/mcp` を npm に公開（Trusted Publishing）、タグ `extension-v*` で拡張の zip を GitHub Release に添付。手順は [開発ルール 8 章](development-rules.md#8-リリース) | 導入済み。npm 側の Trusted Publisher 登録が要る |
+| Dependabot（`.github/dependabot.yml`） | ワークフローの Action の版を月 1 回まとめて更新する PR | 導入済み |
 | ブランチ保護 | `main` へのマージに `check` と `e2e` の成功を必須にする | リポジトリ設定（GitHub の Settings → Branches）。管理者が設定する |
 | Claude Code フック（`.claude/settings.json`） | ファイル編集後に Biome で整形（PostToolUse）、停止前に変更ファイルに関係するテストを実行（Stop。`vitest related`、失敗したら停止を止めて直させる） | 導入済み |
 | SessionStart フック | クラウド環境で依存をインストール | 導入済み（M0） |

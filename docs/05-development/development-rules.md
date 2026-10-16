@@ -72,7 +72,26 @@ Refs: FR-FILE-03, ADR-0004
 - ライセンスは MIT / Apache-2.0 / BSD / ISC / OFL（フォント）を基本とする。それ以外は確認する。
 - WASM・フォントなどサイズの大きい依存は、追加前後のバンドルサイズを PR に記載する。
 
-## 8. リリース（将来）
+## 8. リリース
 
-- バージョンは SemVer。パッケージ（`@harie/mcp` 等）は Changesets で管理する予定。
-- ファイル形式のバージョン（`formatVersion`）はアプリのバージョンと独立して管理する。
+- バージョンは SemVer。ファイル形式のバージョン（`formatVersion`）はアプリのバージョンと独立して管理する。
+- リリースは `main` の版を上げるコミットにタグを付けて push し、GitHub Actions に任せる。手元から `npm publish` しない。
+
+| 対象 | タグ | ワークフロー | 行うこと |
+|---|---|---|---|
+| `@harie/mcp` | `mcp-v<version>` | `.github/workflows/release-mcp.yml` | タグと `apps/mcp/package.json` の版の一致を確認 → `pnpm check` → npm に公開（Trusted Publishing、provenance 付き。公開済みの版なら飛ばす）→ GitHub Release に tarball を添付 |
+| Chrome 拡張 | `extension-v<version>` | `.github/workflows/release-extension.yml` | 版の一致を確認 → `pnpm check` と拡張の E2E → ストア提出用 zip を GitHub Release に添付。ストアへのアップロードは手動（[apps/extension/README.md](../../apps/extension/README.md#リリース)） |
+
+手順（`@harie/mcp` の例）:
+
+1. `apps/mcp/package.json` の `version` を上げる PR を出し、マージする。
+2. `main` を最新にしてタグを付けて push する。
+
+   ```sh
+   git switch main && git pull
+   git tag mcp-v0.4.0 && git push origin mcp-v0.4.0
+   ```
+
+3. Actions の「Release @harie/mcp」が緑になり、npm と GitHub Release に出たことを確かめる。
+
+npm への認証は Trusted Publishing（OIDC）で、リポジトリのシークレットに npm トークンを置かない。npmjs.com の `@harie/mcp` → Settings → Trusted Publisher に、GitHub Actions・`hosshan`・`harie`・`release-mcp.yml`・環境 `npm` を登録しておく。

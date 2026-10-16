@@ -27,6 +27,8 @@ export default defineConfig({
     },
     icons: { 16: "icon/16.png", 32: "icon/32.png", 48: "icon/48.png", 128: "icon/128.png" },
   },
+  // ストア提出・GitHub Release に添付する zip の名前
+  zip: { artifactTemplate: "harie-extension-{{version}}-{{browser}}.zip" },
   vite: () => ({
     plugins: [react(), tailwindcss()],
     // WASM を含むパッケージは事前バンドルしない（?url で読み込む .wasm の位置が変わるため）

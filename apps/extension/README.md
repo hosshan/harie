@@ -40,13 +40,13 @@ Chrome ウェブストアに限定公開（unlisted）で出す前提。まだ�
 
 1. `apps/extension/package.json` の `version` を上げる（WXT は manifest の版にこの値を使う。今は `0.0.0`）。
 2. `main` で `pnpm check` と `pnpm e2e` が通っていることを確かめる。
-3. ストア提出用の zip を作る。
+3. `main` で `extension-v<version>` のタグを push する。GitHub Actions（`release-extension.yml`）が検証と E2E のあと、ストア提出用の zip を GitHub Release に添付する。手元で作るときは次のとおり。
 
    ```sh
-   pnpm --filter @harie/extension zip      # → apps/extension/.output/ に zip ができる
+   pnpm --filter @harie/extension zip      # → apps/extension/.output/harie-extension-<version>-chrome.zip
    ```
 
-4. Chrome Web Store のデベロッパーダッシュボードに zip を上げる。単一用途・権限の正当性・データの扱いの欄は [STORE.md](STORE.md) の下書きを使う。
+4. Chrome Web Store のデベロッパーダッシュボードに、GitHub Release の zip を上げる。単一用途・権限の正当性・データの扱いの欄は [STORE.md](STORE.md) の下書きを使う。
 5. 権限を増やしたときは `STORE.md` の説明も更新し、PR に理由を書く。
 
 公開前に残っていること（掲載用の名前・説明文・スクリーンショット、プライバシーポリシーの URL）は [STORE.md の「未決」](STORE.md#未決) にある。公開したら、Web 版の連携の案内（`apps/web/src/Guide.tsx`）もストアからの入れ方に直す（FR-CAP-07）。
