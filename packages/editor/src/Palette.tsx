@@ -70,72 +70,75 @@ export function Palette({
       data-hidden={hidden}
       data-collapsed={collapsed}
     >
-      {collapsed ? (
-        <button
-          type="button"
-          className="harie-palette-expand"
-          aria-label="ツールを表示"
-          title="ツールを表示"
-          onClick={() => onCollapsedChange(false)}
-        >
-          {current !== undefined && <Icon>{ICONS[current.tool]}</Icon>}
-          <span>ツール</span>
-        </button>
-      ) : (
-        <>
+      {/* 道具が入りきらない幅（スマホ）では、この中だけを横にスクロールする */}
+      <div className="harie-palette-scroll">
+        {collapsed ? (
           <button
             type="button"
-            className="harie-palette-icon"
-            aria-label="元に戻す"
-            title="元に戻す（Ctrl / ⌘ + Z）"
-            disabled={!canUndo}
-            onClick={onUndo}
+            className="harie-palette-expand"
+            aria-label="ツールを表示"
+            title="ツールを表示"
+            onClick={() => onCollapsedChange(false)}
           >
-            <Icon>
-              <path d="M9 5L4 10l5 5M4 10h10a5 5 0 010 10h-4" />
-            </Icon>
+            {current !== undefined && <Icon>{ICONS[current.tool]}</Icon>}
+            <span>ツール</span>
           </button>
-          <button
-            type="button"
-            className="harie-palette-icon"
-            aria-label="やり直す"
-            title="やり直す（Ctrl / ⌘ + Shift + Z）"
-            disabled={!canRedo}
-            onClick={onRedo}
-          >
-            <Icon>
-              <path d="M15 5l5 5-5 5M20 10H10a5 5 0 000 10h4" />
-            </Icon>
-          </button>
-          <span className="harie-palette-sep" />
-          {tools.map((t) => (
+        ) : (
+          <>
             <button
-              key={t.tool}
               type="button"
-              className="harie-palette-tool"
-              aria-label={t.label}
-              aria-pressed={tool === t.tool}
-              title={`${t.label}（${t.key.toUpperCase()}）`}
-              onClick={() => onTool(t.tool)}
+              className="harie-palette-icon"
+              aria-label="元に戻す"
+              title="元に戻す（Ctrl / ⌘ + Z）"
+              disabled={!canUndo}
+              onClick={onUndo}
             >
-              <Icon>{ICONS[t.tool]}</Icon>
-              <span aria-hidden="true">{t.label}</span>
+              <Icon>
+                <path d="M9 5L4 10l5 5M4 10h10a5 5 0 010 10h-4" />
+              </Icon>
             </button>
-          ))}
-          <span className="harie-palette-sep" />
-          <button
-            type="button"
-            className="harie-palette-icon"
-            aria-label="ツールをたたむ"
-            title="ツールをたたむ"
-            onClick={() => onCollapsedChange(true)}
-          >
-            <Icon>
-              <path d="M7 10l5 5 5-5" />
-            </Icon>
-          </button>
-        </>
-      )}
+            <button
+              type="button"
+              className="harie-palette-icon"
+              aria-label="やり直す"
+              title="やり直す（Ctrl / ⌘ + Shift + Z）"
+              disabled={!canRedo}
+              onClick={onRedo}
+            >
+              <Icon>
+                <path d="M15 5l5 5-5 5M20 10H10a5 5 0 000 10h4" />
+              </Icon>
+            </button>
+            <span className="harie-palette-sep" />
+            {tools.map((t) => (
+              <button
+                key={t.tool}
+                type="button"
+                className="harie-palette-tool"
+                aria-label={t.label}
+                aria-pressed={tool === t.tool}
+                title={`${t.label}（${t.key.toUpperCase()}）`}
+                onClick={() => onTool(t.tool)}
+              >
+                <Icon>{ICONS[t.tool]}</Icon>
+                <span aria-hidden="true">{t.label}</span>
+              </button>
+            ))}
+            <span className="harie-palette-sep" />
+            <button
+              type="button"
+              className="harie-palette-icon"
+              aria-label="ツールをたたむ"
+              title="ツールをたたむ"
+              onClick={() => onCollapsedChange(true)}
+            >
+              <Icon>
+                <path d="M7 10l5 5 5-5" />
+              </Icon>
+            </button>
+          </>
+        )}
+      </div>
     </div>
   );
 }

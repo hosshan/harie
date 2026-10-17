@@ -69,3 +69,29 @@ export function DropdownMenuRadioItem({
     </Primitive.RadioItem>
   );
 }
+
+export function DropdownMenuItem({ className, ...props }: ComponentProps<typeof Primitive.Item>) {
+  return (
+    <Primitive.Item
+      data-slot="dropdown-menu-item"
+      className={cn(
+        "relative flex cursor-pointer select-none items-center gap-2 rounded-sm px-2 py-1.5 text-sm outline-none data-[highlighted]:bg-accent data-[disabled]:pointer-events-none data-[disabled]:opacity-50 [&_svg]:shrink-0",
+        className,
+      )}
+      {...props}
+    />
+  );
+}
+
+export function DropdownMenuSeparator({
+  className,
+  ...props
+}: ComponentProps<typeof Primitive.Separator>) {
+  return (
+    <Primitive.Separator
+      data-slot="dropdown-menu-separator"
+      className={cn("-mx-1 my-1 h-px bg-input", className)}
+      {...props}
+    />
+  );
+}

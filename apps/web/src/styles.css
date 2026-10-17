@@ -75,12 +75,16 @@ input {
     min-height: 100dvh;
   }
 }
-/* 1 段のヘッダー: ロゴ | ファイル名 ……… 右側にメニュー（開く・保存・設定） */
+/*
+ * 1 段のヘッダー: ロゴ | ファイル名 ……… 状況 右側にメニュー（開く・保存・設定）。
+ * ファイル名と状況は 1 行に収め、入らない分は末尾を…にする（ボタンは縮めない）
+ */
 .app-header {
   order: -1;
   display: flex;
   align-items: center;
   gap: 12px;
+  min-width: 0;
   min-height: 40px;
 }
 .app-header h1 {
@@ -88,31 +92,80 @@ input {
   margin: 0;
 }
 .app-logo {
+  flex: none;
   display: flex;
   align-items: center;
   gap: 8px;
   letter-spacing: -0.01em;
 }
 .app-header-sep {
+  flex: none;
   width: 1px;
   height: 20px;
   background: var(--line);
 }
+.app-file-name,
+.app-header-status {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.app-file-name {
+  flex: 0 1 auto;
+  font-weight: 600;
+}
+.app-header-status {
+  flex: 0 1 auto;
+  margin-left: auto;
+  font-size: 13px;
+}
 .app-header-menu {
+  flex: none;
   margin-left: auto;
   display: flex;
   align-items: center;
   gap: 8px;
 }
-.app-header-status {
-  font-size: 13px;
+.app-header-status + .app-header-menu {
+  margin-left: 0;
 }
-.app-header-menu svg {
-  fill: none;
-  stroke: currentColor;
-  stroke-width: 1.8;
-  stroke-linecap: round;
-  stroke-linejoin: round;
+/* 広い画面だけで出す操作の入れ物。中のボタンはメニューの並びにそのまま加わる */
+.app-header-wide {
+  display: contents;
+}
+.app-header-more {
+  display: none;
+}
+/* 狭い画面（スマホ）: 主な操作と三点メニューだけを残し、状況は 2 行目に出す */
+@media (max-width: 720px) {
+  .app-header {
+    flex-wrap: wrap;
+    row-gap: 4px;
+    column-gap: 10px;
+  }
+  .app-header[data-has-file="true"] .app-logo-name {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+  .app-file-name {
+    flex: 1 1 0;
+  }
+  .app-header-status {
+    order: 1;
+    flex-basis: 100%;
+    margin-left: 0;
+  }
+  .app-header-wide {
+    display: none;
+  }
+  .app-header-more {
+    display: inline-flex;
+  }
 }
 .app-modal {
   width: min(440px, calc(100vw - 32px));
@@ -157,10 +210,6 @@ input {
   display: flex;
   flex-direction: column;
   gap: 8px;
-}
-.app-file-name {
-  font-weight: 600;
-  overflow-wrap: anywhere;
 }
 .app-primary {
   background: var(--accent);

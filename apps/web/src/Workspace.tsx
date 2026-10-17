@@ -9,13 +9,13 @@ import {
 } from "@harie/editor";
 import type { ImageFormat } from "@harie/format";
 import { type PiiMask, recordPiiApplied } from "@harie/model";
-import { type ReactNode, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { AiPanel } from "./ai/AiPanel";
 import { browserRenderer } from "./browser-renderer";
-import { Header, HeaderButton } from "./Header";
+import { Header, type HeaderAction, HeaderButton } from "./Header";
 import { mismatchMessage, type Opened } from "./load";
 import { Modal } from "./Modal";
-import { SaveFormatMenu } from "./SaveFormatMenu";
+import { SaveFormatMenu, SaveFormatMenuItems } from "./SaveFormatMenu";
 import { buildSaveFile, type Saved } from "./save";
 import { addUnsaved, masksInImage, removeUnsaved, type UnsavedMasks } from "./unsaved-masks";
 
@@ -34,8 +34,8 @@ export type WorkspaceProps = {
   dom?: DomSnapshot;
   /** 別の画像を選んで開く（Web）。渡すとヘッダーに「画像を開く」を出し、押すと確認してから呼ぶ */
   onOpenImage?: () => void;
-  /** ヘッダーで「保存」の右に足すメニュー（Web の「連携」など） */
-  menu?: ReactNode;
+  /** ヘッダーで「保存」の右に足す操作（Web の「連携」など）。狭い画面では三点メニューに入る */
+  actions?: readonly HeaderAction[];
 };
 
 /** 開いた 1 枚の画像の編集画面（保存・マスク・AI を含む）。Web と Chrome 拡張で共通 */
@@ -46,7 +46,7 @@ export function Workspace({
   onReopen,
   dom,
   onOpenImage,
-  menu,
+  actions = [],
 }: WorkspaceProps) {
   const [state, dispatch] = useEditorState(opened.doc);
   const [status, setStatus] = useState<string | null>(null);
@@ -148,17 +148,30 @@ export function Workspace({
 
   return (
     <>
-      <Header fileName={opened.fileName} status={status}>
-        {onOpenImage !== undefined && (
-          <HeaderButton icon="open" onClick={() => setConfirmOpen(true)}>
-            画像を開く
+      <Header
+        fileName={opened.fileName}
+        status={status}
+        primary={
+          <HeaderButton icon="save" variant="default" disabled={saving} onClick={save}>
+            保存
           </HeaderButton>
-        )}
+        }
+        actions={[
+          ...(onOpenImage === undefined
+            ? []
+            : [
+                {
+                  icon: "open",
+                  label: "画像を開く",
+                  onSelect: () => setConfirmOpen(true),
+                  placement: "start",
+                } satisfies HeaderAction,
+              ]),
+          ...actions,
+        ]}
+        menu={<SaveFormatMenuItems value={format} onChange={setFormat} disabled={saving} />}
+      >
         <SaveFormatMenu value={format} onChange={setFormat} disabled={saving} />
-        <HeaderButton icon="save" variant="default" disabled={saving} onClick={save}>
-          保存
-        </HeaderButton>
-        {menu}
       </Header>
       <Modal open={confirmOpen} label="画像を開く" onClose={() => setConfirmOpen(false)}>
         <h2>別の画像を開きますか？</h2>

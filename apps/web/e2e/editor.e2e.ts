@@ -134,10 +134,13 @@ test("FR-FILE-01, 02: 保存形式を選べ、JPEG を PNG で保存してもベ
   const header = page.getByRole("banner");
   // 既定は開いたファイルの形式
   await expect(header.getByRole("button", { name: "ファイル形式: JPEG" })).toBeVisible();
-  // メニューの開閉ボタンは、ほかのヘッダーのボタンと同じ高さ
+  // メニューの開閉ボタンは、ほかのヘッダーのボタンと同じ高さ（狭い画面用の三点メニューは出ていない）
+  await expect(header.getByRole("button", { name: "その他の操作" })).toBeHidden();
   const heights = await header
     .getByRole("button")
-    .evaluateAll((els) => els.map((el) => el.getBoundingClientRect().height));
+    .evaluateAll((els) =>
+      els.filter((el) => el.checkVisibility()).map((el) => el.getBoundingClientRect().height),
+    );
   expect(new Set(heights).size).toBe(1);
   await page.getByRole("button", { name: "四角" }).click();
   await drag(page, [40, 40], [240, 120]);
@@ -766,4 +769,47 @@ test("FR-EDIT-05, ADR-0009: 適用したマスクは保存するまで選んで�
   await expect(page.locator(".harie-mask-applied")).toHaveCount(0);
   await clickAt(page, [120, 40]);
   await expect(page.getByRole("region", { name: "隠した範囲" })).toHaveCount(0);
+});
+
+test("NFR-PLAT-01: スマホの幅では、ファイル名を 1 行に収め、ヘッダーの操作を三点メニューにまとめ、パレットを横にスクロールする", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto("/");
+  await page.getByLabel("画像ファイル").setInputFiles({
+    name: "example.very-long-saas-service-name.dashboard.jpg",
+    mimeType: "image/jpeg",
+    buffer: fixture("large-base.jpg"),
+  });
+  const header = page.getByRole("banner");
+  await expect(header.getByRole("button", { name: "保存" })).toBeVisible();
+  // ページが横にはみ出さない
+  expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBe(390);
+  // ファイル名は 1 行（末尾を…にする）
+  const name = header.locator(".app-file-name");
+  expect((await name.boundingBox())?.height).toBeLessThan(32);
+  expect(await name.evaluate((el) => el.scrollWidth > el.clientWidth)).toBe(true);
+  // 保存以外の操作は三点メニューの中
+  await expect(header.getByRole("button", { name: "画像を開く" })).toBeHidden();
+  await expect(header.getByRole("button", { name: /ファイル形式/ })).toBeHidden();
+  await expect(header.getByRole("button", { name: "設定" })).toBeHidden();
+  await header.getByRole("button", { name: "その他の操作" }).click();
+  await expect(page.getByRole("menuitem", { name: "画像を開く" })).toBeVisible();
+  await expect(page.getByRole("menuitem", { name: "連携" })).toBeVisible();
+  await expect(page.getByRole("menuitem", { name: "設定" })).toBeVisible();
+  await page.getByRole("menuitemradio", { name: /^PNG/ }).click();
+  await header.getByRole("button", { name: "その他の操作" }).click();
+  await expect(page.getByRole("menuitemradio", { name: /^PNG/ })).toBeChecked();
+  await page.getByRole("menuitem", { name: "設定" }).click();
+  await expect(page.getByRole("dialog", { name: "設定" })).toBeVisible();
+  await page.getByRole("dialog", { name: "設定" }).getByRole("button", { name: "閉じる" }).click();
+  // パレットは折り返さず、横にスクロールして端の道具まで届く
+  const scroller = page.locator(".harie-palette-scroll");
+  expect(await scroller.evaluate((el) => el.scrollWidth > el.clientWidth)).toBe(true);
+  await page.getByRole("button", { name: "個人情報を隠す" }).scrollIntoViewIfNeeded();
+  await page.getByRole("button", { name: "個人情報を隠す" }).click();
+  await expect(page.getByRole("button", { name: "個人情報を隠す" })).toHaveAttribute(
+    "aria-pressed",
+    "true",
+  );
 });
