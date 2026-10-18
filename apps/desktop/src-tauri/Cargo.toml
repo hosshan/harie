@@ -19,5 +19,9 @@ tauri = { version = "2", features = [] }
 tauri-plugin-dialog = "2"
 percent-encoding = "2"
 
+# Windows / Linux で、関連付けから 2 つ目に起動されたときにファイルを今のウィンドウへ渡す
+[target.'cfg(not(any(target_os = "android", target_os = "ios")))'.dependencies]
+tauri-plugin-single-instance = "2"
+
 [dev-dependencies]
 tempfile = "3"

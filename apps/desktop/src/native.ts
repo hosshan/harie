@@ -1,7 +1,7 @@
 // OS のファイルダイアログと、画像ファイルの読み書き（src-tauri/src/lib.rs のコマンド）
 import type { ImageFormat } from "@harie/format";
 import { invoke } from "@tauri-apps/api/core";
-import { open, save } from "@tauri-apps/plugin-dialog";
+import { ask, open, save } from "@tauri-apps/plugin-dialog";
 import { withExtension } from "./paths";
 
 const FILTERS = {
@@ -32,4 +32,22 @@ export async function readImage(path: string): Promise<Uint8Array> {
 /** バイト列はそのまま本文で送る（JSON にすると画像の大きさの数倍になる）。パスは日本語を含むので URL エンコードする */
 export async function writeImage(path: string, bytes: Uint8Array): Promise<void> {
   await invoke("write_image", bytes, { headers: { "Harie-Path": encodeURIComponent(path) } });
+}
+
+/** OS から開くように渡されたファイル（関連付け・「このアプリで開く」）を受け取る。受け取った分は Rust 側から消える */
+export async function takePendingFiles(): Promise<string[]> {
+  return await invoke<string[]>("take_pending_files");
+}
+
+/** OS から開くファイルが渡されたことを知らせるイベント（src-tauri/src/lib.rs の receive_files） */
+export const OPEN_FILES_EVENT = "harie://open-files";
+
+/** 保存していない変更を捨ててよいか、OS のダイアログで確かめる */
+export async function confirmDiscard(action: string): Promise<boolean> {
+  return await ask(`保存していない変更があります。保存せずに${action}と、変更は失われます。`, {
+    title: "Harie",
+    kind: "warning",
+    okLabel: action,
+    cancelLabel: "キャンセル",
+  });
 }
