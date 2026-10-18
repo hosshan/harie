@@ -5,10 +5,19 @@ import { Header, HeaderButton } from "@harie/web/header";
 import { loadFile, type Opened } from "@harie/web/load";
 import type { Saved } from "@harie/web/save";
 import { Workspace } from "@harie/web/workspace";
+import { listen } from "@tauri-apps/api/event";
 import { getCurrentWebview } from "@tauri-apps/api/webview";
 import { getCurrentWindow } from "@tauri-apps/api/window";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { chooseImage, chooseSavePath, readImage, writeImage } from "./native";
+import {
+  chooseImage,
+  chooseSavePath,
+  confirmDiscard,
+  OPEN_FILES_EVENT,
+  readImage,
+  takePendingFiles,
+  writeImage,
+} from "./native";
 import { baseName, isImagePath, siblingPath } from "./paths";
 
 export function App() {
@@ -18,6 +27,11 @@ export function App() {
   const [error, setError] = useState<string | null>(null);
   // 開き直すたびにエディタ（と元に戻す履歴）を作り直す。保存で名前が変わっても作り直さない
   const [loadId, setLoadId] = useState(0);
+  // 保存していない変更があるか（Workspace から受け取る）。閉じる・別のファイルを開く前の確認に使う
+  const dirty = useRef(false);
+  const onDirtyChange = useCallback((value: boolean) => {
+    dirty.current = value;
+  }, []);
 
   const show = useCallback((next: Opened, filePath: string | null) => {
     loadDisplayFonts();
@@ -38,6 +52,8 @@ export function App() {
 
   const openPath = useCallback(
     async (filePath: string) => {
+      // D&D・関連付けから開くときは、ヘッダーの「画像を開く」と違って画面の確認を通らないので、ここで確かめる
+      if (dirty.current && !(await confirmDiscard("開く"))) return;
       try {
         openBytes(baseName(filePath), await readImage(filePath), filePath);
       } catch (e) {
@@ -49,8 +65,35 @@ export function App() {
 
   const pick = async () => {
     const filePath = await chooseImage();
-    if (filePath !== null) await openPath(filePath);
+    if (filePath === null) return;
+    // 「画像を開く」は Workspace が確認してから呼ぶので、ここでは確かめ直さない
+    dirty.current = false;
+    await openPath(filePath);
   };
+
+  // 関連付け・「このアプリで開く」から渡されたファイルを開く。1 つのウィンドウで扱うので、最後の 1 つだけを開く
+  useEffect(() => {
+    const openPending = async () => {
+      const last = (await takePendingFiles()).at(-1);
+      if (last !== undefined) await openPath(last);
+    };
+    const unlisten = listen(OPEN_FILES_EVENT, () => void openPending());
+    // 画面ができる前に渡されたもの（起動したときのファイル）も、知らせを待てるようになってから受け取る
+    void unlisten.then(openPending);
+    return () => {
+      void unlisten.then((f) => f());
+    };
+  }, [openPath]);
+
+  // 保存していない変更があれば、ウィンドウを閉じる前に確かめる（WebView の beforeunload は Tauri では確認を出さない）
+  useEffect(() => {
+    const unlisten = getCurrentWindow().onCloseRequested(async (event) => {
+      if (dirty.current && !(await confirmDiscard("閉じる"))) event.preventDefault();
+    });
+    return () => {
+      void unlisten.then((f) => f());
+    };
+  }, []);
 
   // ウィンドウの題名に開いているファイル名を出す
   useEffect(() => {
@@ -135,6 +178,7 @@ export function App() {
           }
           onReopen={(next) => show(next, path.current)}
           onOpenImage={pick}
+          onDirtyChange={onDirtyChange}
         />
       )}
     </div>

@@ -26,6 +26,10 @@ pnpm --filter @harie/desktop app:build   # 配布物: src-tauri/target/release/b
 3. 保存形式を JPEG に変えて保存 → 上書きせず、保存ダイアログが出る。
 4. Harie ファイルをウィンドウにドラッグ＆ドロップして開き、注釈を直して上書き保存できる。
 5. 日本語を含むフォルダー・ファイル名でも開ける・保存できる。
+6. 注釈を描いて保存せずにウィンドウを閉じる → 確認が出る。「キャンセル」で残り、「閉じる」で閉じる。D&D で別のファイルを開くときも同じ確認が出る。
+7. 配布物を入れて、Finder / エクスプローラーで画像の「このアプリで開く」→ Harie で開く。Harie を開いたまま別の画像でも同じ操作をすると、2 つ目のウィンドウではなく今のウィンドウで開く。既定のアプリは変わらない。
+
+Windows / Linux は起動引数でも試せる（`src-tauri/target/debug/harie-desktop 画像.png`）。Linux で 2 つ目の起動を今のウィンドウに渡すには D-Bus のセッションが要る（`dbus-launch`）。
 
 ## 構成
 
@@ -34,19 +38,19 @@ pnpm --filter @harie/desktop app:build   # 配布物: src-tauri/target/release/b
 | `src/App.tsx` | 開く（ダイアログ・D&D・貼り付け）と保存先の決定 |
 | `src/native.ts` | ダイアログと、Rust のコマンドの呼び出し |
 | `src/paths.ts` | パスの扱い（macOS / Windows の区切り） |
-| `src-tauri/src/lib.rs` | `read_image` / `write_image`。JPEG / PNG だけを読み書きし、上書きは一時ファイルから置き換える |
-| `src-tauri/capabilities/default.json` | 画面に許す権限（ダイアログと題名の変更だけ。fs プラグインは使わない） |
+| `src-tauri/src/lib.rs` | `read_image` / `write_image`（JPEG / PNG だけを読み書きし、上書きは一時ファイルから置き換える）。関連付けから渡されたファイルの受け取り（`take_pending_files`） |
+| `src-tauri/capabilities/default.json` | 画面に許す権限（ダイアログ、題名の変更、閉じる確認のあとにウィンドウを閉じること。fs プラグインは使わない） |
 | `src-tauri/icons/` | アイコン。元は `docs/brand`（`pnpm brand:icons` で `app-icon.png` を作り、`pnpm --filter @harie/desktop tauri icon src-tauri/icons/app-icon.png` で各 OS 向けを作る） |
 
 ## テスト
 
 ```sh
 pnpm exec vitest run --project desktop    # パスの扱い（pnpm check にも含まれる）
-cd apps/desktop/src-tauri && cargo test   # 拡張子の制限と上書き
+cd apps/desktop/src-tauri && cargo test   # 拡張子の制限、上書き、起動引数からのパスの取り出し
 ```
 
 画面を通した確認は、Linux なら Xvfb・`tauri-driver`（WebDriver）・`xdotool`（OS のダイアログの操作）で行える。CI ではまだ動かしていない。
 
 ## まだないもの（M6 の残り）
 
-ファイル関連付け、ウィンドウを閉じる前の未保存の確認、署名・公証、自動更新、配布。
+署名・公証、自動更新、配布、CI でのデスクトップのビルド。

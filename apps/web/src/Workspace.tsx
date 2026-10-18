@@ -36,6 +36,8 @@ export type WorkspaceProps = {
   onOpenImage?: () => void;
   /** ヘッダーで「保存」の右に足す操作（Web の「連携」など）。狭い画面では三点メニューに入る */
   actions?: readonly HeaderAction[];
+  /** 保存していない変更の有無が変わった（デスクトップでウィンドウを閉じる前の確認に使う） */
+  onDirtyChange?: (dirty: boolean) => void;
 };
 
 /** 開いた 1 枚の画像の編集画面（保存・マスク・AI を含む）。Web と Chrome 拡張で共通 */
@@ -47,6 +49,7 @@ export function Workspace({
   dom,
   onOpenImage,
   actions = [],
+  onDirtyChange,
 }: WorkspaceProps) {
   const [state, dispatch] = useEditorState(opened.doc);
   const [status, setStatus] = useState<string | null>(null);
@@ -63,6 +66,10 @@ export function Workspace({
     state.doc.pii !== savedDoc.current.pii;
 
   const baseImageUrl = useObjectUrl(opened.base.bytes, opened.base.mediaType);
+
+  useEffect(() => {
+    onDirtyChange?.(dirty);
+  }, [dirty, onDirtyChange]);
 
   // 保存していない変更があるときはページを閉じる前に確認する
   useEffect(() => {
