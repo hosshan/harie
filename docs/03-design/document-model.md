@@ -15,7 +15,7 @@ Harie ファイルに埋め込む注釈ドキュメント（JSON）の構造。�
   "revision": 3,
   "meta": {
     "title": "通知設定の変更方法",
-    "service": "rimo",
+    "service": "tasklane",
     "source": { "kind": "chrome-extension", "url": "https://app.example.com/settings/notifications", "capturedAt": "2026-10-07T08:00:00Z" },
     "createdAt": "2026-10-07T08:00:00Z",
     "updatedAt": "2026-10-07T09:12:00Z"
@@ -27,7 +27,7 @@ Harie ファイルに埋め込む注釈ドキュメント（JSON）の構造。�
       "style": { "stroke": "#E5484D", "strokeWidth": 6, "radius": 8 } },
     { "id": "a2", "type": "badge", "x": 96, "y": 316, "number": 1 },
     { "id": "a3", "type": "callout", "x": 640, "y": 360, "w": 420,
-      "text": "「メール通知」をオンにすると、議事録の完成時にメールが届きます",
+      "text": "「メール通知」をオンにすると、タスクの更新時にメールが届きます",
       "anchor": { "annotationId": "a1", "side": "right" } }
   ],
   "pii": {
