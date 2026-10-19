@@ -1,5 +1,7 @@
 // デスクトップ版の画面。Web エディタと同じ編集画面（@harie/web の Workspace）を使い、
 // ファイルは OS のダイアログで開き、Harie ファイルはそのまま上書き保存する（architecture 5）
+
+import { formatShortcut, isMacPlatform } from "@harie/editor";
 import { loadDisplayFonts } from "@harie/web/fonts";
 import { Header, HeaderButton } from "@harie/web/header";
 import { loadFile, type Opened } from "@harie/web/load";
@@ -160,7 +162,7 @@ export function App() {
             }
           />
           <div className="app-drop">
-            <p>{m.open.dropHint}</p>
+            <p>{m.open.dropHint(formatShortcut("paste", isMacPlatform()))}</p>
             <p className="harie-muted">{m.open.formats}</p>
           </div>
         </>

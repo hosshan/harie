@@ -5,6 +5,7 @@ import {
   type CSSProperties,
   type Dispatch,
   type PointerEvent,
+  useCallback,
   useEffect,
   useMemo,
   useRef,
@@ -132,6 +133,12 @@ export type CanvasProps = {
   onDraggingChange?: (dragging: boolean) => void;
   /** 新しく描く注釈の初期値（前回選んだ線の太さ・文字サイズ） */
   drawDefaults?: DrawDefaults;
+  /**
+   * その場で文字を編集している注釈（ダブルクリック・Enter、またはテキスト・吹き出しを置いた直後）。
+   * 呼び出し側が持つときに渡す（Enter キーで編集を始めるため）。省略すると編集面の中で持つ
+   */
+  editingId?: string | null;
+  onEditingChange?: (id: string | null) => void;
 };
 
 type TextAnnotation = Extract<Annotation, { type: "text" | "callout" }>;
@@ -151,12 +158,23 @@ export function Canvas({
   onSelectAppliedMask,
   onDraggingChange,
   drawDefaults = {},
+  editingId: controlledEditingId,
+  onEditingChange,
 }: CanvasProps) {
   const m = useMessages(EDITOR_MESSAGES);
   const overlay = useRef<SVGSVGElement>(null);
   const [drag, setDrag] = useState<Drag | null>(null);
   /** その場で文字を編集している注釈（ダブルクリック、またはテキスト・吹き出しを置いた直後） */
-  const [editingId, setEditingId] = useState<string | null>(null);
+  const [ownEditingId, setOwnEditingId] = useState<string | null>(null);
+  const editingId = controlledEditingId === undefined ? ownEditingId : controlledEditingId;
+  const controlled = controlledEditingId !== undefined;
+  const setEditingId = useCallback(
+    (id: string | null) => {
+      if (!controlled) setOwnEditingId(id);
+      onEditingChange?.(id);
+    },
+    [controlled, onEditingChange],
+  );
   const { doc } = state;
   const { width, height } = doc.canvas;
 
@@ -314,7 +332,7 @@ export function Canvas({
   // 元に戻すなどで編集中の注釈がなくなったら、編集をやめる
   useEffect(() => {
     if (editingId !== null && !isText(editing)) setEditingId(null);
-  }, [editingId, editing]);
+  }, [editingId, editing, setEditingId]);
 
   return (
     <div

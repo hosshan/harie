@@ -4,6 +4,7 @@ import { annotationBounds, FONT_FAMILY, THEMES } from "@harie/render";
 import { useEffect, useRef } from "react";
 import { EDITOR_MESSAGES } from "./i18n/messages";
 import { useMessages } from "./i18n/use-locale";
+import { formatCombo, isMacPlatform } from "./shortcuts";
 
 export type TextEditorProps = {
   annotation: Extract<Annotation, { type: "text" | "callout" }>;
@@ -46,7 +47,7 @@ export function TextEditor({ annotation, frame, onCommit, onCancel }: TextEditor
       ref={ref}
       className="harie-text-editor"
       aria-label={m.textEditor.label}
-      title={m.textEditor.hint("Ctrl / ⌘ + Enter")}
+      title={m.textEditor.hint(formatCombo({ key: "Enter", mod: true }, isMacPlatform()))}
       defaultValue={annotation.text}
       rows={Math.max(1, annotation.text.split("\n").length)}
       style={{

@@ -12,3 +12,4 @@
 - ベース画像の blob: URL は `useObjectUrl`（`object-url.ts`）で作る。作成と破棄を同じ effect で行わないと、StrictMode（開発時）で使用中の URL が破棄されて画像が消える。
 - 道具のパレット（`Palette.tsx`）・その場の文字編集（`TextEditor.tsx`）・文字サイズの決まりは `docs/03-design/architecture.md` の「エディタの操作の決まり」に従う。その場の文字編集も確定 1 回を Undo の 1 単位にする。
 - 画面の文字は `src/i18n/messages.ts`（Web 側は `apps/web/src/messages.ts`）に日本語と英語を並べて置き、`useMessages` で読む。コンポーネントに文字を直接書かない（NFR-I18N-01）。英語は日本語と同じ形（`Messages` 型）にする。
+- キーボードのショートカットは `shortcuts.ts` に定義を集め、判定（`matchesShortcut`）・表示（`formatShortcut`）・一覧（`ShortcutList`）で同じ定義を使う。Mac は ⌘、ほかは Ctrl（FR-EDIT-12）。

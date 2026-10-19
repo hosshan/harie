@@ -1,5 +1,11 @@
 // エディタ全体（編集面と、その上に浮かぶ道具のパレット・選択中の注釈の設定）
-import type { Annotation, HarieDocument, LineDash, PiiMask } from "@harie/model";
+import {
+  type Annotation,
+  AnnotationSchema,
+  type HarieDocument,
+  type LineDash,
+  type PiiMask,
+} from "@harie/model";
 import { THEMES } from "@harie/render";
 import {
   type Dispatch,
@@ -18,23 +24,18 @@ import { useMessages } from "./i18n/use-locale";
 import { MaskPanel } from "./MaskPanel";
 import { type AppliedMask, type MaskDraft, newMaskDraft, toPiiMasks } from "./masks";
 import { Icon, Palette, type PaletteTool, TOOL_ICONS } from "./Palette";
-import { removeOps } from "./selection";
+import { moveOps, pasteOps, type Reorder, removeOps, reorderOps } from "./selection";
+import { formatShortcut, isMacPlatform, matchesShortcut, type ShortcutId } from "./shortcuts";
 import { adoptSuggestionOps, rejectSuggestionOps } from "./suggestions";
+import { TOOL_SHORTCUTS } from "./tools";
+
+/** コピーした注釈をクリップボードに入れる形式。貼り付けるときは外部入力として検証する */
+export const ANNOTATIONS_MIME = "application/x-harie-annotations+json";
+const ClipboardSchema = AnnotationSchema.array().max(500);
 
 export function useEditorState(doc: HarieDocument) {
   return useReducer(editorReducer, doc, initialState);
 }
-
-const TOOLS: readonly { tool: Exclude<Tool, "mask">; key: string }[] = [
-  { tool: "select", key: "v" },
-  { tool: "rect", key: "r" },
-  { tool: "ellipse", key: "o" },
-  { tool: "arrow", key: "a" },
-  { tool: "text", key: "t" },
-  { tool: "callout", key: "c" },
-  { tool: "badge", key: "n" },
-];
-const MASK_TOOL = { tool: "mask", key: "m" } as const;
 
 const COLORS = [
   { name: "red", value: "#E5484D" },
@@ -99,6 +100,8 @@ export type EditorProps = {
   onUnmask?: (id: string) => Promise<void>;
   /** 右側の欄の先頭に出す内容（AI のパネルなど） */
   aside?: ReactNode;
+  /** ショートカット一覧を開く（? キー・パレットのボタン）。省略すると開く手段を出さない */
+  onShowShortcuts?: () => void;
 };
 
 export function Editor({
@@ -111,9 +114,13 @@ export function Editor({
   appliedMasks = [],
   onUnmask,
   aside,
+  onShowShortcuts,
 }: EditorProps) {
   const m = useMessages(EDITOR_MESSAGES);
+  const mac = useMemo(() => isMacPlatform(), []);
   const [tool, setTool] = useState<Tool>("select");
+  /** その場で文字を編集している注釈（ダブルクリック・Enter、またはテキスト・吹き出しを置いた直後） */
+  const [editingId, setEditingId] = useState<string | null>(null);
   const [dragging, setDragging] = useState(false);
   const [paletteCollapsed, setPaletteCollapsed] = useState(false);
   // 前回選んだ線の太さ・文字サイズを、次に描く注釈の初期値にする
@@ -158,7 +165,11 @@ export function Editor({
   }, [hasSelection]);
   const canMask = onApplyMasks !== undefined;
   const tools = useMemo<PaletteTool[]>(
-    () => (canMask ? [...TOOLS, MASK_TOOL] : TOOLS).map((t) => ({ ...t, label: m.tools[t.tool] })),
+    () =>
+      TOOL_SHORTCUTS.filter((t) => canMask || t.tool !== "mask").map((t) => ({
+        ...t,
+        label: m.tools[t.tool],
+      })),
     [canMask, m],
   );
   // マスクの範囲を選んでいる間は注釈の選択を外す。右の欄の「削除」や Delete キーで、
@@ -179,40 +190,128 @@ export function Editor({
     setTool("select");
   };
 
+  // キーボードのショートカット（FR-EDIT-12）。文字の入力中は効かせない
   useEffect(() => {
+    const is = (e: KeyboardEvent, id: ShortcutId) => matchesShortcut(e, id, mac);
+    const ids = state.selectedIds;
+    const apply = (ops: unknown[], select?: readonly string[]) => {
+      if (ops.length > 0) dispatch({ type: "apply", ops, ...(select ? { select } : {}) });
+    };
+    const reorder = (how: Reorder) => apply(reorderOps(state.doc, ids, how));
     const onKey = (e: KeyboardEvent) => {
-      if (isTyping(e.target)) return;
-      const mod = e.metaKey || e.ctrlKey;
-      if (mod && e.key.toLowerCase() === "z") {
-        e.preventDefault();
-        dispatch({ type: e.shiftKey ? "redo" : "undo" });
-      } else if (mod && e.key.toLowerCase() === "y") {
-        e.preventDefault();
+      if (isTyping(e.target) || e.isComposing) return;
+      const handled = () => e.preventDefault();
+      if (is(e, "undo")) {
+        handled();
+        dispatch({ type: "undo" });
+      } else if (is(e, "redo")) {
+        handled();
         dispatch({ type: "redo" });
-      } else if (mod && e.key.toLowerCase() === "a" && tool !== "mask") {
+      } else if (is(e, "selectAll") && tool !== "mask") {
         // すべての注釈を選ぶ（FR-EDIT-11）
-        e.preventDefault();
+        handled();
         setSelectedMaskId(null);
         dispatch({ type: "select", ids: state.doc.annotations.map((a) => a.id) });
-      } else if ((e.key === "Delete" || e.key === "Backspace") && state.selectedIds.length > 0) {
-        e.preventDefault();
-        dispatch({ type: "apply", ops: removeOps(state.selectedIds) });
-      } else if ((e.key === "Delete" || e.key === "Backspace") && selectedMask !== undefined) {
-        e.preventDefault();
+      } else if (is(e, "duplicate")) {
+        // 何も選んでいなくても、ブラウザのブックマークにはしない
+        handled();
+        const picked = state.doc.annotations.filter((a) => ids.includes(a.id));
+        if (picked.length === 0) return;
+        const pasted = pasteOps(state.doc, picked);
+        apply(pasted.ops, pasted.ids);
+      } else if (is(e, "delete") && ids.length > 0) {
+        handled();
+        apply(removeOps(ids));
+      } else if (is(e, "delete") && selectedMask !== undefined) {
+        handled();
         if (!unmasking) void unmask(selectedMask.id);
-      } else if (e.key === "Escape") {
+      } else if ((is(e, "nudge") || is(e, "nudgeLarge")) && ids.length > 0) {
+        handled();
+        const step = e.shiftKey ? 10 : 1;
+        const dx = e.key === "ArrowLeft" ? -step : e.key === "ArrowRight" ? step : 0;
+        const dy = e.key === "ArrowUp" ? -step : e.key === "ArrowDown" ? step : 0;
+        apply(moveOps(state.doc, ids, dx, dy));
+      } else if (is(e, "editText") && ids.length === 1) {
+        const target = state.doc.annotations.find((a) => a.id === ids[0]);
+        if (target?.type === "text" || target?.type === "callout") {
+          handled();
+          setEditingId(target.id);
+        }
+      } else if (is(e, "bringToFront") && ids.length > 0) {
+        handled();
+        reorder("front");
+      } else if (is(e, "sendToBack") && ids.length > 0) {
+        handled();
+        reorder("back");
+      } else if (is(e, "bringForward") && ids.length > 0) {
+        handled();
+        reorder("forward");
+      } else if (is(e, "sendBackward") && ids.length > 0) {
+        handled();
+        reorder("backward");
+      } else if (is(e, "shortcuts") && onShowShortcuts !== undefined) {
+        handled();
+        onShowShortcuts();
+      } else if (is(e, "deselect")) {
         setTool("select");
         dispatch({ type: "select", ids: [] });
         setSelectedMaskId(null);
-      } else if (!mod && !e.altKey) {
-        const t = tools.find((x) => x.key === e.key);
+      } else if (!e.metaKey && !e.ctrlKey && !e.altKey && !e.shiftKey) {
+        const t = tools.find((x) => x.key === e.key.toLowerCase());
         if (t !== undefined) selectTool(t.tool);
       }
     };
+    // コピー・切り取り・貼り付けはクリップボードのイベントで受ける（画像の貼り付けは呼び出し側が受ける）
+    const onCopy = (e: ClipboardEvent, cut: boolean) => {
+      if (isTyping(e.target) || ids.length === 0 || e.clipboardData === null) return;
+      // ページの文字を選んでいるときは、ブラウザの普通のコピーにする
+      if ((window.getSelection()?.toString() ?? "") !== "") return;
+      const picked = state.doc.annotations.filter((a) => ids.includes(a.id));
+      e.preventDefault();
+      e.clipboardData.setData(ANNOTATIONS_MIME, JSON.stringify(picked));
+      // ほかのアプリには、注釈の文字を渡す
+      e.clipboardData.setData(
+        "text/plain",
+        picked
+          .flatMap((a) => (a.type === "text" || a.type === "callout" ? [a.text] : []))
+          .join("\n"),
+      );
+      if (cut) apply(removeOps(ids));
+    };
+    const onPaste = (e: ClipboardEvent) => {
+      if (isTyping(e.target)) return;
+      const raw = e.clipboardData?.getData(ANNOTATIONS_MIME) ?? "";
+      if (raw === "") return;
+      let parsed: ReturnType<typeof ClipboardSchema.safeParse>;
+      try {
+        parsed = ClipboardSchema.safeParse(JSON.parse(raw));
+      } catch {
+        return;
+      }
+      if (!parsed.success || parsed.data.length === 0) return;
+      // 注釈を貼ったときは、画像の取り込み（呼び出し側の paste）を止める
+      e.preventDefault();
+      e.stopImmediatePropagation();
+      const pasted = pasteOps(state.doc, parsed.data);
+      apply(pasted.ops, pasted.ids);
+    };
+    const copy = (e: ClipboardEvent) => onCopy(e, false);
+    const cut = (e: ClipboardEvent) => onCopy(e, true);
     window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
+    window.addEventListener("copy", copy);
+    window.addEventListener("cut", cut);
+    // 画像の貼り付け（呼び出し側が window で受ける）より先に受けるため、capture で登録する
+    window.addEventListener("paste", onPaste, { capture: true });
+    return () => {
+      window.removeEventListener("keydown", onKey);
+      window.removeEventListener("copy", copy);
+      window.removeEventListener("cut", cut);
+      window.removeEventListener("paste", onPaste, { capture: true });
+    };
   }, [
     dispatch,
+    mac,
+    onShowShortcuts,
     state.doc,
     state.selectedIds,
     tool,
@@ -237,6 +336,8 @@ export function Editor({
               baseImageUrl={baseImageUrl}
               tool={tool}
               onToolDone={() => setTool("select")}
+              editingId={editingId}
+              onEditingChange={setEditingId}
               masks={masks}
               onMaskDrawn={(rect) => setMasks([...masks, newMaskDraft(masks, rect)])}
               {...(onUnmask === undefined
@@ -262,6 +363,7 @@ export function Editor({
             hidden={dragging}
             collapsed={paletteCollapsed}
             onCollapsedChange={setPaletteCollapsed}
+            onShowShortcuts={onShowShortcuts}
           />
         </div>
         <aside className="harie-inspector" aria-label={m.inspector.label}>
@@ -292,7 +394,7 @@ export function Editor({
               {unmaskError !== null && <p role="alert">{unmaskError}</p>}
             </section>
           ) : selected.length === 0 ? (
-            tool !== "mask" && <EmptyInspector tools={tools} />
+            tool !== "mask" && <EmptyInspector tools={tools} onShowShortcuts={onShowShortcuts} />
           ) : (
             <Inspector
               // 選び直したら入力欄（文字・数値）を作り直す
@@ -319,7 +421,13 @@ function colorLegend(m: EditorMessages, type: Annotation["type"]): string {
 }
 
 /** 何も選んでいないとき。何ができるかと、道具のショートカットを案内する */
-function EmptyInspector({ tools }: { tools: readonly PaletteTool[] }) {
+function EmptyInspector({
+  tools,
+  onShowShortcuts,
+}: {
+  tools: readonly PaletteTool[];
+  onShowShortcuts: (() => void) | undefined;
+}) {
   const m = useMessages(EDITOR_MESSAGES);
   return (
     <div className="harie-inspector-empty">
@@ -336,6 +444,12 @@ function EmptyInspector({ tools }: { tools: readonly PaletteTool[] }) {
             </div>
           ))}
       </dl>
+      {onShowShortcuts !== undefined && (
+        <button type="button" className="harie-link-button" onClick={onShowShortcuts}>
+          {m.shortcuts.openList}
+          <kbd>?</kbd>
+        </button>
+      )}
     </div>
   );
 }

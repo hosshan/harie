@@ -2,9 +2,14 @@
 import type { DomSnapshot } from "@harie/ai";
 import {
   addDetectedMasks,
+  EDITOR_MESSAGES,
   Editor,
+  isMacPlatform,
   type MaskDraft,
+  matchesShortcut,
+  ShortcutList,
   useEditorState,
+  useMessages,
   useObjectUrl,
 } from "@harie/editor";
 import { type ImageFormat, readBaseImage } from "@harie/format";
@@ -54,6 +59,8 @@ export function Workspace({
   onDirtyChange,
 }: WorkspaceProps) {
   const m = useWebMessages();
+  const em = useMessages(EDITOR_MESSAGES);
+  const [shortcutsOpen, setShortcutsOpen] = useState(false);
   const [state, dispatch] = useEditorState(opened.doc);
   const [status, setStatus] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
@@ -188,6 +195,27 @@ export function Workspace({
     );
   };
 
+  // 保存（Ctrl / ⌘ + S）と画像を開く（Ctrl / ⌘ + O）は、文字の入力中でも効かせる（FR-EDIT-12）。
+  // 入力中の文字は、入力欄を離れたときに確定するので、先に離れてから次の描画で保存する
+  const saveRef = useRef(save);
+  saveRef.current = save;
+  useEffect(() => {
+    const mac = isMacPlatform();
+    const onKey = (e: KeyboardEvent) => {
+      if (matchesShortcut(e, "save", mac)) {
+        e.preventDefault();
+        if (saving) return;
+        (document.activeElement as HTMLElement | null)?.blur?.();
+        setTimeout(() => void saveRef.current(), 0);
+      } else if (matchesShortcut(e, "open", mac) && onOpenImage !== undefined) {
+        e.preventDefault();
+        setConfirmOpen(true);
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [saving, onOpenImage]);
+
   return (
     <>
       <input
@@ -256,6 +284,20 @@ export function Workspace({
           </button>
         </p>
       </Modal>
+      <Modal
+        open={shortcutsOpen}
+        label={em.shortcuts.title}
+        onClose={() => setShortcutsOpen(false)}
+        className="app-shortcuts"
+      >
+        <h2>{em.shortcuts.title}</h2>
+        <ShortcutList file={{ save: true, open: onOpenImage !== undefined }} />
+        <p className="app-modal-actions">
+          <button type="button" onClick={() => setShortcutsOpen(false)}>
+            {em.shortcuts.close}
+          </button>
+        </p>
+      </Modal>
       <main className="app-main">
         {showWarning && opened.warning !== undefined && (
           <div className="app-warning" role="alert">
@@ -284,6 +326,7 @@ export function Workspace({
           onMasksChange={setMasks}
           appliedMasks={unsaved?.entries.map((e) => ({ id: e.id, rect: e.record.rect })) ?? []}
           onUnmask={unmask}
+          onShowShortcuts={() => setShortcutsOpen(true)}
           aside={
             <AiPanel
               doc={state.doc}

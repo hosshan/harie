@@ -8,4 +8,7 @@ export { useLocale, useMessages } from "./i18n/use-locale";
 export { MaskPanel } from "./MaskPanel";
 export * from "./masks";
 export { useObjectUrl } from "./object-url";
+export { ShortcutList, type ShortcutListProps } from "./ShortcutList";
+export * from "./shortcuts";
 export * from "./suggestions";
+export { TOOL_SHORTCUTS } from "./tools";
