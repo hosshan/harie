@@ -60,8 +60,15 @@ const ja = {
     sample: "あ",
     strokeWidth: "線の太さ",
     dash: "線の種類",
-    summaryLine: (width: number, dash: string) => `線 ${width}px・${dash}`,
-    summaryText: (size: number) => `文字 ${size}px`,
+    summaryLine: (width: number | undefined, dash: string | undefined) =>
+      `線 ${width === undefined ? "混在" : `${width}px`}・${dash ?? "混在"}`,
+    summaryText: (size: number | undefined) => `文字 ${size === undefined ? "混在" : `${size}px`}`,
+    /** 複数選んでいるときの見出し */
+    multiple: (n: number) => `${n} 個の注釈`,
+    deleteAll: "選んだ注釈をすべて削除",
+    /** 値が揃っていない（複数選んでいて、注釈ごとに違う） */
+    mixed: "混在",
+    listSeparator: "・",
     colorText: "文字の色",
     colorLine: "線の色",
     colorBadge: "色",
@@ -173,8 +180,13 @@ const en: EditorMessages = {
     sample: "A",
     strokeWidth: "Line width",
     dash: "Line style",
-    summaryLine: (width, dash) => `Line ${width}px · ${dash}`,
-    summaryText: (size) => `Text ${size}px`,
+    summaryLine: (width, dash) =>
+      `Line ${width === undefined ? "mixed" : `${width}px`} · ${dash ?? "mixed"}`,
+    summaryText: (size) => `Text ${size === undefined ? "mixed" : `${size}px`}`,
+    multiple: (n) => `${n} annotations`,
+    deleteAll: "Delete all selected annotations",
+    mixed: "Mixed",
+    listSeparator: ", ",
     colorText: "Text color",
     colorLine: "Line color",
     colorBadge: "Color",

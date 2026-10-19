@@ -32,7 +32,7 @@ describe("editorReducer（FR-EDIT-07）", () => {
       select: "rect-1",
     });
     expect(s.doc.annotations).toHaveLength(1);
-    expect(s.selectedId).toBe("rect-1");
+    expect(s.selectedIds).toEqual(["rect-1"]);
     s = editorReducer(s, {
       type: "apply",
       ops: [{ op: "update", id: "rect-1", patch: { x: 50 } }],
@@ -41,7 +41,7 @@ describe("editorReducer（FR-EDIT-07）", () => {
     expect(s.doc.annotations[0]).toMatchObject({ x: 10 });
     s = editorReducer(s, { type: "undo" });
     expect(s.doc.annotations).toHaveLength(0);
-    expect(s.selectedId).toBeNull();
+    expect(s.selectedIds).toEqual([]);
     s = editorReducer(s, { type: "redo" });
     s = editorReducer(s, { type: "redo" });
     expect(s.doc.annotations[0]).toMatchObject({ x: 50 });

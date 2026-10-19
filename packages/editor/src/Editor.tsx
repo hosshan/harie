@@ -18,6 +18,7 @@ import { useMessages } from "./i18n/use-locale";
 import { MaskPanel } from "./MaskPanel";
 import { type AppliedMask, type MaskDraft, newMaskDraft, toPiiMasks } from "./masks";
 import { Icon, Palette, type PaletteTool, TOOL_ICONS } from "./Palette";
+import { removeOps } from "./selection";
 import { adoptSuggestionOps, rejectSuggestionOps } from "./suggestions";
 
 export function useEditorState(doc: HarieDocument) {
@@ -151,9 +152,10 @@ export function Editor({
     [onUnmask, m],
   );
   // 注釈を選んだら、適用済みのマスクの選択は外す（右の欄に出すのはどちらか一方）
+  const hasSelection = state.selectedIds.length > 0;
   useEffect(() => {
-    if (state.selectedId !== null) setSelectedMaskId(null);
-  }, [state.selectedId]);
+    if (hasSelection) setSelectedMaskId(null);
+  }, [hasSelection]);
   const canMask = onApplyMasks !== undefined;
   const tools = useMemo<PaletteTool[]>(
     () => (canMask ? [...TOOLS, MASK_TOOL] : TOOLS).map((t) => ({ ...t, label: m.tools[t.tool] })),
@@ -165,7 +167,7 @@ export function Editor({
     (next: Tool) => {
       setTool(next);
       if (next === "mask") {
-        dispatch({ type: "select", id: null });
+        dispatch({ type: "select", ids: [] });
         setSelectedMaskId(null);
       }
     },
@@ -187,15 +189,20 @@ export function Editor({
       } else if (mod && e.key.toLowerCase() === "y") {
         e.preventDefault();
         dispatch({ type: "redo" });
-      } else if ((e.key === "Delete" || e.key === "Backspace") && state.selectedId !== null) {
+      } else if (mod && e.key.toLowerCase() === "a" && tool !== "mask") {
+        // すべての注釈を選ぶ（FR-EDIT-11）
         e.preventDefault();
-        dispatch({ type: "apply", ops: [{ op: "remove", id: state.selectedId }] });
+        setSelectedMaskId(null);
+        dispatch({ type: "select", ids: state.doc.annotations.map((a) => a.id) });
+      } else if ((e.key === "Delete" || e.key === "Backspace") && state.selectedIds.length > 0) {
+        e.preventDefault();
+        dispatch({ type: "apply", ops: removeOps(state.selectedIds) });
       } else if ((e.key === "Delete" || e.key === "Backspace") && selectedMask !== undefined) {
         e.preventDefault();
         if (!unmasking) void unmask(selectedMask.id);
       } else if (e.key === "Escape") {
         setTool("select");
-        dispatch({ type: "select", id: null });
+        dispatch({ type: "select", ids: [] });
         setSelectedMaskId(null);
       } else if (!mod && !e.altKey) {
         const t = tools.find((x) => x.key === e.key);
@@ -204,9 +211,20 @@ export function Editor({
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [dispatch, state.selectedId, tools, selectTool, selectedMask, unmask, unmasking]);
+  }, [
+    dispatch,
+    state.doc,
+    state.selectedIds,
+    tool,
+    tools,
+    selectTool,
+    selectedMask,
+    unmask,
+    unmasking,
+  ]);
 
-  const selected = state.doc.annotations.find((a) => a.id === state.selectedId);
+  // 選んだ順ではなく、描いた順（重なりの下から）で並べる
+  const selected = state.doc.annotations.filter((a) => state.selectedIds.includes(a.id));
 
   return (
     <div className="harie-editor">
@@ -260,7 +278,7 @@ export function Editor({
               }}
             />
           )}
-          {selected === undefined && selectedMask !== undefined ? (
+          {selected.length === 0 && selectedMask !== undefined ? (
             <section className="harie-inspector-body" aria-label={m.appliedMask.label}>
               <h2>{m.appliedMask.title(appliedMasks.indexOf(selectedMask) + 1)}</h2>
               <p className="harie-muted">{m.appliedMask.note}</p>
@@ -273,13 +291,14 @@ export function Editor({
               </button>
               {unmaskError !== null && <p role="alert">{unmaskError}</p>}
             </section>
-          ) : selected === undefined ? (
+          ) : selected.length === 0 ? (
             tool !== "mask" && <EmptyInspector tools={tools} />
           ) : (
             <Inspector
-              key={selected.id}
+              // 選び直したら入力欄（文字・数値）を作り直す
+              key={selected.map((a) => a.id).join(" ")}
               doc={state.doc}
-              annotation={selected}
+              annotations={selected}
               dispatch={dispatch}
               onDrawDefaults={rememberDrawDefaults}
             />
@@ -321,101 +340,152 @@ function EmptyInspector({ tools }: { tools: readonly PaletteTool[] }) {
   );
 }
 
+/** 文字サイズを持つ注釈（番号の大きさも、右の欄では同じ「文字サイズ」として扱う） */
+const hasFontSize = (a: Annotation) =>
+  a.type === "text" || a.type === "callout" || a.type === "badge";
+/** 線の太さ・線の種類を持つ注釈 */
+const hasLine = (a: Annotation) => a.type === "rect" || a.type === "ellipse" || a.type === "arrow";
+/** 色を変えたときに変わるスタイルの項目 */
+const colorKey = (a: Annotation) => (a.type === "text" ? "color" : "stroke");
+
+/** すべて同じ値ならその値、揃っていなければ undefined（混在） */
+function common<T>(values: readonly T[]): T | undefined {
+  const [first, ...rest] = values;
+  return rest.every((v) => v === first) ? first : undefined;
+}
+
+/**
+ * 選んだ注釈の設定。複数選んでいるときは、すべてに共通する項目だけを出し、選んだ値を全部に入れる
+ * （FR-EDIT-11。値が揃っていなければ「混在」と示す）。どの変更も 1 回の操作として元に戻せる
+ */
 function Inspector({
   doc,
-  annotation,
+  annotations,
   dispatch,
   onDrawDefaults,
 }: {
   doc: HarieDocument;
-  annotation: Annotation;
+  annotations: readonly Annotation[];
   dispatch: Dispatch<EditorAction>;
   /** 選んだ線の太さ・文字サイズを、次に描く注釈の初期値として記録する */
   onDrawDefaults: (patch: DrawDefaults) => void;
 }) {
   const m = useMessages(EDITOR_MESSAGES);
-  const update = (patch: Record<string, unknown>) =>
-    dispatch({ type: "apply", ops: [{ op: "update", id: annotation.id, patch }] });
-  const hasText = annotation.type === "text" || annotation.type === "callout";
-  const annotationText = hasText ? annotation.text : "";
+  const defaults = THEMES.default.defaults;
+  const single = annotations.length === 1 ? annotations[0] : undefined;
+  /** 値が変わる注釈だけに、スタイルの変更を入れる */
+  const updateStyles = (patch: (a: Annotation) => Annotation["style"] | null) => {
+    const ops = annotations.flatMap((a) => {
+      const style = patch(a);
+      return style === null ? [] : [{ op: "update", id: a.id, patch: { style } }];
+    });
+    if (ops.length > 0) dispatch({ type: "apply", ops });
+  };
+  const update = (a: Annotation, patch: Record<string, unknown>) =>
+    dispatch({ type: "apply", ops: [{ op: "update", id: a.id, patch }] });
+
+  const singleText = single?.type === "text" || single?.type === "callout" ? single : undefined;
+  const annotationText = singleText?.text ?? "";
   const [text, setText] = useState(annotationText);
   // 編集面でのその場編集・元に戻すで文字が変わったら、入力欄も合わせる
   useEffect(() => setText(annotationText), [annotationText]);
-  const hasFontSize = hasText || annotation.type === "badge";
-  const fontSize = annotation.style?.fontSize ?? THEMES.default.defaults.fontSize;
+  // 文字は 1 打鍵ごとではなく、入力欄を離れたときに 1 回の操作として確定する（元に戻す単位）
+  const commitText = () => {
+    if (singleText !== undefined && text !== singleText.text) update(singleText, { text });
+  };
+
+  const withFont = annotations.every(hasFontSize);
+  const fontSize = common(annotations.map((a) => a.style?.fontSize ?? defaults.fontSize));
   const setFontSize = (v: number) => {
     const size = Math.round(Math.min(FONT_SIZE_MAX, Math.max(FONT_SIZE_MIN, v)));
-    onDrawDefaults(annotation.type === "badge" ? { badgeFontSize: size } : { fontSize: size });
-    if (size !== fontSize) update({ style: { ...annotation.style, fontSize: size } });
+    onDrawDefaults({
+      ...(annotations.some((a) => a.type === "badge") ? { badgeFontSize: size } : {}),
+      ...(annotations.some((a) => a.type !== "badge") ? { fontSize: size } : {}),
+    });
+    updateStyles((a) =>
+      (a.style?.fontSize ?? defaults.fontSize) === size ? null : { ...a.style, fontSize: size },
+    );
   };
-  const hasLine =
-    annotation.type === "rect" || annotation.type === "ellipse" || annotation.type === "arrow";
-  const strokeWidth = annotation.style?.strokeWidth ?? THEMES.default.defaults.strokeWidth;
+  const withLine = annotations.every(hasLine);
+  const strokeWidth = common(annotations.map((a) => a.style?.strokeWidth ?? defaults.strokeWidth));
   const setStrokeWidth = (v: number) => {
     const width = Math.round(Math.min(STROKE_WIDTH_MAX, Math.max(STROKE_WIDTH_MIN, v)));
     onDrawDefaults({ strokeWidth: width });
-    if (width !== strokeWidth) update({ style: { ...annotation.style, strokeWidth: width } });
+    updateStyles((a) =>
+      (a.style?.strokeWidth ?? defaults.strokeWidth) === width
+        ? null
+        : { ...a.style, strokeWidth: width },
+    );
   };
-  const dash = annotation.style?.dash ?? "solid";
-  const setDash = (v: LineDash) => {
-    if (v === dash) return;
-    // 実線は既定なので、フィールドごと外す
-    const { dash: _, ...rest } = annotation.style ?? {};
-    update({ style: v === "solid" ? rest : { ...rest, dash: v } });
-  };
-  // 文字は 1 打鍵ごとではなく、入力欄を離れたときに 1 回の操作として確定する（元に戻す単位）
-  const commitText = () => {
-    if (hasText && text !== annotation.text) update({ text });
-  };
-  const colorKey = annotation.type === "text" ? "color" : "stroke";
-  const suggested = annotation.status === "suggested";
+  const dash = common(annotations.map((a) => a.style?.dash ?? "solid"));
+  const setDash = (v: LineDash) =>
+    updateStyles((a) => {
+      if ((a.style?.dash ?? "solid") === v) return null;
+      // 実線は既定なので、フィールドごと外す
+      const { dash: _, ...rest } = a.style ?? {};
+      return v === "solid" ? rest : { ...rest, dash: v };
+    });
   // 色を指定していない注釈は、テーマの既定の色を選んでいるものとして示す
-  const current = (annotation.style?.[colorKey] ?? THEMES.default.defaults[colorKey]).toUpperCase();
-  const summary = hasLine
-    ? m.inspector.summaryLine(strokeWidth, m.dashes[dash])
-    : m.inspector.summaryText(fontSize);
+  const color = common(
+    annotations.map((a) => (a.style?.[colorKey(a)] ?? defaults[colorKey(a)]).toUpperCase()),
+  );
+  const setColor = (value: string) =>
+    updateStyles((a) =>
+      (a.style?.[colorKey(a)] ?? "").toUpperCase() === value.toUpperCase()
+        ? null
+        : { ...a.style, [colorKey(a)]: value },
+    );
+  const type = common(annotations.map((a) => a.type));
+  const summary = withLine
+    ? m.inspector.summaryLine(strokeWidth, dash === undefined ? undefined : m.dashes[dash])
+    : withFont
+      ? m.inspector.summaryText(fontSize)
+      : [...new Set(annotations.map((a) => m.types[a.type]))].join(m.inspector.listSeparator);
+  const ids = annotations.map((a) => a.id);
 
   return (
     <div className="harie-inspector-body">
       <header className="harie-inspector-head">
         <span className="harie-inspector-type">
           <Icon size={16}>
-            {annotation.type in TOOL_ICONS ? TOOL_ICONS[annotation.type as Tool] : TOOL_ICONS.rect}
+            {type === undefined
+              ? TOOL_ICONS.select
+              : type in TOOL_ICONS
+                ? TOOL_ICONS[type as Tool]
+                : TOOL_ICONS.rect}
           </Icon>
         </span>
         <h2>
-          {m.types[annotation.type]}
+          {single === undefined ? m.inspector.multiple(annotations.length) : m.types[single.type]}
           <small>{summary}</small>
         </h2>
         <button
           type="button"
           className="harie-icon-button harie-inspector-delete"
-          aria-label={m.inspector.delete}
+          aria-label={single === undefined ? m.inspector.deleteAll : m.inspector.delete}
           title={m.inspector.deleteTitle("Delete")}
-          onClick={() => dispatch({ type: "apply", ops: [{ op: "remove", id: annotation.id }] })}
+          onClick={() => dispatch({ type: "apply", ops: removeOps(ids) })}
         >
           <Icon size={16}>
             <path d="M5 7h14M10 7V5h4v2M7 7l1 12h8l1-12" />
           </Icon>
         </button>
       </header>
-      {suggested && (
+      {single?.status === "suggested" && (
         <div className="harie-suggestion-band">
           <span>{m.inspector.suggestion}</span>
           <p>
             <button
               type="button"
               className="harie-suggestion-adopt"
-              onClick={() =>
-                dispatch({ type: "apply", ops: adoptSuggestionOps(doc, [annotation.id]) })
-              }
+              onClick={() => dispatch({ type: "apply", ops: adoptSuggestionOps(doc, [single.id]) })}
             >
               {m.inspector.adopt}
             </button>
             <button
               type="button"
               onClick={() =>
-                dispatch({ type: "apply", ops: rejectSuggestionOps(doc, [annotation.id]) })
+                dispatch({ type: "apply", ops: rejectSuggestionOps(doc, [single.id]) })
               }
             >
               {m.inspector.reject}
@@ -423,7 +493,7 @@ function Inspector({
           </p>
         </div>
       )}
-      {hasText && (
+      {singleText !== undefined && (
         <label className="harie-field">
           <span className="harie-field-label">{m.inspector.text}</span>
           <textarea
@@ -434,22 +504,22 @@ function Inspector({
           />
         </label>
       )}
-      {annotation.type === "badge" && (
+      {single?.type === "badge" && (
         <label className="harie-field">
           <span className="harie-field-label">{m.inspector.number}</span>
           <input
             type="number"
             className="harie-number"
             min={1}
-            value={annotation.number}
+            value={single.number}
             onChange={(e) => {
               const v = Number.parseInt(e.target.value, 10);
-              if (v > 0) update({ number: v });
+              if (v > 0) update(single, { number: v });
             }}
           />
         </label>
       )}
-      {hasFontSize && (
+      {withFont && (
         <SizeField
           legend={m.inspector.fontSize}
           options={FONT_SIZES.map((o) => ({ label: m.fontSizes[o.name], value: o.value }))}
@@ -464,7 +534,7 @@ function Inspector({
           )}
         />
       )}
-      {hasLine && (
+      {withLine && (
         <SizeField
           legend={m.inspector.strokeWidth}
           options={STROKE_WIDTHS.map((o) => ({ label: m.strokeWidths[o.name], value: o.value }))}
@@ -477,9 +547,12 @@ function Inspector({
           )}
         />
       )}
-      {hasLine && (
+      {withLine && (
         <fieldset className="harie-field">
-          <legend className="harie-field-label">{m.inspector.dash}</legend>
+          <legend className="harie-field-label">
+            {m.inspector.dash}
+            {dash === undefined && <span className="harie-field-value">{m.inspector.mixed}</span>}
+          </legend>
           <div className="harie-tiles harie-tiles-3">
             {LINE_DASHES.map((d) => (
               <button
@@ -508,7 +581,10 @@ function Inspector({
         </fieldset>
       )}
       <fieldset className="harie-field">
-        <legend className="harie-field-label">{colorLegend(m, annotation.type)}</legend>
+        <legend className="harie-field-label">
+          {type === undefined ? m.inspector.colorBadge : colorLegend(m, type)}
+          {color === undefined && <span className="harie-field-value">{m.inspector.mixed}</span>}
+        </legend>
         <div className="harie-swatches">
           {COLORS.map((c) => (
             <button
@@ -517,9 +593,9 @@ function Inspector({
               className="harie-swatch"
               aria-label={m.colors[c.name]}
               title={m.colors[c.name]}
-              aria-pressed={current === c.value.toUpperCase()}
+              aria-pressed={color === c.value.toUpperCase()}
               style={{ background: c.value }}
-              onClick={() => update({ style: { ...annotation.style, [colorKey]: c.value } })}
+              onClick={() => setColor(c.value)}
             />
           ))}
         </div>
@@ -530,7 +606,8 @@ function Inspector({
 
 /**
  * 文字サイズ・線の太さ。仕上がりの見本のタイルから選ぶ。細かい値は「数値で指定」を開いて入れる
- * （入力欄を離れる・Enter で 1 回の操作として確定する）。候補にない値のときは最初から開いておく
+ * （入力欄を離れる・Enter で 1 回の操作として確定する）。候補にない値のときは最初から開いておく。
+ * 複数選んでいて値が揃っていない（value が undefined）ときは「混在」と示し、選んだ値を全部に入れる
  */
 function SizeField({
   legend,
@@ -545,24 +622,29 @@ function SizeField({
   options: readonly { label: string; value: number }[];
   min: number;
   max: number;
-  value: number;
+  value: number | undefined;
   onChange: (v: number) => void;
   sample: (option: { label: string; value: number }, index: number) => ReactNode;
 }) {
   const m = useMessages(EDITOR_MESSAGES);
-  const [draft, setDraft] = useState(String(value));
-  useEffect(() => setDraft(String(value)), [value]);
-  const [custom, setCustom] = useState(() => !options.some((o) => o.value === value));
+  const shown = value === undefined ? "" : String(value);
+  const [draft, setDraft] = useState(shown);
+  useEffect(() => setDraft(shown), [shown]);
+  const [custom, setCustom] = useState(
+    () => value !== undefined && !options.some((o) => o.value === value),
+  );
   const commit = () => {
     const v = Number.parseFloat(draft);
     if (Number.isFinite(v) && v > 0) onChange(v);
-    else setDraft(String(value));
+    else setDraft(shown);
   };
   return (
     <fieldset className="harie-field">
       <legend className="harie-field-label">
         {legend}
-        <span className="harie-field-value">{value}px</span>
+        <span className="harie-field-value">
+          {value === undefined ? m.inspector.mixed : `${value}px`}
+        </span>
       </legend>
       <div className="harie-tiles">
         {options.map((o, i) => (
@@ -585,8 +667,8 @@ function SizeField({
           <button
             type="button"
             aria-label={m.inspector.decrease(legend)}
-            disabled={value <= min}
-            onClick={() => onChange(value - 1)}
+            disabled={value === undefined || value <= min}
+            onClick={() => value !== undefined && onChange(value - 1)}
           >
             −
           </button>
@@ -597,6 +679,7 @@ function SizeField({
             max={max}
             step={1}
             value={draft}
+            placeholder={value === undefined ? m.inspector.mixed : undefined}
             onChange={(e) => setDraft(e.target.value)}
             onBlur={commit}
             onKeyDown={(e) => {
@@ -607,8 +690,8 @@ function SizeField({
           <button
             type="button"
             aria-label={m.inspector.increase(legend)}
-            disabled={value >= max}
-            onClick={() => onChange(value + 1)}
+            disabled={value === undefined || value >= max}
+            onClick={() => value !== undefined && onChange(value + 1)}
           >
             +
           </button>
