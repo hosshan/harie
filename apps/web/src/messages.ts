@@ -11,8 +11,8 @@ const ja = {
   },
   open: {
     button: "画像を開く",
-    dropHint:
-      "スクリーンショットをドラッグ＆ドロップするか、貼り付け（Ctrl / ⌘ + V）してください。",
+    dropHint: (paste: string) =>
+      `スクリーンショットをドラッグ＆ドロップするか、貼り付け（${paste}）してください。`,
     formats:
       "JPEG と PNG に対応しています。保存した画像は普通の画像として使え、Harie で開けば注釈を直せます。",
     integrations:
@@ -179,7 +179,7 @@ const en: WebMessages = {
   },
   open: {
     button: "Open image",
-    dropHint: "Drag and drop a screenshot, or paste it (Ctrl / ⌘ + V).",
+    dropHint: (paste) => `Drag and drop a screenshot, or paste it (${paste}).`,
     formats:
       "JPEG and PNG are supported. Saved images work as ordinary images, and you can edit the annotations again by opening them in Harie.",
     integrations:

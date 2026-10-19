@@ -4,6 +4,7 @@ import type { ReactNode } from "react";
 import type { Tool } from "./Canvas";
 import { EDITOR_MESSAGES } from "./i18n/messages";
 import { useMessages } from "./i18n/use-locale";
+import { formatShortcut, isMacPlatform } from "./shortcuts";
 
 export type PaletteTool = { tool: Tool; label: string; key: string };
 
@@ -50,6 +51,8 @@ export type PaletteProps = {
   /** 小さくたたんで、画像に重なる範囲を最小にする */
   collapsed: boolean;
   onCollapsedChange: (collapsed: boolean) => void;
+  /** ショートカット一覧を開く。省略するとボタンを出さない */
+  onShowShortcuts?: (() => void) | undefined;
 };
 
 export function Palette({
@@ -63,8 +66,10 @@ export function Palette({
   hidden,
   collapsed,
   onCollapsedChange,
+  onShowShortcuts,
 }: PaletteProps) {
   const m = useMessages(EDITOR_MESSAGES);
+  const mac = isMacPlatform();
   const current = tools.find((t) => t.tool === tool);
   return (
     <div
@@ -93,7 +98,7 @@ export function Palette({
               type="button"
               className="harie-palette-icon"
               aria-label={m.palette.undo}
-              title={m.withKey(m.palette.undo, "Ctrl / ⌘ + Z")}
+              title={m.withKey(m.palette.undo, formatShortcut("undo", mac))}
               disabled={!canUndo}
               onClick={onUndo}
             >
@@ -105,7 +110,7 @@ export function Palette({
               type="button"
               className="harie-palette-icon"
               aria-label={m.palette.redo}
-              title={m.withKey(m.palette.redo, "Ctrl / ⌘ + Shift + Z")}
+              title={m.withKey(m.palette.redo, formatShortcut("redo", mac))}
               disabled={!canRedo}
               onClick={onRedo}
             >
@@ -129,6 +134,20 @@ export function Palette({
               </button>
             ))}
             <span className="harie-palette-sep" />
+            {onShowShortcuts !== undefined && (
+              <button
+                type="button"
+                className="harie-palette-icon"
+                aria-label={m.shortcuts.openList}
+                title={m.withKey(m.shortcuts.openList, "?")}
+                onClick={onShowShortcuts}
+              >
+                <Icon>
+                  <rect x="3" y="6.5" width="18" height="11" rx="2" />
+                  <path d="M7 10h.01M10.5 10h.01M14 10h.01M17 10h.01M8 14h8" />
+                </Icon>
+              </button>
+            )}
             <button
               type="button"
               className="harie-palette-icon"

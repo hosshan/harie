@@ -5,7 +5,9 @@ import {
   annotationsInRect,
   mergeSelection,
   moveOps,
+  pasteOps,
   removeOps,
+  reorderOps,
   toggleSelection,
 } from "./selection";
 
@@ -75,5 +77,51 @@ describe("複数の注釈の選択（FR-EDIT-11）", () => {
       ids: ["rect-1", "missing", "rect-1"],
     });
     expect(s.selectedIds).toEqual(["rect-1"]);
+  });
+
+  it("FR-EDIT-12: 重なりの順を 1 つずつ・いちばん上 / 下へ変える。選んだもの同士の順は保つ", () => {
+    const order = (ops: unknown[]) => {
+      const s = editorReducer(initialState(doc()), { type: "apply", ops });
+      return s.doc.annotations.map((a) => a.id);
+    };
+    expect(order(reorderOps(doc(), ["rect-1"], "forward"))).toEqual([
+      "badge-1",
+      "rect-1",
+      "arrow-1",
+      "text-1",
+    ]);
+    expect(order(reorderOps(doc(), ["rect-1", "arrow-1"], "front"))).toEqual([
+      "badge-1",
+      "text-1",
+      "rect-1",
+      "arrow-1",
+    ]);
+    expect(order(reorderOps(doc(), ["text-1"], "back"))).toEqual([
+      "text-1",
+      "rect-1",
+      "badge-1",
+      "arrow-1",
+    ]);
+    // いちばん上のものをさらに前面へ: 変わらない
+    expect(reorderOps(doc(), ["text-1"], "forward")).toEqual([]);
+  });
+
+  it("FR-EDIT-12: 貼り付け・複製は新しい ID で少しずらして重ね、一緒に貼った枠への紐付けは付け替える", () => {
+    const d = doc();
+    const picked = d.annotations.filter((a) => a.id === "rect-1" || a.id === "badge-1");
+    const { ops, ids } = pasteOps(d, picked);
+    expect(ids).toEqual(["rect-2", "badge-2"]);
+    const s = editorReducer(initialState(d), { type: "apply", ops, select: ids });
+    expect(s.selectedIds).toEqual(["rect-2", "badge-2"]);
+    expect(s.doc.annotations.find((a) => a.id === "rect-2")).toMatchObject({ x: 26, y: 26 });
+    expect(s.doc.annotations.find((a) => a.id === "badge-2")).toMatchObject({
+      anchor: { annotationId: "rect-2" },
+    });
+    // 番号だけを貼ると、元の枠への紐付けは外す
+    const only = pasteOps(
+      d,
+      picked.filter((a) => a.type === "badge"),
+    );
+    expect((only.ops[0] as { annotation: object }).annotation).not.toHaveProperty("anchor");
   });
 });

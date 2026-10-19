@@ -48,3 +48,67 @@ function followsSelectedBox(a: Annotation, selected: ReadonlySet<string>): boole
 export function removeOps(ids: readonly string[]): unknown[] {
   return ids.map((id) => ({ op: "remove", id }));
 }
+
+/** 重なりの順の変え方（FR-EDIT-12）。forward / backward は 1 つずつ、front / back はいちばん上・下へ */
+export type Reorder = "forward" | "backward" | "front" | "back";
+
+/** 選んだ注釈の重なりの順を変える操作。選んだもの同士の順は保つ。変わらなければ空 */
+export function reorderOps(doc: HarieDocument, ids: readonly string[], how: Reorder): unknown[] {
+  const selected = new Set(ids);
+  const order = doc.annotations.map((a) => a.id);
+  let next: string[];
+  if (how === "front" || how === "back") {
+    const picked = order.filter((id) => selected.has(id));
+    const rest = order.filter((id) => !selected.has(id));
+    next = how === "front" ? [...rest, ...picked] : [...picked, ...rest];
+  } else {
+    next = [...order];
+    // 動かす向きの端から順に、選んでいない隣と入れ替える（選んだもの同士は追い越さない）
+    const indexes = next.map((_, i) => i);
+    for (const i of how === "forward" ? indexes.reverse() : indexes) {
+      const j = how === "forward" ? i + 1 : i - 1;
+      const [a, b] = [next[i], next[j]];
+      if (a === undefined || b === undefined || !selected.has(a) || selected.has(b)) continue;
+      next[i] = b;
+      next[j] = a;
+    }
+  }
+  if (next.every((id, i) => id === order[i])) return [];
+  return next.map((id, index) => ({ op: "reorder", id, index }));
+}
+
+/** 貼り付け・複製でずらす量（画像のピクセル） */
+export const PASTE_OFFSET = 16;
+
+/**
+ * 注釈を貼り付ける（複製する）操作と、貼り付けた注釈の ID。新しい ID を振り、少しずらして上に重ねる。
+ * 紐付け（番号の枠・吹き出しの矢印の先）は、紐付け先も一緒に貼るときだけ新しい ID に付け替え、ほかは外す
+ */
+export function pasteOps(
+  doc: HarieDocument,
+  annotations: readonly Annotation[],
+  offset = PASTE_OFFSET,
+): { ops: unknown[]; ids: string[] } {
+  const taken = new Set(doc.annotations.map((a) => a.id));
+  const renamed = new Map<string, string>();
+  for (const a of annotations) {
+    let n = 1;
+    const prefix = a.id.replace(/-\d+$/, "");
+    while (taken.has(`${prefix}-${n}`)) n++;
+    taken.add(`${prefix}-${n}`);
+    renamed.set(a.id, `${prefix}-${n}`);
+  }
+  const ops = annotations.map((a) => {
+    const copy: Record<string, unknown> = {
+      ...a,
+      ...movePatch(a, offset, offset),
+      id: renamed.get(a.id) ?? a.id,
+    };
+    const anchor = a.type === "badge" || a.type === "callout" ? a.anchor : undefined;
+    const target = anchor === undefined ? undefined : renamed.get(anchor.annotationId);
+    if (anchor === undefined || target === undefined) delete copy.anchor;
+    else copy.anchor = { ...anchor, annotationId: target };
+    return { op: "add", annotation: copy };
+  });
+  return { ops, ids: [...renamed.values()] };
+}

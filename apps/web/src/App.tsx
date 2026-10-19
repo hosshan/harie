@@ -1,4 +1,5 @@
 // Web エディタ。画像を開く → 注釈を編集する（AI の提案・個人情報の検出を含む） → 保存する
+import { formatShortcut, isMacPlatform } from "@harie/editor";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { loadDisplayFonts } from "./fonts";
 import { useGuide } from "./Guide";
@@ -132,7 +133,7 @@ export function App() {
             actions={[guide.action]}
           />
           <div className="app-drop">
-            <p>{m.open.dropHint}</p>
+            <p>{m.open.dropHint(formatShortcut("paste", isMacPlatform()))}</p>
             <p className="harie-muted">{m.open.formats}</p>
             <p className="harie-muted">{m.open.integrations}</p>
           </div>
