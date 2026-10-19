@@ -1,0 +1,59 @@
+name: Pages
+
+# LP（apps/site）と Web エディタ（apps/web、/app/ 配下）を GitHub Pages に公開する
+on:
+  push:
+    branches: [main]
+    paths:
+      - "apps/site/**"
+      - "apps/web/**"
+      - "packages/**"
+      - "pnpm-lock.yaml"
+      - ".github/workflows/pages.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+# 公開は 1 件ずつ。途中の公開は止めずに最後まで回す
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - id: pages
+        uses: actions/configure-pages@v5
+      # Pages の URL のパス（例: /harie）の下の /app/ にエディタを置く
+      - run: pnpm --filter @harie/web build
+        env:
+          HARIE_WEB_BASE: ${{ steps.pages.outputs.base_path }}/app/
+      - run: pnpm --filter @harie/site build
+        env:
+          HARIE_SITE_APP_DIR: ${{ github.workspace }}/apps/web/dist
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: apps/site/dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

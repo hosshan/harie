@@ -1,0 +1,402 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Harie — Just an image. Editable anytime.</title>
+    <meta
+      name="description"
+      content="Add boxes, numbers and notes to the screenshots in your help docs. Harie saves a regular JPEG or PNG that you can reopen and edit any time. Open source, with AI suggestions, personal data masking, a Chrome extension and an MCP server."
+    />
+    <meta name="theme-color" content="#D4A72C" />
+    <meta property="og:type" content="website" />
+    <meta property="og:locale" content="en_US" />
+    <meta property="og:locale:alternate" content="ja_JP" />
+    <meta property="og:title" content="Harie — Just an image. Editable anytime." />
+    <meta
+      property="og:description"
+      content="Harie saves a regular JPEG or PNG. Open it in Harie again and every box, number and note is still editable."
+    />
+    <meta property="og:url" content="https://hosshan.github.io/harie/en/" />
+    <meta property="og:image" content="https://hosshan.github.io/harie/assets/og.en.png" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <link rel="alternate" hreflang="ja" href="https://hosshan.github.io/harie/" />
+    <link rel="alternate" hreflang="en" href="https://hosshan.github.io/harie/en/" />
+    <link rel="alternate" hreflang="x-default" href="https://hosshan.github.io/harie/" />
+    <link rel="icon" href="../assets/harie-symbol.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="../assets/apple-touch-icon.png" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@700;900&family=Zen+Kaku+Gothic+New:wght@400;700&family=IBM+Plex+Mono:wght@400;500&display=swap"
+    />
+    <link rel="stylesheet" href="../styles.css" />
+  </head>
+  <body>
+    <header class="nav">
+      <div class="container nav-in">
+        <a class="logo" href="./" aria-label="Harie home">
+          <img src="../assets/harie-symbol.svg" alt="" width="30" height="30" />Harie
+        </a>
+        <nav class="nav-links" aria-label="On this page">
+          <a href="#how">How it works</a>
+          <a href="#ai">AI</a>
+          <a href="#privacy">Privacy</a>
+          <a href="#platforms">Platforms</a>
+          <a href="#mcp">MCP</a>
+          <a href="https://github.com/hosshan/harie">GitHub</a>
+        </nav>
+        <a class="lang" href="../" hreflang="ja" lang="ja">日本語</a>
+        <a class="btn btn-primary btn-sm" href="../app/">Open in browser</a>
+      </div>
+    </header>
+
+    <main>
+      <section class="hero">
+        <div class="paper paper-sq" aria-hidden="true"></div>
+        <div class="paper paper-dot" aria-hidden="true"></div>
+        <div class="container hero-in">
+          <div class="hero-copy">
+            <p class="eyebrow">For people who write SaaS help guides</p>
+            <h1>Just an image.<br /><em>Editable anytime.</em></h1>
+            <p class="lead">
+              Add boxes, numbers and notes to the screenshots in your guides. Harie saves a regular
+              JPEG or PNG you can paste anywhere, and when you open it in Harie, every box and caption
+              is still editable.
+            </p>
+            <div class="cta">
+              <a class="btn btn-primary" href="../app/">Open in browser</a>
+              <a class="btn btn-ghost" href="https://github.com/hosshan/harie">View on GitHub</a>
+            </div>
+            <p class="note">
+              Free and open source (MIT). No install, no account. The editor interface is currently
+              in Japanese.
+            </p>
+          </div>
+          <figure class="hero-demo">
+            <div class="sheet">
+              <div class="demo" id="demo">
+                <img
+                  src="../assets/demo-base.en.webp"
+                  width="1280"
+                  height="720"
+                  alt="Screenshot of the notification settings page of Tasklane, a fictional SaaS"
+                />
+                <img
+                  class="demo-ann"
+                  src="../assets/demo-annotated.en.webp"
+                  width="1280"
+                  height="720"
+                  alt="The same screen with three numbered red boxes and callouts"
+                />
+              </div>
+            </div>
+            <figcaption class="demo-bar">
+              <span>It's the same single file</span>
+              <button class="switch" type="button" aria-pressed="true" aria-controls="demo">
+                <span class="switch-track" aria-hidden="true"></span>Annotations
+              </button>
+            </figcaption>
+          </figure>
+        </div>
+      </section>
+
+      <section class="section" aria-labelledby="pain-title">
+        <div class="container split split-top">
+          <h2 id="pain-title" class="h2">Guide screenshots take more work than they should.</h2>
+          <ul class="pains">
+            <li><b>Deciding what to highlight, every time</b>And everyone on the team writes it differently.</li>
+            <li><b>The same steps for every image</b>Capture, open, annotate, export. Repeat.</li>
+            <li><b>One label changes, the image is redone</b>A renamed button means rebuilding the screenshot.</li>
+            <li><b>Can't fix a teammate's image</b>Nobody knows where the source file went.</li>
+            <li><b>Customer data on screen</b>Real names and emails show up on production screens.</li>
+          </ul>
+        </div>
+      </section>
+
+      <section class="section section-tint" aria-labelledby="flow-title">
+        <div class="container">
+          <h2 id="flow-title" class="h2">Capture. Annotate. Keep.</h2>
+          <p class="sub">One tool from capture to saved file.</p>
+          <ol class="steps">
+            <li class="step">
+              <span class="badge" aria-hidden="true">1</span>
+              <h3>Capture</h3>
+              <p>
+                Grab the page you're on with the Chrome extension and open it straight in the editor. Capture the visible area, a region you drag, or a single element like a button.
+              </p>
+            </li>
+            <li class="step">
+              <span class="badge" aria-hidden="true">2</span>
+              <h3>Annotate</h3>
+              <p>
+                Boxes, arrows, numbers, callouts and spotlights. Describe what you want to explain and AI drafts numbered boxes and captions.
+              </p>
+            </li>
+            <li class="step">
+              <span class="badge" aria-hidden="true">3</span>
+              <h3>Keep</h3>
+              <p>
+                Save as a regular JPEG or PNG. Paste it into your help center as is, and anyone who opens it later can still edit the annotations.
+              </p>
+            </li>
+          </ol>
+        </div>
+      </section>
+
+      <section class="section" id="how" aria-labelledby="how-title">
+        <div class="container split">
+          <div class="split-copy">
+            <p class="eyebrow">How it stays editable</p>
+            <h2 id="how-title" class="h2">One image holds the original screen and the annotations.</h2>
+            <p>
+              An image saved by Harie carries the original screenshot and the annotation data alongside the picture you see. Other apps and browsers simply show a normal image.
+            </p>
+            <p>
+              Open it in Harie and you can move or rewrite every box and caption, one by one. There's no separate project file to keep track of. Whoever receives the image can open it and fix it.
+            </p>
+            <p class="small">
+              Saving again never recompresses the original screenshot, so quality holds up however many times you edit. The
+              <a href="https://github.com/hosshan/harie/blob/main/docs/03-design/harie-format-spec.md"
+                >file format spec</a
+              >
+              is public (in Japanese).
+            </p>
+          </div>
+          <figure class="anatomy">
+            <div class="file-card">
+              <div class="file-head">
+                <span class="mono">tasklane-notifications.en.harie.png</span>
+                <span class="mono muted">147 KB</span>
+              </div>
+              <div class="layer layer-view">
+                <span>Image for viewing</span><span class="muted">Shows in any app</span>
+              </div>
+              <div class="layer layer-base">
+                <span>Original screenshot</span><span class="muted">Never recompressed</span>
+              </div>
+              <div class="layer layer-doc">
+                <span>Annotation data</span><span class="muted mono">3 boxes · 3 numbers · 3 callouts</span>
+              </div>
+            </div>
+            <figcaption>
+              <a class="dl" href="../assets/tasklane-notifications.en.harie.png" download
+                >Download this sample</a
+              >
+              and open it in the <a href="../app/">editor</a> to edit its annotations.
+            </figcaption>
+          </figure>
+        </div>
+        <div class="container">
+          <div class="table-wrap">
+            <table class="compare">
+              <caption>
+                Ways to make guide screenshots
+              </caption>
+              <thead>
+                <tr>
+                  <th scope="col"></th>
+                  <th scope="col">Export from an image editor</th>
+                  <th scope="col">Guide-builder service</th>
+                  <th scope="col" class="us">Harie</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <th scope="row">Paste straight into your help center</th>
+                  <td>Yes</td>
+                  <td>Export from the service</td>
+                  <td class="us">Yes</td>
+                </tr>
+                <tr>
+                  <th scope="row">Edit the text after it's published</th>
+                  <td>If you still have the project file</td>
+                  <td>Inside the service</td>
+                  <td class="us">Yes, just open the image</td>
+                </tr>
+                <tr>
+                  <th scope="row">Editable by someone other than the author</th>
+                  <td>If you hand over the project file</td>
+                  <td>Members on the same plan</td>
+                  <td class="us">Yes, just send the image</td>
+                </tr>
+                <tr>
+                  <th scope="row">No account or subscription</th>
+                  <td>Depends on the tool</td>
+                  <td>Required</td>
+                  <td class="us">Yes</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <section class="section section-tint" id="ai" aria-labelledby="ai-title">
+        <div class="container">
+          <p class="eyebrow">AI</p>
+          <h2 id="ai-title" class="h2">Decide where and what, with AI.</h2>
+          <div class="cards">
+            <article class="card">
+              <h3>Suggested annotations</h3>
+              <p>
+                Write something like "Explain how to set up Slack notifications" and AI drafts where the boxes go and what they say. Accept, reject or edit each suggestion. On screenshots from the Chrome extension, boxes line up with the page's actual elements.
+              </p>
+              <p class="small muted">
+                Uses your own Anthropic API key. Harie asks before sending an image, and the key stays in this browser.
+              </p>
+            </article>
+            <article class="card">
+              <h3>Edit from Claude (MCP)</h3>
+              <p>
+                Register the <code>@harie/mcp</code> server, then just ask Claude Code or Claude Desktop to add or fix annotations. When UI text changes, you can update many images in one go.
+              </p>
+              <figure class="chat" aria-label="Example request to Claude">
+                <p class="chat-user">In the notifications image under guides, change "Save to apply" to "Update to apply"</p>
+                <p class="chat-tool mono">harie_open → harie_edit</p>
+                <p class="chat-ai">Updated callout 3 and saved the file.</p>
+              </figure>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section class="section" id="privacy" aria-labelledby="privacy-title">
+        <div class="container split split-rev">
+          <div class="split-copy">
+            <p class="eyebrow">Personal data</p>
+            <h2 id="privacy-title" class="h2">Remove personal data, keep the meaning.</h2>
+            <p>
+              Replace names, email addresses and phone numbers with dummy values. Readers can still tell what kind of screen it is, which blurring can't do. Fill, mosaic and blur are available too.
+            </p>
+            <p>
+              Masking is applied to the original image itself and can't be undone. When you share the file, the original values aren't hiding inside it.
+            </p>
+          </div>
+          <figure class="pii">
+            <div class="pii-row">
+              <span class="pii-label">Before</span>
+              <img
+                src="../assets/pii-before.en.webp"
+                width="760"
+                height="92"
+                alt="The owner field shows a fictional name and email address"
+              />
+            </div>
+            <div class="pii-row">
+              <span class="pii-label pii-label-after">After</span>
+              <img
+                src="../assets/pii-after.en.webp"
+                width="760"
+                height="92"
+                alt="The owner field is replaced with the dummy value Teammate A"
+              />
+            </div>
+            <figcaption class="small muted">The sample screen, names and addresses are all fictional.</figcaption>
+          </figure>
+        </div>
+      </section>
+
+      <section class="section section-tint" id="platforms" aria-labelledby="platforms-title">
+        <div class="container">
+          <h2 id="platforms-title" class="h2">Works where you work.</h2>
+          <p class="sub">Same file and same look, wherever you save it.</p>
+          <div class="platforms">
+            <article class="platform">
+              <div class="platform-head"><h3>Web</h3><span class="tag tag-ok">Available now</span></div>
+              <p>
+                Just open it in your browser. Images are processed in the browser and never sent to a server. Works offline. The interface is currently in Japanese.
+              </p>
+              <a class="link" href="../app/">Open the editor</a>
+            </article>
+            <article class="platform">
+              <div class="platform-head"><h3>Chrome extension</h3><span class="tag">Store listing coming</span></div>
+              <p>Capture the page you're on and annotate it right away. For now, build it from source and load it.</p>
+              <a class="link" href="https://github.com/hosshan/harie/tree/main/apps/extension">How to install</a>
+            </article>
+            <article class="platform">
+              <div class="platform-head"><h3>Desktop</h3><span class="tag">Downloads coming</span></div>
+              <p>macOS and Windows. Open files from the system dialog and save them in place.</p>
+              <a class="link" href="https://github.com/hosshan/harie/tree/main/apps/desktop">About the desktop app</a>
+            </article>
+            <article class="platform">
+              <div class="platform-head"><h3>MCP</h3><span class="tag tag-ok">Available now</span></div>
+              <p>Let AI agents like Claude read and write the images in a folder you choose.</p>
+              <a class="link" href="#mcp">How to set it up</a>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section class="section" id="mcp" aria-labelledby="mcp-title">
+        <div class="container">
+          <p class="eyebrow">Getting started with MCP</p>
+          <h2 id="mcp-title" class="h2">Ask Claude to annotate for you.</h2>
+          <p class="sub">Register the <code>@harie/mcp</code> server and Claude Code or Claude Desktop can open Harie images, add annotations and fix them.</p>
+          <ol class="setup">
+            <li class="setup-step">
+              <span class="badge" aria-hidden="true">1</span>
+              <h3>Install Node.js 22 or later</h3>
+              <p>The server runs from npm with <code>npx</code>, so there is nothing else to install. Check your version with <code>node -v</code>.</p>
+            </li>
+            <li class="setup-step">
+              <span class="badge" aria-hidden="true">2</span>
+              <h3>Register it in your app</h3>
+              <p>Point <code>--root</code> at the folder that holds your images. The server can only read and write inside that folder.</p>
+              <h4>Claude Code</h4>
+              <div class="cmd">
+                <code id="mcp-cmd">claude mcp add harie -- npx -y @harie/mcp --root ~/Pictures/guides</code>
+                <button class="copy" type="button" data-copy="mcp-cmd" data-copied="Copied">Copy</button>
+              </div>
+              <h4>Claude Desktop</h4>
+              <p class="small muted">Add this to <code>claude_desktop_config.json</code> and restart Claude Desktop. Replace the folder with your own path.</p>
+              <div class="cmd cmd-block">
+                <pre id="mcp-json">{
+  "mcpServers": {
+    "harie": {
+      "command": "npx",
+      "args": ["-y", "@harie/mcp", "--root", "/Users/you/Pictures/guides"]
+    }
+  }
+}</pre>
+                <button class="copy" type="button" data-copy="mcp-json" data-copied="Copied">Copy</button>
+              </div>
+            </li>
+            <li class="setup-step">
+              <span class="badge" aria-hidden="true">3</span>
+              <h3>Try a request</h3>
+              <ul class="examples">
+                <li>"Turn settings.png into a Harie file, put a red box around the Save button and add a callout that says Save here"</li>
+                <li>"In the images under guides, replace any visible email addresses with dummy values"</li>
+              </ul>
+              <p class="small muted">Masking personal data can't be undone, so the server only saves it after an explicit confirmation.</p>
+              <a class="link" href="https://github.com/hosshan/harie/blob/main/apps/mcp/README.md">Full tool list and usage (GitHub)</a>
+            </li>
+          </ol>
+        </div>
+      </section>
+
+      <section class="closing">
+        <div class="container closing-in">
+          <img src="../assets/harie-symbol.svg" alt="" width="72" height="72" />
+          <h2 class="h2">Make your next guide editable anytime.</h2>
+          <div class="cta">
+            <a class="btn btn-primary" href="../app/">Open in browser</a>
+            <a class="btn btn-ghost" href="https://github.com/hosshan/harie">View on GitHub</a>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <div class="container footer-in">
+        <span class="logo logo-sm"><img src="../assets/harie-symbol.svg" alt="" width="22" height="22" />Harie</span>
+        <span class="muted">MIT License · Bundled font Noto Sans JP is under the SIL Open Font License 1.1</span>
+        <a href="https://github.com/hosshan/harie">GitHub</a>
+      </div>
+    </footer>
+
+    <script src="../main.js" type="module"></script>
+  </body>
+</html>

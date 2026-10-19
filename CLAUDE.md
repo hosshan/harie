@@ -22,6 +22,7 @@ apps/extension   Chrome 拡張（WXT, MV3）
 apps/desktop     デスクトップ（Tauri 2）
 apps/mcp         MCP サーバー（Node, stdio）
 apps/cli         開発用 CLI（inspect / create / render / extract / mask）
+apps/site        LP（静的サイト。GitHub Pages に Web エディタと一緒に公開）
 packages/model   注釈ドキュメントのスキーマと操作（zod）
 packages/format  JPEG/PNG への埋め込み・読み出し
 packages/render  注釈 → SVG → ピクセル（resvg-wasm）
@@ -38,7 +39,7 @@ pnpm check        # lint（Biome）+ typecheck + test（Vitest）。PR 前に必
 pnpm test         # テストのみ
 pnpm e2e          # Web エディタと Chrome 拡張の E2E（Playwright。ローカルは HARIE_CHROMIUM_PATH でブラウザを指定できる）
 pnpm format       # Biome で整形・import 整理
-pnpm build        # 配布物のビルド（apps/mcp → dist/、apps/web → dist/、apps/extension → .output/chrome-mv3/）
+pnpm build        # 配布物のビルド（apps/mcp → dist/、apps/web → dist/、apps/extension → .output/chrome-mv3/、apps/site → dist/）
 pnpm harie inspect <file>   # 開発用 CLI（`pnpm harie --help` で一覧）
 pnpm --filter @harie/desktop app:dev   # デスクトップ版を起動（Rust と各 OS の前提が要る。apps/desktop/README.md）
 ```
