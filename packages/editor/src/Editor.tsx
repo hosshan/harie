@@ -15,7 +15,7 @@ import { type DrawDefaults, loadDrawDefaults, saveDrawDefaults } from "./draw-de
 import { type EditorAction, type EditorState, editorReducer, initialState } from "./history";
 import { MaskPanel } from "./MaskPanel";
 import { type AppliedMask, type MaskDraft, newMaskDraft, toPiiMasks } from "./masks";
-import { Palette, type PaletteTool } from "./Palette";
+import { Icon, Palette, type PaletteTool, TOOL_ICONS } from "./Palette";
 import { adoptSuggestionOps, rejectSuggestionOps } from "./suggestions";
 
 export function useEditorState(doc: HarieDocument) {
@@ -272,9 +272,7 @@ export function Editor({
               {unmaskError !== null && <p role="alert">{unmaskError}</p>}
             </section>
           ) : selected === undefined ? (
-            tool !== "mask" && (
-              <p className="harie-muted">注釈を選ぶと、ここで文字や色を変えられます。</p>
-            )
+            tool !== "mask" && <EmptyInspector tools={tools} />
           ) : (
             <Inspector
               key={selected.id}
@@ -287,6 +285,46 @@ export function Editor({
           {state.error !== null && <p role="alert">{state.error.message}</p>}
         </aside>
       </div>
+    </div>
+  );
+}
+
+const TYPE_LABELS: Record<Annotation["type"], string> = {
+  rect: "四角",
+  ellipse: "楕円",
+  arrow: "矢印",
+  text: "テキスト",
+  callout: "吹き出し",
+  badge: "番号",
+  spotlight: "スポットライト",
+  blur: "ぼかし",
+};
+
+/** 色を変えると何の色が変わるか（注釈の種類ごと） */
+function colorLegend(type: Annotation["type"]): string {
+  if (type === "text") return "文字の色";
+  if (type === "arrow") return "線の色";
+  if (type === "badge") return "色";
+  return "枠の色";
+}
+
+/** 何も選んでいないとき。何ができるかと、道具のショートカットを案内する */
+function EmptyInspector({ tools }: { tools: readonly PaletteTool[] }) {
+  return (
+    <div className="harie-inspector-empty">
+      <p>注釈を選ぶと、ここで文字や色を変えられます。</p>
+      <dl>
+        {tools
+          .filter((t) => t.tool !== "select")
+          .map((t) => (
+            <div key={t.tool}>
+              <dt>
+                <kbd>{t.key.toUpperCase()}</kbd>
+              </dt>
+              <dd>{t.label}</dd>
+            </div>
+          ))}
+      </dl>
     </div>
   );
 }
@@ -338,34 +376,63 @@ function Inspector({
   };
   const colorKey = annotation.type === "text" ? "color" : "stroke";
   const suggested = annotation.status === "suggested";
-  const current = annotation.style?.[colorKey];
+  // 色を指定していない注釈は、テーマの既定の色を選んでいるものとして示す
+  const current = (annotation.style?.[colorKey] ?? THEMES.default.defaults[colorKey]).toUpperCase();
+  const summary = hasLine
+    ? `線 ${strokeWidth}px・${LINE_DASHES.find((d) => d.value === dash)?.label ?? ""}`
+    : `文字 ${fontSize}px`;
 
   return (
     <div className="harie-inspector-body">
+      <header className="harie-inspector-head">
+        <span className="harie-inspector-type">
+          <Icon size={16}>
+            {annotation.type in TOOL_ICONS ? TOOL_ICONS[annotation.type as Tool] : TOOL_ICONS.rect}
+          </Icon>
+        </span>
+        <h2>
+          {TYPE_LABELS[annotation.type]}
+          <small>{summary}</small>
+        </h2>
+        <button
+          type="button"
+          className="harie-icon-button harie-inspector-delete"
+          aria-label="この注釈を削除"
+          title="削除（Delete）"
+          onClick={() => dispatch({ type: "apply", ops: [{ op: "remove", id: annotation.id }] })}
+        >
+          <Icon size={16}>
+            <path d="M5 7h14M10 7V5h4v2M7 7l1 12h8l1-12" />
+          </Icon>
+        </button>
+      </header>
       {suggested && (
-        <p className="harie-suggestion-actions">
-          <span className="harie-muted">AI の提案です。採用するまで保存されません。</span>
-          <button
-            type="button"
-            onClick={() =>
-              dispatch({ type: "apply", ops: adoptSuggestionOps(doc, [annotation.id]) })
-            }
-          >
-            採用
-          </button>
-          <button
-            type="button"
-            onClick={() =>
-              dispatch({ type: "apply", ops: rejectSuggestionOps(doc, [annotation.id]) })
-            }
-          >
-            却下
-          </button>
-        </p>
+        <div className="harie-suggestion-band">
+          <span>AI の提案です。採用するまで保存されません。</span>
+          <p>
+            <button
+              type="button"
+              className="harie-suggestion-adopt"
+              onClick={() =>
+                dispatch({ type: "apply", ops: adoptSuggestionOps(doc, [annotation.id]) })
+              }
+            >
+              採用
+            </button>
+            <button
+              type="button"
+              onClick={() =>
+                dispatch({ type: "apply", ops: rejectSuggestionOps(doc, [annotation.id]) })
+              }
+            >
+              却下
+            </button>
+          </p>
+        </div>
       )}
       {hasText && (
-        <label>
-          文字
+        <label className="harie-field">
+          <span className="harie-field-label">文字</span>
           <textarea
             value={text}
             rows={3}
@@ -375,10 +442,11 @@ function Inspector({
         </label>
       )}
       {annotation.type === "badge" && (
-        <label>
-          番号
+        <label className="harie-field">
+          <span className="harie-field-label">番号</span>
           <input
             type="number"
+            className="harie-number"
             min={1}
             value={annotation.number}
             onChange={(e) => {
@@ -391,132 +459,171 @@ function Inspector({
       {hasFontSize && (
         <SizeField
           legend="文字サイズ"
-          unit="pt"
           options={FONT_SIZES}
           min={FONT_SIZE_MIN}
           max={FONT_SIZE_MAX}
           value={fontSize}
           onChange={setFontSize}
+          sample={(_, i) => (
+            <span className="harie-sample-text" style={{ fontSize: 11 + i * 4 }}>
+              あ
+            </span>
+          )}
         />
       )}
       {hasLine && (
         <SizeField
           legend="線の太さ"
-          unit="px"
           options={STROKE_WIDTHS}
           min={STROKE_WIDTH_MIN}
           max={STROKE_WIDTH_MAX}
           value={strokeWidth}
           onChange={setStrokeWidth}
+          sample={(o) => (
+            <span className="harie-sample-line" style={{ height: Math.max(1.5, o.value * 0.8) }} />
+          )}
         />
       )}
       {hasLine && (
-        <fieldset className="harie-choices">
-          <legend>線の種類</legend>
-          {LINE_DASHES.map((d) => (
-            <button
-              key={d.value}
-              type="button"
-              className="harie-line-dash"
-              aria-pressed={dash === d.value}
-              onClick={() => setDash(d.value)}
-            >
-              <svg viewBox="0 0 20 8" width="20" height="8" aria-hidden="true">
-                <line
-                  x1="2"
-                  y1="4"
-                  x2="18"
-                  y2="4"
-                  stroke="currentColor"
-                  strokeWidth="2.5"
-                  strokeLinecap={d.value === "dotted" ? "round" : "butt"}
-                  strokeDasharray={d.dasharray}
-                />
-              </svg>
-              {d.label}
-            </button>
-          ))}
+        <fieldset className="harie-field">
+          <legend className="harie-field-label">線の種類</legend>
+          <div className="harie-tiles harie-tiles-3">
+            {LINE_DASHES.map((d) => (
+              <button
+                key={d.value}
+                type="button"
+                className="harie-tile"
+                aria-pressed={dash === d.value}
+                onClick={() => setDash(d.value)}
+              >
+                <svg viewBox="0 0 30 8" width="30" height="8" aria-hidden="true">
+                  <line
+                    x1="2"
+                    y1="4"
+                    x2="28"
+                    y2="4"
+                    stroke="currentColor"
+                    strokeWidth="2.5"
+                    strokeLinecap={d.value === "dotted" ? "round" : "butt"}
+                    strokeDasharray={d.dasharray}
+                  />
+                </svg>
+                <small>{d.label}</small>
+              </button>
+            ))}
+          </div>
         </fieldset>
       )}
-      <fieldset>
-        <legend>色</legend>
-        {COLORS.map((c) => (
-          <button
-            key={c.value}
-            type="button"
-            className="harie-swatch"
-            aria-label={c.label}
-            aria-pressed={current === c.value}
-            style={{ background: c.value }}
-            onClick={() => update({ style: { ...annotation.style, [colorKey]: c.value } })}
-          />
-        ))}
+      <fieldset className="harie-field">
+        <legend className="harie-field-label">{colorLegend(annotation.type)}</legend>
+        <div className="harie-swatches">
+          {COLORS.map((c) => (
+            <button
+              key={c.value}
+              type="button"
+              className="harie-swatch"
+              aria-label={c.label}
+              title={c.label}
+              aria-pressed={current === c.value.toUpperCase()}
+              style={{ background: c.value }}
+              onClick={() => update({ style: { ...annotation.style, [colorKey]: c.value } })}
+            />
+          ))}
+        </div>
       </fieldset>
-      <button
-        type="button"
-        onClick={() => dispatch({ type: "apply", ops: [{ op: "remove", id: annotation.id }] })}
-      >
-        この注釈を削除
-      </button>
     </div>
   );
 }
 
-/** 文字サイズ・線の太さ。候補から選ぶか、値を直接入れる（入力欄を離れる・Enter で 1 回の操作として確定する） */
+/**
+ * 文字サイズ・線の太さ。仕上がりの見本のタイルから選ぶ。細かい値は「数値で指定」を開いて入れる
+ * （入力欄を離れる・Enter で 1 回の操作として確定する）。候補にない値のときは最初から開いておく
+ */
 function SizeField({
   legend,
-  unit,
   options,
   min,
   max,
   value,
   onChange,
+  sample,
 }: {
   legend: string;
-  unit: string;
   options: readonly { label: string; value: number }[];
   min: number;
   max: number;
   value: number;
   onChange: (v: number) => void;
+  sample: (option: { label: string; value: number }, index: number) => ReactNode;
 }) {
   const [draft, setDraft] = useState(String(value));
   useEffect(() => setDraft(String(value)), [value]);
+  const [custom, setCustom] = useState(() => !options.some((o) => o.value === value));
   const commit = () => {
     const v = Number.parseFloat(draft);
     if (Number.isFinite(v) && v > 0) onChange(v);
     else setDraft(String(value));
   };
   return (
-    <fieldset className="harie-choices">
-      <legend>{legend}</legend>
-      {options.map((s) => (
-        <button
-          key={s.value}
-          type="button"
-          aria-pressed={value === s.value}
-          title={`${s.value}${unit}`}
-          onClick={() => onChange(s.value)}
-        >
-          {s.label}
+    <fieldset className="harie-field">
+      <legend className="harie-field-label">
+        {legend}
+        <span className="harie-field-value">{value}px</span>
+      </legend>
+      <div className="harie-tiles">
+        {options.map((o, i) => (
+          <button
+            key={o.value}
+            type="button"
+            className="harie-tile"
+            aria-label={o.label}
+            aria-pressed={value === o.value}
+            title={`${o.label}（${o.value}px）`}
+            onClick={() => onChange(o.value)}
+          >
+            {sample(o, i)}
+            <small aria-hidden="true">{o.value}</small>
+          </button>
+        ))}
+      </div>
+      {custom ? (
+        <span className="harie-number-field">
+          <button
+            type="button"
+            aria-label={`${legend}を 1 小さく`}
+            disabled={value <= min}
+            onClick={() => onChange(value - 1)}
+          >
+            −
+          </button>
+          <input
+            type="number"
+            aria-label={`${legend}（px）`}
+            min={min}
+            max={max}
+            step={1}
+            value={draft}
+            onChange={(e) => setDraft(e.target.value)}
+            onBlur={commit}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") commit();
+            }}
+          />
+          <span aria-hidden="true">px</span>
+          <button
+            type="button"
+            aria-label={`${legend}を 1 大きく`}
+            disabled={value >= max}
+            onClick={() => onChange(value + 1)}
+          >
+            +
+          </button>
+        </span>
+      ) : (
+        <button type="button" className="harie-link-button" onClick={() => setCustom(true)}>
+          数値で指定
         </button>
-      ))}
-      <label className="harie-size-input">
-        <input
-          type="number"
-          aria-label={`${legend}（${unit}）`}
-          min={min}
-          max={max}
-          step={1}
-          value={draft}
-          onChange={(e) => setDraft(e.target.value)}
-          onBlur={commit}
-          onKeyDown={(e) => {
-            if (e.key === "Enter") commit();
-          }}
-        />
-        {unit}
-      </label>
+      )}
     </fieldset>
   );
 }

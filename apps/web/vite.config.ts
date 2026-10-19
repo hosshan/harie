@@ -4,6 +4,8 @@ import { defineConfig } from "vite";
 import { VitePWA } from "vite-plugin-pwa";
 
 export default defineConfig({
+  // GitHub Pages ではサブパス（/harie/app/）に置くため、配信先のパスを環境変数で変えられるようにする
+  base: process.env.HARIE_WEB_BASE ?? "/",
   plugins: [
     react(),
     tailwindcss(),
@@ -17,7 +19,7 @@ export default defineConfig({
         description: "スクリーンショットに枠・矢印・説明文を付け、あとから何度でも直せる画像を作る",
         lang: "ja",
         display: "standalone",
-        start_url: "/",
+        start_url: ".",
         theme_color: "#D4A72C",
         background_color: "#FBF6E9",
         icons: [

@@ -214,7 +214,7 @@ test("FR-FILE-02: 保存ダイアログは、保存する形式（既定は開�
   });
 });
 
-test("FR-EDIT-03: テキストは置いた直後とダブルクリックで、その場で文字を直せる。文字サイズは候補と pt で変えられる", async ({
+test("FR-EDIT-03: テキストは置いた直後とダブルクリックで、その場で文字を直せる。文字サイズは見本と px で変えられる", async ({
   page,
 }) => {
   await openFixture(page, "large-base.jpg");
@@ -255,14 +255,15 @@ test("FR-EDIT-03: テキストは置いた直後とダブルクリックで、�
   await page.getByRole("button", { name: "元に戻す" }).click();
   await expect(image).toContainText("設定を開く");
 
-  // 文字サイズ: 候補から選ぶ・pt を直接入れる
+  // 文字サイズ: 見本から選ぶ・「数値で指定」を開いて px を直接入れる
   const text = image.locator("text").first();
   await expect(text).toHaveAttribute("font-size", "24");
   await page.getByRole("button", { name: "特大" }).click();
   await expect(text).toHaveAttribute("font-size", "48");
-  const pt = page.getByLabel("文字サイズ（pt）");
-  await pt.fill("30");
-  await pt.press("Enter");
+  await page.getByRole("button", { name: "数値で指定" }).click();
+  const px = page.getByLabel("文字サイズ（px）");
+  await px.fill("30");
+  await px.press("Enter");
   await expect(text).toHaveAttribute("font-size", "30");
   await expect(page.getByRole("button", { name: "特大" })).toHaveAttribute("aria-pressed", "false");
 });
@@ -270,6 +271,8 @@ test("FR-EDIT-03: テキストは置いた直後とダブルクリックで、�
 test("FR-EDIT-01: 四角の線の太さと種類を変えられ、選んだ太さ・文字サイズ・番号の大きさは次に描くときの初期値になる", async ({
   page,
 }) => {
+  const fontTile = (name: string) =>
+    page.getByRole("group", { name: "文字サイズ" }).getByRole("button", { name, exact: true });
   await openFixture(page, "large-base.jpg");
   await page.getByRole("button", { name: "四角" }).click();
   await drag(page, [40, 40], [240, 120]);
@@ -277,6 +280,11 @@ test("FR-EDIT-01: 四角の線の太さと種類を変えられ、選んだ太�
   await expect(rect).toHaveAttribute("stroke-width", "4");
   // 右の欄の操作は見出しと同じ 13px（ブラウザ既定の 16px にしない）
   await expect(page.getByRole("button", { name: "この注釈を削除" })).toHaveCSS("font-size", "13px");
+  // 選んだ色の輪（4px）が右の欄の左端で切れない
+  const swatch = await page.getByRole("button", { name: "赤", exact: true }).boundingBox();
+  const inspector = await page.locator(".harie-inspector").boundingBox();
+  if (swatch === null || inspector === null) throw new Error("右の欄がない");
+  expect(swatch.x - 4).toBeGreaterThanOrEqual(inspector.x);
 
   await page.getByRole("button", { name: "太", exact: true }).click();
   await expect(rect).toHaveAttribute("stroke-width", "6");
@@ -286,6 +294,7 @@ test("FR-EDIT-01: 四角の線の太さと種類を変えられ、選んだ太�
   await expect(rect).toHaveAttribute("stroke-dasharray", "0 12");
   await page.getByRole("button", { name: "実線" }).click();
   await expect(rect).not.toHaveAttribute("stroke-dasharray", /.*/);
+  await page.getByRole("button", { name: "数値で指定" }).click();
   const width = page.getByLabel("線の太さ（px）");
   await width.fill("8");
   await width.press("Enter");
@@ -306,20 +315,20 @@ test("FR-EDIT-01: 四角の線の太さと種類を変えられ、選んだ太�
   await expect(page.getByLabel("線の太さ（px）")).toHaveValue("8");
   await page.getByRole("button", { name: "吹き出し" }).click();
   await drag(page, [260, 200], [260, 200]);
-  await expect(page.getByLabel("文字サイズ（pt）")).toHaveValue("36");
+  await expect(fontTile("大")).toHaveAttribute("aria-pressed", "true");
   await page.keyboard.press("Escape");
 
   // 番号の大きさは吹き出しの文字サイズと別に記録する
   await page.getByRole("button", { name: "番号" }).click();
   await drag(page, [40, 300], [40, 300]);
-  await expect(page.getByLabel("文字サイズ（pt）")).toHaveValue("24");
+  await expect(fontTile("中")).toHaveAttribute("aria-pressed", "true");
   await page.getByRole("button", { name: "小", exact: true }).click();
   await page.getByRole("button", { name: "番号" }).click();
   await drag(page, [120, 300], [120, 300]);
-  await expect(page.getByLabel("文字サイズ（pt）")).toHaveValue("16");
+  await expect(fontTile("小")).toHaveAttribute("aria-pressed", "true");
   await page.getByRole("button", { name: "吹き出し" }).click();
   await drag(page, [260, 320], [260, 320]);
-  await expect(page.getByLabel("文字サイズ（pt）")).toHaveValue("36");
+  await expect(fontTile("大")).toHaveAttribute("aria-pressed", "true");
 });
 
 test("ツールのパレットは描いている間は隠れ、たたむと小さくなる", async ({ page }) => {

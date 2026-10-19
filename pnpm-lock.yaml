@@ -183,6 +183,8 @@ importers:
         specifier: ^0.28.2
         version: 0.28.2
 
+  apps/site: {}
+
   apps/web:
     dependencies:
       '@expo-google-fonts/noto-sans-jp':
