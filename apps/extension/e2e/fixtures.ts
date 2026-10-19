@@ -37,7 +37,10 @@ export const test = base.extend<Fixtures>({
         viewport: { width: 800, height: 600 },
         deviceScaleFactor: 1,
         acceptDownloads: true,
+        // 画面の文言（日本語）で要素を探すので、表示言語を日本語にする
+        locale: "ja-JP",
         args: [
+          "--lang=ja",
           "--headless=new",
           `--disable-extensions-except=${extensionPath}`,
           `--load-extension=${extensionPath}`,

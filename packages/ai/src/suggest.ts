@@ -41,8 +41,18 @@ export type SuggestInput = {
   doc: HarieDocument;
   /** 何を説明したいか（利用者の入力） */
   intent: string;
+  /**
+   * 説明文を書く言語（エディタの表示言語）。省略すると日本語（システムプロンプトの決まりのまま）。
+   * 英語は同じ文字数だと短すぎるので、上限を 2 倍にする
+   */
+  language?: "ja" | "en";
   dom?: DomSnapshot;
 };
+
+/** 説明文の文字数の上限（言語ごと） */
+function maxTextLength(language: SuggestInput["language"]): number {
+  return language === "en" ? MAX_TEXT_LENGTH * 2 : MAX_TEXT_LENGTH;
+}
 
 export type Suggestion = {
   /** 提案 1 件の注釈（強調枠と吹き出し）。まとめて採用・却下する */
@@ -62,9 +72,14 @@ function existingSummary(doc: HarieDocument): string {
 }
 
 export function buildSuggestPrompt(input: Omit<SuggestInput, "client">): string {
-  const { image, doc, intent, dom } = input;
+  const { image, doc, intent, dom, language } = input;
   const scale = doc.canvas.width / image.width;
   const parts = [
+    ...(language === "en"
+      ? [
+          `説明文（text）は日本語ではなく英語で書く（1〜2 文、${maxTextLength(language)} 文字以内）。「Click Save.」のように、読者がすることを具体的に書く。`,
+        ]
+      : []),
     `画像の大きさ: ${image.width}x${image.height} ピクセル`,
     `説明したいこと: ${intent.trim() === "" ? "（指定なし。この画面の主な操作）" : intent.trim()}`,
     `既に付いている注釈（座標は元画像の ${doc.canvas.width}x${doc.canvas.height} ピクセル）:\n${existingSummary(doc)}`,
@@ -119,7 +134,7 @@ export function toSuggestions(
   output: SuggestOutput,
   input: Omit<SuggestInput, "client" | "intent">,
 ): Suggestion[] {
-  const { doc, image, dom } = input;
+  const { doc, image, dom, language } = input;
   const canvas = doc.canvas;
   const scale = canvas.width / image.width;
   const elements = dom?.elements.slice(0, MAX_PROMPT_ELEMENTS) ?? [];
@@ -128,7 +143,7 @@ export function toSuggestions(
   const result: Suggestion[] = [];
 
   for (const s of output.suggestions.slice(0, MAX_SUGGESTIONS)) {
-    const text = s.text.trim().slice(0, MAX_TEXT_LENGTH);
+    const text = s.text.trim().slice(0, maxTextLength(language));
     if (text === "") continue;
     const estimated = toCanvasRect(s.target, scale, canvas);
     if (estimated === null) continue;

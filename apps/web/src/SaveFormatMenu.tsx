@@ -11,10 +11,11 @@ import {
   DropdownMenuTrigger,
 } from "./components/ui/dropdown-menu";
 import { HeaderIcon } from "./Header";
+import { useWebMessages, type WebMessages } from "./messages";
 
-const FORMATS: { value: ImageFormat; label: string; note: string }[] = [
-  { value: "jpeg", label: "JPEG", note: "ファイルが小さい" },
-  { value: "png", label: "PNG", note: "文字がくっきり残る" },
+const FORMATS: { value: ImageFormat; label: string; note: (m: WebMessages) => string }[] = [
+  { value: "jpeg", label: "JPEG", note: (m) => m.save.jpegNote },
+  { value: "png", label: "PNG", note: (m) => m.save.pngNote },
 ];
 
 export function SaveFormatMenu({
@@ -26,11 +27,12 @@ export function SaveFormatMenu({
   onChange: (format: ImageFormat) => void;
   disabled?: boolean;
 }) {
+  const m = useWebMessages();
   const current = FORMATS.find((f) => f.value === value) ?? FORMATS[0];
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild disabled={disabled}>
-        <Button aria-label={`ファイル形式: ${current?.label}`}>
+        <Button aria-label={m.save.formatButton(current?.label ?? "")}>
           {current?.label}
           <HeaderIcon icon="chevron" />
         </Button>
@@ -52,9 +54,10 @@ export function SaveFormatMenuItems({
   onChange: (format: ImageFormat) => void;
   disabled?: boolean;
 }) {
+  const m = useWebMessages();
   return (
     <>
-      <DropdownMenuLabel>保存形式</DropdownMenuLabel>
+      <DropdownMenuLabel>{m.save.format}</DropdownMenuLabel>
       <DropdownMenuRadioGroup
         value={value}
         onValueChange={(v) => onChange(v === "png" ? "png" : "jpeg")}
@@ -62,7 +65,7 @@ export function SaveFormatMenuItems({
         {FORMATS.map((f) => (
           <DropdownMenuRadioItem key={f.value} value={f.value} disabled={disabled}>
             {f.label}
-            <span className="text-xs text-muted-foreground">{f.note}</span>
+            <span className="text-xs text-muted-foreground">{f.note(m)}</span>
           </DropdownMenuRadioItem>
         ))}
       </DropdownMenuRadioGroup>

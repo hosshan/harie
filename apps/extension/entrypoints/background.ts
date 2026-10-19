@@ -1,15 +1,18 @@
 // service worker。ポップアップ・ショートカット・選択オーバーレイからの指示でキャプチャする（integrations.md 1.1）
+
+import type { Locale } from "@harie/editor/locale";
 import { browser } from "wxt/browser";
 import {
   type CaptureMode,
   captureErrorMessage,
   finishCapture,
+  setCaptureLocale,
   startSelection,
 } from "@/lib/capture";
 import type { CssRect } from "@/lib/snapshot";
 
 type Message =
-  | { type: "harie:start"; mode: CaptureMode; tabId: number }
+  | { type: "harie:start"; mode: CaptureMode; tabId: number; locale?: Locale }
   | { type: "harie:selected"; rect: CssRect }
   | { type: "harie:cancelled" };
 
@@ -30,6 +33,7 @@ async function start(
 export default defineBackground(() => {
   browser.runtime.onMessage.addListener((message: Message, sender, sendResponse) => {
     if (message.type === "harie:start") {
+      if (message.locale === "ja" || message.locale === "en") setCaptureLocale(message.locale);
       void start(message.mode, message.tabId).then(sendResponse);
       return true;
     }

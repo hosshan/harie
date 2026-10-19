@@ -6,6 +6,8 @@ import { dragRect, elementRect } from "@/lib/selection";
 type Mode = "region" | "element";
 type HarieWindow = Window & {
   __harieSelectMode?: Mode;
+  /** 案内の文（表示言語に合わせて background が渡す） */
+  __harieSelectHint?: string;
   __harieOverlayCleanup?: (() => void) | undefined;
 };
 
@@ -23,10 +25,7 @@ export default defineUnlistedScript(() => {
   box.style.cssText =
     "position:fixed;display:none;border:2px solid #B0861A;background:rgba(212,167,44,0.16);pointer-events:none;box-sizing:border-box;";
   const hint = document.createElement("div");
-  hint.textContent =
-    mode === "region"
-      ? "撮りたい範囲をドラッグしてください（Esc でやめる）"
-      : "撮りたい要素をクリックしてください（Esc でやめる）";
+  hint.textContent = w.__harieSelectHint ?? "";
   hint.style.cssText =
     "position:fixed;top:12px;left:50%;transform:translateX(-50%);padding:6px 12px;border-radius:6px;background:#1C2024;color:#fff;font:13px/1.4 system-ui,sans-serif;pointer-events:none;";
   root.append(box, hint);

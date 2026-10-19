@@ -1,9 +1,11 @@
 // 拡張の中のエディタページ。キャプチャを開き、Web と同じ編集画面（@harie/web の Workspace）で編集する
 import "@harie/editor/editor.css";
 import "@harie/web/styles.css";
+import { applyDocumentLang } from "@harie/editor/locale";
 import { loadDisplayFonts } from "@harie/web/fonts";
 import { Header } from "@harie/web/header";
 import { loadFile, type Opened } from "@harie/web/load";
+import { useWebMessages, webMessages } from "@harie/web/messages";
 import type { Saved } from "@harie/web/save";
 import { Workspace } from "@harie/web/workspace";
 import { StrictMode, useEffect, useState } from "react";
@@ -27,6 +29,7 @@ async function deliver(saved: Saved): Promise<void> {
 type Loaded = { record: CaptureRecord; opened: Opened } | { error: string };
 
 function App() {
+  const m = useWebMessages();
   const [loaded, setLoaded] = useState<Loaded | null>(null);
   const [opened, setOpened] = useState<Opened | null>(null);
   const [loadId, setLoadId] = useState(0);
@@ -36,7 +39,7 @@ function App() {
     void (async () => {
       const record = id === "" ? undefined : await getCapture(id);
       if (record === undefined) {
-        setLoaded({ error: "キャプチャが見つかりません。もう一度キャプチャしてください。" });
+        setLoaded({ error: webMessages().extension.notFound });
         return;
       }
       const result = loadFile(record.fileName, new Uint8Array(await record.image.arrayBuffer()));
@@ -54,7 +57,7 @@ function App() {
     <div className="app">
       {/* 開いた後は Workspace がファイル名と保存の入ったヘッダーを出す */}
       {opened === null && <Header />}
-      {loaded === null && <p className="harie-muted">読み込んでいます…</p>}
+      {loaded === null && <p className="harie-muted">{m.open.loading}</p>}
       {loaded !== null && "error" in loaded && (
         <p className="app-error" role="alert">
           {loaded.error}
@@ -77,6 +80,7 @@ function App() {
   );
 }
 
+applyDocumentLang();
 const root = document.getElementById("root");
 if (root === null) throw new Error("#root がありません");
 createRoot(root).render(

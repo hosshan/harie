@@ -16,6 +16,7 @@ import { browserRenderer } from "./browser-renderer";
 import { Header, type HeaderAction, HeaderButton } from "./Header";
 import { mismatchMessage, type Opened } from "./load";
 import { Modal } from "./Modal";
+import { useWebMessages } from "./messages";
 import { SaveFormatMenu, SaveFormatMenuItems } from "./SaveFormatMenu";
 import { buildSaveFile, type Saved } from "./save";
 import { addUnsaved, masksInImage, removeUnsaved, type UnsavedMasks } from "./unsaved-masks";
@@ -52,6 +53,7 @@ export function Workspace({
   actions = [],
   onDirtyChange,
 }: WorkspaceProps) {
+  const m = useWebMessages();
   const [state, dispatch] = useEditorState(opened.doc);
   const [status, setStatus] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
@@ -86,13 +88,13 @@ export function Workspace({
 
   const save = async () => {
     setSaving(true);
-    setStatus("保存しています…");
+    setStatus(m.save.saving);
     try {
       const saved = await buildSaveFile(opened, state.doc, format);
       await deliver(saved, opened);
       dispatch({ type: "saved", revision: saved.doc.revision, meta: saved.doc.meta });
       savedDoc.current = { ...state.doc, revision: saved.doc.revision };
-      setStatus(`${saved.fileName} を保存しました`);
+      setStatus(m.save.saved(saved.fileName));
       // 保存したら、加工前の画像はメモリからも捨てる。以後は適用したマスクを外せない
       setUnsaved(null);
       onChange({
@@ -104,7 +106,7 @@ export function Workspace({
       });
     } catch (e) {
       setStatus(
-        e instanceof DOMException && e.name === "AbortError" ? null : `保存できませんでした: ${e}`,
+        e instanceof DOMException && e.name === "AbortError" ? null : m.save.failed(String(e)),
       );
     } finally {
       setSaving(false);
@@ -129,9 +131,7 @@ export function Workspace({
     // 外部で編集された画像の「今の画像で開き直す」も、加工前の画像を持つので捨てる
     const { alternative: _, ...rest } = opened;
     onChange({ ...rest, base: result.base });
-    setStatus(
-      `${result.applied.length} か所をマスクしました。保存するまでは、範囲を選んで隠すのをやめられます`,
-    );
+    setStatus(m.masks.applied(result.applied.length));
   };
 
   // 適用したマスクを外す。加工前の画像に、残りのマスクをかけ直す
@@ -155,7 +155,7 @@ export function Workspace({
     setUnsaved(rest.length === 0 ? null : { ...unsaved, entries: rest });
     dispatch({ type: "piiApplied", pii });
     onChange({ ...opened, base });
-    setStatus("隠すのをやめました");
+    setStatus(m.masks.unmasked);
   };
 
   // 注釈を残したまま、画像だけを新しいキャプチャに差し替える（FR-EDIT-10）。大きさが違えば注釈を比率で合わせる。
@@ -163,7 +163,7 @@ export function Workspace({
   const replaceBase = async (file: File) => {
     const next = readBaseImage(new Uint8Array(await file.arrayBuffer()));
     if (next === null) {
-      setStatus("JPEG か PNG の画像を選んでください");
+      setStatus(m.replace.notImage);
       return;
     }
     const { doc, previousPii } = rebaseDocument(state.doc, next);
@@ -182,9 +182,9 @@ export function Workspace({
     const resized =
       next.width === state.doc.canvas.width && next.height === state.doc.canvas.height
         ? ""
-        : "注釈を新しい画像の大きさに合わせました。";
+        : m.replace.resized;
     setStatus(
-      `画像を差し替えました。${resized}${previousPii.length > 0 ? `前の画像でマスクしていた ${previousPii.length} か所は、かけ直してください` : ""}`,
+      `${m.replace.done}${resized}${previousPii.length > 0 ? m.replace.remask(previousPii.length) : ""}`,
     );
   };
 
@@ -194,7 +194,7 @@ export function Workspace({
         ref={replaceInput}
         type="file"
         accept="image/jpeg,image/png"
-        aria-label="差し替える画像"
+        aria-label={m.replace.input}
         hidden
         onChange={(e) => {
           const file = e.target.files?.[0];
@@ -207,7 +207,7 @@ export function Workspace({
         status={status}
         primary={
           <HeaderButton icon="save" variant="default" disabled={saving} onClick={save}>
-            保存
+            {m.save.button}
           </HeaderButton>
         }
         actions={[
@@ -216,14 +216,14 @@ export function Workspace({
             : [
                 {
                   icon: "open",
-                  label: "画像を開く",
+                  label: m.open.button,
                   onSelect: () => setConfirmOpen(true),
                   placement: "start",
                 } satisfies HeaderAction,
               ]),
           {
             icon: "replace",
-            label: "画像を差し替える",
+            label: m.replace.button,
             onSelect: () => replaceInput.current?.click(),
             disabled: saving,
             placement: "start",
@@ -234,15 +234,15 @@ export function Workspace({
       >
         <SaveFormatMenu value={format} onChange={setFormat} disabled={saving} />
       </Header>
-      <Modal open={confirmOpen} label="画像を開く" onClose={() => setConfirmOpen(false)}>
-        <h2>別の画像を開きますか？</h2>
+      <Modal open={confirmOpen} label={m.open.button} onClose={() => setConfirmOpen(false)}>
+        <h2>{m.open.confirmTitle}</h2>
         <p>
-          今の画像（{opened.fileName}）を閉じて、別の画像を開きます。
-          {dirty && <strong>保存していない変更は失われます。</strong>}
+          {m.open.confirmBody(opened.fileName)}
+          {dirty && <strong>{m.open.confirmUnsaved}</strong>}
         </p>
         <p className="app-modal-actions">
           <button type="button" onClick={() => setConfirmOpen(false)}>
-            キャンセル
+            {m.open.cancel}
           </button>
           <button
             type="button"
@@ -252,24 +252,24 @@ export function Workspace({
               onOpenImage?.();
             }}
           >
-            画像を選ぶ
+            {m.open.choose}
           </button>
         </p>
       </Modal>
       <main className="app-main">
         {showWarning && opened.warning !== undefined && (
           <div className="app-warning" role="alert">
-            <p>{mismatchMessage(opened.warning)}</p>
+            <p>{mismatchMessage(m, opened.warning)}</p>
             {opened.alternative !== undefined && (
               <p className="app-warning-actions">
                 <button type="button" onClick={() => setShowWarning(false)}>
-                  保存されていた注釈で編集する
+                  {m.load.keepAnnotations}
                 </button>
                 <button
                   type="button"
                   onClick={() => opened.alternative !== undefined && onReopen(opened.alternative)}
                 >
-                  今の画像を新しい下地にする（注釈は消えます）
+                  {m.load.useCurrentImage}
                 </button>
               </p>
             )}

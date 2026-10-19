@@ -19,6 +19,7 @@ export async function runSuggest(
   base: Base,
   doc: HarieDocument,
   intent: string,
+  language: "ja" | "en",
   dom?: DomSnapshot,
 ): Promise<Suggestion[]> {
   const image = await prepareImage(base, doc.canvas);
@@ -27,6 +28,7 @@ export async function runSuggest(
     image,
     doc,
     intent,
+    language,
     ...(dom === undefined ? {} : { dom }),
   });
 }

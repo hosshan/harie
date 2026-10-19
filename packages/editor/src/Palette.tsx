@@ -2,6 +2,8 @@
 // 画像の上に白いすりガラス（半透明＋ぼかし）で重ね、描いている間は隠す
 import type { ReactNode } from "react";
 import type { Tool } from "./Canvas";
+import { EDITOR_MESSAGES } from "./i18n/messages";
+import { useMessages } from "./i18n/use-locale";
 
 export type PaletteTool = { tool: Tool; label: string; key: string };
 
@@ -62,12 +64,13 @@ export function Palette({
   collapsed,
   onCollapsedChange,
 }: PaletteProps) {
+  const m = useMessages(EDITOR_MESSAGES);
   const current = tools.find((t) => t.tool === tool);
   return (
     <div
       className="harie-palette"
       role="toolbar"
-      aria-label="ツール"
+      aria-label={m.palette.label}
       data-hidden={hidden}
       data-collapsed={collapsed}
     >
@@ -77,20 +80,20 @@ export function Palette({
           <button
             type="button"
             className="harie-palette-expand"
-            aria-label="ツールを表示"
-            title="ツールを表示"
+            aria-label={m.palette.show}
+            title={m.palette.show}
             onClick={() => onCollapsedChange(false)}
           >
             {current !== undefined && <Icon>{TOOL_ICONS[current.tool]}</Icon>}
-            <span>ツール</span>
+            <span>{m.palette.label}</span>
           </button>
         ) : (
           <>
             <button
               type="button"
               className="harie-palette-icon"
-              aria-label="元に戻す"
-              title="元に戻す（Ctrl / ⌘ + Z）"
+              aria-label={m.palette.undo}
+              title={m.withKey(m.palette.undo, "Ctrl / ⌘ + Z")}
               disabled={!canUndo}
               onClick={onUndo}
             >
@@ -101,8 +104,8 @@ export function Palette({
             <button
               type="button"
               className="harie-palette-icon"
-              aria-label="やり直す"
-              title="やり直す（Ctrl / ⌘ + Shift + Z）"
+              aria-label={m.palette.redo}
+              title={m.withKey(m.palette.redo, "Ctrl / ⌘ + Shift + Z")}
               disabled={!canRedo}
               onClick={onRedo}
             >
@@ -118,7 +121,7 @@ export function Palette({
                 className="harie-palette-tool"
                 aria-label={t.label}
                 aria-pressed={tool === t.tool}
-                title={`${t.label}（${t.key.toUpperCase()}）`}
+                title={m.withKey(t.label, t.key.toUpperCase())}
                 onClick={() => onTool(t.tool)}
               >
                 <Icon>{TOOL_ICONS[t.tool]}</Icon>
@@ -129,8 +132,8 @@ export function Palette({
             <button
               type="button"
               className="harie-palette-icon"
-              aria-label="ツールをたたむ"
-              title="ツールをたたむ"
+              aria-label={m.palette.collapse}
+              title={m.palette.collapse}
               onClick={() => onCollapsedChange(true)}
             >
               <Icon>

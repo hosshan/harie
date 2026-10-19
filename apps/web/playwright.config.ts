@@ -13,6 +13,8 @@ export default defineConfig({
     baseURL: "http://localhost:4173",
     acceptDownloads: true,
     ...devices["Desktop Chrome"],
+    // 画面の文言（日本語）で要素を探すので、表示言語を日本語にする（英語は個別のテストで確かめる）
+    locale: "ja-JP",
     ...(executablePath === undefined ? {} : { launchOptions: { executablePath } }),
   },
   webServer: {

@@ -12,22 +12,8 @@ export type MaskDraft = {
   kind?: PiiKind;
 };
 
-export const PII_KIND_LABELS: Record<PiiKind, string> = {
-  name: "氏名",
-  email: "メール",
-  phone: "電話番号",
-  address: "住所",
-  id: "番号",
-  face: "顔",
-  other: "その他",
-};
-
-export const MASK_METHODS: { method: PiiMethod; label: string }[] = [
-  { method: "fill", label: "塗りつぶし" },
-  { method: "replace", label: "ダミーの文字に置き換え" },
-  { method: "mosaic", label: "モザイク" },
-  { method: "blur", label: "ぼかし" },
-];
+/** 隠し方の選択肢（並び順）。名前は表示言語の文言（i18n/messages.ts）から引く */
+export const MASK_METHODS: readonly PiiMethod[] = ["fill", "replace", "mosaic", "blur"];
 
 /** 文字の加工は塗りつぶしかダミー置換を既定にする（ADR-0007。モザイクは文字を推定されうる） */
 export const DEFAULT_MASK_METHOD: PiiMethod = "fill";

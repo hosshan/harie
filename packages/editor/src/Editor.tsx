@@ -13,6 +13,8 @@ import {
 import { Canvas, type Tool } from "./Canvas";
 import { type DrawDefaults, loadDrawDefaults, saveDrawDefaults } from "./draw-defaults";
 import { type EditorAction, type EditorState, editorReducer, initialState } from "./history";
+import { EDITOR_MESSAGES, type EditorMessages } from "./i18n/messages";
+import { useMessages } from "./i18n/use-locale";
 import { MaskPanel } from "./MaskPanel";
 import { type AppliedMask, type MaskDraft, newMaskDraft, toPiiMasks } from "./masks";
 import { Icon, Palette, type PaletteTool, TOOL_ICONS } from "./Palette";
@@ -22,49 +24,49 @@ export function useEditorState(doc: HarieDocument) {
   return useReducer(editorReducer, doc, initialState);
 }
 
-const TOOLS: readonly PaletteTool[] = [
-  { tool: "select", label: "選択", key: "v" },
-  { tool: "rect", label: "四角", key: "r" },
-  { tool: "ellipse", label: "楕円", key: "o" },
-  { tool: "arrow", label: "矢印", key: "a" },
-  { tool: "text", label: "テキスト", key: "t" },
-  { tool: "callout", label: "吹き出し", key: "c" },
-  { tool: "badge", label: "番号", key: "n" },
+const TOOLS: readonly { tool: Exclude<Tool, "mask">; key: string }[] = [
+  { tool: "select", key: "v" },
+  { tool: "rect", key: "r" },
+  { tool: "ellipse", key: "o" },
+  { tool: "arrow", key: "a" },
+  { tool: "text", key: "t" },
+  { tool: "callout", key: "c" },
+  { tool: "badge", key: "n" },
 ];
-const MASK_TOOL = { tool: "mask", label: "個人情報を隠す", key: "m" } as const;
+const MASK_TOOL = { tool: "mask", key: "m" } as const;
 
 const COLORS = [
-  { label: "赤", value: "#E5484D" },
-  { label: "橙", value: "#F76B15" },
-  { label: "緑", value: "#30A46C" },
-  { label: "青", value: "#0B6BCB" },
-  { label: "黒", value: "#1C2024" },
-];
+  { name: "red", value: "#E5484D" },
+  { name: "orange", value: "#F76B15" },
+  { name: "green", value: "#30A46C" },
+  { name: "blue", value: "#0B6BCB" },
+  { name: "black", value: "#1C2024" },
+] as const;
 
 /** 文字サイズの候補（画像のピクセル。1pt = 1px として扱う）。既定はテーマの 24 */
 export const FONT_SIZES = [
-  { label: "小", value: 16 },
-  { label: "中", value: 24 },
-  { label: "大", value: 36 },
-  { label: "特大", value: 48 },
+  { name: "small", value: 16 },
+  { name: "medium", value: 24 },
+  { name: "large", value: 36 },
+  { name: "xlarge", value: 48 },
 ] as const;
 const FONT_SIZE_MIN = 8;
 const FONT_SIZE_MAX = 200;
 
 /** 線の太さの候補（画像のピクセル）。既定はテーマの 4 */
 export const STROKE_WIDTHS = [
-  { label: "細", value: 2 },
-  { label: "中", value: 4 },
-  { label: "太", value: 6 },
-  { label: "極太", value: 10 },
+  { name: "thin", value: 2 },
+  { name: "medium", value: 4 },
+  { name: "thick", value: 6 },
+  { name: "xthick", value: 10 },
 ] as const;
 const STROKE_WIDTH_MIN = 1;
 const STROKE_WIDTH_MAX = 40;
 
-const LINE_DASHES: readonly { label: string; value: LineDash; dasharray?: string }[] = [
-  { label: "実線", value: "solid" },
-  { label: "破線", value: "dashed", dasharray: "5 3" },
-  { label: "点線", value: "dotted", dasharray: "0 4.5" },
+const LINE_DASHES: readonly { value: LineDash; dasharray?: string }[] = [
+  { value: "solid" },
+  { value: "dashed", dasharray: "5 3" },
+  { value: "dotted", dasharray: "0 4.5" },
 ];
 
 function isTyping(target: EventTarget | null): boolean {
@@ -109,6 +111,7 @@ export function Editor({
   onUnmask,
   aside,
 }: EditorProps) {
+  const m = useMessages(EDITOR_MESSAGES);
   const [tool, setTool] = useState<Tool>("select");
   const [dragging, setDragging] = useState(false);
   const [paletteCollapsed, setPaletteCollapsed] = useState(false);
@@ -140,21 +143,22 @@ export function Editor({
         await onUnmask(id);
         setSelectedMaskId(null);
       } catch (e) {
-        setUnmaskError(
-          `隠すのをやめられませんでした: ${e instanceof Error ? e.message : String(e)}`,
-        );
+        setUnmaskError(m.appliedMask.error(e instanceof Error ? e.message : String(e)));
       } finally {
         setUnmasking(false);
       }
     },
-    [onUnmask],
+    [onUnmask, m],
   );
   // 注釈を選んだら、適用済みのマスクの選択は外す（右の欄に出すのはどちらか一方）
   useEffect(() => {
     if (state.selectedId !== null) setSelectedMaskId(null);
   }, [state.selectedId]);
   const canMask = onApplyMasks !== undefined;
-  const tools = useMemo(() => (canMask ? [...TOOLS, MASK_TOOL] : TOOLS), [canMask]);
+  const tools = useMemo<PaletteTool[]>(
+    () => (canMask ? [...TOOLS, MASK_TOOL] : TOOLS).map((t) => ({ ...t, label: m.tools[t.tool] })),
+    [canMask, m],
+  );
   // マスクの範囲を選んでいる間は注釈の選択を外す。右の欄の「削除」や Delete キーで、
   // マスクの範囲ではなく前に選んでいた注釈が消えてしまうのを防ぐ
   const selectTool = useCallback(
@@ -242,7 +246,7 @@ export function Editor({
             onCollapsedChange={setPaletteCollapsed}
           />
         </div>
-        <aside className="harie-inspector" aria-label="選択中の注釈">
+        <aside className="harie-inspector" aria-label={m.inspector.label}>
           {aside}
           {onApplyMasks !== undefined && (tool === "mask" || masks.length > 0) && (
             <MaskPanel
@@ -257,17 +261,15 @@ export function Editor({
             />
           )}
           {selected === undefined && selectedMask !== undefined ? (
-            <section className="harie-inspector-body" aria-label="隠した範囲">
-              <h2>隠した範囲 {appliedMasks.indexOf(selectedMask) + 1}</h2>
-              <p className="harie-muted">
-                保存するまでは、隠すのをやめられます。保存すると元に戻せません。
-              </p>
+            <section className="harie-inspector-body" aria-label={m.appliedMask.label}>
+              <h2>{m.appliedMask.title(appliedMasks.indexOf(selectedMask) + 1)}</h2>
+              <p className="harie-muted">{m.appliedMask.note}</p>
               <button
                 type="button"
                 disabled={unmasking}
                 onClick={() => void unmask(selectedMask.id)}
               >
-                {unmasking ? "元に戻しています…" : "隠すのをやめる"}
+                {unmasking ? m.appliedMask.unmasking : m.appliedMask.unmask}
               </button>
               {unmaskError !== null && <p role="alert">{unmaskError}</p>}
             </section>
@@ -289,30 +291,20 @@ export function Editor({
   );
 }
 
-const TYPE_LABELS: Record<Annotation["type"], string> = {
-  rect: "四角",
-  ellipse: "楕円",
-  arrow: "矢印",
-  text: "テキスト",
-  callout: "吹き出し",
-  badge: "番号",
-  spotlight: "スポットライト",
-  blur: "ぼかし",
-};
-
 /** 色を変えると何の色が変わるか（注釈の種類ごと） */
-function colorLegend(type: Annotation["type"]): string {
-  if (type === "text") return "文字の色";
-  if (type === "arrow") return "線の色";
-  if (type === "badge") return "色";
-  return "枠の色";
+function colorLegend(m: EditorMessages, type: Annotation["type"]): string {
+  if (type === "text") return m.inspector.colorText;
+  if (type === "arrow") return m.inspector.colorLine;
+  if (type === "badge") return m.inspector.colorBadge;
+  return m.inspector.colorFrame;
 }
 
 /** 何も選んでいないとき。何ができるかと、道具のショートカットを案内する */
 function EmptyInspector({ tools }: { tools: readonly PaletteTool[] }) {
+  const m = useMessages(EDITOR_MESSAGES);
   return (
     <div className="harie-inspector-empty">
-      <p>注釈を選ぶと、ここで文字や色を変えられます。</p>
+      <p>{m.inspector.empty}</p>
       <dl>
         {tools
           .filter((t) => t.tool !== "select")
@@ -341,6 +333,7 @@ function Inspector({
   /** 選んだ線の太さ・文字サイズを、次に描く注釈の初期値として記録する */
   onDrawDefaults: (patch: DrawDefaults) => void;
 }) {
+  const m = useMessages(EDITOR_MESSAGES);
   const update = (patch: Record<string, unknown>) =>
     dispatch({ type: "apply", ops: [{ op: "update", id: annotation.id, patch }] });
   const hasText = annotation.type === "text" || annotation.type === "callout";
@@ -379,8 +372,8 @@ function Inspector({
   // 色を指定していない注釈は、テーマの既定の色を選んでいるものとして示す
   const current = (annotation.style?.[colorKey] ?? THEMES.default.defaults[colorKey]).toUpperCase();
   const summary = hasLine
-    ? `線 ${strokeWidth}px・${LINE_DASHES.find((d) => d.value === dash)?.label ?? ""}`
-    : `文字 ${fontSize}px`;
+    ? m.inspector.summaryLine(strokeWidth, m.dashes[dash])
+    : m.inspector.summaryText(fontSize);
 
   return (
     <div className="harie-inspector-body">
@@ -391,14 +384,14 @@ function Inspector({
           </Icon>
         </span>
         <h2>
-          {TYPE_LABELS[annotation.type]}
+          {m.types[annotation.type]}
           <small>{summary}</small>
         </h2>
         <button
           type="button"
           className="harie-icon-button harie-inspector-delete"
-          aria-label="この注釈を削除"
-          title="削除（Delete）"
+          aria-label={m.inspector.delete}
+          title={m.inspector.deleteTitle("Delete")}
           onClick={() => dispatch({ type: "apply", ops: [{ op: "remove", id: annotation.id }] })}
         >
           <Icon size={16}>
@@ -408,7 +401,7 @@ function Inspector({
       </header>
       {suggested && (
         <div className="harie-suggestion-band">
-          <span>AI の提案です。採用するまで保存されません。</span>
+          <span>{m.inspector.suggestion}</span>
           <p>
             <button
               type="button"
@@ -417,7 +410,7 @@ function Inspector({
                 dispatch({ type: "apply", ops: adoptSuggestionOps(doc, [annotation.id]) })
               }
             >
-              採用
+              {m.inspector.adopt}
             </button>
             <button
               type="button"
@@ -425,14 +418,14 @@ function Inspector({
                 dispatch({ type: "apply", ops: rejectSuggestionOps(doc, [annotation.id]) })
               }
             >
-              却下
+              {m.inspector.reject}
             </button>
           </p>
         </div>
       )}
       {hasText && (
         <label className="harie-field">
-          <span className="harie-field-label">文字</span>
+          <span className="harie-field-label">{m.inspector.text}</span>
           <textarea
             value={text}
             rows={3}
@@ -443,7 +436,7 @@ function Inspector({
       )}
       {annotation.type === "badge" && (
         <label className="harie-field">
-          <span className="harie-field-label">番号</span>
+          <span className="harie-field-label">{m.inspector.number}</span>
           <input
             type="number"
             className="harie-number"
@@ -458,23 +451,23 @@ function Inspector({
       )}
       {hasFontSize && (
         <SizeField
-          legend="文字サイズ"
-          options={FONT_SIZES}
+          legend={m.inspector.fontSize}
+          options={FONT_SIZES.map((o) => ({ label: m.fontSizes[o.name], value: o.value }))}
           min={FONT_SIZE_MIN}
           max={FONT_SIZE_MAX}
           value={fontSize}
           onChange={setFontSize}
           sample={(_, i) => (
             <span className="harie-sample-text" style={{ fontSize: 11 + i * 4 }}>
-              あ
+              {m.inspector.sample}
             </span>
           )}
         />
       )}
       {hasLine && (
         <SizeField
-          legend="線の太さ"
-          options={STROKE_WIDTHS}
+          legend={m.inspector.strokeWidth}
+          options={STROKE_WIDTHS.map((o) => ({ label: m.strokeWidths[o.name], value: o.value }))}
           min={STROKE_WIDTH_MIN}
           max={STROKE_WIDTH_MAX}
           value={strokeWidth}
@@ -486,7 +479,7 @@ function Inspector({
       )}
       {hasLine && (
         <fieldset className="harie-field">
-          <legend className="harie-field-label">線の種類</legend>
+          <legend className="harie-field-label">{m.inspector.dash}</legend>
           <div className="harie-tiles harie-tiles-3">
             {LINE_DASHES.map((d) => (
               <button
@@ -508,22 +501,22 @@ function Inspector({
                     strokeDasharray={d.dasharray}
                   />
                 </svg>
-                <small>{d.label}</small>
+                <small>{m.dashes[d.value]}</small>
               </button>
             ))}
           </div>
         </fieldset>
       )}
       <fieldset className="harie-field">
-        <legend className="harie-field-label">{colorLegend(annotation.type)}</legend>
+        <legend className="harie-field-label">{colorLegend(m, annotation.type)}</legend>
         <div className="harie-swatches">
           {COLORS.map((c) => (
             <button
               key={c.value}
               type="button"
               className="harie-swatch"
-              aria-label={c.label}
-              title={c.label}
+              aria-label={m.colors[c.name]}
+              title={m.colors[c.name]}
               aria-pressed={current === c.value.toUpperCase()}
               style={{ background: c.value }}
               onClick={() => update({ style: { ...annotation.style, [colorKey]: c.value } })}
@@ -556,6 +549,7 @@ function SizeField({
   onChange: (v: number) => void;
   sample: (option: { label: string; value: number }, index: number) => ReactNode;
 }) {
+  const m = useMessages(EDITOR_MESSAGES);
   const [draft, setDraft] = useState(String(value));
   useEffect(() => setDraft(String(value)), [value]);
   const [custom, setCustom] = useState(() => !options.some((o) => o.value === value));
@@ -578,7 +572,7 @@ function SizeField({
             className="harie-tile"
             aria-label={o.label}
             aria-pressed={value === o.value}
-            title={`${o.label}（${o.value}px）`}
+            title={m.inspector.tileTitle(o.label, o.value)}
             onClick={() => onChange(o.value)}
           >
             {sample(o, i)}
@@ -590,7 +584,7 @@ function SizeField({
         <span className="harie-number-field">
           <button
             type="button"
-            aria-label={`${legend}を 1 小さく`}
+            aria-label={m.inspector.decrease(legend)}
             disabled={value <= min}
             onClick={() => onChange(value - 1)}
           >
@@ -598,7 +592,7 @@ function SizeField({
           </button>
           <input
             type="number"
-            aria-label={`${legend}（px）`}
+            aria-label={m.inspector.valuePx(legend)}
             min={min}
             max={max}
             step={1}
@@ -612,7 +606,7 @@ function SizeField({
           <span aria-hidden="true">px</span>
           <button
             type="button"
-            aria-label={`${legend}を 1 大きく`}
+            aria-label={m.inspector.increase(legend)}
             disabled={value >= max}
             onClick={() => onChange(value + 1)}
           >
@@ -621,7 +615,7 @@ function SizeField({
         </span>
       ) : (
         <button type="button" className="harie-link-button" onClick={() => setCustom(true)}>
-          数値で指定
+          {m.inspector.custom}
         </button>
       )}
     </fieldset>

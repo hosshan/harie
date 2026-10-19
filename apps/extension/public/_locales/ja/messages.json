@@ -1,0 +1,14 @@
+{
+  "extName": {
+    "message": "Harie"
+  },
+  "extDescription": {
+    "message": "表示中のページをキャプチャし、枠・矢印・説明文を付けて、あとから何度でも直せる画像にする"
+  },
+  "actionTitle": {
+    "message": "Harie でキャプチャ"
+  },
+  "captureVisible": {
+    "message": "見えている範囲をキャプチャする"
+  }
+}
