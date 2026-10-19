@@ -5,6 +5,7 @@ import { basename, dirname, extname, join } from "node:path";
 import {
   type BaseMediaType,
   type ImageFormat,
+  readBaseImage,
   readHarie,
   readImageSize,
   writeHarie,
@@ -18,7 +19,7 @@ import {
   recordPiiApplied,
   renameForSave,
 } from "@harie/model";
-import { layoutAnchors } from "@harie/render";
+import { layoutAnchors, rebaseDocument } from "@harie/render";
 import type { RootGuard } from "./paths";
 import { nodeRenderer } from "./runtime";
 
@@ -275,6 +276,50 @@ function checkRevision(loaded: Loaded, expected: number | undefined): void {
       `リビジョンが一致しません（期待 ${expected}、現在 ${loaded.doc.revision}）。harie_open で開き直してください`,
     );
   }
+}
+
+/**
+ * 注釈を残したまま、ベース画像を新しいキャプチャに差し替えて保存する（FR-EDIT-10）。
+ * 大きさが違えば注釈を比率で合わせる。新しい画像はマスクしていないので、PII 加工の記録は外し、
+ * 元の画像でマスクしていた範囲を返す（ADR-0007。かけ直すかは呼び出し側が harie_mask で決める）。
+ */
+export async function replaceBase(
+  guard: RootGuard,
+  input: {
+    path: string;
+    imagePath: string;
+    outPath?: string | undefined;
+    expectedRevision?: number | undefined;
+  },
+): Promise<ToolOutput> {
+  const loaded = load(guard, input.path);
+  checkRevision(loaded, input.expectedRevision);
+  const image = readBaseImage(readBytes(guard.resolve(input.imagePath)));
+  if (image === null) throw new ToolError("imagePath は JPEG / PNG の画像にしてください");
+  const { doc, previousPii } = rebaseDocument(loaded.doc, image);
+  const target = input.outPath === undefined ? loaded.path : guard.resolve(input.outPath);
+  if (target !== loaded.path) {
+    if (EXT_FORMATS[extname(target).toLowerCase()] !== loaded.format) {
+      throw new ToolError(`outPath の拡張子は ${extname(loaded.path)} にしてください`);
+    }
+    if (statSafe(target)) throw new ToolError(`既にファイルがあります: ${guard.display(target)}`);
+  }
+  const base = { bytes: image.bytes, mediaType: image.mediaType };
+  const { saved, rendered } = await save(target, doc, base, loaded.format);
+  return {
+    summary: {
+      path: guard.display(target),
+      resized: { from: loaded.doc.canvas, to: { width: image.width, height: image.height } },
+      ...docSummary(saved),
+      ...(previousPii.length === 0
+        ? {}
+        : {
+            previousPii,
+            hint: "前の画像でマスクしていた範囲です。新しい画像にはかかっていないので、個人情報が写っていれば harie_mask でかけ直してください",
+          }),
+    },
+    image: rendered,
+  };
 }
 
 export async function preview(

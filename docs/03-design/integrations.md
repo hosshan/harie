@@ -73,8 +73,9 @@ type DomSnapshot = {
 | `harie_edit` | `path`, `ops: Op[]`, `expectedRevision?` | 新しいリビジョン、レンダリング画像のプレビュー | FR-MCP-03 |
 | `harie_preview` | `path`, `ops: Op[]` | 保存せずにレンダリング結果だけ返す | FR-MCP-03 |
 | `harie_mask` | `path`, `masks: PiiMask[]`, `confirm?`, `outPath?`, `expectedRevision?` | `confirm` なしは加工後の画像だけ（保存しない）。`confirm: true` で保存 | FR-PII-02〜04 |
+| `harie_replace_base` | `path`, `imagePath`, `outPath?`, `expectedRevision?` | 注釈を残して画像を差し替えて保存。大きさが違えば注釈を比率で合わせる。前の画像のマスクの範囲を `previousPii` で返す | FR-EDIT-10 |
 
-実装したのは `harie_open` / `harie_create` / `harie_edit` / `harie_preview` / `harie_list` / `harie_mask`。`harie_search` は Next。
+実装したのは `harie_open` / `harie_create` / `harie_edit` / `harie_preview` / `harie_list` / `harie_mask` / `harie_replace_base`。`harie_search` は Next。
 
 - `harie_edit` は `applyOps()` と同じ操作列（[注釈ドキュメントモデル](./document-model.md)）を受け取る。ツールの入力スキーマは zod（`OpSchema`）から生成し、座標の決まり（ベース画像のピクセル、左上原点）と例をツールの説明に含める。
 - 画像は MCP の image content で返す。`harie_open` はファイルそのもの、`harie_edit` / `harie_preview` は描き直した画像（`harie_preview` は AI 提案中の注釈も描く）。

@@ -20,6 +20,7 @@ pnpm harie --help
 | `harie render <file> [--doc doc.json] [-o out]` | 注釈（または JSON）で描き直す。`-o` を省くと上書き |
 | `harie extract <file> [--doc out.json] [--base out.jpg]` | 注釈 JSON とベース画像を取り出す |
 | `harie mask <file> --rect x,y,w,h --method fill\|mosaic\|blur\|replace --kind <種別> [--text ダミー] [-o out]` | 個人情報の加工をベース画像に適用する（元に戻せない） |
+| `harie replace-base <file> --image <new> [-o out]` | 注釈を残したまま画像を差し替える（大きさが違えば注釈を比率で合わせる）。`-o` を省くと上書き |
 
 ## ローカルでの確認
 

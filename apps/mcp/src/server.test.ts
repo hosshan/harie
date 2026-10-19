@@ -36,7 +36,7 @@ async function setup() {
 const rect = { id: "r1", type: "rect", x: 4, y: 4, w: 30, h: 16 };
 
 describe("harie MCP server", () => {
-  it("FR-MCP-01: 6 つのツールを公開する", async () => {
+  it("FR-MCP-01: 7 つのツールを公開する", async () => {
     const { client } = await setup();
     const { tools } = await client.listTools();
     expect(tools.map((t) => t.name).sort()).toEqual([
@@ -46,6 +46,7 @@ describe("harie MCP server", () => {
       "harie_mask",
       "harie_open",
       "harie_preview",
+      "harie_replace_base",
     ]);
     const edit = tools.find((t) => t.name === "harie_edit");
     expect(edit?.inputSchema.required).toEqual(["path", "ops"]);
@@ -169,6 +170,54 @@ describe("harie MCP server", () => {
     });
     expect(conflict.isError).toBe(true);
     expect(conflict.text).toContain(".jpg");
+  });
+
+  it("FR-EDIT-10: 注釈を残したまま画像を差し替え、大きさが違えば注釈を比率で合わせる", async () => {
+    const { root, call } = await setup();
+    writeFileSync(join(root, "new.jpg"), readFileSync(new URL("large-base.jpg", FIXTURES)));
+    await call("harie_create", { imagePath: "screen.png" });
+    await call("harie_edit", { path: "screen.harie.png", ops: [{ op: "add", annotation: rect }] });
+    const replaced = await call("harie_replace_base", {
+      path: "screen.harie.png",
+      imagePath: "new.jpg",
+      expectedRevision: 2,
+    });
+    expect(replaced.isError).toBe(false);
+    // 64×40 → 520×400。位置と大きさは軸ごと、線の太さは小さい方の比率（520 / 64）
+    expect(replaced.json()).toMatchObject({
+      revision: 3,
+      canvas: { width: 520, height: 400 },
+      annotations: [{ id: "r1", x: 32.5, y: 40, w: 243.75, h: 160, style: { strokeWidth: 32.5 } }],
+    });
+    expect(replaced.image?.mimeType).toBe("image/png");
+    const read = readHarie(new Uint8Array(readFileSync(join(root, "screen.harie.png"))));
+    expect(read).toMatchObject({ kind: "harie", format: "png", base: { mediaType: "image/jpeg" } });
+    // 新しい画像も再エンコードせずに埋め込む（ADR-0004）
+    expect(read.kind === "harie" && read.base.bytes).toEqual(
+      new Uint8Array(readFileSync(join(root, "new.jpg"))),
+    );
+
+    const bad = await call("harie_replace_base", { path: "screen.harie.png", imagePath: "x.txt" });
+    expect(bad.isError).toBe(true);
+  });
+
+  it("FR-EDIT-10, ADR-0007: 差し替えたら PII 加工の記録を外し、前の範囲をかけ直しの候補として返す", async () => {
+    const { root, call } = await setup();
+    writeFileSync(join(root, "new.png"), readFileSync(new URL("base.png", FIXTURES)));
+    await call("harie_create", { imagePath: "screen.png" });
+    const m = { kind: "email", method: "fill", rect: { x: 2, y: 2, w: 20, h: 8 } };
+    await call("harie_mask", { path: "screen.harie.png", masks: [m], confirm: true });
+    const replaced = await call("harie_replace_base", {
+      path: "screen.harie.png",
+      imagePath: "new.png",
+      outPath: "updated.harie.png",
+    });
+    expect(replaced.json()).toMatchObject({
+      path: "updated.harie.png",
+      piiApplied: 0,
+      previousPii: [{ kind: "email", method: "fill", rect: m.rect }],
+    });
+    expect(replaced.json().hint).toContain("harie_mask");
   });
 
   it("FR-MCP-03: preview はファイルを変えずに画像を返す", async () => {
