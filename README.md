@@ -6,6 +6,8 @@
 
 <p align="center"><b>ただの画像なのに、何度でも直せる。</b></p>
 
+<p align="center"><a href="README.en.md">English</a> | 日本語</p>
+
 <p align="center">
   <a href="https://hosshan.github.io/harie/">サイト</a> ·
   <a href="https://hosshan.github.io/harie/app/">Web エディタを開く</a> ·
