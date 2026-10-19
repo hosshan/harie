@@ -5,7 +5,8 @@ import type { Tool } from "./Canvas";
 
 export type PaletteTool = { tool: Tool; label: string; key: string };
 
-const ICONS: Record<Tool, ReactNode> = {
+/** 道具のアイコン。右の欄の見出しでも、選んだ注釈の種類を示すのに使う */
+export const TOOL_ICONS: Record<Tool, ReactNode> = {
   select: <path d="M6 3l12 9-5.5 1L16 20l-2.5 1-2.6-6.6L6 18z" />,
   rect: <rect x="4" y="6" width="16" height="12" rx="1.5" />,
   ellipse: <ellipse cx="12" cy="12" rx="8.5" ry="6.5" />,
@@ -26,9 +27,9 @@ const ICONS: Record<Tool, ReactNode> = {
   ),
 };
 
-function Icon({ children }: { children: ReactNode }) {
+export function Icon({ children, size = 20 }: { children: ReactNode; size?: number }) {
   return (
-    <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
+    <svg viewBox="0 0 24 24" width={size} height={size} aria-hidden="true">
       {children}
     </svg>
   );
@@ -80,7 +81,7 @@ export function Palette({
             title="ツールを表示"
             onClick={() => onCollapsedChange(false)}
           >
-            {current !== undefined && <Icon>{ICONS[current.tool]}</Icon>}
+            {current !== undefined && <Icon>{TOOL_ICONS[current.tool]}</Icon>}
             <span>ツール</span>
           </button>
         ) : (
@@ -120,7 +121,7 @@ export function Palette({
                 title={`${t.label}（${t.key.toUpperCase()}）`}
                 onClick={() => onTool(t.tool)}
               >
-                <Icon>{ICONS[t.tool]}</Icon>
+                <Icon>{TOOL_ICONS[t.tool]}</Icon>
                 <span aria-hidden="true">{t.label}</span>
               </button>
             ))}
