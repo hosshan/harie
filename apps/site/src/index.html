@@ -10,6 +10,8 @@
     />
     <meta name="theme-color" content="#D4A72C" />
     <meta property="og:type" content="website" />
+    <meta property="og:locale" content="ja_JP" />
+    <meta property="og:locale:alternate" content="en_US" />
     <meta property="og:title" content="Harie — 貼ったあとも、はがせるスクリーンショット" />
     <meta
       property="og:description"
@@ -18,6 +20,9 @@
     <meta property="og:url" content="https://hosshan.github.io/harie/" />
     <meta property="og:image" content="https://hosshan.github.io/harie/assets/og.png" />
     <meta name="twitter:card" content="summary_large_image" />
+    <link rel="alternate" hreflang="ja" href="https://hosshan.github.io/harie/" />
+    <link rel="alternate" hreflang="en" href="https://hosshan.github.io/harie/en/" />
+    <link rel="alternate" hreflang="x-default" href="https://hosshan.github.io/harie/" />
     <link rel="icon" href="assets/harie-symbol.svg" type="image/svg+xml" />
     <link rel="apple-touch-icon" href="assets/apple-touch-icon.png" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -41,6 +46,7 @@
           <a href="#platforms">使える場所</a>
           <a href="https://github.com/hosshan/harie">GitHub</a>
         </nav>
+        <a class="lang" href="en/" hreflang="en" lang="en">English</a>
         <a class="btn btn-primary btn-sm" href="./app/">ブラウザで使う</a>
       </div>
     </header>
@@ -310,7 +316,7 @@
               <p>Claude などの AI エージェントから、指定したフォルダの画像を読み書きします。</p>
               <div class="cmd">
                 <code id="mcp-cmd">claude mcp add harie -- npx -y @harie/mcp --root ~/Pictures/guides</code>
-                <button class="copy" type="button" data-copy="mcp-cmd">コピー</button>
+                <button class="copy" type="button" data-copy="mcp-cmd" data-copied="コピーしました">コピー</button>
               </div>
             </article>
           </div>
