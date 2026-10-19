@@ -35,7 +35,7 @@ async function drag(page: Page, from: [number, number], to: [number, number]) {
   await page.mouse.up();
 }
 
-test("FR-EDIT-12: 道具の切り替え・複製・矢印キーで動かす・重なりの順・元に戻すをキーで行える", async ({
+test("FR-EDIT-12: 道具の切り替え・複製・矢印キーで動かす・大きさを変える・重なりの順・元に戻すをキーで行える", async ({
   page,
 }) => {
   await open(page);
@@ -54,6 +54,18 @@ test("FR-EDIT-12: 道具の切り替え・複製・矢印キーで動かす・�
   await expect.poll(x).toBe(x0 + 11);
   await page.keyboard.press("ControlOrMeta+z");
   await expect.poll(x).toBe(x0 + 1);
+
+  // Ctrl / ⌘ + 矢印キーで枠の大きさを変える（左上は動かさない）
+  const w = async () => Number(await first.getAttribute("width"));
+  const w0 = await w();
+  await page.keyboard.press("ControlOrMeta+Shift+ArrowRight");
+  await expect.poll(w).toBe(w0 + 10);
+  await page.keyboard.press("ControlOrMeta+ArrowLeft");
+  await expect.poll(w).toBe(w0 + 9);
+  expect(await x()).toBe(x0 + 1);
+  await page.keyboard.press("ControlOrMeta+z");
+  await page.keyboard.press("ControlOrMeta+z");
+  await expect.poll(w).toBe(w0);
 
   // 複製すると、ずらした複製が選ばれる
   await page.keyboard.press("ControlOrMeta+d");

@@ -1,7 +1,7 @@
 // 複数の注釈の選択と、まとめての移動（FR-EDIT-11）。結果は applyOps の操作として返す
 import type { Annotation, HarieDocument, Rect } from "@harie/model";
 import { annotationBounds } from "@harie/render";
-import { movePatch } from "./geometry";
+import { isBoxed, MIN_CALLOUT_WIDTH, movePatch } from "./geometry";
 
 /** Shift を押してクリックしたとき。選んでいなければ加え、選んでいれば外す */
 export function toggleSelection(ids: readonly string[], id: string): string[] {
@@ -42,6 +42,28 @@ export function moveOps(
 
 function followsSelectedBox(a: Annotation, selected: ReadonlySet<string>): boolean {
   return a.type === "badge" && a.anchor !== undefined && selected.has(a.anchor.annotationId);
+}
+
+/**
+ * 選んだ枠の大きさをキーで変える操作（FR-EDIT-12）。左上を固定して幅・高さを足し引きする。
+ * 大きさを持たない注釈（矢印・テキスト・番号）は変えない。吹き出しは幅だけ変える
+ */
+export function resizeOps(
+  doc: HarieDocument,
+  ids: readonly string[],
+  dw: number,
+  dh: number,
+): unknown[] {
+  const selected = new Set(ids);
+  return doc.annotations.flatMap((a) => {
+    if (!selected.has(a.id)) return [];
+    let patch: Record<string, number> | undefined;
+    if (isBoxed(a)) patch = { w: Math.max(1, a.w + dw), h: Math.max(1, a.h + dh) };
+    else if (a.type === "callout") patch = { w: Math.max(MIN_CALLOUT_WIDTH, a.w + dw) };
+    const current: Record<string, unknown> = a;
+    if (patch === undefined || Object.entries(patch).every(([k, v]) => current[k] === v)) return [];
+    return [{ op: "update", id: a.id, patch }];
+  });
 }
 
 /** 選んだ注釈をまとめて消す操作 */

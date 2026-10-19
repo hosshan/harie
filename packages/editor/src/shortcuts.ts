@@ -27,6 +27,8 @@ export type ShortcutId =
   | "paste"
   | "nudge"
   | "nudgeLarge"
+  | "resize"
+  | "resizeLarge"
   | "editText"
   | "bringForward"
   | "sendBackward"
@@ -56,6 +58,19 @@ export const SHORTCUTS: Record<ShortcutId, readonly KeyCombo[]> = {
     { key: "ArrowDown", shift: true },
     { key: "ArrowLeft", shift: true },
     { key: "ArrowRight", shift: true },
+  ],
+  // 右・下で大きく、左・上で小さく（左上は動かさない）
+  resize: [
+    { key: "ArrowRight", mod: true },
+    { key: "ArrowLeft", mod: true },
+    { key: "ArrowDown", mod: true },
+    { key: "ArrowUp", mod: true },
+  ],
+  resizeLarge: [
+    { key: "ArrowRight", mod: true, shift: true },
+    { key: "ArrowLeft", mod: true, shift: true },
+    { key: "ArrowDown", mod: true, shift: true },
+    { key: "ArrowUp", mod: true, shift: true },
   ],
   editText: [{ key: "Enter" }],
   bringForward: [{ code: "BracketRight", mod: true }],

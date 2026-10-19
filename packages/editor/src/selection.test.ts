@@ -8,6 +8,7 @@ import {
   pasteOps,
   removeOps,
   reorderOps,
+  resizeOps,
   toggleSelection,
 } from "./selection";
 
@@ -123,5 +124,28 @@ describe("複数の注釈の選択（FR-EDIT-11）", () => {
       picked.filter((a) => a.type === "badge"),
     );
     expect((only.ops[0] as { annotation: object }).annotation).not.toHaveProperty("anchor");
+  });
+});
+
+describe("キーで枠の大きさを変える（FR-EDIT-12）", () => {
+  it("左上を固定して幅・高さを足し引きし、大きさのない注釈は変えない", () => {
+    expect(resizeOps(doc(), ["rect-1", "arrow-1", "text-1"], 10, -5)).toEqual([
+      { op: "update", id: "rect-1", patch: { w: 110, h: 45 } },
+    ]);
+  });
+
+  it("1px より小さくしない。変わらなければ操作を作らない", () => {
+    const small = doc();
+    small.annotations = [{ id: "rect-1", type: "rect", x: 10, y: 10, w: 1, h: 1 }];
+    expect(resizeOps(small, ["rect-1"], -1, -10)).toEqual([]);
+  });
+
+  it("吹き出しは幅だけ変える", () => {
+    const d = doc();
+    d.annotations = [{ id: "callout-1", type: "callout", x: 10, y: 10, w: 120, text: "保存" }];
+    expect(resizeOps(d, ["callout-1"], 10, 0)).toEqual([
+      { op: "update", id: "callout-1", patch: { w: 130 } },
+    ]);
+    expect(resizeOps(d, ["callout-1"], 0, 10)).toEqual([]);
   });
 });

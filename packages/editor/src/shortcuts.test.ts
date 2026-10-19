@@ -29,6 +29,11 @@ describe("キーボードのショートカット（FR-EDIT-12）", () => {
     expect(matchesShortcut(key("ArrowUp"), "nudge", false)).toBe(true);
     expect(matchesShortcut(key("ArrowUp", { shift: true }), "nudge", false)).toBe(false);
     expect(matchesShortcut(key("ArrowUp", { shift: true }), "nudgeLarge", false)).toBe(true);
+    expect(matchesShortcut(key("ArrowRight", { ctrl: true }), "resize", false)).toBe(true);
+    expect(matchesShortcut(key("ArrowRight", { ctrl: true }), "nudge", false)).toBe(false);
+    expect(
+      matchesShortcut(key("ArrowRight", { meta: true, shift: true }), "resizeLarge", true),
+    ).toBe(true);
   });
 
   it("記号のキーは位置（code）で判定する。? は Shift の有無を見ない", () => {
