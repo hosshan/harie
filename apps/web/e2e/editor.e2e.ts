@@ -331,6 +331,61 @@ test("FR-EDIT-01: 四角の線の太さと種類を変えられ、選んだ太�
   await expect(fontTile("大")).toHaveAttribute("aria-pressed", "true");
 });
 
+test("FR-EDIT-11: 注釈を複数選んで、まとめて線の太さ・色を変え、動かし、削除できる", async ({
+  page,
+}) => {
+  await openFixture(page, "large-base.jpg");
+  await page.getByRole("button", { name: "四角" }).click();
+  await drag(page, [40, 40], [140, 100]);
+  await page.getByRole("button", { name: "四角" }).click();
+  await drag(page, [200, 40], [300, 100]);
+  await page.getByRole("button", { name: "太", exact: true }).click();
+  const rects = annotationRects(page);
+  await expect(rects.nth(1)).toHaveAttribute("stroke-width", "6");
+
+  // 何もない所からドラッグして、範囲に重なる注釈を選ぶ
+  await drag(page, [20, 20], [220, 60]);
+  const inspector = page.getByRole("complementary", { name: "選択中の注釈" });
+  await expect(inspector.getByRole("heading", { name: /2 個の注釈/ })).toBeVisible();
+  const width = inspector.getByRole("group", { name: /線の太さ/ });
+  await expect(width).toContainText("混在");
+  await expect(width.getByRole("button", { name: "中", exact: true })).toHaveAttribute(
+    "aria-pressed",
+    "false",
+  );
+  await width.getByRole("button", { name: "細", exact: true }).click();
+  await expect(rects.nth(0)).toHaveAttribute("stroke-width", "2");
+  await expect(rects.nth(1)).toHaveAttribute("stroke-width", "2");
+  await inspector.getByRole("button", { name: "青" }).click();
+  await expect(rects.nth(0)).toHaveAttribute("stroke", "#0B6BCB");
+  await expect(rects.nth(1)).toHaveAttribute("stroke", "#0B6BCB");
+
+  // 選んだ注釈の 1 つを掴むと、まとめて動く（1 回の操作として元に戻せる）
+  const y = async (i: number) => Number(await rects.nth(i).getAttribute("y"));
+  const before = [await y(0), await y(1)];
+  await drag(page, [90, 40], [90, 140]);
+  await expect.poll(() => y(0)).toBeGreaterThan((before[0] ?? 0) + 90);
+  await expect.poll(() => y(1)).toBeGreaterThan((before[1] ?? 0) + 90);
+  await page.keyboard.press("ControlOrMeta+z");
+  await expect.poll(() => y(0)).toBe(before[0]);
+  await expect.poll(() => y(1)).toBe(before[1]);
+
+  // Shift + クリックで選択から外す。残った 1 つだけが消える
+  await page.keyboard.down("Shift");
+  await drag(page, [250, 40], [250, 40]);
+  await page.keyboard.up("Shift");
+  await expect(inspector.getByRole("heading", { name: /四角/ })).toBeVisible();
+  await page.keyboard.press("Delete");
+  await expect(rects).toHaveCount(1);
+
+  // すべて選んで、まとめて消す
+  await page.getByRole("button", { name: "矢印" }).click();
+  await drag(page, [100, 300], [300, 300]);
+  await page.keyboard.press("ControlOrMeta+a");
+  await page.getByRole("button", { name: "選んだ注釈をすべて削除" }).click();
+  await expect(rects).toHaveCount(0);
+});
+
 test("ツールのパレットは描いている間は隠れ、たたむと小さくなる", async ({ page }) => {
   await openFixture(page, "large-base.jpg");
   const palette = page.getByRole("toolbar", { name: "ツール" });

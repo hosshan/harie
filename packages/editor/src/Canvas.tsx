@@ -17,23 +17,26 @@ import {
   type Handle,
   handlePosition,
   handlesFor,
-  movePatch,
   resizePatch,
 } from "./geometry";
 import { type EditorAction, type EditorState, newAnnotationId } from "./history";
 import { EDITOR_MESSAGES } from "./i18n/messages";
 import { useMessages } from "./i18n/use-locale";
 import { type AppliedMask, hitAppliedMask, type MaskDraft, maskRect } from "./masks";
+import { annotationsInRect, mergeSelection, moveOps, toggleSelection } from "./selection";
 import { TextEditor } from "./TextEditor";
 
 export type Tool = "select" | "rect" | "ellipse" | "arrow" | "text" | "callout" | "badge" | "mask";
 
 type Drag =
-  | { kind: "move"; id: string; start: Point; current: Point }
+  /** 選んだ注釈をまとめて動かす */
+  | { kind: "move"; ids: readonly string[]; start: Point; current: Point }
   | { kind: "resize"; id: string; handle: Handle; current: Point }
   | { kind: "create"; tool: "rect" | "ellipse" | "arrow"; start: Point; current: Point }
   /** 個人情報のマスク範囲。注釈ではないので履歴に積まず、onMaskDrawn で渡す */
-  | { kind: "mask"; start: Point; current: Point };
+  | { kind: "mask"; start: Point; current: Point }
+  /** 何もない所からドラッグして、範囲に重なる注釈を選ぶ。base は Shift で足すときの元の選択 */
+  | { kind: "marquee"; base: readonly string[]; start: Point; current: Point };
 
 /** クリックだけで作ったときの大きさ（ドラッグが短すぎる場合） */
 const DEFAULT_BOX = { w: 160, h: 80 };
@@ -73,7 +76,10 @@ export function hitTest(doc: HarieDocument, p: Point, tolerance: number): Annota
 }
 
 function dragOps(doc: HarieDocument, drag: Drag, defaults: DrawDefaults = {}): unknown[] {
-  if (drag.kind === "mask") return [];
+  if (drag.kind === "mask" || drag.kind === "marquee") return [];
+  if (drag.kind === "move") {
+    return moveOps(doc, drag.ids, drag.current.x - drag.start.x, drag.current.y - drag.start.y);
+  }
   if (drag.kind === "create") {
     const id = newAnnotationId(doc, drag.tool);
     const style = styleForNew(drag.tool, defaults);
@@ -92,11 +98,15 @@ function dragOps(doc: HarieDocument, drag: Drag, defaults: DrawDefaults = {}): u
   }
   const target = doc.annotations.find((a) => a.id === drag.id);
   if (target === undefined) return [];
-  const patch =
-    drag.kind === "move"
-      ? movePatch(target, drag.current.x - drag.start.x, drag.current.y - drag.start.y)
-      : resizePatch(target, drag.handle, drag.current);
-  return [{ op: "update", id: drag.id, patch }];
+  return [{ op: "update", id: drag.id, patch: resizePatch(target, drag.handle, drag.current) }];
+}
+
+/** 押した位置から動かしていない（クリックしただけ） */
+function isClick(drag: { start: Point; current: Point }): boolean {
+  return (
+    Math.abs(drag.current.x - drag.start.x) < MIN_DRAG &&
+    Math.abs(drag.current.y - drag.start.y) < MIN_DRAG
+  );
 }
 
 function created(ops: unknown[]): string | undefined {
@@ -152,7 +162,7 @@ export function Canvas({
 
   // ドラッグ中は履歴に積まずに途中経過だけを描く
   const display = useMemo(() => {
-    if (drag === null || drag.kind === "mask") return doc;
+    if (drag === null || drag.kind === "mask" || drag.kind === "marquee") return doc;
     const r = applyOps(doc, dragOps(doc, drag, drawDefaults));
     return r.ok ? layoutAnchors(r.value) : doc;
   }, [doc, drag, drawDefaults]);
@@ -230,15 +240,30 @@ export function Canvas({
       return;
     }
     const handle = (e.target as Element).getAttribute("data-handle") as Handle | null;
-    if (handle !== null && state.selectedId !== null) {
-      setDrag({ kind: "resize", id: state.selectedId, handle, current: p });
+    const [only, ...others] = state.selectedIds;
+    if (handle !== null && only !== undefined && others.length === 0) {
+      setDrag({ kind: "resize", id: only, handle, current: p });
       return;
     }
     const hit = hitTest(doc, p, screenPx(6));
-    dispatch({ type: "select", id: hit?.id ?? null });
-    if (hit !== undefined) setDrag({ kind: "move", id: hit.id, start: p, current: p });
-    // 注釈の上でなければ、適用済みのマスクを選ぶ（注釈が重なっていれば注釈を優先する）
-    onSelectAppliedMask?.(hit === undefined ? (hitAppliedMask(appliedMasks, p)?.id ?? null) : null);
+    if (hit === undefined) {
+      // 何もない所: ドラッグで範囲選択。Shift を押していれば今の選択に足す（FR-EDIT-11）
+      const base = e.shiftKey ? state.selectedIds : [];
+      if (!e.shiftKey) dispatch({ type: "select", ids: [] });
+      setDrag({ kind: "marquee", base, start: p, current: p });
+      // 適用済みのマスクは、注釈のない所をクリックして選ぶ（注釈が重なっていれば注釈を優先する）
+      onSelectAppliedMask?.(hitAppliedMask(appliedMasks, p)?.id ?? null);
+      return;
+    }
+    onSelectAppliedMask?.(null);
+    // Shift + クリックで選択に足す・外す。選んでいる注釈を掴んだら、選んでいるものをまとめて動かす
+    const ids = e.shiftKey
+      ? toggleSelection(state.selectedIds, hit.id)
+      : state.selectedIds.includes(hit.id)
+        ? state.selectedIds
+        : [hit.id];
+    dispatch({ type: "select", ids });
+    if (ids.includes(hit.id)) setDrag({ kind: "move", ids, start: p, current: p });
   };
 
   // テキスト・吹き出しをダブルクリックすると、その場で文字を編集する（FR-EDIT-03）
@@ -246,7 +271,7 @@ export function Canvas({
     if (tool !== "select") return;
     const hit = hitTest(doc, toPoint(e), screenPx(6));
     if (!isText(hit)) return;
-    dispatch({ type: "select", id: hit.id });
+    dispatch({ type: "select", ids: [hit.id] });
     setEditingId(hit.id);
   };
 
@@ -264,20 +289,26 @@ export function Canvas({
       if (rect !== null) onMaskDrawn?.(rect);
       return;
     }
-    if (
-      final.kind === "move" &&
-      final.current.x === final.start.x &&
-      final.current.y === final.start.y
-    ) {
+    if (final.kind === "marquee") {
+      if (isClick(final)) return;
+      const ids = annotationsInRect(doc, boxFrom(final.start, final.current));
+      dispatch({ type: "select", ids: mergeSelection(final.base, ids) });
+      if (ids.length > 0) onSelectAppliedMask?.(null);
       return;
     }
+    if (final.kind === "move" && isClick(final)) return;
     const ops = dragOps(doc, final, drawDefaults);
     const id = created(ops);
     dispatch({ type: "apply", ops, ...(id === undefined ? {} : { select: id }) });
     if (final.kind === "create") onToolDone();
   };
 
-  const selected = display.annotations.find((a) => a.id === state.selectedId);
+  // 範囲選択の途中は、選ばれる注釈を先に示す
+  const selectedIds =
+    drag?.kind === "marquee" && !isClick(drag)
+      ? mergeSelection(drag.base, annotationsInRect(doc, boxFrom(drag.start, drag.current)))
+      : state.selectedIds;
+  const selected = display.annotations.filter((a) => selectedIds.includes(a.id));
   const handleSize = screenPx(10);
   const editing = doc.annotations.find((a) => a.id === editingId);
   // 元に戻すなどで編集中の注釈がなくなったら、編集をやめる
@@ -338,8 +369,18 @@ export function Canvas({
             stroke={screenPx(1.5)}
           />
         )}
-        {selected !== undefined && (
-          <Selection annotation={selected} handleSize={handleSize} stroke={screenPx(1.5)} />
+        {selected.map((a) => (
+          <Selection
+            key={a.id}
+            annotation={a}
+            handleSize={handleSize}
+            stroke={screenPx(1.5)}
+            // 大きさを変えるつまみは、1 つだけ選んでいるときに出す
+            handles={selected.length === 1}
+          />
+        ))}
+        {drag?.kind === "marquee" && !isClick(drag) && (
+          <Marquee rect={boxFrom(drag.start, drag.current)} stroke={screenPx(1)} />
         )}
       </svg>
       {isText(editing) && (
@@ -372,14 +413,39 @@ export function Canvas({
   }
 }
 
+/** 範囲選択の四角 */
+function Marquee({
+  rect,
+  stroke,
+}: {
+  rect: { x: number; y: number; w: number; h: number };
+  stroke: number;
+}) {
+  return (
+    <rect
+      className="harie-marquee"
+      x={rect.x}
+      y={rect.y}
+      width={rect.w}
+      height={rect.h}
+      fill="rgba(212, 167, 44, 0.12)"
+      stroke={SELECTION_COLOR}
+      strokeWidth={stroke}
+      pointerEvents="none"
+    />
+  );
+}
+
 function Selection({
   annotation,
   handleSize,
   stroke,
+  handles,
 }: {
   annotation: Annotation;
   handleSize: number;
   stroke: number;
+  handles: boolean;
 }) {
   const b = annotationBounds(annotation);
   const pad = handleSize / 2;
@@ -398,7 +464,7 @@ function Selection({
           pointerEvents="none"
         />
       )}
-      {handlesFor(annotation).map((h) => {
+      {(handles ? handlesFor(annotation) : []).map((h) => {
         const p = handlePosition(annotation, b, h);
         return (
           <rect

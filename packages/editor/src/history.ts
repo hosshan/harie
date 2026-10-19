@@ -7,16 +7,17 @@ export type EditorState = {
   doc: HarieDocument;
   past: HarieDocument[];
   future: HarieDocument[];
-  selectedId: string | null;
+  /** 選んでいる注釈（複数選べる。先に選んだものから順に並ぶ） */
+  selectedIds: readonly string[];
   /** 直前の操作が失敗した理由（UI に出す） */
   error: OpError | null;
 };
 
 export type EditorAction =
-  | { type: "apply"; ops: readonly unknown[]; select?: string | null }
+  | { type: "apply"; ops: readonly unknown[]; select?: Selecting }
   | { type: "undo" }
   | { type: "redo" }
-  | { type: "select"; id: string | null }
+  | { type: "select"; ids: Selecting }
   | { type: "reset"; doc: HarieDocument }
   /** 保存した。以後の保存でリビジョンが戻らないよう、履歴中のドキュメントにも新しいリビジョンを反映する */
   | { type: "saved"; revision: number; meta: HarieDocument["meta"] }
@@ -26,14 +27,19 @@ export type EditorAction =
    */
   | { type: "piiApplied"; pii: HarieDocument["pii"] };
 
+/** 選ぶ注釈。1 つなら ID、複数なら ID の並び、選択を外すなら null か空の並び */
+export type Selecting = string | null | readonly string[];
+
 const HISTORY_LIMIT = 100;
 
 export function initialState(doc: HarieDocument): EditorState {
-  return { doc, past: [], future: [], selectedId: null, error: null };
+  return { doc, past: [], future: [], selectedIds: [], error: null };
 }
 
-function exists(doc: HarieDocument, id: string | null): string | null {
-  return id !== null && doc.annotations.some((a) => a.id === id) ? id : null;
+/** ドキュメントに残っている注釈だけを、重ねずに選ぶ */
+function exists(doc: HarieDocument, select: Selecting): readonly string[] {
+  const ids = select === null ? [] : typeof select === "string" ? [select] : select;
+  return [...new Set(ids)].filter((id) => doc.annotations.some((a) => a.id === id));
 }
 
 export function editorReducer(state: EditorState, action: EditorAction): EditorState {
@@ -44,12 +50,12 @@ export function editorReducer(state: EditorState, action: EditorAction): EditorS
       if (!result.ok) return { ...state, error: result.error };
       // 枠を動かしたら、紐付けた番号も付いてくる（ADR-0011）
       const doc = layoutAnchors(result.value);
-      const select = action.select === undefined ? state.selectedId : action.select;
+      const select = action.select === undefined ? state.selectedIds : action.select;
       return {
         doc,
         past: [...state.past, state.doc].slice(-HISTORY_LIMIT),
         future: [],
-        selectedId: exists(doc, select),
+        selectedIds: exists(doc, select),
         error: null,
       };
     }
@@ -61,7 +67,7 @@ export function editorReducer(state: EditorState, action: EditorAction): EditorS
         doc: prev,
         past: state.past.slice(0, -1),
         future: [state.doc, ...state.future],
-        selectedId: exists(prev, state.selectedId),
+        selectedIds: exists(prev, state.selectedIds),
         error: null,
       };
     }
@@ -73,12 +79,12 @@ export function editorReducer(state: EditorState, action: EditorAction): EditorS
         doc: next,
         past: [...state.past, state.doc],
         future: rest,
-        selectedId: exists(next, state.selectedId),
+        selectedIds: exists(next, state.selectedIds),
         error: null,
       };
     }
     case "select":
-      return { ...state, selectedId: exists(state.doc, action.id) };
+      return { ...state, selectedIds: exists(state.doc, action.ids) };
     case "reset":
       return initialState(action.doc);
     case "saved": {
