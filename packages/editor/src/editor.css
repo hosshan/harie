@@ -687,6 +687,10 @@ label.harie-field .harie-field-label {
   overflow-y: auto;
   font-size: 13px;
 }
+/* スクロールする一覧はダイアログを開いたときに最初にフォーカスを受ける。黒い枠は出さない（キーでのスクロールはそのまま効く） */
+.harie-shortcuts:focus {
+  outline: none;
+}
 .harie-shortcuts h3 {
   margin: 0 0 6px;
   font-size: 12px;
