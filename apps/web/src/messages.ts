@@ -17,6 +17,7 @@ const ja = {
       "JPEG と PNG に対応しています。保存した画像は普通の画像として使え、Harie で開けば注釈を直せます。",
     integrations:
       "Chrome 拡張でのキャプチャと、Claude からの編集（MCP）の始め方は、右上の「連携」（狭い画面では「…」の中）にあります。",
+    fileInput: "画像ファイル",
     imageFiles: "画像",
     jpegFiles: "JPEG 画像",
     pngFiles: "PNG 画像",
@@ -183,6 +184,7 @@ const en: WebMessages = {
       "JPEG and PNG are supported. Saved images work as ordinary images, and you can edit the annotations again by opening them in Harie.",
     integrations:
       "To capture with the Chrome extension or edit from Claude (MCP), see “Integrations” at the top right (inside “…” on narrow screens).",
+    fileInput: "Image file",
     imageFiles: "Images",
     jpegFiles: "JPEG image",
     pngFiles: "PNG image",

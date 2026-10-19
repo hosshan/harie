@@ -108,7 +108,7 @@ export function App() {
         ref={input}
         type="file"
         accept="image/jpeg,image/png"
-        aria-label={m.open.imageFiles}
+        aria-label={m.open.fileInput}
         hidden
         onChange={(e) => {
           const file = e.target.files?.[0];
