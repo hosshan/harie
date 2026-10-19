@@ -39,13 +39,11 @@ Playwright のブラウザが入っていない環境では `HARIE_CHROMIUM_PATH
 
 ## リリース
 
-自動デプロイはまだ設定していない。公開するときは次の手順で静的ファイルを置く。
+`main` に入ると [.github/workflows/pages.yml](../../.github/workflows/pages.yml) が LP（[apps/site](../site/README.md)）と一緒に GitHub Pages の `/harie/app/` へ公開する。ほかの静的ホスティングに置くときは次のとおり。
 
 1. `main` で `pnpm check` と `pnpm e2e` が通っていることを確かめる。
-2. `pnpm --filter @harie/web build` で `apps/web/dist/` を作る。
-3. `dist/` の中身を静的ホスティングに置く。
-   - HTTPS で配信する（PWA の Service Worker と File System Access API に必要）。
-   - ドメインの直下（`/`）で配信する。manifest の `start_url` が `/` のため、サブパスに置くときは `vite.config.ts` の `base` と `start_url` を合わせて変える。
+2. `pnpm --filter @harie/web build` で `apps/web/dist/` を作る。サブパスに置くときは `HARIE_WEB_BASE=/path/` を付けてビルドする（`vite.config.ts` の `base`。manifest の `start_url` は相対なので合わせて変わる）。
+3. `dist/` の中身を静的ホスティングに置く。HTTPS で配信する（PWA の Service Worker と File System Access API に必要）。
 4. 公開後、一度開いてから再読み込みし、オフラインでも開けることを確かめる。更新は `registerType: "autoUpdate"` で、次に開いたときに反映される。
 
 ## 関連する文書

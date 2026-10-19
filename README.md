@@ -25,6 +25,7 @@ MVP（M0〜M5: Web エディタ・Chrome 拡張・MCP サーバー・AI 提案�
 | [apps/mcp](apps/mcp/README.md) | MCP サーバー（npm の `@harie/mcp`）。Claude などから注釈を読み書きする |
 | [apps/cli](apps/cli/README.md) | 開発用 CLI（`pnpm harie`）。ファイルの中身の確認・作成・描き直し |
 | [apps/desktop](apps/desktop/README.md) | デスクトップ版（Tauri 2、macOS / Windows）。OS のダイアログで開き、上書き保存する |
+| [apps/site](apps/site/README.md) | LP（GitHub Pages）。Web エディタも `/app/` に一緒に公開する |
 
 ## パッケージ
 

@@ -1,0 +1,10 @@
+{
+  "name": "@harie/site",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "preview": "node scripts/build.mjs && node scripts/serve.mjs"
+  }
+}
