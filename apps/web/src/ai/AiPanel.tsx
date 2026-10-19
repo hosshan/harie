@@ -6,9 +6,11 @@ import {
   type EditorAction,
   pendingSuggestionIds,
   rejectSuggestionOps,
+  useLocale,
 } from "@harie/editor";
 import type { HarieDocument } from "@harie/model";
 import { type Dispatch, useState } from "react";
+import { useWebMessages, type WebMessages } from "../messages";
 import { useApiKey } from "./api-key";
 
 type Base = { bytes: Uint8Array; mediaType: "image/jpeg" | "image/png" };
@@ -25,12 +27,20 @@ export type AiPanelProps = {
 
 const ids = (s: Suggestion) => s.annotations.map((a) => a.id);
 
-function message(e: unknown): string {
-  // AiError の文言は API キーを含まない（packages/ai）。それ以外は中身を出さない
-  return e instanceof Error && e.name === "AiError" ? e.message : "AI の呼び出しに失敗しました";
+type AiErrorKind = keyof WebMessages["ai"]["errors"];
+
+function message(m: WebMessages, e: unknown): string {
+  // AiError は失敗の種類（kind）を持つので、表示言語の文言にする。それ以外は中身を出さない（API キーを含みうる）
+  const kind =
+    e instanceof Error && e.name === "AiError" ? (e as Error & { kind?: string }).kind : undefined;
+  return kind !== undefined && kind in m.ai.errors
+    ? m.ai.errors[kind as AiErrorKind]
+    : m.ai.errors.other;
 }
 
 export function AiPanel({ doc, dispatch, base, onPiiFound, dom }: AiPanelProps) {
+  const m = useWebMessages();
+  const locale = useLocale();
   const apiKey = useApiKey();
   const [consent, setConsent] = useState(false);
   const [intent, setIntent] = useState("");
@@ -48,34 +58,26 @@ export function AiPanel({ doc, dispatch, base, onPiiFound, dom }: AiPanelProps) 
   const run = async (kind: "suggest" | "pii") => {
     setBusy(kind);
     setError(null);
-    setStatus(kind === "suggest" ? "AI が画像を見ています…" : "個人情報を探しています…");
+    setStatus(kind === "suggest" ? m.ai.suggesting : m.ai.detecting);
     try {
       const { runDetectPii, runSuggest } = await import("./run");
       if (kind === "suggest") {
-        const found = await runSuggest(apiKey, base, doc, intent, dom);
+        const found = await runSuggest(apiKey, base, doc, intent, locale, dom);
         // 提案はまとめて 1 回の操作として追加する（元に戻すで一度に消せる）
         dispatch({
           type: "apply",
           ops: found.flatMap((s) => s.annotations.map((annotation) => ({ op: "add", annotation }))),
         });
         setSuggestions((prev) => [...prev, ...found]);
-        setStatus(
-          found.length === 0
-            ? "提案はありませんでした"
-            : `${found.length} 件の提案を追加しました。採用したものだけが保存されます`,
-        );
+        setStatus(found.length === 0 ? m.ai.noSuggestions : m.ai.suggested(found.length));
       } else {
         const found = await runDetectPii(apiKey, base, doc, dom);
         onPiiFound(found);
-        setStatus(
-          found.length === 0
-            ? "個人情報らしきものは見つかりませんでした。念のため目でも確認してください"
-            : `${found.length} か所の候補をマスクの範囲にしました。確認してから適用してください`,
-        );
+        setStatus(found.length === 0 ? m.ai.noPii : m.ai.piiFound(found.length));
       }
     } catch (e) {
       setStatus(null);
-      setError(message(e));
+      setError(message(m, e));
     } finally {
       setBusy(null);
     }
@@ -83,29 +85,27 @@ export function AiPanel({ doc, dispatch, base, onPiiFound, dom }: AiPanelProps) 
 
   return (
     <section className="harie-inspector-body app-ai" aria-label="AI">
-      <h2>AI</h2>
+      <h2>{m.ai.title}</h2>
       <label>
-        説明したいこと
+        {m.ai.intent}
         <textarea
           rows={2}
           value={intent}
-          placeholder="例: 通知の設定方法"
+          placeholder={m.ai.intentPlaceholder}
           onChange={(e) => setIntent(e.target.value)}
         />
       </label>
-      <p className="app-ai-notice">
-        {`ボタンを押すと、この画像${dom === undefined ? "" : "と、キャプチャしたページの文字・要素の位置"}を Anthropic の Claude API に送信します。個人情報が写っている場合は、先に隠してから使ってください。`}
-      </p>
+      <p className="app-ai-notice">{m.ai.notice(dom !== undefined)}</p>
       <label className="app-ai-consent">
         <input type="checkbox" checked={consent} onChange={(e) => setConsent(e.target.checked)} />
-        この画像を送信してよい
+        {m.ai.consent}
       </label>
       <div className="app-ai-actions">
         <button type="button" disabled={!consent || busy !== null} onClick={() => run("suggest")}>
-          AI に提案してもらう
+          {m.ai.suggest}
         </button>
         <button type="button" disabled={!consent || busy !== null} onClick={() => run("pii")}>
-          個人情報を探す
+          {m.ai.detectPii}
         </button>
       </div>
       {status !== null && (
@@ -116,7 +116,7 @@ export function AiPanel({ doc, dispatch, base, onPiiFound, dom }: AiPanelProps) 
       {error !== null && <p role="alert">{error}</p>}
       {pending.length > 0 && (
         <div className="app-ai-suggestions">
-          <h3>提案（{pending.length} 件）</h3>
+          <h3>{m.ai.suggestions(pending.length)}</h3>
           <ol>
             {pending.map((s) => (
               <li key={ids(s).join(" ")}>
@@ -125,13 +125,13 @@ export function AiPanel({ doc, dispatch, base, onPiiFound, dom }: AiPanelProps) 
                   type="button"
                   onClick={() => dispatch({ type: "apply", ops: adoptSuggestionOps(doc, ids(s)) })}
                 >
-                  採用
+                  {m.ai.adopt}
                 </button>
                 <button
                   type="button"
                   onClick={() => dispatch({ type: "apply", ops: rejectSuggestionOps(doc, ids(s)) })}
                 >
-                  却下
+                  {m.ai.reject}
                 </button>
               </li>
             ))}
@@ -141,13 +141,13 @@ export function AiPanel({ doc, dispatch, base, onPiiFound, dom }: AiPanelProps) 
               type="button"
               onClick={() => dispatch({ type: "apply", ops: adoptSuggestionOps(doc, allIds) })}
             >
-              すべて採用
+              {m.ai.adoptAll}
             </button>
             <button
               type="button"
               onClick={() => dispatch({ type: "apply", ops: rejectSuggestionOps(doc, allIds) })}
             >
-              すべて却下
+              {m.ai.rejectAll}
             </button>
           </p>
         </div>

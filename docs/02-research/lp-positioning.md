@@ -87,7 +87,7 @@ GitHub Pages で公開する LP のために、近いツールの訴求を調べ
 | 1 枚の画像に、元の画面と注釈が入っている。 | One image holds the original screen and the annotations. |
 | 何の画面かは伝わるまま、個人情報だけ消す。 | Remove personal data, keep the meaning. |
 
-- エディタの画面は今は日本語だけなので、英語版ではそのことをヒーローの注記と Web の説明に書く。
+- エディタの画面は英語と日本語に対応している（NFR-I18N-01）。英語版ではそのことをヒーローの注記と Web の説明に書く（設定で切り替えられる）。
 - 見本画像は英語の画面（架空の Tasklane）で作る。
 
 ## 4. ページ構成

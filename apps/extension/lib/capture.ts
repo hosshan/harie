@@ -1,7 +1,9 @@
 // キャプチャの本体（service worker で動く）。可視範囲を撮り、必要なら切り抜き、DOM 情報と一緒に保存してエディタを開く
+import { getLocale, type Locale } from "@harie/editor/locale";
 import { browser } from "wxt/browser";
 import { putCapture } from "./capture-store";
 import { collectDomSnapshot } from "./collect";
+import { extensionMessages } from "./messages";
 import {
   type CssRect,
   captureFileName,
@@ -11,6 +13,18 @@ import {
 } from "./snapshot";
 
 export type CaptureMode = "visible" | "region" | "element";
+
+/**
+ * 失敗の文・選択のオーバーレイの言語。service worker は localStorage を読めないので、
+ * ポップアップから渡された言語（エディタの設定と同じもの）を覚えておく。渡されるまではブラウザの言語
+ */
+let locale: Locale = getLocale();
+
+export function setCaptureLocale(next: Locale): void {
+  locale = next;
+}
+
+const messages = () => extensionMessages(locale);
 
 type Tab = {
   id?: number | undefined;
@@ -24,10 +38,12 @@ export async function startSelection(tab: Tab, mode: "region" | "element"): Prom
   const tabId = requireTabId(tab);
   await browser.scripting.executeScript({
     target: { tabId },
-    func: (m: string) => {
-      (window as Window & { __harieSelectMode?: string }).__harieSelectMode = m;
+    func: (m: string, hint: string) => {
+      const w = window as Window & { __harieSelectMode?: string; __harieSelectHint?: string };
+      w.__harieSelectMode = m;
+      w.__harieSelectHint = hint;
     },
-    args: [mode],
+    args: [mode, mode === "region" ? messages().dragHint : messages().clickHint],
   });
   await browser.scripting.executeScript({ target: { tabId }, files: ["/select.js"] });
 }
@@ -67,10 +83,10 @@ export async function finishCapture(
   try {
     if (crop !== null) {
       imageRect = toImageRect(crop, scale, full);
-      if (imageRect.w === 0 || imageRect.h === 0) throw new Error("選んだ範囲が空です");
+      if (imageRect.w === 0 || imageRect.h === 0) throw new Error(messages().emptyRange);
       const canvas = new OffscreenCanvas(imageRect.w, imageRect.h);
       const ctx = canvas.getContext("2d");
-      if (ctx === null) throw new Error("画像を切り抜けませんでした");
+      if (ctx === null) throw new Error(messages().cropFailed);
       ctx.drawImage(
         bitmap,
         imageRect.x,
@@ -111,7 +127,7 @@ export async function finishCapture(
 }
 
 function requireTabId(tab: Tab): number {
-  if (tab.id === undefined) throw new Error("キャプチャするタブがありません");
+  if (tab.id === undefined) throw new Error(messages().noTab);
   return tab.id;
 }
 
@@ -119,7 +135,7 @@ function requireTabId(tab: Tab): number {
 export function captureErrorMessage(e: unknown): string {
   const text = e instanceof Error ? e.message : String(e);
   if (/cannot be scripted|Cannot access|chrome:\/\/|extensions gallery/i.test(text)) {
-    return "このページはブラウザの制限でキャプチャできません。通常のウェブページで試してください。";
+    return messages().restricted;
   }
-  return `キャプチャできませんでした: ${text}`;
+  return messages().failedWith(text);
 }

@@ -3,6 +3,7 @@
 import { type ReactNode, useState } from "react";
 import type { HeaderAction } from "./Header";
 import { Modal } from "./Modal";
+import { useWebMessages } from "./messages";
 
 const REPO_URL = "https://github.com/hosshan/harie";
 
@@ -24,21 +25,17 @@ pnpm --filter @harie/extension build`;
 
 /** 「連携」の操作（ヘッダーのボタン、狭い画面では三点メニューの項目）と、その案内のダイアログ */
 export function useGuide(): { action: HeaderAction; dialog: ReactNode } {
+  const m = useWebMessages();
   const [open, setOpen] = useState(false);
   return {
-    action: { icon: "link", label: "連携", onSelect: () => setOpen(true) },
+    action: { icon: "link", label: m.guide.button, onSelect: () => setOpen(true) },
     dialog: (
-      <Modal
-        open={open}
-        label="ほかのツールと使う"
-        onClose={() => setOpen(false)}
-        className="app-guide"
-      >
+      <Modal open={open} label={m.guide.title} onClose={() => setOpen(false)} className="app-guide">
         <McpGuide />
         <ExtensionGuide />
         <p className="app-modal-actions">
           <button type="button" onClick={() => setOpen(false)}>
-            閉じる
+            {m.guide.close}
           </button>
         </p>
       </Modal>
@@ -46,35 +43,39 @@ export function useGuide(): { action: HeaderAction; dialog: ReactNode } {
   };
 }
 
+/** 文と、その間に挟むコード（奇数番目の要素を <code> にする）。文言の語順は言語ごとに違うため、文言側で並べる */
+function WithCode({ parts }: { parts: readonly string[] }) {
+  return parts.map((part, i) =>
+    // biome-ignore lint/suspicious/noArrayIndexKey: 文言の並びは固定で、順番が変わらない
+    i % 2 === 1 ? <code key={i}>{part}</code> : part,
+  );
+}
+
 function ExtensionGuide() {
+  const m = useWebMessages().guide;
   return (
-    <section className="app-guide-section" aria-label="Chrome 拡張">
-      <h2>Chrome 拡張でキャプチャする</h2>
-      <p className="harie-muted">
-        表示中のページを撮って、そのまま Harie
-        で注釈を付けられます。見えている範囲・ドラッグした範囲・ボタンなどの要素を選んで撮れます。
-      </p>
-      <p>Chrome ウェブストアには未公開のため、今はソースからビルドして読み込みます。</p>
+    <section className="app-guide-section" aria-label={m.extensionLabel}>
+      <h2>{m.extensionTitle}</h2>
+      <p className="harie-muted">{m.extensionAbout}</p>
+      <p>{m.extensionUnpublished}</p>
       <ol>
         <li>
-          Node.js 22 以上と pnpm を用意し、次を実行します。
-          <CopyBlock label="拡張をビルドするコマンド" text={EXTENSION_BUILD} />
+          {m.extensionStep1}
+          <CopyBlock label={m.extensionBuild} text={EXTENSION_BUILD} />
         </li>
         <li>
-          Chrome で <code>chrome://extensions</code> を開き、「デベロッパーモード」をオンにします。
+          <WithCode parts={m.extensionStep2("chrome://extensions")} />
         </li>
         <li>
-          「パッケージ化されていない拡張機能を読み込む」で{" "}
-          <code>apps/extension/.output/chrome-mv3</code> を選びます。
+          <WithCode parts={m.extensionStep3("apps/extension/.output/chrome-mv3")} />
         </li>
         <li>
-          ツールバーの Harie を押すか Alt+Shift+S で撮れます。保存した <code>*.harie.png</code>{" "}
-          はこの Web 版でも開いて直せます。
+          <WithCode parts={m.extensionStep4("*.harie.png")} />
         </li>
       </ol>
       <p>
         <a href={REPO_URL} target="_blank" rel="noreferrer">
-          GitHub のリポジトリを開く
+          {m.repo}
         </a>
       </p>
     </section>
@@ -82,34 +83,34 @@ function ExtensionGuide() {
 }
 
 function McpGuide() {
+  const m = useWebMessages().guide;
   return (
     <section className="app-guide-section" aria-label="MCP">
-      <h2>Claude から編集する（MCP）</h2>
+      <h2>{m.mcpTitle}</h2>
       <p className="harie-muted">
-        MCP サーバー <code>@harie/mcp</code> を登録すると、Claude
-        に「保存ボタンを赤枠で囲んで」のように頼んで注釈を付け・直せます。Node.js 22
-        以上が必要です。操作できるのは <code>--root</code> で指定したフォルダの中だけです。
+        <WithCode parts={m.mcpAbout("@harie/mcp", "--root")} />
       </p>
       <h3>Claude Code</h3>
-      <CopyBlock label="Claude Code に登録するコマンド" text={MCP_COMMAND} />
+      <CopyBlock label={m.claudeCodeCommand} text={MCP_COMMAND} />
       <h3>Claude Desktop</h3>
       <p className="harie-muted">
-        <code>claude_desktop_config.json</code> に追加します。フォルダは自分のパスに変えてください。
+        <WithCode parts={m.desktopAbout("claude_desktop_config.json")} />
       </p>
-      <CopyBlock label="Claude Desktop の設定" text={MCP_DESKTOP_CONFIG} />
+      <CopyBlock label={m.desktopConfig} text={MCP_DESKTOP_CONFIG} />
     </section>
   );
 }
 
 /** コマンドや設定の文字列と、コピーするボタン */
 function CopyBlock({ label, text }: { label: string; text: string }) {
+  const m = useWebMessages().guide;
   const [copied, setCopied] = useState(false);
   return (
     <figure className="app-guide-copy" aria-label={label}>
       <pre>{text}</pre>
       <button
         type="button"
-        aria-label={`${label}をコピー`}
+        aria-label={m.copyLabel(label)}
         onClick={async () => {
           try {
             await navigator.clipboard.writeText(text);
@@ -119,7 +120,7 @@ function CopyBlock({ label, text }: { label: string; text: string }) {
           }
         }}
       >
-        {copied ? "コピーしました" : "コピー"}
+        {copied ? m.copied : m.copy}
       </button>
     </figure>
   );

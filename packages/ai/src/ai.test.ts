@@ -121,6 +121,20 @@ describe("補足の提案（FR-AI-01〜03）", () => {
     expect(buildSuggestPrompt({ image, doc, intent: "" })).toContain("指定なし");
   });
 
+  it("NFR-I18N-01: 表示言語が英語なら、説明文を英語で書くよう頼み、文字数の上限を広げる", async () => {
+    expect(buildSuggestPrompt({ image, doc, intent: "", language: "en" })).toContain("英語で書く");
+    expect(buildSuggestPrompt({ image, doc, intent: "" })).not.toContain("英語で書く");
+    const long = "Click the Save button. ".repeat(10);
+    const output = {
+      suggestions: [
+        { target: { x: 50, y: 100, width: 150, height: 30 }, elementIndex: null, text: long },
+      ],
+    };
+    const [en] = toSuggestions(output, { image, doc, language: "en" });
+    const [ja] = toSuggestions(output, { image, doc });
+    expect(en?.text.length).toBeGreaterThan(ja?.text.length ?? 0);
+  });
+
   it("LLM の出力がスキーマに合わなければ使わない", async () => {
     const client = mockClient({ suggestions: [{ target: "左上", text: 1 }] });
     await expect(suggestAnnotations({ client, image, doc, intent: "" })).rejects.toThrow();

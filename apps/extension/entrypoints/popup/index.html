@@ -14,11 +14,11 @@
     </style>
   </head>
   <body>
-    <h1><img src="/icon/32.png" alt="" />Harie でキャプチャ</h1>
-    <button type="button" data-mode="visible">見えている範囲</button>
-    <button type="button" data-mode="region">範囲を選ぶ</button>
-    <button type="button" data-mode="element">要素を選ぶ</button>
-    <p class="muted">撮った画像は Harie のエディタで開きます。画像とページの情報は、AI を使うまでこの端末から出ません。</p>
+    <h1><img src="/icon/32.png" alt="" /><span data-message="popupTitle">Harie でキャプチャ</span></h1>
+    <button type="button" data-mode="visible" data-message="visible">見えている範囲</button>
+    <button type="button" data-mode="region" data-message="region">範囲を選ぶ</button>
+    <button type="button" data-mode="element" data-message="element">要素を選ぶ</button>
+    <p class="muted" data-message="popupNote">撮った画像は Harie のエディタで開きます。画像とページの情報は、AI を使うまでこの端末から出ません。</p>
     <p role="alert" hidden></p>
     <script type="module" src="./main.ts"></script>
   </body>

@@ -9,6 +9,7 @@
     "./load": "./src/load.ts",
     "./save": "./src/save.ts",
     "./fonts": "./src/fonts.ts",
+    "./messages": "./src/messages.ts",
     "./styles.css": "./src/styles.css"
   },
   "scripts": {

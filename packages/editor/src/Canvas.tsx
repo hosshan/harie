@@ -21,6 +21,8 @@ import {
   resizePatch,
 } from "./geometry";
 import { type EditorAction, type EditorState, newAnnotationId } from "./history";
+import { EDITOR_MESSAGES } from "./i18n/messages";
+import { useMessages } from "./i18n/use-locale";
 import { type AppliedMask, hitAppliedMask, type MaskDraft, maskRect } from "./masks";
 import { TextEditor } from "./TextEditor";
 
@@ -140,6 +142,7 @@ export function Canvas({
   onDraggingChange,
   drawDefaults = {},
 }: CanvasProps) {
+  const m = useMessages(EDITOR_MESSAGES);
   const overlay = useRef<SVGSVGElement>(null);
   const [drag, setDrag] = useState<Drag | null>(null);
   /** その場で文字を編集している注釈（ダブルクリック、またはテキスト・吹き出しを置いた直後） */
@@ -205,9 +208,9 @@ export function Canvas({
       };
       const annotation =
         tool === "text"
-          ? { id, type: "text", ...at, text: "テキスト" }
+          ? { id, type: "text", ...at, text: m.canvas.newText }
           : tool === "callout"
-            ? { id, type: "callout", ...at, w: 240, text: "説明文を入力" }
+            ? { id, type: "callout", ...at, w: 240, text: m.canvas.newCallout }
             : {
                 id,
                 type: "badge",
@@ -304,7 +307,7 @@ export function Canvas({
         viewBox={`0 0 ${width} ${height}`}
         data-tool={tool}
         role="application"
-        aria-label="注釈の編集面"
+        aria-label={m.canvas.label}
         onPointerDown={onPointerDown}
         onPointerMove={onPointerMove}
         onPointerUp={onPointerUp}

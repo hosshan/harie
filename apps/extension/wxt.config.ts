@@ -8,9 +8,10 @@ const e2e = process.env.HARIE_E2E === "1";
 export default defineConfig({
   outDir: e2e ? ".output-e2e" : ".output",
   manifest: {
-    name: "Harie",
-    description:
-      "表示中のページをキャプチャし、枠・矢印・説明文を付けて、あとから何度でも直せる画像にする",
+    // 名前・説明・ボタンの題名は public/_locales の文言を使う（ブラウザの言語で切り替わる。NFR-I18N-01）
+    name: "__MSG_extName__",
+    description: "__MSG_extDescription__",
+    default_locale: "en",
     // NFR-SEC-03: 常時のサイト権限は取らない。ボタン・ショートカットを押したタブにだけ一時的にアクセスする
     permissions: ["activeTab", "scripting", "downloads"],
     ...(e2e ? { host_permissions: ["<all_urls>"] } : {}),
@@ -18,11 +19,11 @@ export default defineConfig({
     content_security_policy: {
       extension_pages: "script-src 'self' 'wasm-unsafe-eval'; object-src 'self'",
     },
-    action: { default_title: "Harie でキャプチャ" },
+    action: { default_title: "__MSG_actionTitle__" },
     commands: {
       "capture-visible": {
         suggested_key: { default: "Alt+Shift+S" },
-        description: "見えている範囲をキャプチャする",
+        description: "__MSG_captureVisible__",
       },
     },
     icons: { 16: "icon/16.png", 32: "icon/32.png", 48: "icon/48.png", 128: "icon/128.png" },

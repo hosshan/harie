@@ -198,6 +198,24 @@ input {
 .app-settings form {
   gap: 10px;
 }
+.app-settings-section + .app-settings-section {
+  margin-top: 20px;
+}
+.app-settings-languages {
+  display: flex;
+  gap: 8px;
+}
+.app-settings-languages button {
+  flex: 1;
+}
+/* 選んでいる言語は、右の欄のタイルと同じく淡い黄土色の地と黄土色の枠で示す */
+.app-settings-languages button[aria-pressed="true"] {
+  background: var(--surface);
+  border-color: var(--accent-strong);
+  box-shadow: 0 0 0 1px var(--accent-strong);
+  color: var(--accent-text);
+  font-weight: 600;
+}
 .app-settings-row {
   display: flex;
   align-items: center;

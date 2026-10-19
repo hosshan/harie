@@ -7,6 +7,7 @@ import {
   readImageSize,
 } from "@harie/format";
 import { createDocument, type HarieDocument } from "@harie/model";
+import { type WebMessages, webMessages } from "./messages";
 
 export type Opened = {
   fileName: string;
@@ -27,17 +28,8 @@ export type Opened = {
 
 export type LoadResult = { ok: true; opened: Opened } | { ok: false; message: string };
 
-const MISMATCH_MESSAGES: Record<MismatchReason, string> = {
-  PayloadMissing: "注釈データの一部が失われています。画像だけを開きました。",
-  PayloadCorrupted: "注釈データが壊れています。画像だけを開きました。",
-  RenderedImageModified:
-    "画像が別のアプリで編集されています。保存されていた注釈と元の画像で開きました（別のアプリでの変更は反映されていません）。",
-  UnsupportedVersion: "新しいバージョンの Harie で保存されたファイルです。画像だけを開きました。",
-  InvalidDocument: "注釈データを読めません。画像だけを開きました。",
-};
-
-export function mismatchMessage(reason: MismatchReason): string {
-  return MISMATCH_MESSAGES[reason];
+export function mismatchMessage(m: WebMessages, reason: MismatchReason): string {
+  return m.load.mismatch[reason];
 }
 
 export function loadFile(fileName: string, bytes: Uint8Array, now = new Date()): LoadResult {
@@ -75,9 +67,9 @@ export function loadFile(fileName: string, bytes: Uint8Array, now = new Date()):
     case "plain":
       return plain(fileName, bytes, read.format, now);
     case "unsupported":
-      return { ok: false, message: "JPEG か PNG の画像を開いてください。" };
+      return { ok: false, message: webMessages().load.unsupported };
     case "corrupted":
-      return { ok: false, message: "画像が壊れているため開けません。" };
+      return { ok: false, message: webMessages().load.corrupted };
   }
 }
 
@@ -89,7 +81,7 @@ function plain(
   warning?: MismatchReason,
 ): LoadResult {
   const size = readImageSize(bytes);
-  if (size === null) return { ok: false, message: "画像の大きさを読めません。" };
+  if (size === null) return { ok: false, message: webMessages().load.noSize };
   return {
     ok: true,
     opened: {

@@ -4,6 +4,7 @@ import { loadDisplayFonts } from "./fonts";
 import { useGuide } from "./Guide";
 import { Header, HeaderButton } from "./Header";
 import { loadFile, type Opened } from "./load";
+import { useWebMessages, webMessages } from "./messages";
 import { deliver, type Saved } from "./save";
 import { Workspace } from "./Workspace";
 
@@ -12,20 +13,28 @@ type PickerWindow = Window & {
   showSaveFilePicker?: (options?: object) => Promise<FileSystemFileHandle>;
 };
 
-const IMAGE_TYPES = [
-  { description: "画像", accept: { "image/jpeg": [".jpg", ".jpeg"], "image/png": [".png"] } },
-];
-
 /**
  * 保存ダイアログの種類は、保存する形式の 1 つだけにする。
  * 両方を渡すと、ダイアログの既定の形式が先頭（JPEG）になり、PNG を保存するときに拡張子がずれることがある
  */
-const SAVE_TYPES = {
-  jpeg: [{ description: "JPEG 画像", accept: { "image/jpeg": [".jpg", ".jpeg"] } }],
-  png: [{ description: "PNG 画像", accept: { "image/png": [".png"] } }],
-} as const;
+function saveTypes(format: "jpeg" | "png") {
+  const m = webMessages().open;
+  return format === "png"
+    ? [{ description: m.pngFiles, accept: { "image/png": [".png"] } }]
+    : [{ description: m.jpegFiles, accept: { "image/jpeg": [".jpg", ".jpeg"] } }];
+}
+
+function imageTypes() {
+  return [
+    {
+      description: webMessages().open.imageFiles,
+      accept: { "image/jpeg": [".jpg", ".jpeg"], "image/png": [".png"] },
+    },
+  ];
+}
 
 export function App() {
+  const m = useWebMessages();
   const [opened, setOpened] = useState<Opened | null>(null);
   const [handle, setHandle] = useState<FileSystemFileHandle | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -85,7 +94,7 @@ export function App() {
       return;
     }
     try {
-      const [h] = await w.showOpenFilePicker({ types: IMAGE_TYPES });
+      const [h] = await w.showOpenFilePicker({ types: imageTypes() });
       if (h !== undefined) await open(await h.getFile(), h);
     } catch {
       // 選択をやめた
@@ -99,7 +108,7 @@ export function App() {
         ref={input}
         type="file"
         accept="image/jpeg,image/png"
-        aria-label="画像ファイル"
+        aria-label={m.open.imageFiles}
         hidden
         onChange={(e) => {
           const file = e.target.files?.[0];
@@ -117,23 +126,15 @@ export function App() {
           <Header
             primary={
               <HeaderButton icon="open" variant="default" onClick={pick}>
-                画像を開く
+                {m.open.button}
               </HeaderButton>
             }
             actions={[guide.action]}
           />
           <div className="app-drop">
-            <p>
-              スクリーンショットをドラッグ＆ドロップするか、貼り付け（Ctrl / ⌘ + V）してください。
-            </p>
-            <p className="harie-muted">
-              JPEG と PNG に対応しています。保存した画像は普通の画像として使え、Harie
-              で開けば注釈を直せます。
-            </p>
-            <p className="harie-muted">
-              Chrome 拡張でのキャプチャと、Claude
-              からの編集（MCP）の始め方は、右上の「連携」（狭い画面では「…」の中）にあります。
-            </p>
+            <p>{m.open.dropHint}</p>
+            <p className="harie-muted">{m.open.formats}</p>
+            <p className="harie-muted">{m.open.integrations}</p>
           </div>
         </>
       ) : (
@@ -148,7 +149,7 @@ export function App() {
             if (target === null && handle !== null && w.showSaveFilePicker !== undefined) {
               target = await w.showSaveFilePicker({
                 suggestedName: saved.fileName,
-                types: SAVE_TYPES[saved.format],
+                types: saveTypes(saved.format),
               });
             }
             await deliver(saved, target);

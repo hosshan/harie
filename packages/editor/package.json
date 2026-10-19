@@ -5,6 +5,7 @@
   "type": "module",
   "exports": {
     ".": "./src/index.ts",
+    "./locale": "./src/i18n/locale.ts",
     "./editor.css": "./src/editor.css"
   },
   "scripts": {

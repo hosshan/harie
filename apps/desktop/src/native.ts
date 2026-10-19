@@ -1,18 +1,23 @@
 // OS のファイルダイアログと、画像ファイルの読み書き（src-tauri/src/lib.rs のコマンド）
 import type { ImageFormat } from "@harie/format";
+import { webMessages } from "@harie/web/messages";
 import { invoke } from "@tauri-apps/api/core";
 import { ask, open, save } from "@tauri-apps/plugin-dialog";
 import { withExtension } from "./paths";
 
-const FILTERS = {
-  open: [{ name: "画像", extensions: ["jpg", "jpeg", "png"] }],
-  jpeg: [{ name: "JPEG 画像", extensions: ["jpg", "jpeg"] }],
-  png: [{ name: "PNG 画像", extensions: ["png"] }],
-};
+/** ダイアログの種類。名前は表示言語に合わせる */
+function filters() {
+  const m = webMessages().open;
+  return {
+    open: [{ name: m.imageFiles, extensions: ["jpg", "jpeg", "png"] }],
+    jpeg: [{ name: m.jpegFiles, extensions: ["jpg", "jpeg"] }],
+    png: [{ name: m.pngFiles, extensions: ["png"] }],
+  };
+}
 
 /** 開く画像を選ぶ。取りやめたら null */
 export async function chooseImage(): Promise<string | null> {
-  const path = await open({ multiple: false, directory: false, filters: FILTERS.open });
+  const path = await open({ multiple: false, directory: false, filters: filters().open });
   return typeof path === "string" ? path : null;
 }
 
@@ -21,7 +26,7 @@ export async function chooseSavePath(
   defaultPath: string,
   format: ImageFormat,
 ): Promise<string | null> {
-  const path = await save({ defaultPath, filters: FILTERS[format] });
+  const path = await save({ defaultPath, filters: filters()[format] });
   return path === null ? null : withExtension(path, format);
 }
 
@@ -43,11 +48,12 @@ export async function takePendingFiles(): Promise<string[]> {
 export const OPEN_FILES_EVENT = "harie://open-files";
 
 /** 保存していない変更を捨ててよいか、OS のダイアログで確かめる */
-export async function confirmDiscard(action: string): Promise<boolean> {
-  return await ask(`保存していない変更があります。保存せずに${action}と、変更は失われます。`, {
+export async function confirmDiscard(action: "open" | "close"): Promise<boolean> {
+  const m = webMessages().desktop;
+  return await ask(action === "open" ? m.discardOpen : m.discardClose, {
     title: "Harie",
     kind: "warning",
-    okLabel: action,
-    cancelLabel: "キャンセル",
+    okLabel: m.discardOk(action),
+    cancelLabel: m.cancel,
   });
 }

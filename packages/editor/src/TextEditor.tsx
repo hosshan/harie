@@ -2,6 +2,8 @@
 import type { Annotation } from "@harie/model";
 import { annotationBounds, FONT_FAMILY, THEMES } from "@harie/render";
 import { useEffect, useRef } from "react";
+import { EDITOR_MESSAGES } from "./i18n/messages";
+import { useMessages } from "./i18n/use-locale";
 
 export type TextEditorProps = {
   annotation: Extract<Annotation, { type: "text" | "callout" }>;
@@ -14,6 +16,7 @@ export type TextEditorProps = {
 };
 
 export function TextEditor({ annotation, frame, onCommit, onCancel }: TextEditorProps) {
+  const m = useMessages(EDITOR_MESSAGES);
   const ref = useRef<HTMLTextAreaElement>(null);
   // 確定・取りやめのあと、外れたときの blur で二重に確定しない
   const done = useRef(false);
@@ -42,8 +45,8 @@ export function TextEditor({ annotation, frame, onCommit, onCancel }: TextEditor
     <textarea
       ref={ref}
       className="harie-text-editor"
-      aria-label="テキストを編集"
-      title="Ctrl / ⌘ + Enter で確定、Esc で取りやめ"
+      aria-label={m.textEditor.label}
+      title={m.textEditor.hint("Ctrl / ⌘ + Enter")}
       defaultValue={annotation.text}
       rows={Math.max(1, annotation.text.split("\n").length)}
       style={{

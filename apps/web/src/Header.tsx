@@ -10,6 +10,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "./components/ui/dropdown-menu";
+import { useWebMessages } from "./messages";
 import { useSettingsDialog } from "./Settings";
 
 /** 広い画面ではボタン、狭い画面では三点メニューの項目として出す操作 */
@@ -37,6 +38,7 @@ export type HeaderProps = {
 };
 
 export function Header({ fileName, status, primary, actions = [], children, menu }: HeaderProps) {
+  const m = useWebMessages();
   const settings = useSettingsDialog();
   const start = actions.filter((a) => a.placement === "start");
   const end = actions.filter((a) => a.placement !== "start");
@@ -79,12 +81,12 @@ export function Header({ fileName, status, primary, actions = [], children, menu
         <div className="app-header-wide">
           {end.map(button)}
           <HeaderButton icon="settings" onClick={settings.open}>
-            設定
+            {m.header.settings}
           </HeaderButton>
         </div>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button className="app-header-more px-2" aria-label="その他の操作">
+            <Button className="app-header-more px-2" aria-label={m.header.more}>
               <HeaderIcon icon="more" />
             </Button>
           </DropdownMenuTrigger>
@@ -95,7 +97,7 @@ export function Header({ fileName, status, primary, actions = [], children, menu
             {end.map(item)}
             <DropdownMenuItem onSelect={settings.open}>
               <HeaderIcon icon="settings" />
-              設定
+              {m.header.settings}
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

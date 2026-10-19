@@ -3,6 +3,7 @@
 import { loadDisplayFonts } from "@harie/web/fonts";
 import { Header, HeaderButton } from "@harie/web/header";
 import { loadFile, type Opened } from "@harie/web/load";
+import { useWebMessages, webMessages } from "@harie/web/messages";
 import type { Saved } from "@harie/web/save";
 import { Workspace } from "@harie/web/workspace";
 import { listen } from "@tauri-apps/api/event";
@@ -21,6 +22,7 @@ import {
 import { baseName, isImagePath, siblingPath } from "./paths";
 
 export function App() {
+  const m = useWebMessages();
   const [opened, setOpened] = useState<Opened | null>(null);
   // 開いている（保存した）ファイルのパス。貼り付けた画像には無い
   const path = useRef<string | null>(null);
@@ -53,7 +55,7 @@ export function App() {
   const openPath = useCallback(
     async (filePath: string) => {
       // D&D・関連付けから開くときは、ヘッダーの「画像を開く」と違って画面の確認を通らないので、ここで確かめる
-      if (dirty.current && !(await confirmDiscard("開く"))) return;
+      if (dirty.current && !(await confirmDiscard("open"))) return;
       try {
         openBytes(baseName(filePath), await readImage(filePath), filePath);
       } catch (e) {
@@ -88,7 +90,7 @@ export function App() {
   // 保存していない変更があれば、ウィンドウを閉じる前に確かめる（WebView の beforeunload は Tauri では確認を出さない）
   useEffect(() => {
     const unlisten = getCurrentWindow().onCloseRequested(async (event) => {
-      if (dirty.current && !(await confirmDiscard("閉じる"))) event.preventDefault();
+      if (dirty.current && !(await confirmDiscard("close"))) event.preventDefault();
     });
     return () => {
       void unlisten.then((f) => f());
@@ -106,7 +108,7 @@ export function App() {
       if (event.payload.type !== "drop") return;
       const dropped = event.payload.paths.find(isImagePath);
       if (dropped !== undefined) void openPath(dropped);
-      else if (event.payload.paths.length > 0) setError("JPEG か PNG の画像を開いてください。");
+      else if (event.payload.paths.length > 0) setError(webMessages().load.unsupported);
     });
     return () => {
       void unlisten.then((f) => f());
@@ -135,7 +137,7 @@ export function App() {
       const suggested =
         path.current === null ? saved.fileName : siblingPath(path.current, saved.fileName);
       target = await chooseSavePath(suggested, saved.format);
-      if (target === null) throw new DOMException("保存をやめました", "AbortError");
+      if (target === null) throw new DOMException(webMessages().save.cancelled, "AbortError");
     }
     await writeImage(target, saved.bytes);
     path.current = target;
@@ -153,18 +155,13 @@ export function App() {
           <Header
             primary={
               <HeaderButton icon="open" variant="default" onClick={pick}>
-                画像を開く
+                {m.open.button}
               </HeaderButton>
             }
           />
           <div className="app-drop">
-            <p>
-              スクリーンショットをドラッグ＆ドロップするか、貼り付け（Ctrl / ⌘ + V）してください。
-            </p>
-            <p className="harie-muted">
-              JPEG と PNG に対応しています。保存した画像は普通の画像として使え、Harie
-              で開けば注釈を直せます。
-            </p>
+            <p>{m.open.dropHint}</p>
+            <p className="harie-muted">{m.open.formats}</p>
           </div>
         </>
       ) : (
