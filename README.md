@@ -1,6 +1,28 @@
-# harie
+<p align="center">
+  <img src="docs/brand/harie-symbol.svg" alt="" width="96">
+</p>
 
-Annotation Image Application: Web サービス向けのガイド作成などで、スクリーンショットに枠・矢印・説明文を付けるアプリ。保存した画像は通常の JPEG / PNG として表示でき、Harie で開けば注釈を何度でも再編集できる。
+<h1 align="center">Harie</h1>
+
+<p align="center"><b>ただの画像なのに、何度でも直せる。</b></p>
+
+<p align="center"><a href="README.en.md">English</a> | 日本語</p>
+
+<p align="center">
+  <a href="https://hosshan.github.io/harie/">サイト</a> ·
+  <a href="https://hosshan.github.io/harie/app/">Web エディタを開く</a> ·
+  <a href="https://www.npmjs.com/package/@harie/mcp">MCP サーバー</a>
+</p>
+
+Web サービス向けのガイド作成などで、スクリーンショットに枠・矢印・説明文を付けるアプリ。保存した画像は通常の JPEG / PNG として表示でき、Harie で開けば注釈を何度でも再編集できる。
+
+![Harie の Web エディタ。設定画面のスクリーンショットに番号・枠・吹き出しを付け、吹き出しを選んで文字を直しているところ](docs/images/editor.png)
+
+保存したファイルはそのまま普通の画像として使える。下の画像も Harie で保存したもので、ダウンロードして [Web エディタ](https://hosshan.github.io/harie/app/)で開くと注釈を選んで直せる。
+
+<p align="center">
+  <img src="apps/site/src/assets/tasklane-notifications.harie.png" alt="Harie で保存した画像。架空のサービス Tasklane の通知設定画面に、番号と説明が付いている" width="640">
+</p>
 
 - ドキュメント: [docs/](docs/README.md)
 - 設計判断: [docs/adr/](docs/adr/README.md)
