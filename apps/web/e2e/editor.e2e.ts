@@ -346,6 +346,7 @@ test("ヘッダーの「画像を開く」は、今の画像を閉じる前に�
   const header = page.getByRole("banner");
   await expect(header.getByRole("button")).toHaveText([
     "画像を開く",
+    "画像を差し替える",
     "JPEG",
     "保存",
     "連携",

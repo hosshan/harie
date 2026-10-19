@@ -7,7 +7,17 @@ import { z } from "zod";
 import pkg from "../package.json" with { type: "json" };
 import { guidePrompt, SERVER_INSTRUCTIONS } from "./guide";
 import { createRootGuard, PathError } from "./paths";
-import { create, edit, list, mask, open, preview, ToolError, type ToolOutput } from "./tools";
+import {
+  create,
+  edit,
+  list,
+  mask,
+  open,
+  preview,
+  replaceBase,
+  ToolError,
+  type ToolOutput,
+} from "./tools";
 
 const OPS_HELP = `ops は操作の配列。座標はベース画像のピクセル（canvas.width × canvas.height）で、左上が原点。
 例: [{"op":"add","annotation":{"id":"r1","type":"rect","x":40,"y":40,"w":200,"h":80}},
@@ -149,6 +159,30 @@ rect はベース画像のピクセル（左上原点）で、文字より少し
       annotations: { destructiveHint: true, idempotentHint: false },
     },
     async (input) => run(() => mask(guard, input)),
+  );
+
+  server.registerTool(
+    "harie_replace_base",
+    {
+      title: "注釈を残して画像を差し替える",
+      description:
+        "Harie ファイルの注釈を残したまま、画像だけを新しいスクリーンショットに差し替えて保存する（画面が変わったときのガイドの更新）。大きさが違えば注釈を比率で拡大縮小する。位置がずれた注釈は保存後の画像を見て harie_edit で直す",
+      inputSchema: {
+        path,
+        imagePath: z.string().describe("新しい画像（JPEG/PNG）のパス"),
+        outPath: z
+          .string()
+          .optional()
+          .describe("別のファイルとして保存する場合の保存先。省略時は上書き"),
+        expectedRevision: z
+          .int()
+          .nonnegative()
+          .optional()
+          .describe("harie_open で得た revision。他で先に保存されていたら失敗させる"),
+      },
+      annotations: { destructiveHint: true, idempotentHint: false },
+    },
+    async (input) => run(() => replaceBase(guard, input)),
   );
 
   server.registerTool(

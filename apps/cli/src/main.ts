@@ -1,5 +1,5 @@
 import { parseArgs } from "node:util";
-import { CliError, create, extract, inspect, mask, render } from "./commands";
+import { CliError, create, extract, inspect, mask, render, replaceBase } from "./commands";
 
 const USAGE = `harie — Harie ファイルの開発用 CLI
 
@@ -11,7 +11,9 @@ const USAGE = `harie — Harie ファイルの開発用 CLI
   harie extract <file> [--doc out.json] [--base out.jpg]
                                                注釈 JSON とベース画像を取り出す
   harie mask <file> --rect x,y,w,h --method fill|mosaic|blur|replace --kind <種別> [--text ダミー] [-o out]
-                                               PII 加工をベース画像に不可逆に適用する（元に戻せない）`;
+                                               PII 加工をベース画像に不可逆に適用する（元に戻せない）
+  harie replace-base <file> --image <new> [-o out]
+                                               注釈を残したまま画像を差し替える。-o 省略時は上書き`;
 
 export async function main(argv: string[]): Promise<number> {
   const { values, positionals } = parseArgs({
@@ -28,6 +30,7 @@ export async function main(argv: string[]): Promise<number> {
       method: { type: "string" },
       kind: { type: "string", default: "other" },
       text: { type: "string" },
+      image: { type: "string" },
       color: { type: "string" },
       help: { type: "boolean", short: "h" },
     },
@@ -72,6 +75,17 @@ export async function main(argv: string[]): Promise<number> {
           ...opt("out"),
         });
         console.log(`保存: ${out}（加工前のベース画像は残していません）`);
+        return 0;
+      }
+      case "replace-base": {
+        if (values.image === undefined) throw new CliError("--image を指定してください");
+        const r = await replaceBase(file, { image: values.image, ...opt("out") });
+        console.log(`保存: ${r.out}`);
+        if (r.previousPii > 0) {
+          console.log(
+            `前の画像でマスクしていた ${r.previousPii} か所は新しい画像にかかっていません。必要なら harie mask でかけ直してください`,
+          );
+        }
         return 0;
       }
       default:

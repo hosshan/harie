@@ -4,6 +4,7 @@ import { basename, dirname, join } from "node:path";
 import {
   type BaseMediaType,
   type ImageFormat,
+  readBaseImage,
   readHarie,
   readImageSize,
   writeHarie,
@@ -17,6 +18,7 @@ import {
   recordPiiApplied,
   renameForSave,
 } from "@harie/model";
+import { rebaseDocument } from "@harie/render";
 import { nodeRenderer } from "./runtime";
 
 /** 利用者に見せるエラー。スタックトレースを出さずにメッセージだけ表示する。 */
@@ -231,4 +233,21 @@ export async function mask(
     format: loaded.format,
   };
   return save(masked, options.out ?? path, options.now);
+}
+
+/**
+ * 注釈を残したまま、ベース画像を新しい画像に差し替えて保存する（FR-EDIT-10）。大きさが違えば注釈を比率で合わせる。
+ * 新しい画像はマスクしていないので PII 加工の記録は外し、前の画像でマスクしていた範囲の数を返す（ADR-0007）。
+ */
+export async function replaceBase(
+  path: string,
+  options: { image: string; out?: string; now?: Date },
+): Promise<{ out: string; previousPii: number }> {
+  const loaded = loadHarie(path);
+  const image = readBaseImage(new Uint8Array(readFileSync(options.image)));
+  if (image === null) throw new CliError(`${options.image}: JPEG / PNG として読めません`);
+  const { doc, previousPii } = rebaseDocument(loaded.doc, image);
+  const base = { bytes: image.bytes, mediaType: image.mediaType };
+  const out = await save({ doc, base, format: loaded.format }, options.out ?? path, options.now);
+  return { out, previousPii: previousPii.length };
 }

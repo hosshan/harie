@@ -3,7 +3,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { readHarie } from "@harie/format";
 import { describe, expect, it } from "vitest";
-import { CliError, create, extract, inspect, mask, render } from "./commands";
+import { CliError, create, extract, inspect, mask, render, replaceBase } from "./commands";
 
 const FIXTURES = new URL("../../../packages/format/fixtures/", import.meta.url);
 const NOW = new Date("2026-10-07T00:00:00Z");
@@ -109,5 +109,28 @@ describe("harie CLI", () => {
     const dir = workdir();
     await expect(render(join(dir, "screen.png"))).rejects.toThrow("harie create");
     expect(() => extract(join(dir, "screen.png"), { doc: join(dir, "d.json") })).toThrow(CliError);
+  });
+
+  it("FR-EDIT-10: replace-base で注釈を残したまま画像を差し替え、大きさに合わせて注釈を拡大縮小する", async () => {
+    const dir = workdir();
+    writeFileSync(join(dir, "new.jpg"), readFileSync(new URL("large-base.jpg", FIXTURES)));
+    const file = await create(join(dir, "screen.png"), { now: NOW });
+    extract(file, { doc: join(dir, "doc.json") });
+    const doc = JSON.parse(readFileSync(join(dir, "doc.json"), "utf8"));
+    doc.annotations = [{ id: "r1", type: "rect", x: 8, y: 4, w: 16, h: 8 }];
+    writeFileSync(join(dir, "doc.json"), JSON.stringify(doc));
+    await render(file, { doc: join(dir, "doc.json"), now: NOW });
+    await mask(file, { rect: "0,0,10,10", method: "fill", kind: "other", now: NOW });
+
+    const r = await replaceBase(file, { image: join(dir, "new.jpg"), now: NOW });
+    expect(r).toEqual({ out: file, previousPii: 1 });
+    const read = readFile(file);
+    if (read.kind !== "harie") throw new Error(read.kind);
+    expect(read.format).toBe("png");
+    expect(read.doc.canvas).toMatchObject({ width: 520, height: 400 });
+    expect(read.doc.annotations[0]).toMatchObject({ x: 65, y: 40, w: 130, h: 80 });
+    expect(read.doc.pii.applied).toEqual([]);
+    expect(read.base.bytes).toEqual(new Uint8Array(readFileSync(join(dir, "new.jpg"))));
+    await expect(replaceBase(file, { image: join(dir, "doc.json") })).rejects.toThrow(CliError);
   });
 });

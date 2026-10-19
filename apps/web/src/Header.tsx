@@ -138,6 +138,13 @@ const ICONS = {
       <path d="M14 10a4 4 0 00-5.7 0l-3 3a4 4 0 005.7 5.7l1.2-1.2" />
     </>
   ),
+  replace: (
+    <>
+      <rect x="3.5" y="5" width="17" height="14" rx="1.5" />
+      <path d="M8 13.5a4 4 0 017-2.6M16 10.5a4 4 0 01-7 2.6" />
+      <path d="M15.5 8v3h-3M8.5 16v-3h3" />
+    </>
+  ),
   chevron: <path d="M7 10l5 5 5-5" />,
   more: (
     <>

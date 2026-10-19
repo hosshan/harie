@@ -7,8 +7,9 @@ import {
   useEditorState,
   useObjectUrl,
 } from "@harie/editor";
-import type { ImageFormat } from "@harie/format";
+import { type ImageFormat, readBaseImage } from "@harie/format";
 import { type PiiMask, recordPiiApplied } from "@harie/model";
+import { rebaseDocument } from "@harie/render";
 import { useEffect, useRef, useState } from "react";
 import { AiPanel } from "./ai/AiPanel";
 import { browserRenderer } from "./browser-renderer";
@@ -60,10 +61,14 @@ export function Workspace({
   // 保存するまでは、適用したマスクを外せるように加工前の画像を持つ（ADR-0009）
   const [unsaved, setUnsaved] = useState<UnsavedMasks | null>(null);
   const [confirmOpen, setConfirmOpen] = useState(false);
+  // 画像を差し替えたら、キャプチャ時の DOM 情報は今の画像と合わないので使わない
+  const [rebased, setRebased] = useState(false);
+  const replaceInput = useRef<HTMLInputElement>(null);
   const savedDoc = useRef(opened.doc);
   const dirty =
     state.doc.annotations !== savedDoc.current.annotations ||
-    state.doc.pii !== savedDoc.current.pii;
+    state.doc.pii !== savedDoc.current.pii ||
+    state.doc.canvas !== savedDoc.current.canvas;
 
   const baseImageUrl = useObjectUrl(opened.base.bytes, opened.base.mediaType);
 
@@ -153,8 +158,50 @@ export function Workspace({
     setStatus("隠すのをやめました");
   };
 
+  // 注釈を残したまま、画像だけを新しいキャプチャに差し替える（FR-EDIT-10）。大きさが違えば注釈を比率で合わせる。
+  // 元の画像にかけていたマスクは新しい画像にはかかっていないので、同じ範囲を下書きにしてかけ直してもらう（ADR-0007）
+  const replaceBase = async (file: File) => {
+    const next = readBaseImage(new Uint8Array(await file.arrayBuffer()));
+    if (next === null) {
+      setStatus("JPEG か PNG の画像を選んでください");
+      return;
+    }
+    const { doc, previousPii } = rebaseDocument(state.doc, next);
+    dispatch({ type: "reset", doc });
+    setUnsaved(null);
+    setMasks(
+      addDetectedMasks(
+        [],
+        previousPii.map((p) => ({ ...p, replacement: "" })),
+      ),
+    );
+    setRebased(true);
+    setShowWarning(false);
+    const { alternative: _, warning: __, ...rest } = opened;
+    onChange({ ...rest, base: { bytes: next.bytes, mediaType: next.mediaType } });
+    const resized =
+      next.width === state.doc.canvas.width && next.height === state.doc.canvas.height
+        ? ""
+        : "注釈を新しい画像の大きさに合わせました。";
+    setStatus(
+      `画像を差し替えました。${resized}${previousPii.length > 0 ? `前の画像でマスクしていた ${previousPii.length} か所は、かけ直してください` : ""}`,
+    );
+  };
+
   return (
     <>
+      <input
+        ref={replaceInput}
+        type="file"
+        accept="image/jpeg,image/png"
+        aria-label="差し替える画像"
+        hidden
+        onChange={(e) => {
+          const file = e.target.files?.[0];
+          if (file !== undefined) void replaceBase(file);
+          e.target.value = "";
+        }}
+      />
       <Header
         fileName={opened.fileName}
         status={status}
@@ -174,6 +221,13 @@ export function Workspace({
                   placement: "start",
                 } satisfies HeaderAction,
               ]),
+          {
+            icon: "replace",
+            label: "画像を差し替える",
+            onSelect: () => replaceInput.current?.click(),
+            disabled: saving,
+            placement: "start",
+          },
           ...actions,
         ]}
         menu={<SaveFormatMenuItems value={format} onChange={setFormat} disabled={saving} />}
@@ -235,7 +289,7 @@ export function Workspace({
               doc={state.doc}
               dispatch={dispatch}
               base={opened.base}
-              {...(dom === undefined ? {} : { dom })}
+              {...(dom === undefined || rebased ? {} : { dom })}
               onPiiFound={(found) => setMasks((current) => addDetectedMasks(current, found))}
             />
           }

@@ -19,6 +19,7 @@ The server never calls an LLM. The client's LLM looks at the image and decides w
 | `harie_edit` | Applies annotation changes, re-renders and overwrites the file. `expectedRevision` provides optimistic locking |
 | `harie_list` | Lists Harie files in a directory |
 | `harie_mask` | Hides personal information by burning it into the base image (irreversible). Saves only with `confirm: true`; without it, only the masked image is returned |
+| `harie_replace_base` | Replaces the image with a new screenshot while keeping the annotations (for when the screen changed). If the size differs, annotations are scaled to fit. Masks from the old image are not carried over; their areas are returned as `previousPii` |
 
 The server can only access files under the directory given by `--root` (default: the current directory). `harie_mask` rewrites the base image, so the change cannot be undone once saved. To keep the original, save to another file with `outPath`.
 
