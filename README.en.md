@@ -9,8 +9,8 @@
 <p align="center">English | <a href="README.md">日本語</a></p>
 
 <p align="center">
-  <a href="https://hosshan.github.io/harie/en/">Website</a> ·
-  <a href="https://hosshan.github.io/harie/app/">Open the web editor</a> ·
+  <a href="https://harie.studio/en/">Website</a> ·
+  <a href="https://harie.studio/app/">Open the web editor</a> ·
   <a href="https://www.npmjs.com/package/@harie/mcp">MCP server</a>
 </p>
 
@@ -18,7 +18,7 @@ An app for adding boxes, arrows and captions to screenshots, for example when wr
 
 ![The Harie web editor. A screenshot of a settings page has numbers, boxes and callouts, and a callout is selected to edit its text](docs/images/editor.en.png)
 
-A saved file works as a normal image as is. The image below was saved with Harie too: download it and open it in the [web editor](https://hosshan.github.io/harie/app/) to select and edit its annotations.
+A saved file works as a normal image as is. The image below was saved with Harie too: download it and open it in the [web editor](https://harie.studio/app/) to select and edit its annotations.
 
 <p align="center">
   <img src="apps/site/src/assets/tasklane-notifications.en.harie.png" alt="An image saved with Harie: the notification settings of a fictional service, Tasklane, with numbered steps and captions" width="640">

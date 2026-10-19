@@ -4,7 +4,7 @@ import { defineConfig } from "vite";
 import { VitePWA } from "vite-plugin-pwa";
 
 export default defineConfig({
-  // GitHub Pages ではサブパス（/harie/app/）に置くため、配信先のパスを環境変数で変えられるようにする
+  // GitHub Pages ではサブパス（/app/）に置くため、配信先のパスを環境変数で変えられるようにする
   base: process.env.HARIE_WEB_BASE ?? "/",
   plugins: [
     react(),
