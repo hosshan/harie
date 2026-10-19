@@ -24,7 +24,7 @@ import { useMessages } from "./i18n/use-locale";
 import { MaskPanel } from "./MaskPanel";
 import { type AppliedMask, type MaskDraft, newMaskDraft, toPiiMasks } from "./masks";
 import { Icon, Palette, type PaletteTool, TOOL_ICONS } from "./Palette";
-import { moveOps, pasteOps, type Reorder, removeOps, reorderOps } from "./selection";
+import { moveOps, pasteOps, type Reorder, removeOps, reorderOps, resizeOps } from "./selection";
 import { formatShortcut, isMacPlatform, matchesShortcut, type ShortcutId } from "./shortcuts";
 import { adoptSuggestionOps, rejectSuggestionOps } from "./suggestions";
 import { TOOL_SHORTCUTS } from "./tools";
@@ -231,6 +231,12 @@ export function Editor({
         const dx = e.key === "ArrowLeft" ? -step : e.key === "ArrowRight" ? step : 0;
         const dy = e.key === "ArrowUp" ? -step : e.key === "ArrowDown" ? step : 0;
         apply(moveOps(state.doc, ids, dx, dy));
+      } else if ((is(e, "resize") || is(e, "resizeLarge")) && ids.length > 0) {
+        handled();
+        const step = e.shiftKey ? 10 : 1;
+        const dw = e.key === "ArrowLeft" ? -step : e.key === "ArrowRight" ? step : 0;
+        const dh = e.key === "ArrowUp" ? -step : e.key === "ArrowDown" ? step : 0;
+        apply(resizeOps(state.doc, ids, dw, dh));
       } else if (is(e, "editText") && ids.length === 1) {
         const target = state.doc.annotations.find((a) => a.id === ids[0]);
         if (target?.type === "text" || target?.type === "callout") {

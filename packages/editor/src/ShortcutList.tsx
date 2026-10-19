@@ -55,6 +55,11 @@ export function ShortcutList({ file = {}, mask = true }: ShortcutListProps) {
       rows: [
         { label: m.shortcuts.nudge, keys: ["↑ ↓ ← →"] },
         { label: m.shortcuts.nudgeLarge, keys: [mac ? "⇧ + ↑ ↓ ← →" : "Shift + ↑ ↓ ← →"] },
+        { label: m.shortcuts.resize, keys: [mac ? "⌘ + ↑ ↓ ← →" : "Ctrl + ↑ ↓ ← →"] },
+        {
+          label: m.shortcuts.resizeLarge,
+          keys: [mac ? "⇧⌘ + ↑ ↓ ← →" : "Ctrl+Shift + ↑ ↓ ← →"],
+        },
         row("editText"),
         row("bringForward"),
         row("sendBackward"),

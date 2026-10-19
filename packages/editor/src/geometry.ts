@@ -50,7 +50,8 @@ export function boxFrom(p: Point, q: Point): { x: number; y: number; w: number; 
   };
 }
 
-const MIN_CALLOUT_WIDTH = 40;
+/** 吹き出しの最小の幅 */
+export const MIN_CALLOUT_WIDTH = 40;
 
 /** ハンドルを p までドラッグしたときの patch */
 export function resizePatch(a: Annotation, h: Handle, p: Point): Record<string, unknown> {
