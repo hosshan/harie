@@ -2,7 +2,7 @@
 
 Harie の LP（GitHub Pages）。ビルドの要らない静的な HTML / CSS / JS で、`src/` をそのまま `dist/` に写して公開する。訴求の整理は [docs/02-research/lp-positioning.md](../../docs/02-research/lp-positioning.md)。
 
-- 公開先: `https://hosshan.github.io/harie/`（LP 日本語）、`/harie/en/`（LP 英語）、`/harie/app/`（Web エディタ）
+- 公開先: `https://harie.studio/`（LP 日本語）、`/en/`（LP 英語）、`/app/`（Web エディタ）。独自ドメインは GitHub の Settings → Pages の Custom domain で設定する（Actions で公開しているので `CNAME` ファイルは置かない）
 - 日本語と英語の 2 ページを同じ構成で持つ。文言を変えたら両方を直す。言語はヘッダーのリンクで切り替え、ブラウザの言語による自動の振り分けはしない（`hreflang` で検索エンジンに対応を伝える）
 - 公開: `main` に `apps/site`・`apps/web`・`packages` の変更が入ると [.github/workflows/pages.yml](../../.github/workflows/pages.yml) が動く。Actions の画面から手動でも動かせる。
 

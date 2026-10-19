@@ -34,7 +34,7 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - id: pages
         uses: actions/configure-pages@v5
-      # Pages の URL のパス（例: /harie）の下の /app/ にエディタを置く
+      # Pages の URL のパス（独自ドメインでは空、github.io では /harie）の下の /app/ にエディタを置く
       - run: pnpm --filter @harie/web build
         env:
           HARIE_WEB_BASE: ${{ steps.pages.outputs.base_path }}/app/

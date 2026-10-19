@@ -9,8 +9,8 @@
 <p align="center"><a href="README.en.md">English</a> | 日本語</p>
 
 <p align="center">
-  <a href="https://hosshan.github.io/harie/">サイト</a> ·
-  <a href="https://hosshan.github.io/harie/app/">Web エディタを開く</a> ·
+  <a href="https://harie.studio/">サイト</a> ·
+  <a href="https://harie.studio/app/">Web エディタを開く</a> ·
   <a href="https://www.npmjs.com/package/@harie/mcp">MCP サーバー</a>
 </p>
 
@@ -18,7 +18,7 @@ Web サービス向けのガイド作成などで、スクリーンショット�
 
 ![Harie の Web エディタ。設定画面のスクリーンショットに番号・枠・吹き出しを付け、吹き出しを選んで文字を直しているところ](docs/images/editor.png)
 
-保存したファイルはそのまま普通の画像として使える。下の画像も Harie で保存したもので、ダウンロードして [Web エディタ](https://hosshan.github.io/harie/app/)で開くと注釈を選んで直せる。
+保存したファイルはそのまま普通の画像として使える。下の画像も Harie で保存したもので、ダウンロードして [Web エディタ](https://harie.studio/app/)で開くと注釈を選んで直せる。
 
 <p align="center">
   <img src="apps/site/src/assets/tasklane-notifications.harie.png" alt="Harie で保存した画像。架空のサービス Tasklane の通知設定画面に、番号と説明が付いている" width="640">
