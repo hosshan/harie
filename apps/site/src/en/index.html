@@ -44,6 +44,7 @@
           <a href="#ai">AI</a>
           <a href="#privacy">Privacy</a>
           <a href="#platforms">Platforms</a>
+          <a href="#mcp">MCP</a>
           <a href="https://github.com/hosshan/harie">GitHub</a>
         </nav>
         <a class="lang" href="../" hreflang="ja" lang="ja">日本語</a>
@@ -322,12 +323,57 @@
             <article class="platform">
               <div class="platform-head"><h3>MCP</h3><span class="tag tag-ok">Available now</span></div>
               <p>Let AI agents like Claude read and write the images in a folder you choose.</p>
+              <a class="link" href="#mcp">How to set it up</a>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section class="section" id="mcp" aria-labelledby="mcp-title">
+        <div class="container">
+          <p class="eyebrow">Getting started with MCP</p>
+          <h2 id="mcp-title" class="h2">Ask Claude to annotate for you.</h2>
+          <p class="sub">Register the <code>@harie/mcp</code> server and Claude Code or Claude Desktop can open Harie images, add annotations and fix them.</p>
+          <ol class="setup">
+            <li class="setup-step">
+              <span class="badge" aria-hidden="true">1</span>
+              <h3>Install Node.js 22 or later</h3>
+              <p>The server runs from npm with <code>npx</code>, so there is nothing else to install. Check your version with <code>node -v</code>.</p>
+            </li>
+            <li class="setup-step">
+              <span class="badge" aria-hidden="true">2</span>
+              <h3>Register it in your app</h3>
+              <p>Point <code>--root</code> at the folder that holds your images. The server can only read and write inside that folder.</p>
+              <h4>Claude Code</h4>
               <div class="cmd">
                 <code id="mcp-cmd">claude mcp add harie -- npx -y @harie/mcp --root ~/Pictures/guides</code>
                 <button class="copy" type="button" data-copy="mcp-cmd" data-copied="Copied">Copy</button>
               </div>
-            </article>
-          </div>
+              <h4>Claude Desktop</h4>
+              <p class="small muted">Add this to <code>claude_desktop_config.json</code> and restart Claude Desktop. Replace the folder with your own path.</p>
+              <div class="cmd cmd-block">
+                <pre id="mcp-json">{
+  "mcpServers": {
+    "harie": {
+      "command": "npx",
+      "args": ["-y", "@harie/mcp", "--root", "/Users/you/Pictures/guides"]
+    }
+  }
+}</pre>
+                <button class="copy" type="button" data-copy="mcp-json" data-copied="Copied">Copy</button>
+              </div>
+            </li>
+            <li class="setup-step">
+              <span class="badge" aria-hidden="true">3</span>
+              <h3>Try a request</h3>
+              <ul class="examples">
+                <li>"Turn settings.png into a Harie file, put a red box around the Save button and add a callout that says Save here"</li>
+                <li>"In the images under guides, replace any visible email addresses with dummy values"</li>
+              </ul>
+              <p class="small muted">Masking personal data can't be undone, so the server only saves it after an explicit confirmation.</p>
+              <a class="link" href="https://github.com/hosshan/harie/blob/main/apps/mcp/README.md">Full tool list and usage (GitHub)</a>
+            </li>
+          </ol>
         </div>
       </section>
 

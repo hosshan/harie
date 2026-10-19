@@ -44,6 +44,7 @@
           <a href="#ai">AI</a>
           <a href="#privacy">個人情報</a>
           <a href="#platforms">使える場所</a>
+          <a href="#mcp">MCP</a>
           <a href="https://github.com/hosshan/harie">GitHub</a>
         </nav>
         <a class="lang" href="en/" hreflang="en" lang="en">English</a>
@@ -314,12 +315,57 @@
             <article class="platform">
               <div class="platform-head"><h3>MCP</h3><span class="tag tag-ok">今すぐ使える</span></div>
               <p>Claude などの AI エージェントから、指定したフォルダの画像を読み書きします。</p>
+              <a class="link" href="#mcp">始め方を見る</a>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section class="section" id="mcp" aria-labelledby="mcp-title">
+        <div class="container">
+          <p class="eyebrow">MCP の始め方</p>
+          <h2 id="mcp-title" class="h2"><span class="nb">Claude に頼んで、</span><span class="nb">注釈を付ける。</span></h2>
+          <p class="sub">MCP サーバー <code>@harie/mcp</code> を登録すると、Claude Code や Claude Desktop から Harie の画像を開いて、注釈を付けたり直したりできます。</p>
+          <ol class="setup">
+            <li class="setup-step">
+              <span class="badge" aria-hidden="true">1</span>
+              <h3>Node.js 22 以上を用意する</h3>
+              <p>サーバーは <code>npx</code> で npm から取ってきて動かすので、別のインストールは要りません。<code>node -v</code> で版を確かめられます。</p>
+            </li>
+            <li class="setup-step">
+              <span class="badge" aria-hidden="true">2</span>
+              <h3>使うアプリに登録する</h3>
+              <p><code>--root</code> には注釈を付けたい画像を置くフォルダを指定します。サーバーが読み書きできるのは、このフォルダの中だけです。</p>
+              <h4>Claude Code</h4>
               <div class="cmd">
                 <code id="mcp-cmd">claude mcp add harie -- npx -y @harie/mcp --root ~/Pictures/guides</code>
                 <button class="copy" type="button" data-copy="mcp-cmd" data-copied="コピーしました">コピー</button>
               </div>
-            </article>
-          </div>
+              <h4>Claude Desktop</h4>
+              <p class="small muted"><code>claude_desktop_config.json</code> に追加して、Claude Desktop を再起動します。フォルダは自分のパスに変えてください。</p>
+              <div class="cmd cmd-block">
+                <pre id="mcp-json">{
+  "mcpServers": {
+    "harie": {
+      "command": "npx",
+      "args": ["-y", "@harie/mcp", "--root", "/Users/you/Pictures/guides"]
+    }
+  }
+}</pre>
+                <button class="copy" type="button" data-copy="mcp-json" data-copied="コピーしました">コピー</button>
+              </div>
+            </li>
+            <li class="setup-step">
+              <span class="badge" aria-hidden="true">3</span>
+              <h3>頼んでみる</h3>
+              <ul class="examples">
+                <li>「settings.png を Harie ファイルにして、保存ボタンを赤枠で囲み、『ここで保存します』と吹き出しを付けて」</li>
+                <li>「guides の画像で、メールアドレスが映っているところをダミーに置き換えて」</li>
+              </ul>
+              <p class="small muted">個人情報の加工は元に戻せないので、確認を付けたときだけ保存する作りになっています。</p>
+              <a class="link" href="https://github.com/hosshan/harie/blob/main/apps/mcp/README.ja.md">ツールの一覧と詳しい使い方（GitHub）</a>
+            </li>
+          </ol>
         </div>
       </section>
 

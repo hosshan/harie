@@ -894,3 +894,77 @@ code,
     transition: none;
   }
 }
+
+/* MCP の始め方 */
+.setup {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 28px;
+  max-width: 860px;
+}
+
+.setup-step {
+  position: relative;
+  background: var(--paper);
+  border-radius: 6px;
+  padding: 26px 28px;
+  display: grid;
+  gap: 10px;
+  min-width: 0;
+  box-shadow: 0 12px 28px -18px rgb(80 60 20 / 0.55);
+}
+
+.setup-step h3 {
+  font-family: var(--display);
+  font-weight: 900;
+  font-size: 20px;
+  margin: 0;
+}
+
+.setup-step h4 {
+  margin: 8px 0 0;
+  font-size: 14px;
+}
+
+.setup-step p {
+  margin: 0;
+}
+
+.setup-step p code,
+.sub code {
+  background: var(--cream);
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  padding: 0 4px;
+}
+
+.cmd-block {
+  align-items: flex-start;
+}
+
+.cmd-block pre {
+  flex: 1;
+  min-width: 0;
+  margin: 0;
+  overflow-x: auto;
+  background: var(--ink);
+  color: var(--cream);
+  padding: 12px 14px;
+  border-radius: 6px;
+  font-family: var(--mono);
+  font-size: 12.5px;
+  line-height: 1.6;
+}
+
+.cmd-block .copy {
+  padding-block: 8px;
+}
+
+.examples {
+  margin: 0;
+  padding-left: 1.2em;
+  display: grid;
+  gap: 6px;
+}
