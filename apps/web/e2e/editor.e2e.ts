@@ -82,7 +82,7 @@ test("FR-FILE-06: 保存したファイルは普通の JPEG で、開き直す�
   await openFixture(page, "large-base.jpg");
   await page.getByRole("button", { name: "四角" }).click();
   await drag(page, [40, 40], [240, 120]);
-  await page.getByRole("button", { name: "吹き出し" }).click();
+  await page.getByRole("button", { name: "吹き出し", exact: true }).click();
   await drag(page, [260, 60], [260, 60]);
   const textarea = page.getByRole("textbox", { name: "文字", exact: true });
   await textarea.fill("ここで通知を設定します");
@@ -301,7 +301,7 @@ test("FR-EDIT-01: 四角の線の太さと種類を変えられ、選んだ太�
   await expect(rect).toHaveAttribute("stroke-width", "8");
 
   // 吹き出しの文字サイズを選ぶ
-  await page.getByRole("button", { name: "吹き出し" }).click();
+  await page.getByRole("button", { name: "吹き出し", exact: true }).click();
   await drag(page, [260, 200], [260, 200]);
   await page.keyboard.press("Escape");
   await page.getByRole("button", { name: "大", exact: true }).click();
@@ -313,20 +313,20 @@ test("FR-EDIT-01: 四角の線の太さと種類を変えられ、選んだ太�
   await drag(page, [40, 40], [240, 120]);
   await expect(annotationRects(page).first()).toHaveAttribute("stroke-width", "8");
   await expect(page.getByLabel("線の太さ（px）")).toHaveValue("8");
-  await page.getByRole("button", { name: "吹き出し" }).click();
+  await page.getByRole("button", { name: "吹き出し", exact: true }).click();
   await drag(page, [260, 200], [260, 200]);
   await expect(fontTile("大")).toHaveAttribute("aria-pressed", "true");
   await page.keyboard.press("Escape");
 
   // 番号の大きさは吹き出しの文字サイズと別に記録する
-  await page.getByRole("button", { name: "番号" }).click();
+  await page.getByRole("button", { name: "番号", exact: true }).click();
   await drag(page, [40, 300], [40, 300]);
   await expect(fontTile("中")).toHaveAttribute("aria-pressed", "true");
   await page.getByRole("button", { name: "小", exact: true }).click();
-  await page.getByRole("button", { name: "番号" }).click();
+  await page.getByRole("button", { name: "番号", exact: true }).click();
   await drag(page, [120, 300], [120, 300]);
   await expect(fontTile("小")).toHaveAttribute("aria-pressed", "true");
-  await page.getByRole("button", { name: "吹き出し" }).click();
+  await page.getByRole("button", { name: "吹き出し", exact: true }).click();
   await drag(page, [260, 320], [260, 320]);
   await expect(fontTile("大")).toHaveAttribute("aria-pressed", "true");
 });
@@ -384,6 +384,35 @@ test("FR-EDIT-11: 注釈を複数選んで、まとめて線の太さ・色を�
   await page.keyboard.press("ControlOrMeta+a");
   await page.getByRole("button", { name: "選んだ注釈をすべて削除" }).click();
   await expect(rects).toHaveCount(0);
+});
+
+test("FR-EDIT-14: 番号・吹き出しのない枠に、ボタン 1 つで番号と吹き出しを付ける", async ({
+  page,
+}) => {
+  await openFixture(page, "large-base.jpg");
+  for (const y of [40, 200]) {
+    await page.getByRole("button", { name: "四角" }).click();
+    await drag(page, [40, y], [200, y + 60]);
+  }
+  await page.keyboard.press("Escape");
+  const steps = page.getByRole("region", { name: "番号と吹き出し" });
+  await expect(steps).toContainText("番号か吹き出しのない枠が 2 個あります");
+
+  await steps.getByRole("button", { name: "番号と吹き出しを付ける" }).click();
+  // 番号 2 つ（描いた順に 1, 2）と、枠を指す吹き出し 2 つ（四角 2 + 吹き出し 2）
+  await expect(page.locator(".harie-canvas-image circle")).toHaveCount(2);
+  await expect(page.locator(".harie-canvas-image text", { hasText: /^[12]$/ })).toHaveText([
+    "1",
+    "2",
+  ]);
+  await expect(annotationRects(page)).toHaveCount(4);
+  await expect(page.locator(".harie-canvas-image line")).toHaveCount(2);
+  await expect(steps).toHaveCount(0);
+
+  // まとめて 1 回の操作として元に戻せる
+  await page.keyboard.press("Control+Z");
+  await expect(page.locator(".harie-canvas-image circle")).toHaveCount(0);
+  await expect(annotationRects(page)).toHaveCount(2);
 });
 
 test("ツールのパレットは描いている間は隠れ、たたむと小さくなる", async ({ page }) => {

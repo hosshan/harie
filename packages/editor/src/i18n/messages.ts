@@ -43,6 +43,14 @@ const ja = {
     newCallout: "説明文を入力",
     sketchMiss: "図形として読み取れませんでした。四角・丸・線・矢印の形でなぞってください",
   },
+  steps: {
+    label: "番号と吹き出し",
+    note: (n: number) =>
+      `番号か吹き出しのない枠が ${n} 個あります。描いた順に番号を振り、吹き出しを付けられます。`,
+    noteSelected: (n: number) =>
+      `選んだ枠のうち ${n} 個に、番号か吹き出しがありません。描いた順に番号を振り、吹き出しを付けられます。`,
+    add: "番号と吹き出しを付ける",
+  },
   textEditor: {
     label: "テキストを編集",
     hint: (commit: string) => `${commit} で確定、Esc で取りやめ`,
@@ -205,6 +213,14 @@ const en: EditorMessages = {
     newText: "Text",
     newCallout: "Enter a description",
     sketchMiss: "Couldn't recognize a shape. Trace a box, circle, line or arrow.",
+  },
+  steps: {
+    label: "Numbers and callouts",
+    note: (n) =>
+      `${n} ${n === 1 ? "box has" : "boxes have"} no number or callout. Number them in the order you drew them and add callouts.`,
+    noteSelected: (n) =>
+      `${n} of the selected boxes ${n === 1 ? "has" : "have"} no number or callout. Number them in the order you drew them and add callouts.`,
+    add: "Add numbers and callouts",
   },
   textEditor: {
     label: "Edit text",
