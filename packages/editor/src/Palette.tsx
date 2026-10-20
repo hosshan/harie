@@ -14,6 +14,13 @@ export const TOOL_ICONS: Record<Tool, ReactNode> = {
   rect: <rect x="4" y="6" width="16" height="12" rx="1.5" />,
   ellipse: <ellipse cx="12" cy="12" rx="8.5" ry="6.5" />,
   arrow: <path d="M5 19L19 5M10 5h9v9" />,
+  // なぞった線（左）が図形（右上の四角）になる
+  sketch: (
+    <>
+      <path d="M3 19c2-4 4-6 6-3s3 2 4-1" />
+      <rect x="14" y="4" width="7" height="6" rx="1" />
+    </>
+  ),
   text: <path d="M5 6V4h14v2M12 4v16M9 20h6" />,
   callout: <path d="M4 5h16v11H11l-4 4v-4H4z" />,
   badge: (
