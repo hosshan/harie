@@ -726,3 +726,45 @@ label.harie-field .harie-field-label {
   line-height: 1;
   text-align: center;
 }
+
+/* 番号・吹き出しのない枠にまとめて付ける（FR-EDIT-14） */
+.harie-steps {
+  margin-bottom: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 10px 12px;
+  border: 1px solid var(--harie-line);
+  border-radius: 10px;
+  background: var(--harie-accent-tint);
+  color: var(--harie-fg);
+  font-size: 12px;
+  line-height: 1.6;
+}
+.harie-steps p {
+  margin: 0;
+}
+.harie-steps button {
+  align-self: flex-start;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 12px;
+  border: 1px solid var(--harie-accent-strong);
+  border-radius: 7px;
+  background: var(--harie-accent-soft);
+  color: var(--harie-fg);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.harie-steps button:hover {
+  background: var(--harie-accent);
+}
+.harie-steps svg {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}

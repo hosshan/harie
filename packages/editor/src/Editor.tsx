@@ -6,7 +6,7 @@ import {
   type LineDash,
   type PiiMask,
 } from "@harie/model";
-import { THEMES } from "@harie/render";
+import { completeSteps, THEMES } from "@harie/render";
 import {
   type Dispatch,
   type ReactNode,
@@ -17,7 +17,12 @@ import {
   useState,
 } from "react";
 import { Canvas, type Tool } from "./Canvas";
-import { type DrawDefaults, loadDrawDefaults, saveDrawDefaults } from "./draw-defaults";
+import {
+  type DrawDefaults,
+  loadDrawDefaults,
+  saveDrawDefaults,
+  styleForNew,
+} from "./draw-defaults";
 import { type EditorAction, type EditorState, editorReducer, initialState } from "./history";
 import { EDITOR_MESSAGES, type EditorMessages } from "./i18n/messages";
 import { useMessages } from "./i18n/use-locale";
@@ -400,16 +405,29 @@ export function Editor({
               {unmaskError !== null && <p role="alert">{unmaskError}</p>}
             </section>
           ) : selected.length === 0 ? (
-            tool !== "mask" && <EmptyInspector tools={tools} onShowShortcuts={onShowShortcuts} />
+            tool !== "mask" && (
+              <>
+                <StepsCard doc={state.doc} dispatch={dispatch} drawDefaults={drawDefaults} />
+                <EmptyInspector tools={tools} onShowShortcuts={onShowShortcuts} />
+              </>
+            )
           ) : (
-            <Inspector
-              // 選び直したら入力欄（文字・数値）を作り直す
-              key={selected.map((a) => a.id).join(" ")}
-              doc={state.doc}
-              annotations={selected}
-              dispatch={dispatch}
-              onDrawDefaults={rememberDrawDefaults}
-            />
+            <>
+              <Inspector
+                // 選び直したら入力欄（文字・数値）を作り直す
+                key={selected.map((a) => a.id).join(" ")}
+                doc={state.doc}
+                annotations={selected}
+                dispatch={dispatch}
+                onDrawDefaults={rememberDrawDefaults}
+              />
+              <StepsCard
+                doc={state.doc}
+                ids={state.selectedIds}
+                dispatch={dispatch}
+                drawDefaults={drawDefaults}
+              />
+            </>
           )}
           {state.error !== null && <p role="alert">{state.error.message}</p>}
         </aside>
@@ -424,6 +442,47 @@ function colorLegend(m: EditorMessages, type: Annotation["type"]): string {
   if (type === "arrow") return m.inspector.colorLine;
   if (type === "badge") return m.inspector.colorBadge;
   return m.inspector.colorFrame;
+}
+
+/**
+ * 番号・吹き出しのない枠に、まとめて付ける（FR-EDIT-14）。足りない枠があるときだけ出す。
+ * `ids` を渡すと、選んだ枠だけを対象にする。足した番号・吹き出しを選んだ状態にし、1 回の操作として元に戻せる
+ */
+function StepsCard({
+  doc,
+  ids,
+  dispatch,
+  drawDefaults,
+}: {
+  doc: HarieDocument;
+  ids?: readonly string[];
+  dispatch: Dispatch<EditorAction>;
+  drawDefaults: DrawDefaults;
+}) {
+  const m = useMessages(EDITOR_MESSAGES);
+  const steps = useMemo(
+    () =>
+      completeSteps(doc, {
+        ...(ids === undefined ? {} : { ids }),
+        calloutText: m.canvas.newCallout,
+        calloutStyle: styleForNew("callout", drawDefaults),
+        badgeStyle: styleForNew("badge", drawDefaults),
+      }),
+    [doc, ids, m, drawDefaults],
+  );
+  if (steps.boxes === 0) return null;
+  return (
+    <section className="harie-steps" aria-label={m.steps.label}>
+      <p>{ids === undefined ? m.steps.note(steps.boxes) : m.steps.noteSelected(steps.boxes)}</p>
+      <button
+        type="button"
+        onClick={() => dispatch({ type: "apply", ops: steps.ops, select: steps.ids })}
+      >
+        <Icon size={16}>{TOOL_ICONS.badge}</Icon>
+        {m.steps.add}
+      </button>
+    </section>
+  );
 }
 
 /** 何も選んでいないとき。何ができるかと、道具のショートカットを案内する */

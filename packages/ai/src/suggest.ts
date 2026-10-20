@@ -1,7 +1,7 @@
 // AI による補足の提案（FR-AI-01〜03, architecture 3.3）。
 // 画像と「何を説明したいか」から、強調する範囲と説明文を提案させ、提案中（status: "suggested"）の注釈にする
-import { type Annotation, AnnotationSchema, type HarieDocument, type Rect } from "@harie/model";
-import { annotationBounds } from "@harie/render";
+import { type Annotation, AnnotationSchema, type HarieDocument } from "@harie/model";
+import { annotationBounds, calloutWidth, placeCallout } from "@harie/render";
 import { z } from "zod";
 import { type DomSnapshot, describeElements, MAX_PROMPT_ELEMENTS, snapToElement } from "./dom";
 import { pad, toCanvasRect } from "./geometry";
@@ -90,32 +90,6 @@ export function buildSuggestPrompt(input: Omit<SuggestInput, "client">): string 
     );
   }
   return parts.join("\n\n");
-}
-
-/** 吹き出しの幅。画像が大きいほど広くする */
-function calloutWidth(canvas: { width: number }): number {
-  return Math.max(200, Math.min(360, Math.round(canvas.width * 0.2)));
-}
-
-/** 強調枠の右 → 左 → 下 → 上の順に、画像に収まる位置へ吹き出しを置く。side は枠から見た吹き出しの向き */
-function placeCallout(
-  target: Rect,
-  size: { w: number; h: number },
-  canvas: { width: number; height: number },
-): { x: number; y: number; side: "top" | "right" | "bottom" | "left" } {
-  const gap = 16;
-  const clampY = (y: number) => Math.max(0, Math.min(canvas.height - size.h, y));
-  const clampX = (x: number) => Math.max(0, Math.min(canvas.width - size.w, x));
-  if (target.x + target.w + gap + size.w <= canvas.width) {
-    return { x: target.x + target.w + gap, y: clampY(target.y), side: "right" };
-  }
-  if (target.x - gap - size.w >= 0) {
-    return { x: target.x - gap - size.w, y: clampY(target.y), side: "left" };
-  }
-  if (target.y + target.h + gap + size.h <= canvas.height) {
-    return { x: clampX(target.x), y: target.y + target.h + gap, side: "bottom" };
-  }
-  return { x: clampX(target.x), y: Math.max(0, target.y - gap - size.h), side: "top" };
 }
 
 function uniqueId(base: string, taken: Set<string>): string {
