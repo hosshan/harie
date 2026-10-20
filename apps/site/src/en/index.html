@@ -62,16 +62,16 @@
             <h1>Just an image.<br /><em>Editable anytime.</em></h1>
             <p class="lead">
               Add boxes, numbers and notes to the screenshots in your guides. Harie saves a regular
-              JPEG or PNG you can paste anywhere, and when you open it in Harie, every box and caption
-              is still editable.
+              JPEG or PNG that you can paste anywhere. Open it in Harie later, and every box and
+              caption is still editable.
             </p>
             <div class="cta">
               <a class="btn btn-primary" href="../app/">Open in browser</a>
               <a class="btn btn-ghost" href="https://github.com/hosshan/harie">View on GitHub</a>
             </div>
             <p class="note">
-              Free and open source (MIT). No install, no account. The editor is available in English
-              and Japanese.
+              It's free and open source (MIT), with nothing to install and no account to create. The
+              editor works in English and Japanese.
             </p>
           </div>
           <figure class="hero-demo">
@@ -93,7 +93,7 @@
               </div>
             </div>
             <figcaption class="demo-bar">
-              <span>It's the same single file</span>
+              <span>The original and the annotations live in one file</span>
               <button class="switch" type="button" aria-pressed="true" aria-controls="demo">
                 <span class="switch-track" aria-hidden="true"></span>Annotations
               </button>
@@ -106,39 +106,39 @@
         <div class="container split split-top">
           <h2 id="pain-title" class="h2">Guide screenshots take more work than they should.</h2>
           <ul class="pains">
-            <li><b>Deciding what to highlight, every time</b>And everyone on the team writes it differently.</li>
-            <li><b>The same steps for every image</b>Capture, open, annotate, export. Repeat.</li>
-            <li><b>One label changes, the image is redone</b>A renamed button means rebuilding the screenshot.</li>
-            <li><b>Can't fix a teammate's image</b>Nobody knows where the source file went.</li>
-            <li><b>Customer data on screen</b>Real names and emails show up on production screens.</li>
+            <li><b>You decide what to highlight, every single time</b>And everyone on the team does it a little differently.</li>
+            <li><b>The same steps for every image</b>Capture, open, annotate, export, and then do it all again for the next one.</li>
+            <li><b>One label changes and the image has to be redone</b>A renamed button means rebuilding the screenshot from scratch.</li>
+            <li><b>You can't fix a teammate's image</b>Nobody knows where the source file ended up.</li>
+            <li><b>Customer data shows up on screen</b>Production screens are full of real names and email addresses.</li>
           </ul>
         </div>
       </section>
 
       <section class="section section-tint" aria-labelledby="flow-title">
         <div class="container">
-          <h2 id="flow-title" class="h2">Capture. Annotate. Keep.</h2>
-          <p class="sub">One tool from capture to saved file.</p>
+          <h2 id="flow-title" class="h2">Capture it, annotate it, keep it.</h2>
+          <p class="sub">Harie covers everything from the first capture to the saved file.</p>
           <ol class="steps">
             <li class="step">
               <span class="badge" aria-hidden="true">1</span>
               <h3>Capture</h3>
               <p>
-                Grab the page you're on with the Chrome extension and open it straight in the editor. Capture the visible area, a region you drag, or a single element like a button.
+                With the Chrome extension, you can capture the page you're on and open it straight in the editor. Choose the visible area, a region you drag, or a single element like a button.
               </p>
             </li>
             <li class="step">
               <span class="badge" aria-hidden="true">2</span>
               <h3>Annotate</h3>
               <p>
-                Boxes, arrows, numbers, callouts and spotlights. Describe what you want to explain and AI drafts numbered boxes and captions.
+                Explain things with boxes, arrows, numbers, callouts and spotlights. Tell Harie what you want to explain, and AI drafts numbered boxes and captions for you.
               </p>
             </li>
             <li class="step">
               <span class="badge" aria-hidden="true">3</span>
               <h3>Keep</h3>
               <p>
-                Save as a regular JPEG or PNG. Paste it into your help center as is, and anyone who opens it later can still edit the annotations.
+                Harie saves a regular JPEG or PNG. You can paste it into your help center as is, and anyone who opens it later can still edit the annotations.
               </p>
             </li>
           </ol>
@@ -154,7 +154,7 @@
               An image saved by Harie carries the original screenshot and the annotation data alongside the picture you see. Other apps and browsers simply show a normal image.
             </p>
             <p>
-              Open it in Harie and you can move or rewrite every box and caption, one by one. There's no separate project file to keep track of. Whoever receives the image can open it and fix it.
+              Open it in Harie and you can move or rewrite each box and caption. You don't need to keep a separate project file, and whoever receives the image can open it and fix it.
             </p>
             <p class="small">
               Saving again never recompresses the original screenshot, so quality holds up however many times you edit. The
@@ -236,21 +236,21 @@
       <section class="section section-tint" id="ai" aria-labelledby="ai-title">
         <div class="container">
           <p class="eyebrow">AI</p>
-          <h2 id="ai-title" class="h2">Decide where and what, with AI.</h2>
+          <h2 id="ai-title" class="h2">Let AI help you decide what to point out.</h2>
           <div class="cards">
             <article class="card">
               <h3>Suggested annotations</h3>
               <p>
-                Write something like "Explain how to set up Slack notifications" and AI drafts where the boxes go and what they say. Accept, reject or edit each suggestion. On screenshots from the Chrome extension, boxes line up with the page's actual elements.
+                Write something like "Explain how to set up Slack notifications," and AI drafts where the boxes go and what they say. You can accept, reject or edit each suggestion. On screenshots from the Chrome extension, the boxes line up with the actual elements on the page.
               </p>
               <p class="small muted">
-                Uses your own Anthropic API key. Harie asks before sending an image, and the key stays in this browser.
+                You'll need your own Anthropic API key. Harie always asks before sending an image, and your key never leaves this browser.
               </p>
             </article>
             <article class="card">
               <h3>Edit from Claude (MCP)</h3>
               <p>
-                Register the <code>@harie/mcp</code> server, then just ask Claude Code or Claude Desktop to add or fix annotations. When UI text changes, you can update many images in one go.
+                Once you register the <code>@harie/mcp</code> server, you can ask Claude Code or Claude Desktop to add or fix annotations for you. When UI text changes, you can update every affected image in one go.
               </p>
               <figure class="chat" aria-label="Example request to Claude">
                 <p class="chat-user">In the notifications image under guides, change "Save to apply" to "Update to apply"</p>
@@ -268,10 +268,10 @@
             <p class="eyebrow">Personal data</p>
             <h2 id="privacy-title" class="h2">Remove personal data, keep the meaning.</h2>
             <p>
-              Replace names, email addresses and phone numbers with dummy values. Readers can still tell what kind of screen it is, which blurring can't do. Fill, mosaic and blur are available too.
+              Replace names, email addresses and phone numbers with dummy values. Unlike a blur, this lets readers still tell what kind of screen they're looking at. Fill, mosaic and blur are there too if you prefer.
             </p>
             <p>
-              Masking is applied to the original image itself and can't be undone. When you share the file, the original values aren't hiding inside it.
+              Masking is applied to the original image itself, so it can't be undone. That also means the original values don't travel with the file when you share it.
             </p>
           </div>
           <figure class="pii">
@@ -301,27 +301,27 @@
       <section class="section section-tint" id="platforms" aria-labelledby="platforms-title">
         <div class="container">
           <h2 id="platforms-title" class="h2">Works where you work.</h2>
-          <p class="sub">Same file and same look, wherever you save it.</p>
+          <p class="sub">Wherever you save it, you get the same file and the same look.</p>
           <div class="platforms">
             <article class="platform">
-              <div class="platform-head"><h3>Web</h3><span class="tag tag-ok">Available now</span></div>
+              <div class="platform-head"><h3>Web</h3></div>
               <p>
-                Just open it in your browser. Images are processed in the browser and never sent to a server. Works offline. Switch the interface between English and Japanese in Settings.
+                Use it right in your browser, with nothing to install. Images are processed in the browser and never sent to a server, and it works offline too. You can switch the interface between English and Japanese in Settings.
               </p>
               <a class="link" href="../app/">Open the editor</a>
             </article>
             <article class="platform">
               <div class="platform-head"><h3>Chrome extension</h3><span class="tag">Store listing coming</span></div>
-              <p>Capture the page you're on and annotate it right away. For now, build it from source and load it.</p>
+              <p>Capture the page you're on and annotate it right away. For now, you build it from source and load it yourself.</p>
               <a class="link" href="https://github.com/hosshan/harie/tree/main/apps/extension">How to install</a>
             </article>
             <article class="platform">
               <div class="platform-head"><h3>Desktop</h3><span class="tag">Downloads coming</span></div>
-              <p>macOS and Windows. Open files from the system dialog and save them in place.</p>
+              <p>For macOS and Windows. Open files from the system dialog and save them back in place.</p>
               <a class="link" href="https://github.com/hosshan/harie/tree/main/apps/desktop">About the desktop app</a>
             </article>
             <article class="platform">
-              <div class="platform-head"><h3>MCP</h3><span class="tag tag-ok">Available now</span></div>
+              <div class="platform-head"><h3>MCP</h3></div>
               <p>Let AI agents like Claude read and write the images in a folder you choose.</p>
               <a class="link" href="#mcp">How to set it up</a>
             </article>
@@ -333,12 +333,12 @@
         <div class="container">
           <p class="eyebrow">Getting started with MCP</p>
           <h2 id="mcp-title" class="h2">Ask Claude to annotate for you.</h2>
-          <p class="sub">Register the <code>@harie/mcp</code> server and Claude Code or Claude Desktop can open Harie images, add annotations and fix them.</p>
+          <p class="sub">Once you register the <code>@harie/mcp</code> server, Claude Code and Claude Desktop can open Harie images and add or fix annotations.</p>
           <ol class="setup">
             <li class="setup-step">
               <span class="badge" aria-hidden="true">1</span>
               <h3>Install Node.js 22 or later</h3>
-              <p>The server runs from npm with <code>npx</code>, so there is nothing else to install. Check your version with <code>node -v</code>.</p>
+              <p>The server runs from npm with <code>npx</code>, so there's nothing else to install. You can check your version with <code>node -v</code>.</p>
             </li>
             <li class="setup-step">
               <span class="badge" aria-hidden="true">2</span>
@@ -370,7 +370,7 @@
                 <li>"Turn settings.png into a Harie file, put a red box around the Save button and add a callout that says Save here"</li>
                 <li>"In the images under guides, replace any visible email addresses with dummy values"</li>
               </ul>
-              <p class="small muted">Masking personal data can't be undone, so the server only saves it after an explicit confirmation.</p>
+              <p class="small muted">Masking personal data can't be undone, so the server only saves it once you've confirmed.</p>
               <a class="link" href="https://github.com/hosshan/harie/blob/main/apps/mcp/README.md">Full tool list and usage (GitHub)</a>
             </li>
           </ol>
