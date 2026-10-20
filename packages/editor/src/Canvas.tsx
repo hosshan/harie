@@ -262,6 +262,18 @@ export function Canvas({
     const p = toPoint(e);
     setSketchMiss(false);
     if (tool === "sketch") {
+      // 選んでいる図形は、スケッチの道具のままでもつまみで大きさを変え、掴んで動かせる
+      const grip = (e.target as Element).getAttribute("data-handle") as Handle | null;
+      const [only, ...rest] = state.selectedIds;
+      if (grip !== null && only !== undefined && rest.length === 0) {
+        setDrag({ kind: "resize", id: only, handle: grip, current: p });
+        return;
+      }
+      const grabbed = e.shiftKey ? undefined : hitTest(doc, p, screenPx(6));
+      if (grabbed !== undefined && state.selectedIds.includes(grabbed.id)) {
+        setDrag({ kind: "move", ids: state.selectedIds, start: p, current: p });
+        return;
+      }
       setDrag({ kind: "sketch", points: [p], start: p, current: p });
       return;
     }

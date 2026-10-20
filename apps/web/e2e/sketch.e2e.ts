@@ -84,6 +84,24 @@ test("FR-EDIT-13: なぞった線から近い図形を描き、どれにも当�
     "true",
   );
 
+  // 選んだ図形は、スケッチの道具のままつまみで大きさを変え、掴んで動かせる
+  const ellipseEl = page.locator(".harie-canvas-image ellipse");
+  const rx = async () => Number(await ellipseEl.getAttribute("rx"));
+  const cx = async () => Number(await ellipseEl.getAttribute("cx"));
+  const rx0 = await rx();
+  const handle = page.locator(".harie-handle-e");
+  const hb = await handle.boundingBox();
+  if (hb === null) throw new Error("つまみがない");
+  await page.mouse.move(hb.x + hb.width / 2, hb.y + hb.height / 2);
+  await page.mouse.down();
+  await page.mouse.move(hb.x + hb.width / 2 + 20, hb.y + hb.height / 2, { steps: 4 });
+  await page.mouse.up();
+  await expect.poll(rx).toBeGreaterThan(rx0 + 5);
+  const cx0 = await cx();
+  await trace(page, lineTo([150, 150], [170, 150], 4));
+  await expect.poll(cx).toBeGreaterThan(cx0 + 10);
+  await expect(page.locator(".harie-canvas-image ellipse")).toHaveCount(1);
+
   // 三角はどれにも当たらない。案内を出し、注釈は増やさない
   await trace(page, [
     ...lineTo([380, 250], [480, 380]),
@@ -96,7 +114,11 @@ test("FR-EDIT-13: なぞった線から近い図形を描き、どれにも当�
   await expect(page.locator(".harie-canvas-image ellipse")).toHaveCount(1);
   await expect(page.locator(".harie-canvas-image rect")).toHaveCount(1);
 
-  // 1 回なぞるごとに元に戻せる
+  // 動かす・大きさを変える・なぞる、を 1 回ずつ元に戻せる
+  await page.keyboard.press("ControlOrMeta+z");
+  await expect.poll(cx).toBe(cx0);
+  await page.keyboard.press("ControlOrMeta+z");
+  await expect.poll(rx).toBe(rx0);
   await page.keyboard.press("ControlOrMeta+z");
   await expect(page.locator(".harie-canvas-image line")).toHaveCount(0);
 });
