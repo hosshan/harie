@@ -366,7 +366,22 @@ export function Canvas({
       return;
     }
     if (final.kind === "sketch") {
-      if (isClick(final) && final.points.length < 3) return;
+      // なぞらずにクリックしただけなら、図形を選ぶ（何もない所なら選択を外す）。道具はスケッチのまま
+      // 丸をなぞると始点に戻ってくるので、途中の点も含めて動いていないかを見る
+      const tapped = [...final.points, final.current].every((q) =>
+        isClick({ start: final.start, current: q }),
+      );
+      if (tapped) {
+        const hit = hitTest(doc, final.current, screenPx(6));
+        const ids =
+          hit === undefined
+            ? []
+            : e.shiftKey
+              ? toggleSelection(state.selectedIds, hit.id)
+              : [hit.id];
+        dispatch({ type: "select", ids });
+        return;
+      }
       const shape = recognizeSketch([...final.points, final.current], screenPx(12));
       if (shape === null) {
         setSketchMiss(true);

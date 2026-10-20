@@ -74,6 +74,16 @@ test("FR-EDIT-13: なぞった線から近い図形を描き、どれにも当�
   await trace(page, [...lineTo([60, 360], [260, 260]), ...lineTo([260, 260], [225, 262], 4)]);
   await expect(page.locator(".harie-canvas-image line")).toHaveCount(1);
 
+  // クリックすると選択を外し、図形をクリックするとその図形を選ぶ。道具はスケッチのまま
+  await trace(page, [[20, 380]]);
+  await expect(page.locator(".harie-selection")).toHaveCount(0);
+  await trace(page, [[150, 150]]);
+  await expect(page.locator("[data-selected^='ellipse-']")).toHaveCount(1);
+  await expect(page.getByRole("button", { name: "スケッチ" })).toHaveAttribute(
+    "aria-pressed",
+    "true",
+  );
+
   // 三角はどれにも当たらない。案内を出し、注釈は増やさない
   await trace(page, [
     ...lineTo([380, 250], [480, 380]),
