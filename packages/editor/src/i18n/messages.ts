@@ -10,6 +10,7 @@ const ja = {
     rect: "四角",
     ellipse: "楕円",
     arrow: "矢印",
+    sketch: "スケッチ",
     text: "テキスト",
     callout: "吹き出し",
     badge: "番号",
@@ -40,6 +41,7 @@ const ja = {
     label: "注釈の編集面",
     newText: "テキスト",
     newCallout: "説明文を入力",
+    sketchMiss: "図形として読み取れませんでした。四角・丸・線・矢印の形でなぞってください",
   },
   textEditor: {
     label: "テキストを編集",
@@ -171,6 +173,7 @@ const en: EditorMessages = {
     rect: "Box",
     ellipse: "Ellipse",
     arrow: "Arrow",
+    sketch: "Sketch",
     text: "Text",
     callout: "Callout",
     badge: "Number",
@@ -201,6 +204,7 @@ const en: EditorMessages = {
     label: "Annotation canvas",
     newText: "Text",
     newCallout: "Enter a description",
+    sketchMiss: "Couldn't recognize a shape. Trace a box, circle, line or arrow.",
   },
   textEditor: {
     label: "Edit text",

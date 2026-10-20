@@ -238,6 +238,22 @@
 .harie-canvas-overlay:not([data-tool="select"]) {
   cursor: crosshair;
 }
+/* なぞった線が図形にならなかったときの案内（編集面の上端中央） */
+.harie-sketch-miss {
+  position: absolute;
+  top: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  max-width: calc(100% - 24px);
+  margin: 0;
+  padding: 6px 12px;
+  border-radius: 8px;
+  background: rgba(43, 38, 32, 0.86);
+  color: #fff;
+  font-size: 13px;
+  line-height: 1.5;
+  pointer-events: none;
+}
 .harie-handle-nw,
 .harie-handle-se {
   cursor: nwse-resize;
