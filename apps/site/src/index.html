@@ -6,7 +6,7 @@
     <title>Harie — ただの画像なのに、何度でも直せる</title>
     <meta
       name="description"
-      content="ガイド用のスクリーンショットに枠・番号・説明を付けるツール。保存した画像はふつうの JPEG / PNG のまま、Harie で開けば何度でも直せます。AI の補足提案、個人情報のダミー置換、Chrome 拡張、MCP に対応したオープンソースです。"
+      content="ガイド用のスクリーンショットに、枠や番号、説明を書き込むツールです。保存した画像はふつうの JPEG / PNG として表示でき、Harie で開けばあとから何度でも直せます。AI による補足の提案、個人情報のダミー置換、Chrome 拡張、MCP に対応したオープンソースです。"
     />
     <meta name="theme-color" content="#D4A72C" />
     <meta property="og:type" content="website" />
@@ -15,7 +15,7 @@
     <meta property="og:title" content="Harie — ただの画像なのに、何度でも直せる" />
     <meta
       property="og:description"
-      content="保存した画像はふつうの JPEG / PNG のまま。Harie で開けば、枠も番号も説明も何度でも直せます。"
+      content="保存されるのはふつうの JPEG / PNG です。Harie で開けば、枠も番号も説明も何度でも直せます。"
     />
     <meta property="og:url" content="https://harie.studio/" />
     <meta property="og:image" content="https://harie.studio/assets/og.png" />
@@ -63,14 +63,14 @@
               <span class="nb">ただの画像なのに、</span><br /><em>何度でも直せる。</em>
             </h1>
             <p class="lead">
-              ガイド用のスクリーンショットに、枠・番号・説明を。保存はふつうの JPEG /
-              PNG。どこにでも貼れて、Harie で開けば枠も文字も何度でも直せます。
+              スクリーンショットに枠や番号、説明を書き込んで、ふつうの JPEG / PNG
+              として保存できます。どこにでも貼れて、あとで Harie で開けば枠も文字も何度でも直せます。
             </p>
             <div class="cta">
               <a class="btn btn-primary" href="./app/">ブラウザで使う</a>
               <a class="btn btn-ghost" href="https://github.com/hosshan/harie">GitHub を見る</a>
             </div>
-            <p class="note">無料・オープンソース（MIT）。インストールもアカウントも要りません。</p>
+            <p class="note">無料のオープンソース（MIT）です。インストールも登録もいりません。</p>
           </div>
           <figure class="hero-demo">
             <div class="sheet">
@@ -91,7 +91,7 @@
               </div>
             </div>
             <figcaption class="demo-bar">
-              <span>同じ 1 つのファイルです</span>
+              <span>元の画像も注釈も、1 つのファイルに入っています</span>
               <button class="switch" type="button" aria-pressed="true" aria-controls="demo">
                 <span class="switch-track" aria-hidden="true"></span>注釈
               </button>
@@ -102,41 +102,41 @@
 
       <section class="section" aria-labelledby="pain-title">
         <div class="container split split-top">
-          <h2 id="pain-title" class="h2">ガイドの画像づくりは、<span class="nb">手間が多い。</span></h2>
+          <h2 id="pain-title" class="h2">ガイドの画像づくりは、<span class="nb">意外と手間がかかる。</span></h2>
           <ul class="pains">
-            <li><b>どこを囲み、何と書くか毎回迷う</b>人によって書き方もばらばらになります。</li>
-            <li><b>画像の数だけ同じ作業</b>撮る、開く、書く、書き出すを繰り返します。</li>
-            <li><b>文言 1 つで作り直し</b>ボタンの名前が変わっただけで、画像を作り直します。</li>
-            <li><b>前任者の画像を直せない</b>元のデータがどこにあるか分かりません。</li>
-            <li><b>個人情報が映り込む</b>本番の画面には、お客さまの名前やメールが並びます。</li>
+            <li><b>どこを囲んで何を書くか、毎回迷う</b>担当者によって、書き方もばらばらになりがちです。</li>
+            <li><b>画像の数だけ、同じ作業をくり返す</b>撮って、開いて、書き込んで、書き出す。これを 1 枚ずつやることになります。</li>
+            <li><b>文言が 1 つ変わるだけで作り直し</b>ボタンの名前が変わっただけでも、画像を一から作り直すことになります。</li>
+            <li><b>前任者が作った画像を直せない</b>元のデータがどこにあるのか、誰にも分かりません。</li>
+            <li><b>個人情報が映り込む</b>本番の画面には、お客さまの名前やメールアドレスが並んでいます。</li>
           </ul>
         </div>
       </section>
 
       <section class="section section-tint" aria-labelledby="flow-title">
         <div class="container">
-          <h2 id="flow-title" class="h2">撮って、補って、残す。</h2>
-          <p class="sub">取得から保存までを 1 本でつなぎます。</p>
+          <h2 id="flow-title" class="h2">撮って、書き込んで、残す。</h2>
+          <p class="sub">撮るところから保存するところまで、Harie だけで済みます。</p>
           <ol class="steps">
             <li class="step">
               <span class="badge" aria-hidden="true">1</span>
               <h3>撮る</h3>
               <p>
-                Chrome 拡張で表示中のページを撮って、そのままエディタへ。見えている範囲・ドラッグした範囲・ボタンなどの要素を選べます。
+                Chrome 拡張を使えば、いま開いているページを撮って、そのままエディタで開けます。撮る範囲は、画面に見えている部分、ドラッグで囲んだ部分、ボタンなどの要素 1 つから選べます。
               </p>
             </li>
             <li class="step">
               <span class="badge" aria-hidden="true">2</span>
-              <h3>補う</h3>
+              <h3>書き込む</h3>
               <p>
-                枠・矢印・番号・吹き出し・スポットライト。説明したいことを書けば、AI が番号付きの枠と説明文を下書きします。
+                枠や矢印、番号、吹き出し、スポットライトで説明を書き込みます。何を説明したいかを伝えれば、番号付きの枠と説明文を AI が下書きしてくれます。
               </p>
             </li>
             <li class="step">
               <span class="badge" aria-hidden="true">3</span>
               <h3>残す</h3>
               <p>
-                保存はふつうの JPEG / PNG。ヘルプページにそのまま貼れて、あとから誰が開いても注釈を直せます。
+                保存されるのはふつうの JPEG / PNG です。ヘルプページにそのまま貼れて、あとで誰が開いても注釈を直せます。
               </p>
             </li>
           </ol>
@@ -146,13 +146,13 @@
       <section class="section" id="how" aria-labelledby="how-title">
         <div class="container split">
           <div class="split-copy">
-            <p class="eyebrow">保存したあとも直せる仕組み</p>
+            <p class="eyebrow">保存したあとも直せるわけ</p>
             <h2 id="how-title" class="h2">1 枚の画像に、<span class="nb">元の画面と注釈が</span><span class="nb">入っている。</span></h2>
             <p>
-              Harie で保存した画像には、見るための画像と一緒に、元のスクリーンショットと注釈のデータが入っています。ほかのアプリやブラウザでは、ふつうの画像として表示されます。
+              Harie で保存した画像には、表示用の画像と一緒に、元のスクリーンショットと注釈のデータが入っています。ほかのアプリやブラウザで開くと、ふつうの画像として表示されます。
             </p>
             <p>
-              Harie で開くと、枠も文字も 1 つずつ動かしたり書き換えたりできます。プロジェクトファイルを別に残す必要はありません。画像を受け取った人が、そのまま開いて直せます。
+              Harie で開けば、枠や文字を 1 つずつ動かしたり書き換えたりできます。プロジェクトファイルを別に取っておく必要はありません。画像を受け取った人も、そのまま開いて直せます。
             </p>
             <p class="small">
               保存し直しても元のスクリーンショットは再圧縮しないので、何度直しても画質は落ちません。<a
@@ -232,19 +232,19 @@
       <section class="section section-tint" id="ai" aria-labelledby="ai-title">
         <div class="container">
           <p class="eyebrow">AI</p>
-          <h2 id="ai-title" class="h2">「どこに、何を」を、<span class="nb">AI と決める。</span></h2>
+          <h2 id="ai-title" class="h2">どこに何を書くか、<span class="nb">AI と一緒に決める。</span></h2>
           <div class="cards">
             <article class="card">
               <h3>補足の提案</h3>
               <p>
-                「Slack 通知の設定方法を説明したい」のように書くと、AI が囲む場所と説明文を下書きします。下書きは 1 つずつ採用・却下・修正できます。Chrome 拡張で撮った画像は、ページの要素の位置に枠を合わせます。
+                たとえば「Slack 通知の設定方法を説明したい」と書くと、どこを囲んで何と書くかを AI が下書きします。下書きは 1 つずつ、採用するか、却下するか、手直しするかを選べます。Chrome 拡張で撮った画像なら、ページ上の要素の位置に合わせて枠を置きます。
               </p>
-              <p class="small muted">Anthropic の API キーを設定して使います。画像を送る前に確認を出し、キーはこのブラウザの中にだけ保存します。</p>
+              <p class="small muted">使うには Anthropic の API キーを設定します。画像を送る前には必ず確認が出て、キーはお使いのブラウザの中にだけ保存されます。</p>
             </article>
             <article class="card">
               <h3>Claude から直接編集（MCP）</h3>
               <p>
-                MCP サーバー <code>@harie/mcp</code> を登録すると、Claude Code や Claude Desktop に頼むだけで注釈を付けたり直したりできます。UI の文言が変わったときも、まとめて直せます。
+                MCP サーバー <code>@harie/mcp</code> を登録しておけば、Claude Code や Claude Desktop に頼むだけで注釈を付けたり直したりできます。UI の文言が変わったときも、関係する画像をまとめて直せます。
               </p>
               <figure class="chat" aria-label="Claude への依頼の例">
                 <p class="chat-user">guides の通知設定の画像で、「保存して反映」を「更新して反映」に直して</p>
@@ -262,10 +262,10 @@
             <p class="eyebrow">個人情報</p>
             <h2 id="privacy-title" class="h2">何の画面かは伝わるまま、<span class="nb">個人情報だけ消す。</span></h2>
             <p>
-              氏名・メール・電話番号などを、ダミーの値に置き換えられます。ぼかすより、どんな項目が並ぶ画面なのかが読み手に伝わります。塗りつぶし・モザイク・ぼかしも選べます。
+              氏名やメールアドレス、電話番号などを、ダミーの値に置き換えられます。ぼかしと違って、どんな項目が並んだ画面なのかは読む人にきちんと伝わります。塗りつぶし、モザイク、ぼかしも選べます。
             </p>
             <p>
-              加工は元の画像に直接かけるので、元に戻せません。ファイルを人に渡しても、加工前の値は中に残りません。
+              加工は元の画像そのものにかけるので、あとから元に戻すことはできません。そのぶん、ファイルを人に渡しても、加工前の値が中に残ることはありません。
             </p>
           </div>
           <figure class="pii">
@@ -295,26 +295,26 @@
       <section class="section section-tint" id="platforms" aria-labelledby="platforms-title">
         <div class="container">
           <h2 id="platforms-title" class="h2">いつもの場所で使える。</h2>
-          <p class="sub">どこで保存しても同じファイル、同じ見た目です。</p>
+          <p class="sub">どこで保存しても、できあがるファイルも見た目も同じです。</p>
           <div class="platforms">
             <article class="platform">
-              <div class="platform-head"><h3>Web</h3><span class="tag tag-ok">今すぐ使える</span></div>
-              <p>ブラウザで開くだけ。画像はブラウザの中で処理し、サーバーに送りません。オフラインでも使えます。</p>
+              <div class="platform-head"><h3>Web</h3></div>
+              <p>インストールせずに、ブラウザで使えます。画像はブラウザの中で処理するので、サーバーには送りません。オフラインでも動きます。</p>
               <a class="link" href="./app/">エディタを開く</a>
             </article>
             <article class="platform">
               <div class="platform-head"><h3>Chrome 拡張</h3><span class="tag">ストア公開準備中</span></div>
-              <p>表示中のページを撮って、そのまま注釈を付けます。今はソースからビルドして読み込めます。</p>
+              <p>いま開いているページを撮って、その場で注釈を付けられます。今のところは、ソースからビルドして読み込んで使います。</p>
               <a class="link" href="https://github.com/hosshan/harie/tree/main/apps/extension">入れ方を見る</a>
             </article>
             <article class="platform">
               <div class="platform-head"><h3>デスクトップ</h3><span class="tag">配布準備中</span></div>
-              <p>macOS / Windows。OS のダイアログで開いて、そのまま上書き保存できます。</p>
+              <p>macOS と Windows で使えます。OS のダイアログからファイルを開いて、そのまま上書き保存できます。</p>
               <a class="link" href="https://github.com/hosshan/harie/tree/main/apps/desktop">詳しく見る</a>
             </article>
             <article class="platform">
-              <div class="platform-head"><h3>MCP</h3><span class="tag tag-ok">今すぐ使える</span></div>
-              <p>Claude などの AI エージェントから、指定したフォルダの画像を読み書きします。</p>
+              <div class="platform-head"><h3>MCP</h3></div>
+              <p>Claude などの AI エージェントが、指定したフォルダの中の画像を読み書きします。</p>
               <a class="link" href="#mcp">始め方を見る</a>
             </article>
           </div>
@@ -325,24 +325,24 @@
         <div class="container">
           <p class="eyebrow">MCP の始め方</p>
           <h2 id="mcp-title" class="h2"><span class="nb">Claude に頼んで、</span><span class="nb">注釈を付ける。</span></h2>
-          <p class="sub">MCP サーバー <code>@harie/mcp</code> を登録すると、Claude Code や Claude Desktop から Harie の画像を開いて、注釈を付けたり直したりできます。</p>
+          <p class="sub">MCP サーバー <code>@harie/mcp</code> を登録すると、Claude Code や Claude Desktop から Harie の画像を開いて、注釈を付けたり直したりできるようになります。</p>
           <ol class="setup">
             <li class="setup-step">
               <span class="badge" aria-hidden="true">1</span>
               <h3>Node.js 22 以上を用意する</h3>
-              <p>サーバーは <code>npx</code> で npm から取ってきて動かすので、別のインストールは要りません。<code>node -v</code> で版を確かめられます。</p>
+              <p>サーバーは <code>npx</code> が npm から取ってきて動かすので、ほかに入れるものはありません。今のバージョンは <code>node -v</code> で確かめられます。</p>
             </li>
             <li class="setup-step">
               <span class="badge" aria-hidden="true">2</span>
               <h3>使うアプリに登録する</h3>
-              <p><code>--root</code> には注釈を付けたい画像を置くフォルダを指定します。サーバーが読み書きできるのは、このフォルダの中だけです。</p>
+              <p><code>--root</code> には、注釈を付けたい画像を置くフォルダを指定します。サーバーが読み書きできるのは、このフォルダの中だけです。</p>
               <h4>Claude Code</h4>
               <div class="cmd">
                 <code id="mcp-cmd">claude mcp add harie -- npx -y @harie/mcp --root ~/Pictures/guides</code>
                 <button class="copy" type="button" data-copy="mcp-cmd" data-copied="コピーしました">コピー</button>
               </div>
               <h4>Claude Desktop</h4>
-              <p class="small muted"><code>claude_desktop_config.json</code> に追加して、Claude Desktop を再起動します。フォルダは自分のパスに変えてください。</p>
+              <p class="small muted"><code>claude_desktop_config.json</code> に次の設定を足して、Claude Desktop を再起動します。フォルダのパスは、ご自分の環境に合わせて書き換えてください。</p>
               <div class="cmd cmd-block">
                 <pre id="mcp-json">{
   "mcpServers": {
@@ -362,7 +362,7 @@
                 <li>「settings.png を Harie ファイルにして、保存ボタンを赤枠で囲み、『ここで保存します』と吹き出しを付けて」</li>
                 <li>「guides の画像で、メールアドレスが映っているところをダミーに置き換えて」</li>
               </ul>
-              <p class="small muted">個人情報の加工は元に戻せないので、確認を付けたときだけ保存する作りになっています。</p>
+              <p class="small muted">個人情報の加工は元に戻せないので、確認が取れたときだけ保存します。</p>
               <a class="link" href="https://github.com/hosshan/harie/blob/main/apps/mcp/README.ja.md">ツールの一覧と詳しい使い方（GitHub）</a>
             </li>
           </ol>
@@ -372,7 +372,7 @@
       <section class="closing">
         <div class="container closing-in">
           <img src="assets/harie-symbol.svg" alt="" width="72" height="72" />
-          <h2 class="h2">次のガイドから、<span class="nb">何度でも直せる画像で。</span></h2>
+          <h2 class="h2">次のガイドは、<span class="nb">何度でも直せる画像で作りませんか。</span></h2>
           <div class="cta">
             <a class="btn btn-primary" href="./app/">ブラウザで使う</a>
             <a class="btn btn-ghost" href="https://github.com/hosshan/harie">GitHub を見る</a>
