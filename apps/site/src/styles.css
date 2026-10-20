@@ -10,7 +10,6 @@
   --light: #ebd08a;
   --text-yellow: #86650f;
   --red: #e5484d;
-  --ok: #2f7a4b;
   --display: "Zen Maru Gothic", "Hiragino Maru Gothic ProN", "Hiragino Sans", sans-serif;
   --body:
     "Zen Kaku Gothic New", "Hiragino Sans", "Noto Sans JP", "Yu Gothic", system-ui, sans-serif;
@@ -775,12 +774,6 @@ code,
   background: var(--cream);
   border: 1px solid var(--line);
   color: var(--muted);
-}
-
-.tag-ok {
-  background: #e7f3ea;
-  border-color: #c9e3d1;
-  color: var(--ok);
 }
 
 .link {

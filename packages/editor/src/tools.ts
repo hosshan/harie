@@ -6,6 +6,7 @@ export const TOOL_SHORTCUTS: readonly { tool: Tool; key: string }[] = [
   { tool: "rect", key: "r" },
   { tool: "ellipse", key: "o" },
   { tool: "arrow", key: "a" },
+  { tool: "sketch", key: "p" },
   { tool: "text", key: "t" },
   { tool: "callout", key: "c" },
   { tool: "badge", key: "n" },

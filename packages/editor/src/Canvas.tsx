@@ -1,6 +1,6 @@
 // 編集面。下層に buildSvg の SVG（保存時と同じ見た目、ADR-0005）、上層に操作用の SVG を重ねる
 import { type Annotation, applyOps, type HarieDocument, type Point } from "@harie/model";
-import { annotationBounds, buildSvg, layoutAnchors } from "@harie/render";
+import { annotationBounds, buildSvg, layoutAnchors, THEMES } from "@harie/render";
 import {
   type CSSProperties,
   type Dispatch,
@@ -25,9 +25,19 @@ import { EDITOR_MESSAGES } from "./i18n/messages";
 import { useMessages } from "./i18n/use-locale";
 import { type AppliedMask, hitAppliedMask, type MaskDraft, maskRect } from "./masks";
 import { annotationsInRect, mergeSelection, moveOps, toggleSelection } from "./selection";
+import { recognizeSketch, type SketchShape } from "./sketch";
 import { TextEditor } from "./TextEditor";
 
-export type Tool = "select" | "rect" | "ellipse" | "arrow" | "text" | "callout" | "badge" | "mask";
+export type Tool =
+  | "select"
+  | "rect"
+  | "ellipse"
+  | "arrow"
+  | "sketch"
+  | "text"
+  | "callout"
+  | "badge"
+  | "mask";
 
 type Drag =
   /** 選んだ注釈をまとめて動かす */
@@ -36,12 +46,16 @@ type Drag =
   | { kind: "create"; tool: "rect" | "ellipse" | "arrow"; start: Point; current: Point }
   /** 個人情報のマスク範囲。注釈ではないので履歴に積まず、onMaskDrawn で渡す */
   | { kind: "mask"; start: Point; current: Point }
+  /** なぞった線。離したときに図形を読み取って注釈にする（FR-EDIT-13）。線そのものは残さない */
+  | { kind: "sketch"; points: readonly Point[]; start: Point; current: Point }
   /** 何もない所からドラッグして、範囲に重なる注釈を選ぶ。base は Shift で足すときの元の選択 */
   | { kind: "marquee"; base: readonly string[]; start: Point; current: Point };
 
 /** クリックだけで作ったときの大きさ（ドラッグが短すぎる場合） */
 const DEFAULT_BOX = { w: 160, h: 80 };
 const MIN_DRAG = 4;
+/** なぞった線が図形にならなかったときの案内を出しておく時間 */
+const SKETCH_MISS_MS = 2500;
 /** 選択枠とつまみの色（ブランドの濃い黄土色。docs/brand/README.md） */
 const SELECTION_COLOR = "#B0861A";
 
@@ -76,8 +90,28 @@ export function hitTest(doc: HarieDocument, p: Point, tolerance: number): Annota
   });
 }
 
+/** 読み取った図形を、四角・楕円・矢印の注釈として追加する。線は矢じりのない矢印にする */
+export function sketchOps(doc: HarieDocument, shape: SketchShape, defaults: DrawDefaults = {}) {
+  const id = newAnnotationId(doc, shape.type);
+  const style = {
+    ...styleForNew(shape.type, defaults),
+    ...(shape.type === "arrow" && shape.head === "none" ? { head: "none" } : {}),
+  };
+  const geometry =
+    shape.type === "arrow"
+      ? { from: shape.from, to: shape.to }
+      : { x: shape.x, y: shape.y, w: shape.w, h: shape.h };
+  const annotation = {
+    id,
+    type: shape.type,
+    ...geometry,
+    ...(Object.keys(style).length === 0 ? {} : { style }),
+  };
+  return [{ op: "add", annotation }];
+}
+
 function dragOps(doc: HarieDocument, drag: Drag, defaults: DrawDefaults = {}): unknown[] {
-  if (drag.kind === "mask" || drag.kind === "marquee") return [];
+  if (drag.kind === "mask" || drag.kind === "marquee" || drag.kind === "sketch") return [];
   if (drag.kind === "move") {
     return moveOps(doc, drag.ids, drag.current.x - drag.start.x, drag.current.y - drag.start.y);
   }
@@ -177,10 +211,18 @@ export function Canvas({
   );
   const { doc } = state;
   const { width, height } = doc.canvas;
+  /** なぞった線が図形にならなかったことを、少しの間だけ知らせる */
+  const [sketchMiss, setSketchMiss] = useState(false);
+  useEffect(() => {
+    if (!sketchMiss) return;
+    const timer = setTimeout(() => setSketchMiss(false), SKETCH_MISS_MS);
+    return () => clearTimeout(timer);
+  }, [sketchMiss]);
 
   // ドラッグ中は履歴に積まずに途中経過だけを描く
   const display = useMemo(() => {
-    if (drag === null || drag.kind === "mask" || drag.kind === "marquee") return doc;
+    if (drag === null || drag.kind === "mask" || drag.kind === "marquee" || drag.kind === "sketch")
+      return doc;
     const r = applyOps(doc, dragOps(doc, drag, drawDefaults));
     return r.ok ? layoutAnchors(r.value) : doc;
   }, [doc, drag, drawDefaults]);
@@ -218,6 +260,11 @@ export function Canvas({
     if (e.button !== 0) return;
     e.currentTarget.setPointerCapture(e.pointerId);
     const p = toPoint(e);
+    setSketchMiss(false);
+    if (tool === "sketch") {
+      setDrag({ kind: "sketch", points: [p], start: p, current: p });
+      return;
+    }
     if (tool === "mask") {
       setDrag({ kind: "mask", start: p, current: p });
       return;
@@ -295,6 +342,17 @@ export function Canvas({
 
   const onPointerMove = (e: PointerEvent<SVGSVGElement>) => {
     if (drag === null) return;
+    if (drag.kind === "sketch") {
+      // 速く動かしたときに間引かれた点も拾う（対応していないブラウザでは今の点だけ）
+      const events = e.nativeEvent.getCoalescedEvents?.() ?? [];
+      const added = (events.length > 0 ? events : [e]).map(toPoint);
+      setDrag({
+        ...drag,
+        points: [...drag.points, ...added],
+        current: added[added.length - 1] ?? drag.current,
+      });
+      return;
+    }
     setDrag({ ...drag, current: toPoint(e) });
   };
 
@@ -305,6 +363,19 @@ export function Canvas({
     if (final.kind === "mask") {
       const rect = maskRect(final.start, final.current, doc.canvas);
       if (rect !== null) onMaskDrawn?.(rect);
+      return;
+    }
+    if (final.kind === "sketch") {
+      if (isClick(final) && final.points.length < 3) return;
+      const shape = recognizeSketch([...final.points, final.current], screenPx(12));
+      if (shape === null) {
+        setSketchMiss(true);
+        return;
+      }
+      const ops = sketchOps(doc, shape, drawDefaults);
+      const id = created(ops);
+      // 続けてなぞれるよう、道具はスケッチのままにする
+      dispatch({ type: "apply", ops, ...(id === undefined ? {} : { select: id }) });
       return;
     }
     if (final.kind === "marquee") {
@@ -397,10 +468,28 @@ export function Canvas({
             handles={selected.length === 1}
           />
         ))}
+        {drag?.kind === "sketch" && (
+          <polyline
+            className="harie-sketch-trail"
+            points={drag.points.map((p) => `${p.x},${p.y}`).join(" ")}
+            fill="none"
+            stroke={THEMES.default.defaults.stroke}
+            strokeOpacity={0.6}
+            strokeWidth={drawDefaults.strokeWidth ?? THEMES.default.defaults.strokeWidth}
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            pointerEvents="none"
+          />
+        )}
         {drag?.kind === "marquee" && !isClick(drag) && (
           <Marquee rect={boxFrom(drag.start, drag.current)} stroke={screenPx(1)} />
         )}
       </svg>
+      {sketchMiss && (
+        <p className="harie-sketch-miss" role="status">
+          {m.canvas.sketchMiss}
+        </p>
+      )}
       {isText(editing) && (
         <TextEditor
           key={editing.id}
