@@ -403,37 +403,63 @@ code,
   background: #f5ecd5;
 }
 
-/* 手間 */
+/* 手間: 課題と Harie での解き方を 1 枚ずつ並べる */
 .pains {
   list-style: none;
   margin: 0;
   padding: 0;
   display: grid;
-  gap: 12px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 20px 24px;
 }
 
-.pains li {
+.pain {
   background: var(--paper);
   border-radius: 4px;
-  padding: 16px 20px;
+  padding: 24px 26px 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  box-shadow: 0 12px 28px -18px rgb(80 60 20 / 0.55);
+}
+
+.pain:nth-child(odd) {
+  transform: rotate(-0.5deg);
+}
+
+.pain:nth-child(even) {
+  transform: rotate(0.4deg);
+}
+
+.pain h3 {
+  margin: 0;
+  font-size: 17px;
+  line-height: 1.5;
+}
+
+.pain p {
+  margin: 0;
   color: var(--muted);
-  font-size: 15px;
+  font-size: 14.5px;
   line-height: 1.7;
-  box-shadow: 0 10px 24px -18px rgb(80 60 20 / 0.6);
 }
 
-.pains li:nth-child(odd) {
-  transform: rotate(-0.4deg);
+.pain-fix {
+  margin-top: auto;
+  padding-top: 12px;
+  border-top: 1px dashed var(--line);
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1.6;
 }
 
-.pains li:nth-child(even) {
-  transform: rotate(0.3deg);
+.pain-fix::before {
+  content: "→ ";
 }
 
-.pains b {
-  display: block;
-  color: var(--ink);
-  font-size: 16.5px;
+/* 日本語の見出しは文節の切れ目で折り返す */
+:lang(ja) :is(h3, .pain-fix, .mcp-steps b) {
+  word-break: auto-phrase;
 }
 
 .split.split-top {
@@ -888,48 +914,107 @@ code,
   }
 }
 
-/* MCP の始め方 */
-.setup {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  display: grid;
-  gap: 28px;
-  max-width: 860px;
-}
-
-.setup-step {
-  position: relative;
-  background: var(--paper);
-  border-radius: 6px;
-  padding: 26px 28px;
-  display: grid;
-  gap: 10px;
-  min-width: 0;
-  box-shadow: 0 12px 28px -18px rgb(80 60 20 / 0.55);
-}
-
-.setup-step h3 {
-  font-family: var(--display);
-  font-weight: 900;
-  font-size: 20px;
-  margin: 0;
-}
-
-.setup-step h4 {
-  margin: 8px 0 0;
-  font-size: 14px;
-}
-
-.setup-step p {
-  margin: 0;
-}
-
-#mcp p code {
+/* MCP の始め方: 左に手順、右に登録のしかたと頼み方の例 */
+#mcp code:not(.cmd code) {
   background: var(--cream);
   border: 1px solid var(--line);
   border-radius: 4px;
   padding: 0 4px;
+}
+
+.mcp-steps {
+  list-style: none;
+  counter-reset: step;
+  margin: 24px 0;
+  padding: 0;
+  display: grid;
+  gap: 18px;
+}
+
+.mcp-steps li {
+  counter-increment: step;
+  position: relative;
+  padding-left: 46px;
+  color: var(--muted);
+  font-size: 15px;
+}
+
+.mcp-steps li::before {
+  content: counter(step);
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--red);
+  color: #fff;
+  display: grid;
+  place-items: center;
+  font-family: var(--display);
+  font-weight: 900;
+  font-size: 16px;
+}
+
+.mcp-steps b {
+  display: block;
+  color: var(--ink);
+  font-size: 16.5px;
+}
+
+.setup-card {
+  background: var(--paper);
+  border-radius: 6px;
+  padding: 24px;
+  display: grid;
+  gap: 14px;
+  min-width: 0;
+  box-shadow: var(--shadow);
+}
+
+.tabs {
+  display: flex;
+  gap: 4px;
+  border-bottom: 1px solid var(--line);
+}
+
+.tabs [role="tab"] {
+  border: 0;
+  background: none;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--muted);
+  padding: 8px 12px;
+  margin-bottom: -1px;
+  border-bottom: 3px solid transparent;
+  cursor: pointer;
+}
+
+.tabs [aria-selected="true"] {
+  color: var(--ink);
+  border-bottom-color: var(--ochre);
+}
+
+.tab-panel code,
+.tab-panel pre {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.tab-panel {
+  display: grid;
+  gap: 10px;
+  min-width: 0;
+}
+
+.tab-panel[hidden] {
+  display: none;
+}
+
+.tab-panel p,
+.setup-card > p {
+  margin: 0;
 }
 
 .cmd-block {
@@ -954,9 +1039,29 @@ code,
   padding-block: 8px;
 }
 
-.examples {
-  margin: 0;
-  padding-left: 1.2em;
-  display: grid;
-  gap: 6px;
+.chat-examples {
+  margin: 4px 0 0;
+  padding-top: 14px;
+  border-top: 1px dashed var(--line);
+}
+
+.chat-examples p {
+  max-width: 92%;
+}
+
+#mcp .split {
+  grid-template-columns: minmax(0, 5fr) minmax(0, 6fr);
+  align-items: center;
+}
+
+@media (max-width: 900px) {
+  #mcp .split {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 640px) {
+  .pains {
+    grid-template-columns: minmax(0, 1fr);
+  }
 }
