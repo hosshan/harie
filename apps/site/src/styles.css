@@ -406,7 +406,7 @@ code,
 /* 手間: 課題と Harie での解き方を 1 枚ずつ並べる */
 .pains {
   list-style: none;
-  margin: 0;
+  margin: 28px 0 0;
   padding: 0;
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -458,7 +458,7 @@ code,
 }
 
 /* 日本語の見出しは文節の切れ目で折り返す */
-:lang(ja) :is(h3, .pain-fix, .mcp-steps b) {
+:lang(ja) :is(h3, .pain-fix) {
   word-break: auto-phrase;
 }
 
@@ -914,7 +914,7 @@ code,
   }
 }
 
-/* MCP の始め方: 左に手順、右に登録のしかたと頼み方の例 */
+/* MCP の始め方: 左に説明、右に登録のしかたと頼み方の例 */
 #mcp code:not(.cmd code) {
   background: var(--cream);
   border: 1px solid var(--line);
@@ -922,44 +922,17 @@ code,
   padding: 0 4px;
 }
 
-.mcp-steps {
-  list-style: none;
-  counter-reset: step;
-  margin: 24px 0;
-  padding: 0;
-  display: grid;
-  gap: 18px;
+.setup-card > .link {
+  justify-self: start;
 }
 
-.mcp-steps li {
-  counter-increment: step;
-  position: relative;
-  padding-left: 46px;
+.setup-notes {
+  margin: 0;
+  padding-left: 1.2em;
+  display: grid;
+  gap: 4px;
   color: var(--muted);
-  font-size: 15px;
-}
-
-.mcp-steps li::before {
-  content: counter(step);
-  position: absolute;
-  left: 0;
-  top: 0;
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  background: var(--red);
-  color: #fff;
-  display: grid;
-  place-items: center;
-  font-family: var(--display);
-  font-weight: 900;
-  font-size: 16px;
-}
-
-.mcp-steps b {
-  display: block;
-  color: var(--ink);
-  font-size: 16.5px;
+  font-size: 13.5px;
 }
 
 .setup-card {
@@ -1046,7 +1019,8 @@ code,
 }
 
 .chat-examples p {
-  max-width: 92%;
+  justify-self: stretch;
+  max-width: none;
 }
 
 #mcp .split {
