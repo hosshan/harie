@@ -103,19 +103,35 @@
       </section>
 
       <section class="section" aria-labelledby="pain-title">
-        <div class="container split split-top">
+        <div class="container">
           <h2 id="pain-title" class="h2">Guide screenshots take more work than they should.</h2>
+          <p class="sub">Four common headaches, and how Harie handles each one.</p>
           <ul class="pains">
-            <li><b>You decide what to highlight, every single time</b>And everyone on the team does it a little differently.</li>
-            <li><b>The same steps for every image</b>Capture, open, annotate, export, and then do it all again for the next one.</li>
-            <li><b>One label changes and the image has to be redone</b>A renamed button means rebuilding the screenshot from scratch.</li>
-            <li><b>You can't fix a teammate's image</b>Nobody knows where the source file ended up.</li>
-            <li><b>Customer data shows up on screen</b>Production screens are full of real names and email addresses.</li>
+            <li class="pain">
+              <h3>You decide what to highlight, every single time</h3>
+              <p>And everyone on the team does it a little differently.</p>
+              <a class="pain-fix" href="#ai">AI drafts where the boxes go and what they say</a>
+            </li>
+            <li class="pain">
+              <h3>The same steps for every image</h3>
+              <p>Capture, open, annotate, export, and then do it all again for the next one.</p>
+              <a class="pain-fix" href="#flow">Annotate the page right after you capture it</a>
+            </li>
+            <li class="pain">
+              <h3>One label changes and the image has to be redone</h3>
+              <p>A renamed button means rebuilding the screenshot from scratch. If a teammate made it, the source file may be gone.</p>
+              <a class="pain-fix" href="#how">Open the image and anyone can fix it on the spot</a>
+            </li>
+            <li class="pain">
+              <h3>Customer data shows up on screen</h3>
+              <p>Production screens are full of real names and email addresses.</p>
+              <a class="pain-fix" href="#privacy">Swap it for dummy values that can't be reversed</a>
+            </li>
           </ul>
         </div>
       </section>
 
-      <section class="section section-tint" aria-labelledby="flow-title">
+      <section class="section section-tint" id="flow" aria-labelledby="flow-title">
         <div class="container">
           <h2 id="flow-title" class="h2">Capture it, annotate it, keep it.</h2>
           <p class="sub">Harie covers everything from the first capture to the saved file.</p>
@@ -330,26 +346,31 @@
       </section>
 
       <section class="section" id="mcp" aria-labelledby="mcp-title">
-        <div class="container">
-          <p class="eyebrow">Getting started with MCP</p>
-          <h2 id="mcp-title" class="h2">Ask Claude to annotate for you.</h2>
-          <p class="sub">Once you register the <code>@harie/mcp</code> server, Claude Code and Claude Desktop can open Harie images and add or fix annotations.</p>
-          <ol class="setup">
-            <li class="setup-step">
-              <span class="badge" aria-hidden="true">1</span>
-              <h3>Install Node.js 22 or later</h3>
-              <p>The server runs from npm with <code>npx</code>, so there's nothing else to install. You can check your version with <code>node -v</code>.</p>
-            </li>
-            <li class="setup-step">
-              <span class="badge" aria-hidden="true">2</span>
-              <h3>Register it in your app</h3>
-              <p>Point <code>--root</code> at the folder that holds your images. The server can only read and write inside that folder.</p>
-              <h4>Claude Code</h4>
+        <div class="container split">
+          <div class="split-copy">
+            <p class="eyebrow">Getting started with MCP</p>
+            <h2 id="mcp-title" class="h2">Ask Claude to annotate for you.</h2>
+            <p>Once you register the <code>@harie/mcp</code> server, Claude Code and Claude Desktop can open Harie images and add or fix annotations.</p>
+            <ol class="mcp-steps">
+              <li><b>Install Node.js 22 or later</b>The server runs from npm with <code>npx</code>, so there's nothing else to install.</li>
+              <li><b>Register it in your app</b>Claude Code takes a single command, and Claude Desktop uses a config file. Point <code>--root</code> at the folder that holds your images. The server can only read and write inside that folder.</li>
+              <li><b>Ask Claude</b>Ask in plain words, and Claude opens the image, adds the annotations and saves it.</li>
+            </ol>
+            <a class="link" href="https://github.com/hosshan/harie/blob/main/apps/mcp/README.md">Full tool list and usage (GitHub)</a>
+          </div>
+          <div class="setup-card">
+            <div class="tabs" role="tablist" aria-label="App to register with">
+              <button type="button" role="tab" id="tab-code" aria-controls="setup-code" aria-selected="true">Claude Code</button>
+              <button type="button" role="tab" id="tab-desktop" aria-controls="setup-desktop" aria-selected="false" tabindex="-1">Claude Desktop</button>
+            </div>
+            <div class="tab-panel" role="tabpanel" id="setup-code" aria-labelledby="tab-code">
+              <p class="small muted">Run this command in your terminal.</p>
               <div class="cmd">
                 <code id="mcp-cmd">claude mcp add harie -- npx -y @harie/mcp --root ~/Pictures/guides</code>
                 <button class="copy" type="button" data-copy="mcp-cmd" data-copied="Copied">Copy</button>
               </div>
-              <h4>Claude Desktop</h4>
+            </div>
+            <div class="tab-panel" role="tabpanel" id="setup-desktop" aria-labelledby="tab-desktop" hidden>
               <p class="small muted">Add this to <code>claude_desktop_config.json</code> and restart Claude Desktop. Replace the folder with your own path.</p>
               <div class="cmd cmd-block">
                 <pre id="mcp-json">{
@@ -362,18 +383,14 @@
 }</pre>
                 <button class="copy" type="button" data-copy="mcp-json" data-copied="Copied">Copy</button>
               </div>
-            </li>
-            <li class="setup-step">
-              <span class="badge" aria-hidden="true">3</span>
-              <h3>Try a request</h3>
-              <ul class="examples">
-                <li>"Turn settings.png into a Harie file, put a red box around the Save button and add a callout that says Save here"</li>
-                <li>"In the images under guides, replace any visible email addresses with dummy values"</li>
-              </ul>
-              <p class="small muted">Masking personal data can't be undone, so the server only saves it once you've confirmed.</p>
-              <a class="link" href="https://github.com/hosshan/harie/blob/main/apps/mcp/README.md">Full tool list and usage (GitHub)</a>
-            </li>
-          </ol>
+            </div>
+            <figure class="chat chat-examples" aria-label="Example requests to Claude">
+              <figcaption class="small muted">Example requests</figcaption>
+              <p class="chat-user">Turn settings.png into a Harie file, put a red box around the Save button and add a callout that says Save here</p>
+              <p class="chat-user">In the images under guides, replace any visible email addresses with dummy values</p>
+            </figure>
+            <p class="small muted">Masking personal data can't be undone, so the server only saves it once you've confirmed.</p>
+          </div>
         </div>
       </section>
 

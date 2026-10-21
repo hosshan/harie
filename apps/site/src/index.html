@@ -101,19 +101,35 @@
       </section>
 
       <section class="section" aria-labelledby="pain-title">
-        <div class="container split split-top">
+        <div class="container">
           <h2 id="pain-title" class="h2">ガイドの画像づくりは、<span class="nb">意外と手間がかかる。</span></h2>
+          <p class="sub">よくある 4 つの手間と、Harie での解き方です。</p>
           <ul class="pains">
-            <li><b>どこを囲んで何を書くか、毎回迷う</b>担当者によって、書き方もばらばらになりがちです。</li>
-            <li><b>画像の数だけ、同じ作業をくり返す</b>撮って、開いて、書き込んで、書き出す。これを 1 枚ずつやることになります。</li>
-            <li><b>文言が 1 つ変わるだけで作り直し</b>ボタンの名前が変わっただけでも、画像を一から作り直すことになります。</li>
-            <li><b>前任者が作った画像を直せない</b>元のデータがどこにあるのか、誰にも分かりません。</li>
-            <li><b>個人情報が映り込む</b>本番の画面には、お客さまの名前やメールアドレスが並んでいます。</li>
+            <li class="pain">
+              <h3>どこを囲んで何を書くか、毎回迷う</h3>
+              <p>担当者によって、書き方もばらばらになりがちです。</p>
+              <a class="pain-fix" href="#ai">AI が、囲む場所と説明文を下書きします</a>
+            </li>
+            <li class="pain">
+              <h3>画像の数だけ、同じ作業をくり返す</h3>
+              <p>撮って、開いて、書き込んで、書き出す。これを 1 枚ずつやることになります。</p>
+              <a class="pain-fix" href="#flow">撮ったページに、そのまま書き込めます</a>
+            </li>
+            <li class="pain">
+              <h3>文言が 1 つ変わるだけで作り直し</h3>
+              <p>ボタンの名前が変わっただけで、画像を一から作り直します。前任者の画像だと、元のデータすら見つかりません。</p>
+              <a class="pain-fix" href="#how">画像を開けば、誰でもその場で直せます</a>
+            </li>
+            <li class="pain">
+              <h3>個人情報が映り込む</h3>
+              <p>本番の画面には、お客さまの名前やメールアドレスが並んでいます。</p>
+              <a class="pain-fix" href="#privacy">ダミーの値に置き換えて、元に戻せない形で消します</a>
+            </li>
           </ul>
         </div>
       </section>
 
-      <section class="section section-tint" aria-labelledby="flow-title">
+      <section class="section section-tint" id="flow" aria-labelledby="flow-title">
         <div class="container">
           <h2 id="flow-title" class="h2">撮って、書き込んで、残す。</h2>
           <p class="sub">撮るところから保存するところまで、Harie だけで済みます。</p>
@@ -322,26 +338,31 @@
       </section>
 
       <section class="section" id="mcp" aria-labelledby="mcp-title">
-        <div class="container">
-          <p class="eyebrow">MCP の始め方</p>
-          <h2 id="mcp-title" class="h2"><span class="nb">Claude に頼んで、</span><span class="nb">注釈を付ける。</span></h2>
-          <p class="sub">MCP サーバー <code>@harie/mcp</code> を登録すると、Claude Code や Claude Desktop から Harie の画像を開いて、注釈を付けたり直したりできるようになります。</p>
-          <ol class="setup">
-            <li class="setup-step">
-              <span class="badge" aria-hidden="true">1</span>
-              <h3>Node.js 22 以上を用意する</h3>
-              <p>サーバーは <code>npx</code> が npm から取ってきて動かすので、ほかに入れるものはありません。今のバージョンは <code>node -v</code> で確かめられます。</p>
-            </li>
-            <li class="setup-step">
-              <span class="badge" aria-hidden="true">2</span>
-              <h3>使うアプリに登録する</h3>
-              <p><code>--root</code> には、注釈を付けたい画像を置くフォルダを指定します。サーバーが読み書きできるのは、このフォルダの中だけです。</p>
-              <h4>Claude Code</h4>
+        <div class="container split">
+          <div class="split-copy">
+            <p class="eyebrow">MCP の始め方</p>
+            <h2 id="mcp-title" class="h2"><span class="nb">Claude に頼んで、</span><span class="nb">注釈を付ける。</span></h2>
+            <p>MCP サーバー <code>@harie/mcp</code> を登録すると、Claude Code や Claude Desktop から Harie の画像を開いて、注釈を付けたり直したりできるようになります。</p>
+            <ol class="mcp-steps">
+              <li><b>Node.js 22 以上を用意する</b>サーバーは <code>npx</code> が npm から取ってきて動かすので、ほかに入れるものはありません。</li>
+              <li><b>使うアプリに登録する</b>Claude Code はコマンド 1 行、Claude Desktop は設定ファイルで登録します。<code>--root</code> には、注釈を付けたい画像を置くフォルダを指定します。サーバーが読み書きできるのは、このフォルダの中だけです。</li>
+              <li><b>Claude に頼む</b>ふだんの言葉で頼めば、Claude が画像を開いて注釈を付け、保存します。</li>
+            </ol>
+            <a class="link" href="https://github.com/hosshan/harie/blob/main/apps/mcp/README.ja.md">ツールの一覧と詳しい使い方（GitHub）</a>
+          </div>
+          <div class="setup-card">
+            <div class="tabs" role="tablist" aria-label="登録するアプリ">
+              <button type="button" role="tab" id="tab-code" aria-controls="setup-code" aria-selected="true">Claude Code</button>
+              <button type="button" role="tab" id="tab-desktop" aria-controls="setup-desktop" aria-selected="false" tabindex="-1">Claude Desktop</button>
+            </div>
+            <div class="tab-panel" role="tabpanel" id="setup-code" aria-labelledby="tab-code">
+              <p class="small muted">ターミナルで次のコマンドを実行します。</p>
               <div class="cmd">
                 <code id="mcp-cmd">claude mcp add harie -- npx -y @harie/mcp --root ~/Pictures/guides</code>
                 <button class="copy" type="button" data-copy="mcp-cmd" data-copied="コピーしました">コピー</button>
               </div>
-              <h4>Claude Desktop</h4>
+            </div>
+            <div class="tab-panel" role="tabpanel" id="setup-desktop" aria-labelledby="tab-desktop" hidden>
               <p class="small muted"><code>claude_desktop_config.json</code> に次の設定を足して、Claude Desktop を再起動します。フォルダのパスは、ご自分の環境に合わせて書き換えてください。</p>
               <div class="cmd cmd-block">
                 <pre id="mcp-json">{
@@ -354,18 +375,14 @@
 }</pre>
                 <button class="copy" type="button" data-copy="mcp-json" data-copied="コピーしました">コピー</button>
               </div>
-            </li>
-            <li class="setup-step">
-              <span class="badge" aria-hidden="true">3</span>
-              <h3>頼んでみる</h3>
-              <ul class="examples">
-                <li>「settings.png を Harie ファイルにして、保存ボタンを赤枠で囲み、『ここで保存します』と吹き出しを付けて」</li>
-                <li>「guides の画像で、メールアドレスが映っているところをダミーに置き換えて」</li>
-              </ul>
-              <p class="small muted">個人情報の加工は元に戻せないので、確認が取れたときだけ保存します。</p>
-              <a class="link" href="https://github.com/hosshan/harie/blob/main/apps/mcp/README.ja.md">ツールの一覧と詳しい使い方（GitHub）</a>
-            </li>
-          </ol>
+            </div>
+            <figure class="chat chat-examples" aria-label="Claude への頼み方の例">
+              <figcaption class="small muted">頼み方の例</figcaption>
+              <p class="chat-user">settings.png を Harie ファイルにして、保存ボタンを赤枠で囲み、「ここで保存します」と吹き出しを付けて</p>
+              <p class="chat-user">guides の画像で、メールアドレスが映っているところをダミーに置き換えて</p>
+            </figure>
+            <p class="small muted">個人情報の加工は元に戻せないので、確認が取れたときだけ保存します。</p>
+          </div>
         </div>
       </section>
 
