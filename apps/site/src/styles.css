@@ -406,7 +406,7 @@ code,
 /* 手間: 課題と Harie での解き方を 1 枚ずつ並べる */
 .pains {
   list-style: none;
-  margin: 0;
+  margin: 28px 0 0;
   padding: 0;
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
