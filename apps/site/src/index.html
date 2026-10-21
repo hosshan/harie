@@ -343,12 +343,6 @@
             <p class="eyebrow">MCP の始め方</p>
             <h2 id="mcp-title" class="h2"><span class="nb">Claude に頼んで、</span><span class="nb">注釈を付ける。</span></h2>
             <p>MCP サーバー <code>@harie/mcp</code> を登録すると、Claude Code や Claude Desktop から Harie の画像を開いて、注釈を付けたり直したりできるようになります。</p>
-            <ol class="mcp-steps">
-              <li><b>Node.js 22 以上を用意する</b>サーバーは <code>npx</code> が npm から取ってきて動かすので、ほかに入れるものはありません。</li>
-              <li><b>使うアプリに登録する</b>Claude Code はコマンド 1 行、Claude Desktop は設定ファイルで登録します。<code>--root</code> には、注釈を付けたい画像を置くフォルダを指定します。サーバーが読み書きできるのは、このフォルダの中だけです。</li>
-              <li><b>Claude に頼む</b>ふだんの言葉で頼めば、Claude が画像を開いて注釈を付け、保存します。</li>
-            </ol>
-            <a class="link" href="https://github.com/hosshan/harie/blob/main/apps/mcp/README.ja.md">ツールの一覧と詳しい使い方（GitHub）</a>
           </div>
           <div class="setup-card">
             <div class="tabs" role="tablist" aria-label="登録するアプリ">
@@ -376,6 +370,11 @@
                 <button class="copy" type="button" data-copy="mcp-json" data-copied="コピーしました">コピー</button>
               </div>
             </div>
+            <ul class="setup-notes">
+              <li>Node.js 22 以上が必要です。サーバーは <code>npx</code> が npm から取ってきて動かすので、ほかに入れるものはありません。</li>
+              <li><code>--root</code> には、注釈を付けたい画像を置くフォルダを指定します。サーバーが読み書きできるのは、このフォルダの中だけです。</li>
+            </ul>
+            <a class="link" href="https://github.com/hosshan/harie/blob/main/apps/mcp/README.ja.md">ツールの一覧と詳しい使い方（GitHub）</a>
             <figure class="chat chat-examples" aria-label="Claude への頼み方の例">
               <figcaption class="small muted">頼み方の例</figcaption>
               <p class="chat-user">settings.png を Harie ファイルにして、保存ボタンを赤枠で囲み、「ここで保存します」と吹き出しを付けて</p>

@@ -351,12 +351,6 @@
             <p class="eyebrow">Getting started with MCP</p>
             <h2 id="mcp-title" class="h2">Ask Claude to annotate for you.</h2>
             <p>Once you register the <code>@harie/mcp</code> server, Claude Code and Claude Desktop can open Harie images and add or fix annotations.</p>
-            <ol class="mcp-steps">
-              <li><b>Install Node.js 22 or later</b>The server runs from npm with <code>npx</code>, so there's nothing else to install.</li>
-              <li><b>Register it in your app</b>Claude Code takes a single command, and Claude Desktop uses a config file. Point <code>--root</code> at the folder that holds your images. The server can only read and write inside that folder.</li>
-              <li><b>Ask Claude</b>Ask in plain words, and Claude opens the image, adds the annotations and saves it.</li>
-            </ol>
-            <a class="link" href="https://github.com/hosshan/harie/blob/main/apps/mcp/README.md">Full tool list and usage (GitHub)</a>
           </div>
           <div class="setup-card">
             <div class="tabs" role="tablist" aria-label="App to register with">
@@ -384,6 +378,11 @@
                 <button class="copy" type="button" data-copy="mcp-json" data-copied="Copied">Copy</button>
               </div>
             </div>
+            <ul class="setup-notes">
+              <li>Requires Node.js 22 or later. The server runs from npm with <code>npx</code>, so there's nothing else to install.</li>
+              <li>Point <code>--root</code> at the folder that holds your images. The server can only read and write inside that folder.</li>
+            </ul>
+            <a class="link" href="https://github.com/hosshan/harie/blob/main/apps/mcp/README.md">Full tool list and usage (GitHub)</a>
             <figure class="chat chat-examples" aria-label="Example requests to Claude">
               <figcaption class="small muted">Example requests</figcaption>
               <p class="chat-user">Turn settings.png into a Harie file, put a red box around the Save button and add a callout that says Save here</p>
