@@ -1039,3 +1039,36 @@ code,
     grid-template-columns: minmax(0, 1fr);
   }
 }
+
+/* プライバシーポリシーなどの文書ページ */
+.doc-page .nav-in .lang {
+  margin-left: auto;
+}
+
+.doc {
+  max-width: 760px;
+  padding-block: 56px 80px;
+}
+
+.doc h1 {
+  font-size: clamp(28px, 4vw, 36px);
+  margin-bottom: 4px;
+}
+
+.doc h2 {
+  font-size: 20px;
+  margin-top: 40px;
+}
+
+.doc ul {
+  padding-left: 1.4em;
+}
+
+.doc li + li {
+  margin-top: 6px;
+}
+
+.footer-links {
+  display: flex;
+  gap: 20px;
+}
