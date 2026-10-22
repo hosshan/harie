@@ -12,6 +12,8 @@
   /* 選んだ見本のタイル・種類のアイコンの下地（黄土をごく薄く） */
   --harie-accent-soft: #f6ecce;
   --harie-accent-tint: #fdf8ea;
+  /* 右の欄の下地 */
+  --harie-panel: #ffffff;
   /* 画像を置く台。画像（白いスクリーンショットも多い）と見分けられるよう、少し沈んだ色にする */
   --harie-board: #f1ece2;
   --harie-board-dot: rgba(43, 38, 32, 0.09);
@@ -217,6 +219,34 @@
   min-height: 0;
   overflow-y: auto;
   padding: 2px 6px 16px;
+  display: flex;
+  flex-direction: column;
+}
+/*
+ * 欄の下端に置く提案（番号と吹き出し）。選んだ注釈の設定とは別だと分かるよう線で区切り、
+ * 設定が長くて欄の中で動かしても下に留まる
+ */
+.harie-inspector-foot {
+  position: sticky;
+  bottom: 0;
+  /* 上は残りの高さを空けて下端に寄せる。左右は欄の余白まで広げ、下に動いた色の輪がはみ出して見えないようにする */
+  margin: auto -6px 0;
+  padding: 16px 6px;
+  /* 区切り線は上の設定の幅にそろえる */
+  background:
+    linear-gradient(var(--harie-line), var(--harie-line)) 6px 0 / calc(100% - 12px) 1px no-repeat
+    var(--harie-panel);
+}
+/* 欄の下の余白は提案の側で取り、その余白から下の設定が透けて見えないようにする */
+.harie-inspector:has(> .harie-inspector-foot:not(:empty)) {
+  padding-bottom: 0;
+}
+/* 足りない枠がなく提案を出さないときは、区切り線も出さない */
+.harie-inspector-foot:empty {
+  display: none;
+}
+.harie-inspector-foot .harie-steps {
+  margin-bottom: 0;
 }
 .harie-canvas-image,
 .harie-canvas-image > svg {
@@ -318,6 +348,15 @@
   }
   .harie-inspector {
     overflow-y: visible;
+  }
+  /* 欄は台の下に続くので、下端に留めず設定の後ろに区切って置く */
+  .harie-inspector:has(> .harie-inspector-foot:not(:empty)) {
+    padding-bottom: 16px;
+  }
+  .harie-inspector-foot {
+    position: static;
+    margin-top: 16px;
+    padding-bottom: 0;
   }
 }
 .harie-mask-panel {

@@ -412,24 +412,27 @@ export function Editor({
               </>
             )
           ) : (
-            <>
-              <Inspector
-                // 選び直したら入力欄（文字・数値）を作り直す
-                key={selected.map((a) => a.id).join(" ")}
-                doc={state.doc}
-                annotations={selected}
-                dispatch={dispatch}
-                onDrawDefaults={rememberDrawDefaults}
-              />
+            <Inspector
+              // 選び直したら入力欄（文字・数値）を作り直す
+              key={selected.map((a) => a.id).join(" ")}
+              doc={state.doc}
+              annotations={selected}
+              dispatch={dispatch}
+              onDrawDefaults={rememberDrawDefaults}
+            />
+          )}
+          {state.error !== null && <p role="alert">{state.error.message}</p>}
+          {selected.length > 0 && (
+            // 選んだ注釈の設定とは別の提案なので、欄の下端に区切って置く
+            <div className="harie-inspector-foot">
               <StepsCard
                 doc={state.doc}
                 ids={state.selectedIds}
                 dispatch={dispatch}
                 drawDefaults={drawDefaults}
               />
-            </>
+            </div>
           )}
-          {state.error !== null && <p role="alert">{state.error.message}</p>}
         </aside>
       </div>
     </div>
