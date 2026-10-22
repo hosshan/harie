@@ -118,6 +118,31 @@ describe("harie MCP server", () => {
     );
   });
 
+  it("FR-MCP-02: image: false なら画像を返さず、注釈の JSON だけを返す", async () => {
+    const { call } = await setup();
+    await call("harie_create", { imagePath: "screen.png" });
+    const callout = { id: "c1", type: "callout", x: 4, y: 4, w: 40, text: "通知を設定します" };
+    const edited = await call("harie_edit", {
+      path: "screen.harie.png",
+      ops: [{ op: "add", annotation: callout }],
+      image: false,
+    });
+    expect(edited.json()).toMatchObject({ revision: 2, annotations: [callout] });
+    expect(edited.image).toBeUndefined();
+
+    const opened = await call("harie_open", { path: "screen.harie.png", image: false });
+    expect(opened.json()).toMatchObject({ status: "ok", annotations: [callout] });
+    expect(opened.image).toBeUndefined();
+
+    const replaced = await call("harie_replace_base", {
+      path: "screen.harie.png",
+      imagePath: "screen.png",
+      image: false,
+    });
+    expect(replaced.json()).toMatchObject({ revision: 3 });
+    expect(replaced.image).toBeUndefined();
+  });
+
   it("ADR-0011: anchor を付けた番号は、枠の左上の外側の位置で保存する", async () => {
     const { call } = await setup();
     await call("harie_create", { imagePath: "screen.png" });

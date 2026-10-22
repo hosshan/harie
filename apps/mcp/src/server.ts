@@ -28,11 +28,11 @@ badge に anchor: {"annotationId": 枠の id} を付けると、枠の左上の�
 style（任意）: stroke, strokeWidth, fill, color, fontSize, fontWeight, radius, opacity, head, dash（solid / dashed / dotted。四角・楕円・矢印の線の種類）。
 blur は可逆なぼかしで、個人情報の加工には使わないこと。`;
 
-function toResult(out: ToolOutput): CallToolResult {
+function toResult(out: ToolOutput, withImage: boolean): CallToolResult {
   const content: CallToolResult["content"] = [
     { type: "text", text: JSON.stringify(out.summary, null, 2) },
   ];
-  if (out.image !== undefined) {
+  if (withImage && out.image !== undefined) {
     content.push({
       type: "image",
       data: Buffer.from(out.image.data).toString("base64"),
@@ -42,9 +42,12 @@ function toResult(out: ToolOutput): CallToolResult {
   return { content };
 }
 
-async function run(fn: () => ToolOutput | Promise<ToolOutput>): Promise<CallToolResult> {
+async function run(
+  fn: () => ToolOutput | Promise<ToolOutput>,
+  withImage = true,
+): Promise<CallToolResult> {
   try {
-    return toResult(await fn());
+    return toResult(await fn(), withImage);
   } catch (e) {
     if (e instanceof ToolError || e instanceof PathError) {
       return { isError: true, content: [{ type: "text", text: e.message }] };
@@ -61,6 +64,13 @@ export function createServer(options: { root: string }): McpServer {
   );
   const path = z.string().describe(`ファイルのパス（${guard.root} からの相対パスか絶対パス）`);
   const ops = z.array(OpSchema).describe(OPS_HELP);
+  // 画像はコンテキストを大きく使う。文言の確認・修正だけなら注釈の JSON で足りるので省けるようにする
+  const image = z
+    .boolean()
+    .optional()
+    .describe(
+      "false で画像を返さず、注釈の JSON だけを返す（既定 true）。文言だけを読む・直すとき",
+    );
   // harie_preview の ops は harie_edit と同じ。定義の重複でツール一覧が大きくならないよう形だけ示し、
   // 中身は applyOps が OpSchema で検証する
   const sameOps = z
@@ -72,11 +82,11 @@ export function createServer(options: { root: string }): McpServer {
     {
       title: "Harie ファイルを開く",
       description:
-        "Harie ファイル（注釈を再編集できる JPEG/PNG）を開き、注釈の一覧と画像を返す。普通の画像なら status: plain を返す",
-      inputSchema: { path },
+        "Harie ファイル（注釈を再編集できる JPEG/PNG）を開き、注釈の一覧と画像を返す。注釈の文言や位置は JSON で読めるので、画像が要らなければ image: false。普通の画像なら status: plain を返す",
+      inputSchema: { path, image },
       annotations: { readOnlyHint: true },
     },
-    async (input) => run(() => open(guard, input)),
+    async (input) => run(() => open(guard, input), input.image !== false),
   );
 
   server.registerTool(
@@ -114,10 +124,11 @@ export function createServer(options: { root: string }): McpServer {
           .nonnegative()
           .optional()
           .describe("harie_open で得た revision。他で先に保存されていたら失敗させる"),
+        image,
       },
       annotations: { destructiveHint: true, idempotentHint: false },
     },
-    async (input) => run(() => edit(guard, input)),
+    async (input) => run(() => edit(guard, input), input.image !== false),
   );
 
   server.registerTool(
@@ -179,10 +190,11 @@ rect はベース画像のピクセル（左上原点）で、文字より少し
           .nonnegative()
           .optional()
           .describe("harie_open で得た revision。他で先に保存されていたら失敗させる"),
+        image,
       },
       annotations: { destructiveHint: true, idempotentHint: false },
     },
-    async (input) => run(() => replaceBase(guard, input)),
+    async (input) => run(() => replaceBase(guard, input), input.image !== false),
   );
 
   server.registerTool(
