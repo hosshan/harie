@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>プライバシーポリシー — Harie</title>
+    <meta name="description" content="Harie（Web エディタ・Chrome 拡張・デスクトップ版・MCP サーバー）が扱うデータについての説明です。" />
+    <meta name="theme-color" content="#D4A72C" />
+    <link rel="alternate" hreflang="ja" href="https://harie.studio/privacy/" />
+    <link rel="alternate" hreflang="en" href="https://harie.studio/en/privacy/" />
+    <link rel="alternate" hreflang="x-default" href="https://harie.studio/privacy/" />
+    <link rel="icon" href="../assets/harie-symbol.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="../assets/apple-touch-icon.png" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@700;900&family=Zen+Kaku+Gothic+New:wght@400;700&family=IBM+Plex+Mono:wght@400;500&display=swap"
+    />
+    <link rel="stylesheet" href="../styles.css" />
+  </head>
+  <body class="doc-page">
+    <header class="nav">
+      <div class="container nav-in">
+        <a class="logo" href="../" aria-label="Harie トップ">
+          <img src="../assets/harie-symbol.svg" alt="" width="30" height="30" />Harie
+        </a>
+        <a class="lang" href="../en/privacy/" hreflang="en" lang="en">English</a>
+        <a class="btn btn-primary btn-sm" href="../app/">ブラウザで使う</a>
+      </div>
+    </header>
+
+    <main class="container doc">
+      <h1>プライバシーポリシー</h1>
+      <p class="muted">制定日: 2026 年 10 月 22 日</p>
+
+      <p>
+        このページは、Harie（Web エディタ、Chrome 拡張、デスクトップ版、MCP サーバー）が扱うデータについて説明するものです。Harie は個人が開発しているオープンソースのソフトウェアで、ソースコードは
+        <a href="https://github.com/hosshan/harie">GitHub</a> で公開しています。
+      </p>
+
+      <h2>開発者が受け取るデータはありません</h2>
+      <p>
+        Harie には開発者が運営するサーバーがなく、利用者の画像、注釈、操作の記録、端末の情報を開発者が受け取ることはありません。アカウント登録、アクセス解析、広告、トラッキングのための Cookie も使っていません。
+      </p>
+
+      <h2>端末の中に保存するデータ</h2>
+      <ul>
+        <li>画像と注釈は、利用者が保存したファイル（JPEG / PNG）の中にだけ入ります。</li>
+        <li>
+          Chrome 拡張は、キャプチャした画像と、そのページの要素の位置と文字の一覧を、編集画面に渡すために拡張の中（IndexedDB）に一時的に置きます。24 時間より古いものは次にキャプチャしたときに消します。ページの要素の情報は保存するファイルには入れません。パスワード欄の値は読み取りません。
+        </li>
+        <li>表示言語、線の太さなどの描画の設定、AI 機能のための API キーは、そのブラウザ（または拡張）の localStorage にだけ保存します。</li>
+      </ul>
+
+      <h2>外部に送るデータ</h2>
+      <p>
+        AI 機能（補足の提案と個人情報の検出）は任意の機能で、利用者が自分の Anthropic の API キーを登録したときだけ使えます。ボタンを押すと、送信先を表示して同意を確かめたうえで、画像を Anthropic の Claude API に直接送ります。Chrome 拡張でキャプチャした画像では、ページの要素の位置と文字の一覧も一緒に送ります。送ったデータは、利用者と Anthropic との契約と
+        <a href="https://www.anthropic.com/legal/privacy">Anthropic のプライバシーポリシー</a>に従って扱われます。開発者を経由することはありません。
+      </p>
+      <p>AI 機能を使わなければ、Harie が画像やページの内容を外部に送ることはありません。</p>
+
+      <h2>Chrome 拡張の権限</h2>
+      <ul>
+        <li><code>activeTab</code>: ツールバーのボタンかショートカットを押したタブだけを、そのときに限ってキャプチャするために使います。常時のサイトへのアクセス権は求めません。</li>
+        <li><code>scripting</code>: 押したタブに、範囲や要素を選ぶための表示と、ページの要素の位置と文字を読み取る処理を、その都度入れるために使います。</li>
+        <li><code>downloads</code>: 注釈を付けた画像を、ダウンロードフォルダに保存するために使います。</li>
+      </ul>
+      <p>
+        Chrome 拡張が扱うデータの利用は、Limited Use の要件を含む
+        <a href="https://developer.chrome.com/docs/webstore/program-policies/user-data-faq">Chrome ウェブストアのユーザーデータに関するポリシー</a>に従います。データを第三者に販売したり、上に書いた目的のほかに使ったりすることはありません。
+      </p>
+
+      <h2>このサイトについて</h2>
+      <p>
+        このサイトと Web エディタは GitHub Pages で配信しています。アクセスの記録は GitHub が
+        <a href="https://docs.github.com/ja/site-policy/privacy-policies/github-general-privacy-statement">GitHub のプライバシーステートメント</a>に従って扱います。紹介ページ（このページを含む）は Google Fonts から文字の形を読み込みます。Web エディタは外部からフォントを読み込みません。
+      </p>
+
+      <h2>変更とお問い合わせ</h2>
+      <p>
+        このポリシーを変えるときは、このページを更新します。変更の履歴は GitHub のリポジトリで確かめられます。ご質問は
+        <a href="https://github.com/hosshan/harie/issues">GitHub の Issues</a> でお寄せください。
+      </p>
+    </main>
+
+    <footer class="footer">
+      <div class="container footer-in">
+        <span class="logo logo-sm"><img src="../assets/harie-symbol.svg" alt="" width="22" height="22" />Harie</span>
+        <span class="muted">MIT License · 同梱フォント Noto Sans JP は SIL Open Font License 1.1</span>
+        <span class="footer-links"><a href="./">プライバシーポリシー</a><a href="https://github.com/hosshan/harie">GitHub</a></span>
+      </div>
+    </footer>
+  </body>
+</html>

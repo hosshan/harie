@@ -36,20 +36,22 @@ pnpm --filter @harie/extension e2e      # 配布用とテスト用をビルド�
 
 ## リリース
 
-Chrome ウェブストアに限定公開（unlisted）で出す前提。まだ申請していない。
+Chrome ウェブストアに公開（検索に出る）で出す。初回の申請はまだ。
 
-1. `apps/extension/package.json` の `version` を上げる（WXT は manifest の版にこの値を使う。今は `0.0.0`）。
-2. `main` で `pnpm check` と `pnpm e2e` が通っていることを確かめる。
-3. `main` で `extension-v<version>` のタグを push する。GitHub Actions（`release-extension.yml`）が検証と E2E のあと、ストア提出用の zip を GitHub Release に添付する。手元で作るときは次のとおり。
+1. `apps/extension/package.json` の `version` を上げる PR をマージする（WXT は manifest の版にこの値を使う。タグと違うとリリースのワークフローが止まる）。
+2. `main` で `extension-v<version>` のタグを push する。GitHub Actions（`release-extension.yml`）が check と E2E のあと、ストア提出用の zip を GitHub Release に添付する。手元で作るときは次のとおり。
 
    ```sh
    pnpm --filter @harie/extension zip      # → apps/extension/.output/harie-extension-<version>-chrome.zip
    ```
 
-4. Chrome Web Store のデベロッパーダッシュボードに、GitHub Release の zip を上げる。単一用途・権限の正当性・データの扱いの欄は [STORE.md](STORE.md) の下書きを使う。
-5. 権限を増やしたときは `STORE.md` の説明も更新し、PR に理由を書く。
+3. zip を展開して `chrome://extensions` で読み込み、[手動テスト](CLAUDE.md#手動テスト実際の-chrome-で)をひととおり行う。
+4. Chrome Web Store のデベロッパー ダッシュボードに zip を上げる。掲載情報・プライバシーへの取り組みの欄は [STORE.md](STORE.md) の文言と `store-assets/` の画像を使う。プライバシーポリシーは `https://harie.studio/privacy/`。
+5. 権限や外部に送るデータを変えたときは、`STORE.md` とプライバシーポリシー（`apps/site/src/privacy/`・`apps/site/src/en/privacy/`）を同じ PR で直し、理由を書く。
 
-公開前に残っていること（掲載用の名前・説明文・スクリーンショット、プライバシーポリシーの URL）は [STORE.md の「未決」](STORE.md#未決) にある。公開したら、Web 版の連携の案内（`apps/web/src/Guide.tsx`）もストアからの入れ方に直す（FR-CAP-07）。
+掲載用の画像は `pnpm --filter @harie/extension store-assets` で撮り直せる（配布用ビルドのエディタを、架空の SaaS「Tasklane」の見本で撮る）。
+
+公開したら、Web 版の連携の案内（`apps/web/src/Guide.tsx`、FR-CAP-07）、LP の「ストア公開準備中」、この README の「インストール」をストアからの入れ方に直す。
 
 ## 関連する文書
 
