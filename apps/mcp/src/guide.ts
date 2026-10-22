@@ -13,7 +13,7 @@ const bullets = (rules: readonly string[]) => rules.map((r) => `- ${r}`).join("\
 export const SERVER_INSTRUCTIONS = `Harie は、SaaS の利用ガイド用スクリーンショットに枠・吹き出し・番号を付け、普通の JPEG / PNG のまま何度でも再編集できるようにするツールです。
 ガイド用の注釈を付けるときの基準:
 ${bullets([GUIDE_TARGET_RULE, ...GUIDE_TEXT_RULES, ...GUIDE_LAYOUT_RULES])}
-手順: harie_open で画像と既存の注釈を見る（普通の画像なら harie_create）→ 個人情報があれば harie_mask（confirm なしで確認してから confirm: true）→ harie_preview で確かめて harie_edit で保存。詳しい手引きはプロンプト harie_guide にあります。`;
+手順: harie_open で画像と既存の注釈を見る（普通の画像なら harie_create）→ 個人情報があれば harie_mask（confirm なしで確認してから confirm: true）→ harie_preview で確かめて harie_edit で保存。既存の文言を読む・直すだけなら、harie_open / harie_edit に image: false を付けると画像を省けます。詳しい手引きはプロンプト harie_guide にあります。`;
 
 export function guidePrompt(input: { path: string; intent?: string | undefined }): string {
   const intent = input.intent?.trim();

@@ -13,13 +13,15 @@ The server never calls an LLM. The client's LLM looks at the image and decides w
 
 | Tool | What it does |
 |---|---|
-| `harie_open` | Opens a file and returns its annotations and the image. A plain image returns `status: plain` |
+| `harie_open` | Opens a file and returns its annotations (as JSON, including callout text) and the image. A plain image returns `status: plain` |
 | `harie_create` | Creates a Harie file from a plain JPEG / PNG (default `<name>.harie.<ext>`; the original is kept). `format` (`jpeg` / `png`) picks the output format |
 | `harie_preview` | Returns the image with annotation changes (ops) applied. The file is not changed |
 | `harie_edit` | Applies annotation changes, re-renders and overwrites the file. `expectedRevision` provides optimistic locking |
 | `harie_list` | Lists Harie files in a directory |
 | `harie_mask` | Hides personal information by burning it into the base image (irreversible). Saves only with `confirm: true`; without it, only the masked image is returned |
 | `harie_replace_base` | Replaces the image with a new screenshot while keeping the annotations (for when the screen changed). If the size differs, annotations are scaled to fit. Masks from the old image are not carried over; their areas are returned as `previousPii` |
+
+`harie_open`, `harie_edit` and `harie_replace_base` accept `image: false` to skip the image and return only the JSON. Images take up much of the client's context, so use it when you only read or rewrite text.
 
 The server can only access files under the directory given by `--root` (default: the current directory). `harie_mask` rewrites the base image, so the change cannot be undone once saved. To keep the original, save to another file with `outPath`.
 

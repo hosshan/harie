@@ -66,19 +66,19 @@ type DomSnapshot = {
 
 | ツール | 入力 | 出力 | 要件 |
 |---|---|---|---|
-| `harie_open` | `path` | 注釈ドキュメント（JSON）、レンダリング画像（image content）、整合性の状態 | FR-MCP-02 |
+| `harie_open` | `path`, `image?` | 注釈ドキュメント（JSON）、レンダリング画像（image content）、整合性の状態 | FR-MCP-02 |
 | `harie_list` | `dir`, `recursive?` | Harie ファイルの一覧（パス・タイトル・注釈数） | FR-MCP-05 |
 | `harie_search` | `query`, `dir` | 注釈テキストに一致したファイルと注釈 ID | FR-MCP-05 |
 | `harie_create` | `imagePath`, `outPath?`, `title?`, `format?` | 新規 Harie ファイルのパスと docId | FR-MCP-04 |
-| `harie_edit` | `path`, `ops: Op[]`, `expectedRevision?` | 新しいリビジョン、レンダリング画像のプレビュー | FR-MCP-03 |
+| `harie_edit` | `path`, `ops: Op[]`, `expectedRevision?`, `image?` | 新しいリビジョン、レンダリング画像のプレビュー | FR-MCP-03 |
 | `harie_preview` | `path`, `ops: Op[]` | 保存せずにレンダリング結果だけ返す | FR-MCP-03 |
 | `harie_mask` | `path`, `masks: PiiMask[]`, `confirm?`, `outPath?`, `expectedRevision?` | `confirm` なしは加工後の画像だけ（保存しない）。`confirm: true` で保存 | FR-PII-02〜04 |
-| `harie_replace_base` | `path`, `imagePath`, `outPath?`, `expectedRevision?` | 注釈を残して画像を差し替えて保存。大きさが違えば注釈を比率で合わせる。前の画像のマスクの範囲を `previousPii` で返す | FR-EDIT-10 |
+| `harie_replace_base` | `path`, `imagePath`, `outPath?`, `expectedRevision?`, `image?` | 注釈を残して画像を差し替えて保存。大きさが違えば注釈を比率で合わせる。前の画像のマスクの範囲を `previousPii` で返す | FR-EDIT-10 |
 
 実装したのは `harie_open` / `harie_create` / `harie_edit` / `harie_preview` / `harie_list` / `harie_mask` / `harie_replace_base`。`harie_search` は Next。
 
 - `harie_edit` は `applyOps()` と同じ操作列（[注釈ドキュメントモデル](./document-model.md)）を受け取る。ツールの入力スキーマは zod（`OpSchema`）から生成し、座標の決まり（ベース画像のピクセル、左上原点）と例をツールの説明に含める。
-- 画像は MCP の image content で返す。`harie_open` はファイルそのもの、`harie_edit` / `harie_preview` は描き直した画像（`harie_preview` は AI 提案中の注釈も描く）。
+- 画像は MCP の image content で返す。`harie_open` はファイルそのもの、`harie_edit` / `harie_preview` は描き直した画像（`harie_preview` は AI 提案中の注釈も描く）。画像はクライアントのコンテキストを大きく使うので、`harie_open` / `harie_edit` / `harie_replace_base` は `image: false` で省ける（注釈の文言・位置は JSON で返るので、文言を読む・直すだけなら画像は要らない）。`harie_preview` と `harie_mask` は見た目の確認が目的なので常に返す。
 - 保存は一時ファイルに書いてから置き換える（書き込み途中で落ちても元のファイルを壊さない）。`harie_create` は既存ファイルを上書きしない。
 - 保存形式は `harie_create` で決める（`format` → `outPath` の拡張子 → 元画像の形式の順）。ベース画像は形式に関わらず元のバイト列のまま埋め込む。以後の `harie_edit` / `harie_mask` は開いたファイルの形式で保存し直す（ベース画像の形式には合わせない）。
 - パスは `--root` からの相対パスか絶対パス。`..`・絶対パス・シンボリックリンクで root の外を指すものは拒否する。
