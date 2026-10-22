@@ -413,6 +413,14 @@ test("FR-EDIT-14: 番号・吹き出しのない枠に、ボタン 1 つで番�
   await page.keyboard.press("Control+Z");
   await expect(page.locator(".harie-canvas-image circle")).toHaveCount(0);
   await expect(annotationRects(page)).toHaveCount(2);
+
+  // 枠を選んでいるときは、選んだ枠の設定と分けて右の欄の下端に置く
+  await drag(page, [30, 30], [210, 110]);
+  await expect(steps).toContainText("選んだ枠のうち 1 個に");
+  const aside = await page.getByRole("complementary", { name: "選択中の注釈" }).boundingBox();
+  const card = await steps.boundingBox();
+  if (aside === null || card === null) throw new Error("右の欄がない");
+  expect(aside.y + aside.height - (card.y + card.height)).toBeLessThanOrEqual(20);
 });
 
 test("ツールのパレットは描いている間は隠れ、たたむと小さくなる", async ({ page }) => {
