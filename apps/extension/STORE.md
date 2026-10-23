@@ -1,6 +1,6 @@
 # Chrome Web Store の掲載情報
 
-Chrome ウェブストアに**公開**（検索に出る）で申請するときに、デベロッパー ダッシュボードの各欄へ貼る文言と素材。権限を増やしたり、外部に送るデータが変わったりしたら、ここと [プライバシーポリシー](../site/src/privacy/index.html)（英語版は `../site/src/en/privacy/index.html`）を同じ PR で直す。
+Chrome ウェブストアに**公開**（検索に出る）で出すときに、デベロッパー ダッシュボードの各欄へ貼る文言と素材。掲載ページは https://chromewebstore.google.com/detail/harie/dgbghdgnmjcgjdmhfnmcdphkafkbefll （2026-10-23 公開）。権限を増やしたり、外部に送るデータが変わったりしたら、ここと [プライバシーポリシー](../site/src/privacy/index.html)（英語版は `../site/src/en/privacy/index.html`）を同じ PR で直す。
 
 手順の全体（デベロッパー登録、タグから zip を作る、審査に出す）は [README の「リリース」](README.md#リリース)。画面が大きく変わったら `pnpm --filter @harie/extension store-assets` で `store-assets/` を撮り直す。
 

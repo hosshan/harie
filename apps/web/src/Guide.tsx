@@ -5,7 +5,8 @@ import type { HeaderAction } from "./Header";
 import { Modal } from "./Modal";
 import { useWebMessages } from "./messages";
 
-const REPO_URL = "https://github.com/hosshan/harie";
+export const EXTENSION_STORE_URL =
+  "https://chromewebstore.google.com/detail/harie/dgbghdgnmjcgjdmhfnmcdphkafkbefll";
 
 export const MCP_COMMAND = "claude mcp add harie -- npx -y @harie/mcp --root ~/Pictures/guides";
 
@@ -17,11 +18,6 @@ export const MCP_DESKTOP_CONFIG = `{
     }
   }
 }`;
-
-const EXTENSION_BUILD = `git clone ${REPO_URL}.git
-cd harie
-pnpm install
-pnpm --filter @harie/extension build`;
 
 /** 「連携」の操作（ヘッダーのボタン、狭い画面では三点メニューの項目）と、その案内のダイアログ */
 export function useGuide(): { action: HeaderAction; dialog: ReactNode } {
@@ -57,25 +53,15 @@ function ExtensionGuide() {
     <section className="app-guide-section" aria-label={m.extensionLabel}>
       <h2>{m.extensionTitle}</h2>
       <p className="harie-muted">{m.extensionAbout}</p>
-      <p>{m.extensionUnpublished}</p>
       <ol>
+        <li>{m.extensionStep1}</li>
         <li>
-          {m.extensionStep1}
-          <CopyBlock label={m.extensionBuild} text={EXTENSION_BUILD} />
-        </li>
-        <li>
-          <WithCode parts={m.extensionStep2("chrome://extensions")} />
-        </li>
-        <li>
-          <WithCode parts={m.extensionStep3("apps/extension/.output/chrome-mv3")} />
-        </li>
-        <li>
-          <WithCode parts={m.extensionStep4("*.harie.png")} />
+          <WithCode parts={m.extensionStep2("*.harie.png")} />
         </li>
       </ol>
       <p>
-        <a href={REPO_URL} target="_blank" rel="noreferrer">
-          {m.repo}
+        <a href={EXTENSION_STORE_URL} target="_blank" rel="noreferrer">
+          {m.extensionStore}
         </a>
       </p>
     </section>

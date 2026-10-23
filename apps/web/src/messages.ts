@@ -105,26 +105,13 @@ const ja = {
     extensionTitle: "Chrome 拡張でキャプチャする",
     extensionAbout:
       "表示中のページを撮って、そのまま Harie で注釈を付けられます。見えている範囲・ドラッグした範囲・ボタンなどの要素を選んで撮れます。",
-    extensionUnpublished:
-      "Chrome ウェブストアには未公開のため、今はソースからビルドして読み込みます。",
-    extensionStep1: "Node.js 22 以上と pnpm を用意し、次を実行します。",
-    extensionBuild: "拡張をビルドするコマンド",
-    extensionStep2: (url: string) => [
-      "Chrome で ",
-      url,
-      " を開き、「デベロッパーモード」をオンにします。",
-    ],
-    extensionStep3: (dir: string) => [
-      "「パッケージ化されていない拡張機能を読み込む」で ",
-      dir,
-      " を選びます。",
-    ],
-    extensionStep4: (file: string) => [
+    extensionStore: "Chrome ウェブストアで入れる",
+    extensionStep1: "Chrome ウェブストアの Harie のページで「Chrome に追加」を押します。",
+    extensionStep2: (file: string) => [
       "ツールバーの Harie を押すか Alt+Shift+S で撮れます。保存した ",
       file,
       " はこの Web 版でも開いて直せます。",
     ],
-    repo: "GitHub のリポジトリを開く",
     mcpTitle: "Claude から編集する（MCP）",
     mcpAbout: (pkg: string, root: string) => [
       "MCP サーバー ",
@@ -304,18 +291,13 @@ const en: WebMessages = {
     extensionTitle: "Capture with the Chrome extension",
     extensionAbout:
       "Capture the page you're viewing and annotate it right away in Harie. You can capture the visible area, a dragged area, or an element such as a button.",
-    extensionUnpublished:
-      "It isn't on the Chrome Web Store yet, so for now you build it from source and load it.",
-    extensionStep1: "Install Node.js 22 or later and pnpm, then run:",
-    extensionBuild: "Commands to build the extension",
-    extensionStep2: (url) => ["Open ", url, " in Chrome and turn on “Developer mode”."],
-    extensionStep3: (dir) => ["Click “Load unpacked” and choose ", dir, "."],
-    extensionStep4: (file) => [
+    extensionStore: "Get it on the Chrome Web Store",
+    extensionStep1: "On Harie's Chrome Web Store page, click “Add to Chrome”.",
+    extensionStep2: (file) => [
       "Click Harie in the toolbar or press Alt+Shift+S to capture. Saved ",
       file,
       " files can also be opened and edited in this web version.",
     ],
-    repo: "Open the GitHub repository",
     mcpTitle: "Edit from Claude (MCP)",
     mcpAbout: (pkg, root) => [
       "Register the MCP server ",

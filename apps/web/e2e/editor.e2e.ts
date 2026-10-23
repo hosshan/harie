@@ -829,8 +829,10 @@ test("FR-CAP-07, FR-MCP-07: ヘッダーの「連携」で、Chrome 拡張の入
   await page.goto("/");
   await page.getByRole("banner").getByRole("button", { name: "連携" }).click();
   const guide = page.getByRole("dialog", { name: "ほかのツールと使う" });
-  await expect(guide).toContainText("chrome://extensions");
-  await expect(guide).toContainText("apps/extension/.output/chrome-mv3");
+  await expect(guide.getByRole("link", { name: "Chrome ウェブストアで入れる" })).toHaveAttribute(
+    "href",
+    "https://chromewebstore.google.com/detail/harie/dgbghdgnmjcgjdmhfnmcdphkafkbefll",
+  );
   const command = "claude mcp add harie -- npx -y @harie/mcp --root ~/Pictures/guides";
   await expect(
     guide.getByRole("figure", { name: "Claude Code に登録するコマンド" }).locator("pre"),

@@ -9,7 +9,9 @@ Harie の Chrome 拡張（WXT, Manifest V3）。表示中のタブをキャプ�
 
 ## インストール
 
-Chrome ウェブストアには未公開。今はソースからビルドして読み込む。
+[Chrome ウェブストア](https://chromewebstore.google.com/detail/harie/dgbghdgnmjcgjdmhfnmcdphkafkbefll)から「Chrome に追加」で入れる。ツールバーの Harie を押すか Alt+Shift+S で撮る。ショートカットは `chrome://extensions/shortcuts` で変えられる。
+
+### ソースから入れる（開発用）
 
 1. リポジトリの直下で次を実行する（Node 22 以上と pnpm 10 が要る）。
 
@@ -20,9 +22,8 @@ Chrome ウェブストアには未公開。今はソースからビルドして�
 
 2. Chrome で `chrome://extensions` を開き、「デベロッパーモード」をオンにする。
 3. 「パッケージ化されていない拡張機能を読み込む」で `apps/extension/.output/chrome-mv3` を選ぶ。
-4. ツールバーの Harie を押すか Alt+Shift+S で撮る。ショートカットは `chrome://extensions/shortcuts` で変えられる。
 
-更新するときは、もう一度ビルドしてから `chrome://extensions` で Harie の再読み込みボタンを押す。
+更新するときは、もう一度ビルドしてから `chrome://extensions` で Harie の再読み込みボタンを押す。ストア版と同時に入れると、ショートカットが片方にしか付かない。
 
 ## ローカルでの確認
 
@@ -36,7 +37,7 @@ pnpm --filter @harie/extension e2e      # 配布用とテスト用をビルド�
 
 ## リリース
 
-Chrome ウェブストアに公開（検索に出る）で出す。初回の申請はまだ。
+Chrome ウェブストアに公開（検索に出る）で出している（0.1.0 を 2026-10-23 に公開）。版を上げるたびに次を行う。
 
 1. `apps/extension/package.json` の `version` を上げる PR をマージする（WXT は manifest の版にこの値を使う。タグと違うとリリースのワークフローが止まる）。
 2. `main` で `extension-v<version>` のタグを push する。GitHub Actions（`release-extension.yml`）が check と E2E のあと、ストア提出用の zip を GitHub Release に添付する。手元で作るときは次のとおり。
@@ -50,8 +51,6 @@ Chrome ウェブストアに公開（検索に出る）で出す。初回の申�
 5. 権限や外部に送るデータを変えたときは、`STORE.md` とプライバシーポリシー（`apps/site/src/privacy/`・`apps/site/src/en/privacy/`）を同じ PR で直し、理由を書く。
 
 掲載用の画像は `pnpm --filter @harie/extension store-assets` で撮り直せる（配布用ビルドのエディタを、架空の SaaS「Tasklane」の見本で撮る）。
-
-公開したら、Web 版の連携の案内（`apps/web/src/Guide.tsx`、FR-CAP-07）、LP の「ストア公開準備中」、この README の「インストール」をストアからの入れ方に直す。
 
 ## 関連する文書
 
