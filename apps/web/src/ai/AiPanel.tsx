@@ -100,7 +100,7 @@ export function AiSuggestPanel({ doc, dispatch, base, dom }: AiSuggestPanelProps
   };
 
   return (
-    <section className="harie-inspector-body app-ai" aria-label="AI">
+    <section className="harie-inspector-body app-ai" aria-label={m.ai.title}>
       <h2>{m.ai.title}</h2>
       {credential === null ? (
         // API キーはヘッダーの「設定」で登録する。ここからも同じ設定を開ける
@@ -112,15 +112,14 @@ export function AiSuggestPanel({ doc, dispatch, base, dom }: AiSuggestPanelProps
         </p>
       ) : (
         <>
-          <label>
-            {m.ai.intent}
-            <textarea
-              rows={2}
-              value={intent}
-              placeholder={m.ai.intentPlaceholder}
-              onChange={(e) => setIntent(e.target.value)}
-            />
-          </label>
+          {/* 見出しで用途がわかるので、ラベルは出さずプレースホルダで示す（読み上げ用の名前は付ける） */}
+          <textarea
+            rows={2}
+            aria-label={m.ai.intent}
+            value={intent}
+            placeholder={m.ai.intentPlaceholder}
+            onChange={(e) => setIntent(e.target.value)}
+          />
           <AiConsent
             withDom={dom !== undefined}
             provider={credential.provider}

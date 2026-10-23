@@ -74,7 +74,7 @@ test("FR-AI-05, ADR-0012: OpenRouter で接続すると、キーを貼らずに 
     .setInputFiles({ name: "large-base.jpg", mimeType: "image/jpeg", buffer: fixture });
   await expect(page.getByRole("application", { name: "注釈の編集面" })).toBeVisible();
 
-  const ai = page.getByRole("region", { name: "AI" });
+  const ai = page.getByRole("region", { name: "AIでガイドを作成" });
   await ai.getByRole("button", { name: "設定を開く" }).click();
   const settings = page.getByRole("dialog", { name: "設定" });
   const [popup] = await Promise.all([

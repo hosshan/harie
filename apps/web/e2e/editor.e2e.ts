@@ -671,7 +671,7 @@ test("FR-AI-01, 02, NFR-SEC-01, 04: AI の提案は同意してから送り、�
 }) => {
   const requests = await fakeClaude(page);
   await openFixture(page, "large-base.jpg");
-  const ai = page.getByRole("region", { name: "AI" });
+  const ai = page.getByRole("region", { name: "AIでガイドを作成" });
   // API キーは右の欄ではなく、ヘッダーの「設定」（AI に関する設定）で登録する。未登録の間は送る操作を出さない
   await expect(ai.getByRole("button", { name: "設定を開く" })).toBeVisible();
   await expect(ai.getByRole("button", { name: "AI に提案してもらう" })).toHaveCount(0);
