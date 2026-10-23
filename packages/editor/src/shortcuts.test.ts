@@ -36,6 +36,12 @@ describe("キーボードのショートカット（FR-EDIT-12）", () => {
     ).toBe(true);
   });
 
+  it("画像のコピー（FR-FILE-11）は ⌘⇧C で、注釈のコピー ⌘C と取り違えない", () => {
+    expect(matchesShortcut(key("C", { meta: true, shift: true }), "copyImage", true)).toBe(true);
+    expect(matchesShortcut(key("C", { meta: true, shift: true }), "copy", true)).toBe(false);
+    expect(matchesShortcut(key("c", { ctrl: true }), "copyImage", false)).toBe(false);
+  });
+
   it("記号のキーは位置（code）で判定する。? は Shift の有無を見ない", () => {
     const bracket = key("}", { meta: true, shift: true, code: "BracketRight" });
     expect(matchesShortcut(bracket, "bringToFront", true)).toBe(true);

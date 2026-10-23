@@ -12,8 +12,8 @@ import {
 import { TOOL_SHORTCUTS } from "./tools";
 
 export type ShortcutListProps = {
-  /** 保存・画像を開くのショートカットがある画面か（拡張のエディタには「画像を開く」がない） */
-  file?: { save?: boolean; open?: boolean };
+  /** 保存・画像を開く・画像のコピーのショートカットがある画面か（拡張のエディタには「画像を開く」がない） */
+  file?: { save?: boolean; open?: boolean; copyImage?: boolean };
   /** 個人情報を隠す道具があるか */
   mask?: boolean;
   /** 要素で囲む道具があるか（Chrome 拡張で撮った画像） */
@@ -35,6 +35,7 @@ export function ShortcutList({ file = {}, mask = true, element = false }: Shortc
       rows: [
         ...(file.save ? [row("save")] : []),
         ...(file.open ? [row("open")] : []),
+        ...(file.copyImage ? [row("copyImage")] : []),
         row("shortcuts"),
       ],
     },

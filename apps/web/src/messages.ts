@@ -55,6 +55,12 @@ const ja = {
     jpegNote: "ファイルが小さい",
     pngNote: "文字がくっきり残る",
   },
+  copy: {
+    button: "コピー",
+    copying: "画像をコピーしています…",
+    copied: "画像をコピーしました",
+    failed: (detail: string) => `コピーできませんでした: ${detail}`,
+  },
   replace: {
     button: "画像を差し替える",
     input: "差し替える画像",
@@ -242,6 +248,12 @@ const en: WebMessages = {
     formatButton: (label) => `File format: ${label}`,
     jpegNote: "Smaller file",
     pngNote: "Sharper text",
+  },
+  copy: {
+    button: "Copy",
+    copying: "Copying the image…",
+    copied: "Copied the image",
+    failed: (detail) => `Couldn't copy: ${detail}`,
   },
   replace: {
     button: "Replace image",

@@ -18,6 +18,7 @@ import { estimateImageScale, rebaseDocument } from "@harie/render";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { AiPiiPanel, useAiSuggest } from "./ai/AiPanel";
 import { browserRenderer } from "./browser-renderer";
+import { canCopyImage, copyImage } from "./copy";
 import { Header, type HeaderAction, HeaderButton } from "./Header";
 import { mismatchMessage, type Opened } from "./load";
 import { Modal } from "./Modal";
@@ -79,6 +80,10 @@ export function Workspace({
   const [state, dispatch] = useEditorState(opened.doc);
   const [status, setStatus] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
+  const [copying, setCopying] = useState(false);
+  // コピーできたら、少しのあいだボタンのアイコンを ✓ にして知らせる
+  const [copied, setCopied] = useState(false);
+  const copyable = useMemo(() => canCopyImage(), []);
   const [format, setFormat] = useState<ImageFormat>(opened.format);
   const [showWarning, setShowWarning] = useState(opened.warning !== undefined);
   // 保存するまでは、適用したマスクを外せるように加工前の画像を持つ（ADR-0009）
@@ -163,6 +168,26 @@ export function Workspace({
     }
   };
 
+  // 保存せずに、今の画像をクリップボードへ（FR-FILE-11）。注釈データは載らない（クリップボードの PNG はブラウザが描き直す）
+  const copy = async () => {
+    setCopying(true);
+    setStatus(m.copy.copying);
+    try {
+      await copyImage(opened, state.doc);
+      setStatus(m.copy.copied);
+      setCopied(true);
+    } catch (e) {
+      setStatus(m.copy.failed(e instanceof Error ? e.message : String(e)));
+    } finally {
+      setCopying(false);
+    }
+  };
+  useEffect(() => {
+    if (!copied) return;
+    const timer = setTimeout(() => setCopied(false), 2000);
+    return () => clearTimeout(timer);
+  }, [copied]);
+
   // 個人情報のマスクはベース画像そのものを書き換える（ADR-0007）。加工前の画像は保存するまでメモリにだけ持ち、
   // 保存したファイルには残さない（ADR-0009）
   const applyMasks = async (requested: PiiMask[]) => {
@@ -239,10 +264,13 @@ export function Workspace({
     );
   };
 
-  // 保存（Ctrl / ⌘ + S）と画像を開く（Ctrl / ⌘ + O）は、文字の入力中でも効かせる（FR-EDIT-12）。
-  // 入力中の文字は、入力欄を離れたときに確定するので、先に離れてから次の描画で保存する
+  // 保存（Ctrl / ⌘ + S）・画像を開く（Ctrl / ⌘ + O）・画像のコピー（Ctrl / ⌘ + Shift + C）は、
+  // 文字の入力中でも効かせる（FR-EDIT-12）。入力中の文字は、入力欄を離れたときに確定するので、
+  // 先に離れてから次の描画で保存する
   const saveRef = useRef(save);
   saveRef.current = save;
+  const copyRef = useRef(copy);
+  copyRef.current = copy;
   useEffect(() => {
     const mac = isMacPlatform();
     const onKey = (e: KeyboardEvent) => {
@@ -251,6 +279,11 @@ export function Workspace({
         if (saving) return;
         (document.activeElement as HTMLElement | null)?.blur?.();
         setTimeout(() => void saveRef.current(), 0);
+      } else if (matchesShortcut(e, "copyImage", mac) && copyable) {
+        e.preventDefault();
+        if (copying) return;
+        (document.activeElement as HTMLElement | null)?.blur?.();
+        setTimeout(() => void copyRef.current(), 0);
       } else if (matchesShortcut(e, "open", mac) && onOpenImage !== undefined) {
         e.preventDefault();
         setConfirmOpen(true);
@@ -258,7 +291,7 @@ export function Workspace({
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [saving, onOpenImage]);
+  }, [saving, copying, copyable, onOpenImage]);
 
   return (
     <>
@@ -300,6 +333,17 @@ export function Workspace({
             disabled: saving,
             placement: "start",
           },
+          // 「保存」のすぐ右に置く。狭い画面では三点メニューに入る
+          ...(copyable
+            ? [
+                {
+                  icon: copied ? "check" : "copy",
+                  label: m.copy.button,
+                  onSelect: () => void copy(),
+                  disabled: copying,
+                } satisfies HeaderAction,
+              ]
+            : []),
           ...actions,
         ]}
         menu={<SaveFormatMenuItems value={format} onChange={setFormat} disabled={saving} />}
@@ -336,7 +380,7 @@ export function Workspace({
       >
         <h2>{em.shortcuts.title}</h2>
         <ShortcutList
-          file={{ save: true, open: onOpenImage !== undefined }}
+          file={{ save: true, open: onOpenImage !== undefined, copyImage: copyable }}
           element={elements.length > 0}
         />
         <p className="app-modal-actions">
