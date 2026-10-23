@@ -1,0 +1,32 @@
+# Harie
+
+> Harie (はりえ) is a free, open-source (MIT) tool for annotating screenshots in SaaS help docs and user guides with boxes, step numbers, callouts and arrows. It saves a regular JPEG or PNG that any app can display, and the annotations stay editable: open the image in Harie again and every box and note can be moved or rewritten, by anyone who has the file.
+
+Key facts:
+
+- The saved file is a normal JPEG or PNG. The original screenshot and the annotation data are embedded in the image's metadata (XMP and JUMBF in JPEG, a dedicated chunk in PNG). The original screenshot is never re-encoded, so editing again does not lower image quality.
+- No project file, account or sign-up is needed. A person who receives the image can open it in Harie and edit it.
+- Images are processed locally in the browser or on the device. There is no developer-run server, analytics or tracking.
+- Optional AI features (annotation suggestions and personal data detection) use the user's own Anthropic API key, or an OpenRouter account connected from the web editor. Images are sent to Anthropic's Claude API only after the user confirms.
+- Personal data such as names, email addresses and phone numbers can be replaced with dummy values (or filled, mosaicked or blurred). This is applied to the original image irreversibly, so the original values do not remain in the file.
+- Available as a web editor (https://harie.studio/app/), a Chrome extension (Chrome Web Store), and an MCP server (`npx -y @harie/mcp --root <folder>`) for AI agents such as Claude Code and Claude Desktop. A desktop app for macOS and Windows (Tauri 2) can be built from source; signed binaries are not distributed yet.
+- The editor UI is available in English and Japanese.
+- Harie does not generate step-by-step guides automatically from recorded actions.
+
+## Pages
+
+- [Harie (English)](https://harie.studio/en/): overview, how the editable image works, AI, personal data masking, platforms, MCP setup, FAQ
+- [Harie (日本語)](https://harie.studio/): the same page in Japanese
+- [Web editor](https://harie.studio/app/): runs in the browser, no install
+- [Privacy policy](https://harie.studio/en/privacy/): what data Harie handles
+
+## Get it
+
+- [Chrome extension](https://chromewebstore.google.com/detail/harie/dgbghdgnmjcgjdmhfnmcdphkafkbefll): capture the current page and annotate it
+- [@harie/mcp on npm](https://www.npmjs.com/package/@harie/mcp): MCP server; tools and usage in the [README](https://github.com/hosshan/harie/blob/main/apps/mcp/README.md)
+- [Source code on GitHub](https://github.com/hosshan/harie)
+
+## Optional
+
+- [File format specification (Japanese)](https://github.com/hosshan/harie/blob/main/docs/03-design/harie-format-spec.md)
+- [Desktop app build instructions](https://github.com/hosshan/harie/tree/main/apps/desktop)

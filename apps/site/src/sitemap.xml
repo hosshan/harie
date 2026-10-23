@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">
+  <url>
+    <loc>https://harie.studio/</loc>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://harie.studio/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://harie.studio/en/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://harie.studio/" />
+  </url>
+  <url>
+    <loc>https://harie.studio/en/</loc>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://harie.studio/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://harie.studio/en/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://harie.studio/" />
+  </url>
+  <url>
+    <loc>https://harie.studio/app/</loc>
+  </url>
+  <url>
+    <loc>https://harie.studio/privacy/</loc>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://harie.studio/privacy/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://harie.studio/en/privacy/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://harie.studio/privacy/" />
+  </url>
+  <url>
+    <loc>https://harie.studio/en/privacy/</loc>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://harie.studio/privacy/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://harie.studio/en/privacy/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://harie.studio/privacy/" />
+  </url>
+</urlset>

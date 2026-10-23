@@ -25,10 +25,17 @@ node apps/site/scripts/serve.mjs
 | パス | 内容 |
 |---|---|
 | `src/index.html`・`src/en/index.html` | 日本語版・英語版のページ本体。リンクはすべて相対パスにして、公開先のパスに依存させない（OGP の URL だけは絶対） |
+| `src/robots.txt`・`src/sitemap.xml`・`src/llms.txt` | 検索エンジンと AI 向けの案内。クローラーはすべて許可し、サイトマップには日英の対応（`hreflang`）を書く。`llms.txt` は LLM 向けの英語の要約で、提供状況や機能を変えたらここも直す |
 | `src/styles.css` | 見た目。色は [docs/brand](../../docs/brand/README.md) の配色 |
 | `src/main.js` | 注釈の付け外しスイッチ、MCP の登録方法のタブ、コマンドのコピー（両言語で共通。文言は HTML 側に持つ） |
 | `src/assets/tasklane-notifications.harie.png`・`.en.harie.png` | 見本の Harie ファイル。架空の SaaS「Tasklane」の画面（日本語は `apps/mcp/eval/fixtures/notifications.png`、英語は `demo/notifications.en.html` を 1280×720 で撮ったもの）に注釈を付け、氏名をダミーに置き換えたもの。LP からダウンロードしてエディタで開ける |
 | `src/assets/demo-*.webp`・`pii-*.webp`（英語版は `*.en.webp`） | 見本ファイルから作った表示用の画像（注釈あり・なし、個人情報の加工前・後の切り抜き） |
 | `src/assets/og.png`・`og.en.png` | SNS 用の画像（1200×630）。各言語のヒーローを撮ったもの |
+
+## 検索エンジンと AI 向けの情報
+
+- 各ページに `canonical` と `hreflang` を置く。LP の 2 ページには構造化データ（JSON-LD の `WebSite`・`SoftwareApplication`・`FAQPage`）を `<head>` に書く
+- `FAQPage` の質問と答えは、ページの「よくある質問」の節と同じ文にする。`pnpm --filter @harie/site build` の最初に [scripts/check-seo.mjs](scripts/check-seo.mjs) が、この一致、`canonical` と `og:url` の一致、`sitemap.xml` の URL に対応するページがあることを確かめ、ずれていればビルドを止める
+- よくある質問の答えは畳まずに全部見せる（AI の回答に引かれやすいよう、1 つの答えだけで意味が通る文にする）
 
 見本の画像を作り直すときは、開発用 CLI（`pnpm harie create` → `mask` → `render`）で Harie ファイルを作り、注釈あり・なしの画像を書き出す。実在の個人情報やサービス名を使わない。

@@ -9,7 +9,9 @@
       content="ガイド用のスクリーンショットに、枠や番号、説明を書き込むツールです。保存した画像はふつうの JPEG / PNG として表示でき、Harie で開けばあとから何度でも直せます。AI による補足の提案、個人情報のダミー置換、Chrome 拡張、MCP に対応したオープンソースです。"
     />
     <meta name="theme-color" content="#D4A72C" />
+    <link rel="canonical" href="https://harie.studio/" />
     <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Harie" />
     <meta property="og:locale" content="ja_JP" />
     <meta property="og:locale:alternate" content="en_US" />
     <meta property="og:title" content="Harie — ただの画像なのに、何度でも直せる" />
@@ -32,6 +34,128 @@
       href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@700;900&family=Zen+Kaku+Gothic+New:wght@400;700&family=IBM+Plex+Mono:wght@400;500&display=swap"
     />
     <link rel="stylesheet" href="styles.css" />
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@graph": [
+          {
+            "@type": "WebSite",
+            "@id": "https://harie.studio/#website",
+            "url": "https://harie.studio/",
+            "name": "Harie",
+            "alternateName": "はりえ",
+            "inLanguage": [
+              "ja",
+              "en"
+            ]
+          },
+          {
+            "@type": "SoftwareApplication",
+            "@id": "https://harie.studio/#app",
+            "name": "Harie",
+            "alternateName": "はりえ",
+            "url": "https://harie.studio/",
+            "description": "ガイド用のスクリーンショットに、枠や番号、説明を書き込むツールです。保存した画像はふつうの JPEG / PNG として表示でき、Harie で開けばあとから何度でも直せます。AI による補足の提案、個人情報のダミー置換、Chrome 拡張、MCP に対応したオープンソースです。",
+            "applicationCategory": "DesignApplication",
+            "operatingSystem": "Web, Chrome, macOS, Windows",
+            "inLanguage": [
+              "ja",
+              "en"
+            ],
+            "image": "https://harie.studio/assets/og.png",
+            "offers": {
+              "@type": "Offer",
+              "price": "0",
+              "priceCurrency": "JPY"
+            },
+            "license": "https://opensource.org/licenses/MIT",
+            "isAccessibleForFree": true,
+            "author": {
+              "@type": "Person",
+              "name": "hosshan",
+              "url": "https://github.com/hosshan"
+            },
+            "sameAs": [
+              "https://github.com/hosshan/harie",
+              "https://chromewebstore.google.com/detail/harie/dgbghdgnmjcgjdmhfnmcdphkafkbefll",
+              "https://www.npmjs.com/package/@harie/mcp"
+            ]
+          },
+          {
+            "@type": "FAQPage",
+            "@id": "https://harie.studio/#faq",
+            "url": "https://harie.studio/",
+            "inLanguage": "ja",
+            "mainEntity": [
+              {
+                "@type": "Question",
+                "name": "Harie はどんなツールですか？",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "SaaS の利用ガイドやヘルプページに載せるスクリーンショットに、枠や番号、吹き出し、矢印を書き込むためのツールです。保存した画像はふつうの JPEG / PNG として表示でき、Harie で開き直せば注釈をあとから何度でも直せます。"
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "保存した画像は、ほかのアプリやサイトでも表示できますか？",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "はい。保存されるのはふつうの JPEG / PNG なので、ヘルプページやチャット、ドキュメントにそのまま貼れます。元のスクリーンショットと注釈のデータは画像のメタデータに入っていて、Harie で開いたときにだけ使われます。"
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "ほかの人が作ったガイド画像も直せますか？",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "Harie で保存した画像なら直せます。受け取った画像をそのまま Harie で開けば、枠や文字を 1 つずつ動かしたり書き換えたりできます。プロジェクトファイルやアカウントは要りません。"
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "料金はかかりますか？",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "無料です。MIT ライセンスのオープンソースで、アカウント登録もいりません。AI による補足の提案を使うときだけ、ご自分の Anthropic の API キーか OpenRouter のアカウントが必要になり、その利用料はそれぞれのサービスに支払います。"
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "画像はどこかのサーバーに送られますか？",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "送られません。画像はお使いのブラウザや端末の中で処理し、開発者が受け取ることもありません。AI 機能を使うときだけ、確認を出したうえで、画像を Anthropic の Claude API に直接送ります（OpenRouter で接続したときは OpenRouter を経由します）。"
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "画面に映った個人情報は隠せますか？",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "氏名やメールアドレス、電話番号などをダミーの値に置き換えられます。塗りつぶし、モザイク、ぼかしも選べます。加工は元の画像そのものにかけるので元には戻せず、ファイルを人に渡しても加工前の値は残りません。"
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "どこで使えますか？",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "ブラウザで動く Web エディタ、表示中のページを撮れる Chrome 拡張、AI エージェントから使う MCP サーバーがあります。macOS と Windows 向けのデスクトップ版は配布の準備中で、いまはソースからビルドすると使えます。"
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "Claude などの AI エージェントから注釈を付けられますか？",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "はい。MCP サーバー @harie/mcp を Claude Code や Claude Desktop に登録すると、指定したフォルダの中の画像を開いて、注釈を付けたり文言を直したりできます。"
+                }
+              }
+            ]
+          }
+        ]
+      }
+    </script>
   </head>
   <body>
     <header class="nav">
@@ -380,6 +504,46 @@
               <p class="chat-user">guides の画像で、メールアドレスが映っているところをダミーに置き換えて</p>
             </figure>
             <p class="small muted">個人情報の加工は元に戻せないので、確認が取れたときだけ保存します。</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="section section-tint" id="faq" aria-labelledby="faq-title">
+        <div class="container">
+          <h2 id="faq-title" class="h2">よくある質問</h2>
+          <div class="faq">
+            <article class="faq-item">
+              <h3>Harie はどんなツールですか？</h3>
+              <p>SaaS の利用ガイドやヘルプページに載せるスクリーンショットに、枠や番号、吹き出し、矢印を書き込むためのツールです。保存した画像はふつうの JPEG / PNG として表示でき、Harie で開き直せば注釈をあとから何度でも直せます。</p>
+            </article>
+            <article class="faq-item">
+              <h3>保存した画像は、ほかのアプリやサイトでも表示できますか？</h3>
+              <p>はい。保存されるのはふつうの JPEG / PNG なので、ヘルプページやチャット、ドキュメントにそのまま貼れます。元のスクリーンショットと注釈のデータは画像のメタデータに入っていて、Harie で開いたときにだけ使われます。</p>
+            </article>
+            <article class="faq-item">
+              <h3>ほかの人が作ったガイド画像も直せますか？</h3>
+              <p>Harie で保存した画像なら直せます。受け取った画像をそのまま Harie で開けば、枠や文字を 1 つずつ動かしたり書き換えたりできます。プロジェクトファイルやアカウントは要りません。</p>
+            </article>
+            <article class="faq-item">
+              <h3>料金はかかりますか？</h3>
+              <p>無料です。MIT ライセンスのオープンソースで、アカウント登録もいりません。AI による補足の提案を使うときだけ、ご自分の Anthropic の API キーか OpenRouter のアカウントが必要になり、その利用料はそれぞれのサービスに支払います。</p>
+            </article>
+            <article class="faq-item">
+              <h3>画像はどこかのサーバーに送られますか？</h3>
+              <p>送られません。画像はお使いのブラウザや端末の中で処理し、開発者が受け取ることもありません。AI 機能を使うときだけ、確認を出したうえで、画像を Anthropic の Claude API に直接送ります（OpenRouter で接続したときは OpenRouter を経由します）。</p>
+            </article>
+            <article class="faq-item">
+              <h3>画面に映った個人情報は隠せますか？</h3>
+              <p>氏名やメールアドレス、電話番号などをダミーの値に置き換えられます。塗りつぶし、モザイク、ぼかしも選べます。加工は元の画像そのものにかけるので元には戻せず、ファイルを人に渡しても加工前の値は残りません。</p>
+            </article>
+            <article class="faq-item">
+              <h3>どこで使えますか？</h3>
+              <p>ブラウザで動く Web エディタ、表示中のページを撮れる Chrome 拡張、AI エージェントから使う MCP サーバーがあります。macOS と Windows 向けのデスクトップ版は配布の準備中で、いまはソースからビルドすると使えます。</p>
+            </article>
+            <article class="faq-item">
+              <h3>Claude などの AI エージェントから注釈を付けられますか？</h3>
+              <p>はい。MCP サーバー @harie/mcp を Claude Code や Claude Desktop に登録すると、指定したフォルダの中の画像を開いて、注釈を付けたり文言を直したりできます。</p>
+            </article>
           </div>
         </div>
       </section>

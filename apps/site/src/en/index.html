@@ -9,7 +9,9 @@
       content="Add boxes, numbers and notes to the screenshots in your help docs. Harie saves a regular JPEG or PNG that you can reopen and edit any time. Open source, with AI suggestions, personal data masking, a Chrome extension and an MCP server."
     />
     <meta name="theme-color" content="#D4A72C" />
+    <link rel="canonical" href="https://harie.studio/en/" />
     <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Harie" />
     <meta property="og:locale" content="en_US" />
     <meta property="og:locale:alternate" content="ja_JP" />
     <meta property="og:title" content="Harie — Just an image. Editable anytime." />
@@ -32,6 +34,128 @@
       href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@700;900&family=Zen+Kaku+Gothic+New:wght@400;700&family=IBM+Plex+Mono:wght@400;500&display=swap"
     />
     <link rel="stylesheet" href="../styles.css" />
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@graph": [
+          {
+            "@type": "WebSite",
+            "@id": "https://harie.studio/#website",
+            "url": "https://harie.studio/",
+            "name": "Harie",
+            "alternateName": "はりえ",
+            "inLanguage": [
+              "ja",
+              "en"
+            ]
+          },
+          {
+            "@type": "SoftwareApplication",
+            "@id": "https://harie.studio/#app",
+            "name": "Harie",
+            "alternateName": "はりえ",
+            "url": "https://harie.studio/en/",
+            "description": "Add boxes, numbers and notes to the screenshots in your help docs. Harie saves a regular JPEG or PNG that you can reopen and edit any time. Open source, with AI suggestions, personal data masking, a Chrome extension and an MCP server.",
+            "applicationCategory": "DesignApplication",
+            "operatingSystem": "Web, Chrome, macOS, Windows",
+            "inLanguage": [
+              "ja",
+              "en"
+            ],
+            "image": "https://harie.studio/assets/og.en.png",
+            "offers": {
+              "@type": "Offer",
+              "price": "0",
+              "priceCurrency": "USD"
+            },
+            "license": "https://opensource.org/licenses/MIT",
+            "isAccessibleForFree": true,
+            "author": {
+              "@type": "Person",
+              "name": "hosshan",
+              "url": "https://github.com/hosshan"
+            },
+            "sameAs": [
+              "https://github.com/hosshan/harie",
+              "https://chromewebstore.google.com/detail/harie/dgbghdgnmjcgjdmhfnmcdphkafkbefll",
+              "https://www.npmjs.com/package/@harie/mcp"
+            ]
+          },
+          {
+            "@type": "FAQPage",
+            "@id": "https://harie.studio/en/#faq",
+            "url": "https://harie.studio/en/",
+            "inLanguage": "en",
+            "mainEntity": [
+              {
+                "@type": "Question",
+                "name": "What is Harie?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "Harie is a tool for adding boxes, numbers, callouts and arrows to the screenshots in SaaS help docs and user guides. It saves a regular JPEG or PNG, and when you open that image in Harie again, every annotation is still editable."
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "Can other apps and websites display the saved images?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "Yes. Harie saves a regular JPEG or PNG, so you can paste it into help pages, chat or documents as is. The original screenshot and the annotation data live in the image's metadata, and only Harie uses them."
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "Can I edit guide images that someone else made?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "Yes, as long as they were saved with Harie. Open the image you received in Harie and you can move or rewrite each box and note. You don't need a project file or an account."
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "Does Harie cost anything?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "No. Harie is free, open source under the MIT License, and needs no sign-up. Only the AI suggestions need your own Anthropic API key or OpenRouter account, and you pay those services for what you use."
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "Are my images sent to a server?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "No. Images are processed in your browser or on your device, and the developer never receives them. Only when you use the AI features does Harie send the image, after asking you, directly to Anthropic's Claude API (through OpenRouter if you connected with OpenRouter)."
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "Can I hide personal data in a screenshot?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "Yes. You can replace names, email addresses and phone numbers with dummy values, or use fill, mosaic or blur. The change is applied to the original image itself, so it can't be undone, and the original values don't stay in the file you share."
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "Where can I use Harie?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "There is a web editor that runs in your browser, a Chrome extension that captures the page you're on, and an MCP server for AI agents. The desktop app for macOS and Windows isn't distributed yet, but you can build it from source."
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "Can AI agents like Claude add annotations?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "Yes. Register the MCP server @harie/mcp with Claude Code or Claude Desktop, and it can open images in a folder you choose, add annotations and update the text."
+                }
+              }
+            ]
+          }
+        ]
+      }
+    </script>
   </head>
   <body>
     <header class="nav">
@@ -388,6 +512,46 @@
               <p class="chat-user">In the images under guides, replace any visible email addresses with dummy values</p>
             </figure>
             <p class="small muted">Masking personal data can't be undone, so the server only saves it once you've confirmed.</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="section section-tint" id="faq" aria-labelledby="faq-title">
+        <div class="container">
+          <h2 id="faq-title" class="h2">Frequently asked questions</h2>
+          <div class="faq">
+            <article class="faq-item">
+              <h3>What is Harie?</h3>
+              <p>Harie is a tool for adding boxes, numbers, callouts and arrows to the screenshots in SaaS help docs and user guides. It saves a regular JPEG or PNG, and when you open that image in Harie again, every annotation is still editable.</p>
+            </article>
+            <article class="faq-item">
+              <h3>Can other apps and websites display the saved images?</h3>
+              <p>Yes. Harie saves a regular JPEG or PNG, so you can paste it into help pages, chat or documents as is. The original screenshot and the annotation data live in the image&#x27;s metadata, and only Harie uses them.</p>
+            </article>
+            <article class="faq-item">
+              <h3>Can I edit guide images that someone else made?</h3>
+              <p>Yes, as long as they were saved with Harie. Open the image you received in Harie and you can move or rewrite each box and note. You don&#x27;t need a project file or an account.</p>
+            </article>
+            <article class="faq-item">
+              <h3>Does Harie cost anything?</h3>
+              <p>No. Harie is free, open source under the MIT License, and needs no sign-up. Only the AI suggestions need your own Anthropic API key or OpenRouter account, and you pay those services for what you use.</p>
+            </article>
+            <article class="faq-item">
+              <h3>Are my images sent to a server?</h3>
+              <p>No. Images are processed in your browser or on your device, and the developer never receives them. Only when you use the AI features does Harie send the image, after asking you, directly to Anthropic&#x27;s Claude API (through OpenRouter if you connected with OpenRouter).</p>
+            </article>
+            <article class="faq-item">
+              <h3>Can I hide personal data in a screenshot?</h3>
+              <p>Yes. You can replace names, email addresses and phone numbers with dummy values, or use fill, mosaic or blur. The change is applied to the original image itself, so it can&#x27;t be undone, and the original values don&#x27;t stay in the file you share.</p>
+            </article>
+            <article class="faq-item">
+              <h3>Where can I use Harie?</h3>
+              <p>There is a web editor that runs in your browser, a Chrome extension that captures the page you&#x27;re on, and an MCP server for AI agents. The desktop app for macOS and Windows isn&#x27;t distributed yet, but you can build it from source.</p>
+            </article>
+            <article class="faq-item">
+              <h3>Can AI agents like Claude add annotations?</h3>
+              <p>Yes. Register the MCP server @harie/mcp with Claude Code or Claude Desktop, and it can open images in a folder you choose, add annotations and update the text.</p>
+            </article>
           </div>
         </div>
       </section>
