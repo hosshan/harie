@@ -56,6 +56,8 @@ test("FR-FILE-08, FR-EDIT-01〜04, 07: 画像を開いて注釈を付け、元�
   page,
 }) => {
   await openFixture(page, "large-base.jpg");
+  // DOM 情報のない画像では「要素で囲む」は出さない（FR-EDIT-15）
+  await expect(page.getByRole("button", { name: "要素で囲む" })).toHaveCount(0);
   await page.getByRole("button", { name: "四角" }).click();
   await drag(page, [40, 40], [240, 120]);
   await expect(annotationRects(page)).toHaveCount(1);

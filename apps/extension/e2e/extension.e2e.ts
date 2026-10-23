@@ -130,6 +130,44 @@ test("FR-PII-06: API キーがなくても、DOM のテキストから個人情�
   expect(sent).toBe(0);
 });
 
+test("FR-EDIT-15: 要素で囲むでボタンを押すと、ぴったりの枠と番号・吹き出しが付き、何も送らない", async ({
+  context,
+  worker,
+  extensionId,
+  target,
+}) => {
+  const opened = editorOpened(context, extensionId);
+  await startCapture(worker, target, "visible");
+  const editor = await opened;
+  let sent = 0;
+  await editor.route(/^https:\/\/(api\.anthropic\.com|openrouter\.ai)\//, (route) => {
+    sent += 1;
+    return route.abort();
+  });
+  await editor.getByRole("button", { name: "要素で囲む" }).click();
+  // 撮った画像は 800x600。「変更を保存」ボタン（40, 300, 160x40）の中を押す
+  const box = await editor.getByRole("application", { name: "注釈の編集面" }).boundingBox();
+  if (box === null) throw new Error("編集面がない");
+  const k = Math.min(box.width / 800, box.height / 600);
+  const at = (x: number, y: number) =>
+    [
+      box.x + (box.width - 800 * k) / 2 + x * k,
+      box.y + (box.height - 600 * k) / 2 + y * k,
+    ] as const;
+  await editor.mouse.move(...at(100, 320));
+  await expect(editor.locator(".harie-element-hover")).toHaveCount(1);
+  await editor.mouse.click(...at(100, 320));
+  const image = editor.locator(".harie-canvas-image");
+  await expect(image.locator('rect[x="32"][y="292"][width="176"][height="56"]')).toHaveCount(1);
+  await expect(image).toContainText("「変更を保存」を押します");
+  await expect(image).toContainText("1");
+  // 1 回の操作なので、元に戻すと 3 つとも消える
+  await editor.getByRole("button", { name: "元に戻す" }).click();
+  await expect(image).not.toContainText("「変更を保存」を押します");
+  await expect(image.locator('rect[x="32"][y="292"]')).toHaveCount(0);
+  expect(sent).toBe(0);
+});
+
 test("FR-CAP-02: 範囲を選んで撮ると、その範囲だけの画像になり、保存は chrome.downloads で行う", async ({
   context,
   worker,

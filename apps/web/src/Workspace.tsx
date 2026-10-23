@@ -7,6 +7,7 @@ import {
   isMacPlatform,
   type MaskDraft,
   matchesShortcut,
+  type PickableElement,
   ShortcutList,
   useEditorState,
   useMessages,
@@ -15,7 +16,7 @@ import {
 import { type ImageFormat, readBaseImage } from "@harie/format";
 import { type PiiMask, recordPiiApplied } from "@harie/model";
 import { rebaseDocument } from "@harie/render";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { AiPanel } from "./ai/AiPanel";
 import { browserRenderer } from "./browser-renderer";
 import { Header, type HeaderAction, HeaderButton } from "./Header";
@@ -25,6 +26,21 @@ import { useWebMessages } from "./messages";
 import { SaveFormatMenu, SaveFormatMenuItems } from "./SaveFormatMenu";
 import { buildSaveFile, type Saved } from "./save";
 import { addUnsaved, masksInImage, removeUnsaved, type UnsavedMasks } from "./unsaved-masks";
+
+/** 吹き出しに入れる要素の名前の長さの上限。長い本文などはそのまま入れず、短くして示す */
+const MAX_ELEMENT_LABEL = 40;
+
+/** キャプチャ時の DOM を、要素で囲む道具（FR-EDIT-15）で選べる要素にする */
+export function pickableElements(dom: DomSnapshot): PickableElement[] {
+  return dom.elements.map((e) => {
+    const label = (e.name ?? e.text ?? "").replace(/\s+/g, " ").trim();
+    return {
+      rect: e.rect,
+      role: e.role,
+      label: label.length > MAX_ELEMENT_LABEL ? `${label.slice(0, MAX_ELEMENT_LABEL)}…` : label,
+    };
+  });
+}
 
 export type WorkspaceProps = {
   opened: Opened;
@@ -72,6 +88,10 @@ export function Workspace({
   const [confirmOpen, setConfirmOpen] = useState(false);
   // 画像を差し替えたら、キャプチャ時の DOM 情報は今の画像と合わないので使わない
   const [rebased, setRebased] = useState(false);
+  const elements = useMemo(
+    () => (dom === undefined || rebased ? [] : pickableElements(dom)),
+    [dom, rebased],
+  );
   const replaceInput = useRef<HTMLInputElement>(null);
   const savedDoc = useRef(opened.doc);
   const dirty =
@@ -291,7 +311,10 @@ export function Workspace({
         className="app-shortcuts"
       >
         <h2>{em.shortcuts.title}</h2>
-        <ShortcutList file={{ save: true, open: onOpenImage !== undefined }} />
+        <ShortcutList
+          file={{ save: true, open: onOpenImage !== undefined }}
+          element={elements.length > 0}
+        />
         <p className="app-modal-actions">
           <button type="button" onClick={() => setShortcutsOpen(false)}>
             {em.shortcuts.close}
@@ -327,6 +350,8 @@ export function Workspace({
           appliedMasks={unsaved?.entries.map((e) => ({ id: e.id, rect: e.record.rect })) ?? []}
           onUnmask={unmask}
           onShowShortcuts={() => setShortcutsOpen(true)}
+          elements={elements}
+          elementPixelRatio={dom?.viewport.devicePixelRatio ?? 1}
           aside={
             <AiPanel
               doc={state.doc}

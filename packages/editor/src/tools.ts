@@ -11,4 +11,6 @@ export const TOOL_SHORTCUTS: readonly { tool: Tool; key: string }[] = [
   { tool: "callout", key: "c" },
   { tool: "badge", key: "n" },
   { tool: "mask", key: "m" },
+  // Chrome 拡張で撮った画像（ページの要素がわかるとき）だけ出す（FR-EDIT-15）
+  { tool: "element", key: "e" },
 ];

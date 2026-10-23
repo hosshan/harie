@@ -29,6 +29,13 @@ export const TOOL_ICONS: Record<Tool, ReactNode> = {
       <path d="M10.5 9l2-1.5V16" />
     </>
   ),
+  // 点線の枠の中を指でさす（クリックした要素を囲む）
+  element: (
+    <>
+      <rect x="3" y="3" width="14" height="10" rx="1.5" strokeDasharray="2.5 2" />
+      <path d="M11 9l8 3-3.5 1.2L14 17z" />
+    </>
+  ),
   mask: (
     <>
       <rect x="4" y="7" width="16" height="10" rx="1.5" />
