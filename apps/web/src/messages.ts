@@ -75,7 +75,13 @@ const ja = {
     languageNote: "画面の表示に使う言語です。注釈の文字は変わりません。",
     ai: "AI に関する設定",
     aiNote:
-      "説明の提案と個人情報の検出には、Anthropic の API キーが必要です。キーはこのブラウザにだけ保存し、ファイルには含めません。",
+      "AI による説明の提案と、画像からの個人情報の検出には、Anthropic の API キーが必要です。キーはこのブラウザにだけ保存し、ファイルには含めません。",
+    keySteps: [
+      "下のリンクから Anthropic Console にログインし、「Create Key」でキーを作ります。",
+      "作ったキー（sk-ant- で始まる文字列）を貼り付けて登録します。",
+    ],
+    keyLink: "API キーを作る（Anthropic Console）",
+    keyBilling: "利用料は使った分だけ Anthropic から請求されます。Harie への支払いはありません。",
     apiKey: "API キー",
     register: "キーを登録",
     registered: "API キーは登録済みです。",
@@ -137,6 +143,13 @@ const ja = {
     consent: "この画像を送信してよい",
     suggest: "AI に提案してもらう",
     detectPii: "個人情報を探す",
+    localNote:
+      "キャプチャしたページの文字から、メールアドレス・電話番号・氏名欄などを探します。画像はどこにも送りません。画像の中の文字や顔は見つけられないので、目でも確認してください。",
+    detectPiiLocal: "ページの文字から探す",
+    noPiiLocal:
+      "ページの文字には個人情報らしきものはありませんでした。画像の中も目で確認してください",
+    needKey: "AI による説明の提案を使うには、設定で API キーを登録してください。",
+    openSettings: "設定を開く",
     suggesting: "AI が画像を見ています…",
     detecting: "個人情報を探しています…",
     noSuggestions: "提案はありませんでした",
@@ -242,7 +255,13 @@ const en: WebMessages = {
     languageNote: "The language of the screens. Annotation text isn't changed.",
     ai: "AI settings",
     aiNote:
-      "Suggestions and personal info detection need an Anthropic API key. The key is stored only in this browser and is never included in files.",
+      "AI suggestions and finding personal info in the image need an Anthropic API key. The key is stored only in this browser and is never included in files.",
+    keySteps: [
+      "Sign in to the Anthropic Console from the link below and create a key with “Create Key”.",
+      "Paste the key (it starts with sk-ant-) and save it.",
+    ],
+    keyLink: "Create an API key (Anthropic Console)",
+    keyBilling: "Anthropic bills you only for what you use. You pay nothing to Harie.",
     apiKey: "API key",
     register: "Save key",
     registered: "An API key is saved.",
@@ -292,6 +311,13 @@ const en: WebMessages = {
     consent: "OK to send this image",
     suggest: "Get AI suggestions",
     detectPii: "Find personal info",
+    localNote:
+      "Looks for email addresses, phone numbers, name fields and more in the text of the captured page. Nothing is sent anywhere. Text and faces inside the image can't be found this way, so check with your own eyes too.",
+    detectPiiLocal: "Search the page text",
+    noPiiLocal:
+      "No personal info found in the page text. Please check the image with your own eyes, too",
+    needKey: "To get AI suggestions, save an API key in Settings.",
+    openSettings: "Open settings",
     suggesting: "AI is looking at the image…",
     detecting: "Looking for personal info…",
     noSuggestions: "No suggestions",

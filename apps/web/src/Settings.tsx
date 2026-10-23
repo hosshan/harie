@@ -5,6 +5,9 @@ import { storeApiKey, useApiKey } from "./ai/api-key";
 import { Modal } from "./Modal";
 import { useWebMessages } from "./messages";
 
+/** API キーを作る画面（Anthropic Console） */
+const KEYS_URL = "https://platform.claude.com/settings/keys";
+
 /** 言語の名前は、その言語自身で書く（今の表示言語が読めない人でも選べるように） */
 const LANGUAGES: readonly { locale: Locale; name: string }[] = [
   { locale: "ja", name: "日本語" },
@@ -69,28 +72,41 @@ function AiSettings() {
       <h2>{m.settings.ai}</h2>
       <p className="harie-muted">{m.settings.aiNote}</p>
       {apiKey === null ? (
-        <form
-          onSubmit={(e) => {
-            e.preventDefault();
-            const key = draft.trim();
-            if (key === "") return;
-            storeApiKey(key);
-            setDraft("");
-          }}
-        >
-          <label>
-            {m.settings.apiKey}
-            <input
-              type="password"
-              autoComplete="off"
-              value={draft}
-              onChange={(e) => setDraft(e.target.value)}
-            />
-          </label>
-          <button type="submit" disabled={draft.trim() === ""}>
-            {m.settings.register}
-          </button>
-        </form>
+        <>
+          <ol className="app-settings-steps">
+            {m.settings.keySteps.map((step) => (
+              <li key={step}>{step}</li>
+            ))}
+          </ol>
+          <p className="app-settings-link">
+            <a href={KEYS_URL} target="_blank" rel="noreferrer">
+              {m.settings.keyLink}
+            </a>
+          </p>
+          <p className="harie-muted">{m.settings.keyBilling}</p>
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              const key = draft.trim();
+              if (key === "") return;
+              storeApiKey(key);
+              setDraft("");
+            }}
+          >
+            <label>
+              {m.settings.apiKey}
+              <input
+                type="password"
+                autoComplete="off"
+                value={draft}
+                onChange={(e) => setDraft(e.target.value)}
+              />
+            </label>
+            <button type="submit" disabled={draft.trim() === ""}>
+              {m.settings.register}
+            </button>
+          </form>
+        </>
       ) : (
         <p className="app-settings-row">
           <span>{m.settings.registered}</span>

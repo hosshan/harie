@@ -1,5 +1,6 @@
 // AI の補足提案（FR-AI-01, 02）と個人情報の検出（FR-PII-01）。
-// 画像を外部に送るのはボタンを押したときだけで、送る前に送信先を表示し、同意を求める（NFR-SEC-01）
+// 画像を外部に送るのはボタンを押したときだけで、送る前に送信先を表示し、同意を求める（NFR-SEC-01）。
+// API キーがなくても、キャプチャした DOM があれば、そのテキストから個人情報を手元で探せる（FR-PII-06）
 import type { DomSnapshot, PiiCandidate, Suggestion } from "@harie/ai";
 import {
   adoptSuggestionOps,
@@ -11,6 +12,7 @@ import {
 import type { HarieDocument } from "@harie/model";
 import { type Dispatch, useState } from "react";
 import { useWebMessages, type WebMessages } from "../messages";
+import { useSettingsDialog } from "../Settings";
 import { useApiKey } from "./api-key";
 
 type Base = { bytes: Uint8Array; mediaType: "image/jpeg" | "image/png" };
@@ -42,9 +44,10 @@ export function AiPanel({ doc, dispatch, base, onPiiFound, dom }: AiPanelProps) 
   const m = useWebMessages();
   const locale = useLocale();
   const apiKey = useApiKey();
+  const settings = useSettingsDialog();
   const [consent, setConsent] = useState(false);
   const [intent, setIntent] = useState("");
-  const [busy, setBusy] = useState<"suggest" | "pii" | null>(null);
+  const [busy, setBusy] = useState<"suggest" | "pii" | "local-pii" | null>(null);
   const [status, setStatus] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
@@ -52,10 +55,8 @@ export function AiPanel({ doc, dispatch, base, onPiiFound, dom }: AiPanelProps) 
   const pending = suggestions.filter((s) => pendingSuggestionIds(doc, ids(s)).length > 0);
   const allIds = pending.flatMap(ids);
 
-  // API キーはヘッダーの「設定」で登録する。未登録のときは AI の欄を出さない
-  if (apiKey === null) return null;
-
   const run = async (kind: "suggest" | "pii") => {
+    if (apiKey === null) return;
     setBusy(kind);
     setError(null);
     setStatus(kind === "suggest" ? m.ai.suggesting : m.ai.detecting);
@@ -83,31 +84,53 @@ export function AiPanel({ doc, dispatch, base, onPiiFound, dom }: AiPanelProps) 
     }
   };
 
+  // DOM のテキストだけで探す。画像は送らないので、同意は求めない
+  const runLocal = async (snapshot: DomSnapshot) => {
+    setBusy("local-pii");
+    setError(null);
+    try {
+      const { detectPiiFromDom } = await import("@harie/ai");
+      const found = detectPiiFromDom(snapshot);
+      onPiiFound(found);
+      setStatus(found.length === 0 ? m.ai.noPiiLocal : m.ai.piiFound(found.length));
+    } catch (e) {
+      setStatus(null);
+      setError(message(m, e));
+    } finally {
+      setBusy(null);
+    }
+  };
+
   return (
     <section className="harie-inspector-body app-ai" aria-label="AI">
       <h2>{m.ai.title}</h2>
-      <label>
-        {m.ai.intent}
-        <textarea
-          rows={2}
-          value={intent}
-          placeholder={m.ai.intentPlaceholder}
-          onChange={(e) => setIntent(e.target.value)}
+      {dom !== undefined && (
+        <div className="app-ai-local">
+          <p className="harie-muted">{m.ai.localNote}</p>
+          <button type="button" disabled={busy !== null} onClick={() => runLocal(dom)}>
+            {m.ai.detectPiiLocal}
+          </button>
+        </div>
+      )}
+      {apiKey === null ? (
+        // API キーはヘッダーの「設定」で登録する。ここからも同じ設定を開ける
+        <p className="app-ai-setup">
+          <span className="harie-muted">{m.ai.needKey}</span>
+          <button type="button" onClick={settings.open}>
+            {m.ai.openSettings}
+          </button>
+        </p>
+      ) : (
+        <AiRequestForm
+          intent={intent}
+          onIntentChange={setIntent}
+          withDom={dom !== undefined}
+          consent={consent}
+          onConsentChange={setConsent}
+          busy={busy !== null}
+          onRun={run}
         />
-      </label>
-      <p className="app-ai-notice">{m.ai.notice(dom !== undefined)}</p>
-      <label className="app-ai-consent">
-        <input type="checkbox" checked={consent} onChange={(e) => setConsent(e.target.checked)} />
-        {m.ai.consent}
-      </label>
-      <div className="app-ai-actions">
-        <button type="button" disabled={!consent || busy !== null} onClick={() => run("suggest")}>
-          {m.ai.suggest}
-        </button>
-        <button type="button" disabled={!consent || busy !== null} onClick={() => run("pii")}>
-          {m.ai.detectPii}
-        </button>
-      </div>
+      )}
       {status !== null && (
         <p className="harie-muted" role="status">
           {status}
@@ -152,6 +175,60 @@ export function AiPanel({ doc, dispatch, base, onPiiFound, dom }: AiPanelProps) 
           </p>
         </div>
       )}
+      {settings.dialog}
     </section>
+  );
+}
+
+type AiRequestFormProps = {
+  intent: string;
+  onIntentChange: (intent: string) => void;
+  withDom: boolean;
+  consent: boolean;
+  onConsentChange: (consent: boolean) => void;
+  busy: boolean;
+  onRun: (kind: "suggest" | "pii") => void;
+};
+
+/** Claude API に送る操作。送信先の表示と同意がないとボタンを押せない（NFR-SEC-01） */
+function AiRequestForm({
+  intent,
+  onIntentChange,
+  withDom,
+  consent,
+  onConsentChange,
+  busy,
+  onRun,
+}: AiRequestFormProps) {
+  const m = useWebMessages();
+  return (
+    <>
+      <label>
+        {m.ai.intent}
+        <textarea
+          rows={2}
+          value={intent}
+          placeholder={m.ai.intentPlaceholder}
+          onChange={(e) => onIntentChange(e.target.value)}
+        />
+      </label>
+      <p className="app-ai-notice">{m.ai.notice(withDom)}</p>
+      <label className="app-ai-consent">
+        <input
+          type="checkbox"
+          checked={consent}
+          onChange={(e) => onConsentChange(e.target.checked)}
+        />
+        {m.ai.consent}
+      </label>
+      <div className="app-ai-actions">
+        <button type="button" disabled={!consent || busy} onClick={() => onRun("suggest")}>
+          {m.ai.suggest}
+        </button>
+        <button type="button" disabled={!consent || busy} onClick={() => onRun("pii")}>
+          {m.ai.detectPii}
+        </button>
+      </div>
+    </>
   );
 }
