@@ -119,12 +119,25 @@ export function mergePiiFindings(
   for (const f of fromImage) {
     if (!merged.some((m) => iou(m.rect, f.rect) > 0.3)) merged.push(f);
   }
+  return toCandidates(merged);
+}
+
+/** 見つけた範囲に加工方法とダミー値を付ける。ダミー値は種類ごとの通し番号で変える */
+function toCandidates(found: Omit<PiiCandidate, "replacement" | "method">[]): PiiCandidate[] {
   const counts = new Map<PiiKind, number>();
-  return merged.map((m) => {
+  return found.map((m) => {
     const n = counts.get(m.kind) ?? 0;
     counts.set(m.kind, n + 1);
     return candidate(m.kind, m.rect, m.text, m.source, n);
   });
+}
+
+/**
+ * DOM のテキストだけで候補を作る（LLM を使わない。API キーがなくても使える）。
+ * 画像に焼き込まれた文字や顔は見つけられないので、目での確認は要る
+ */
+export function detectPiiFromDom(dom: DomSnapshot): PiiCandidate[] {
+  return toCandidates(detectPiiInDom(dom));
 }
 
 export async function detectPii(input: DetectPiiInput): Promise<PiiCandidate[]> {

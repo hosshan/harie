@@ -4,7 +4,7 @@ import { createAnthropicClient, DEFAULT_MODEL } from "./anthropic";
 import type { DomSnapshot } from "./dom";
 import { dummyFor } from "./dummy";
 import { AiError, fitWithin, type ImageInput, type LlmClient } from "./llm";
-import { detectPiiInDom, mergePiiFindings } from "./pii";
+import { detectPiiFromDom, detectPiiInDom, mergePiiFindings } from "./pii";
 import { buildSuggestPrompt, suggestAnnotations, toSuggestions } from "./suggest";
 
 // 1600x1000 のキャンバスを 800x500 に縮小して LLM に送った想定
@@ -144,6 +144,16 @@ describe("補足の提案（FR-AI-01〜03）", () => {
 describe("個人情報の検出（FR-PII-01, 02）", () => {
   it("DOM のテキストからメール・電話番号を、入力欄の手がかりから氏名を見つける", () => {
     expect(detectPiiInDom(dom).map((f) => f.kind)).toEqual(["email", "phone", "name"]);
+  });
+
+  it("LLM を使わずに DOM だけから候補を作れる。既定はダミー置換で、元の文字列を残さない", () => {
+    const found = detectPiiFromDom(dom);
+    expect(found.map((f) => [f.kind, f.source, f.method])).toEqual([
+      ["email", "dom", "replace"],
+      ["phone", "dom", "replace"],
+      ["name", "dom", "replace"],
+    ]);
+    for (const f of found) expect(f.replacement).not.toBe(f.text);
   });
 
   it("画像の検出と DOM の検出を合わせ、重なりは 1 つにする。既定はダミー置換", () => {

@@ -667,8 +667,9 @@ test("FR-AI-01, 02, NFR-SEC-01, 04: AI の提案は同意してから送り、�
   const requests = await fakeClaude(page);
   await openFixture(page, "large-base.jpg");
   const ai = page.getByRole("region", { name: "AI" });
-  // API キーは右の欄ではなく、ヘッダーの「設定」（AI に関する設定）で登録する
-  await expect(ai).toHaveCount(0);
+  // API キーは右の欄ではなく、ヘッダーの「設定」（AI に関する設定）で登録する。未登録の間は送る操作を出さない
+  await expect(ai.getByRole("button", { name: "設定を開く" })).toBeVisible();
+  await expect(ai.getByRole("button", { name: "AI に提案してもらう" })).toHaveCount(0);
   await page.getByRole("banner").getByRole("button", { name: "設定" }).click();
   const settings = page.getByRole("dialog", { name: "設定" });
   await settings.getByLabel("API キー").fill("sk-ant-e2e-dummy");

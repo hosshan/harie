@@ -108,6 +108,28 @@ test("FR-PII-01: DOM の入力欄とテキストから、個人情報をマス�
   await expect(panel.getByLabel("範囲 1（メール）の隠し方")).toHaveValue("replace");
 });
 
+test("FR-PII-06: API キーがなくても、DOM のテキストから個人情報をマスクの候補にでき、何も送らない", async ({
+  context,
+  worker,
+  extensionId,
+  target,
+}) => {
+  const opened = editorOpened(context, extensionId);
+  await startCapture(worker, target, "visible");
+  const editor = await opened;
+  let sent = 0;
+  await editor.route("https://api.anthropic.com/**", (route) => {
+    sent += 1;
+    return route.abort();
+  });
+  const ai = editor.getByRole("region", { name: "AI" });
+  await expect(ai.getByRole("button", { name: "AI に提案してもらう" })).toHaveCount(0);
+  await ai.getByRole("button", { name: "ページの文字から探す" }).click();
+  const panel = editor.getByRole("region", { name: "個人情報のマスク" });
+  await expect(panel.getByLabel("範囲 1（メール）の隠し方")).toHaveValue("replace");
+  expect(sent).toBe(0);
+});
+
 test("FR-CAP-02: 範囲を選んで撮ると、その範囲だけの画像になり、保存は chrome.downloads で行う", async ({
   context,
   worker,
