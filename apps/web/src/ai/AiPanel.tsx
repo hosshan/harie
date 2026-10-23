@@ -1,19 +1,22 @@
-// AI の補足提案（FR-AI-01, 02）と個人情報の検出（FR-PII-01）。提案は右の欄の末尾、個人情報はマスクの欄の末尾に出す。
+// AI の補足提案（FR-AI-01, 02）と個人情報の検出（FR-PII-01）。提案はパレットの「AI提案」からダイアログで、個人情報はマスクの欄の末尾から。
 // 画像を外部に送るのはボタンを押したときだけで、送る前に送信先を表示し、同意を求める（NFR-SEC-01）。
 // API キーがなくても、キャプチャした DOM があれば、そのテキストから個人情報を手元で探せる（FR-PII-06）
 import type { DomSnapshot, PiiCandidate, Suggestion } from "@harie/ai";
 import {
+  ACTION_ICONS,
   adoptSuggestionOps,
   type EditorAction,
+  type PaletteAction,
   pendingSuggestionIds,
   rejectSuggestionOps,
   useLocale,
 } from "@harie/editor";
 import type { HarieDocument } from "@harie/model";
-import { type Dispatch, useState } from "react";
+import { type Dispatch, type ReactNode, useState } from "react";
+import { Modal } from "../Modal";
 import { useWebMessages, type WebMessages } from "../messages";
-import { useSettingsDialog } from "../Settings";
 import { type AiProvider, useAiCredential } from "./api-key";
+import { suggestContextFields, toSuggestRequest } from "./suggest-context";
 
 type Base = { bytes: Uint8Array; mediaType: "image/jpeg" | "image/png" };
 
@@ -41,7 +44,8 @@ function useRun<K extends string>() {
     setError(null);
     setStatus(pendingStatus);
     try {
-      setStatus(await task());
+      const done = await task();
+      setStatus(done === "" ? null : done);
     } catch (e) {
       setStatus(null);
       setError(message(m, e));
@@ -62,118 +66,168 @@ function useRun<K extends string>() {
   return { busy, run, feedback };
 }
 
-export type AiSuggestPanelProps = {
+export type AiSuggestOptions = {
   doc: HarieDocument;
   dispatch: Dispatch<EditorAction>;
   base: Base;
   /** キャプチャ時の DOM 情報。あれば枠を要素に合わせる（FR-AI-03） */
   dom?: DomSnapshot;
+  /** 提案を追加した・失敗したなどを、画面上部の状態の欄に出す */
+  onStatus: (status: string) => void;
 };
 
-/** AI の補足提案（FR-AI-01, 02）。右の欄の末尾に、注釈を選んでいないときだけ出す */
-export function AiSuggestPanel({ doc, dispatch, base, dom }: AiSuggestPanelProps) {
+/**
+ * AI の補足提案（FR-AI-01, 02）。AI に接続しているときだけ、パレットに「AI提案」を出し、押すとダイアログで
+ * 説明したいことなどを聞いてから送る。普段の画面には何も足さない。提案が残っている間だけ、右の欄の末尾に
+ * まとめて採用・却下する欄を出す
+ */
+export function useAiSuggest({ doc, dispatch, base, dom, onStatus }: AiSuggestOptions): {
+  action: PaletteAction | null;
+  dialog: ReactNode;
+  pendingCard: ReactNode;
+} {
   const m = useWebMessages();
   const locale = useLocale();
   const credential = useAiCredential();
-  const settings = useSettingsDialog();
-  const [consent, setConsent] = useState(false);
-  const [intent, setIntent] = useState("");
+  const [open, setOpen] = useState(false);
   const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
-  const { busy, run, feedback } = useRun<"suggest">();
-
   const pending = suggestions.filter((s) => pendingSuggestionIds(doc, ids(s)).length > 0);
   const allIds = pending.flatMap(ids);
 
-  const suggest = () => {
-    if (credential === null) return;
-    void run("suggest", m.ai.suggesting, async () => {
-      const { runSuggest } = await import("./run");
-      const found = await runSuggest(credential, base, doc, intent, locale, dom);
-      // 提案はまとめて 1 回の操作として追加する（元に戻すで一度に消せる）
-      dispatch({
-        type: "apply",
-        ops: found.flatMap((s) => s.annotations.map((annotation) => ({ op: "add", annotation }))),
-      });
-      setSuggestions((prev) => [...prev, ...found]);
-      return found.length === 0 ? m.ai.noSuggestions : m.ai.suggested(found.length);
-    });
-  };
+  const action: PaletteAction | null =
+    credential === null
+      ? null
+      : {
+          id: "ai-suggest",
+          label: m.ai.action,
+          icon: ACTION_ICONS.sparkles,
+          onClick: () => setOpen(true),
+        };
 
-  return (
-    <section className="harie-inspector-body app-ai" aria-label={m.ai.title}>
-      <h2>{m.ai.title}</h2>
-      {credential === null ? (
-        // API キーはヘッダーの「設定」で登録する。ここからも同じ設定を開ける
-        <p className="app-ai-setup">
-          <span className="harie-muted">{m.ai.needKey}</span>
-          <button type="button" onClick={settings.open}>
-            {m.ai.openSettings}
+  const dialog = (
+    <Modal open={open} label={m.ai.title} onClose={() => setOpen(false)} className="app-ai-dialog">
+      {credential !== null && (
+        <AiSuggestForm
+          provider={credential.provider}
+          withDom={dom !== undefined}
+          onCancel={() => setOpen(false)}
+          onRun={async (request) => {
+            const { runSuggest } = await import("./run");
+            const found = await runSuggest(credential, base, doc, request, locale, dom);
+            // 提案はまとめて 1 回の操作として追加する（元に戻すで一度に消せる）
+            dispatch({
+              type: "apply",
+              ops: found.flatMap((s) =>
+                s.annotations.map((annotation) => ({ op: "add", annotation })),
+              ),
+            });
+            setSuggestions((prev) => [...prev, ...found]);
+            onStatus(found.length === 0 ? m.ai.noSuggestions : m.ai.suggested(found.length));
+            setOpen(false);
+          }}
+        />
+      )}
+    </Modal>
+  );
+
+  const pendingCard =
+    pending.length === 0 ? null : (
+      <section className="harie-inspector-body app-ai app-ai-suggestions" aria-label={m.ai.action}>
+        <h2>{m.ai.suggestions(pending.length)}</h2>
+        <ol>
+          {pending.map((s) => (
+            <li key={ids(s).join(" ")}>
+              <span>{s.text}</span>
+              <button
+                type="button"
+                onClick={() => dispatch({ type: "apply", ops: adoptSuggestionOps(doc, ids(s)) })}
+              >
+                {m.ai.adopt}
+              </button>
+              <button
+                type="button"
+                onClick={() => dispatch({ type: "apply", ops: rejectSuggestionOps(doc, ids(s)) })}
+              >
+                {m.ai.reject}
+              </button>
+            </li>
+          ))}
+        </ol>
+        <p className="app-ai-actions">
+          <button
+            type="button"
+            onClick={() => dispatch({ type: "apply", ops: adoptSuggestionOps(doc, allIds) })}
+          >
+            {m.ai.adoptAll}
+          </button>
+          <button
+            type="button"
+            onClick={() => dispatch({ type: "apply", ops: rejectSuggestionOps(doc, allIds) })}
+          >
+            {m.ai.rejectAll}
           </button>
         </p>
-      ) : (
-        <>
-          {/* 見出しで用途がわかるので、ラベルは出さずプレースホルダで示す（読み上げ用の名前は付ける） */}
-          <textarea
-            rows={2}
-            aria-label={m.ai.intent}
-            value={intent}
-            placeholder={m.ai.intentPlaceholder}
-            onChange={(e) => setIntent(e.target.value)}
-          />
-          <AiConsent
-            withDom={dom !== undefined}
-            provider={credential.provider}
-            consent={consent}
-            onConsentChange={setConsent}
-          />
-          <div className="app-ai-actions">
-            <button type="button" disabled={!consent || busy !== null} onClick={suggest}>
-              {m.ai.suggest}
-            </button>
-          </div>
-        </>
-      )}
+      </section>
+    );
+
+  return { action, dialog, pendingCard };
+}
+
+/** 提案のダイアログの中身。項目は suggest-context.ts の並びから作る */
+function AiSuggestForm({
+  provider,
+  withDom,
+  onCancel,
+  onRun,
+}: {
+  provider: AiProvider;
+  withDom: boolean;
+  onCancel: () => void;
+  onRun: (request: ReturnType<typeof toSuggestRequest>) => Promise<void>;
+}) {
+  const m = useWebMessages();
+  const fields = suggestContextFields(m);
+  const [values, setValues] = useState<Record<string, string>>({});
+  const [consent, setConsent] = useState(false);
+  const { busy, run, feedback } = useRun<"suggest">();
+  return (
+    <form
+      className="app-ai"
+      onSubmit={(e) => {
+        e.preventDefault();
+        void run("suggest", m.ai.suggesting, async () => {
+          await onRun(toSuggestRequest(fields, values));
+          return "";
+        });
+      }}
+    >
+      <h2>{m.ai.title}</h2>
+      {fields.map((f) => (
+        <textarea
+          key={f.id}
+          rows={f.rows}
+          aria-label={f.label}
+          placeholder={f.placeholder}
+          value={values[f.id] ?? ""}
+          onChange={(e) => setValues((prev) => ({ ...prev, [f.id]: e.target.value }))}
+        />
+      ))}
+      <AiConsent
+        withDom={withDom}
+        provider={provider}
+        consent={consent}
+        onConsentChange={setConsent}
+      />
       {feedback}
-      {pending.length > 0 && (
-        <div className="app-ai-suggestions">
-          <h3>{m.ai.suggestions(pending.length)}</h3>
-          <ol>
-            {pending.map((s) => (
-              <li key={ids(s).join(" ")}>
-                <span>{s.text}</span>
-                <button
-                  type="button"
-                  onClick={() => dispatch({ type: "apply", ops: adoptSuggestionOps(doc, ids(s)) })}
-                >
-                  {m.ai.adopt}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => dispatch({ type: "apply", ops: rejectSuggestionOps(doc, ids(s)) })}
-                >
-                  {m.ai.reject}
-                </button>
-              </li>
-            ))}
-          </ol>
-          <p className="app-ai-actions">
-            <button
-              type="button"
-              onClick={() => dispatch({ type: "apply", ops: adoptSuggestionOps(doc, allIds) })}
-            >
-              {m.ai.adoptAll}
-            </button>
-            <button
-              type="button"
-              onClick={() => dispatch({ type: "apply", ops: rejectSuggestionOps(doc, allIds) })}
-            >
-              {m.ai.rejectAll}
-            </button>
-          </p>
-        </div>
-      )}
-      {settings.dialog}
-    </section>
+      <p className="app-modal-actions">
+        <button type="button" onClick={onCancel}>
+          {m.ai.cancel}
+        </button>
+        <button type="submit" className="app-primary" disabled={!consent || busy !== null}>
+          {m.ai.suggest}
+        </button>
+      </p>
+    </form>
   );
 }
 

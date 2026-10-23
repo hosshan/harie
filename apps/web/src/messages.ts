@@ -146,6 +146,8 @@ const ja = {
   },
   ai: {
     title: "AIでガイドを作成",
+    action: "AI提案",
+    cancel: "キャンセル",
     intent: "説明したいこと",
     intentPlaceholder: "説明したいこと（例：通知の設定方法）",
     notice: (withDom: boolean, provider: "anthropic" | "openrouter") =>
@@ -331,6 +333,8 @@ const en: WebMessages = {
   },
   ai: {
     title: "Create a guide with AI",
+    action: "AI suggest",
+    cancel: "Cancel",
     intent: "What to explain",
     intentPlaceholder: "What to explain (e.g. how to set up notifications)",
     notice: (withDom, provider) =>

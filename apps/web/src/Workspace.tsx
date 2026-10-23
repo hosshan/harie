@@ -16,7 +16,7 @@ import { type ImageFormat, readBaseImage } from "@harie/format";
 import { type PiiMask, recordPiiApplied } from "@harie/model";
 import { rebaseDocument } from "@harie/render";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { AiPiiPanel, AiSuggestPanel } from "./ai/AiPanel";
+import { AiPiiPanel, useAiSuggest } from "./ai/AiPanel";
 import { browserRenderer } from "./browser-renderer";
 import { Header, type HeaderAction, HeaderButton } from "./Header";
 import { mismatchMessage, type Opened } from "./load";
@@ -101,6 +101,13 @@ export function Workspace({
     state.doc.canvas !== savedDoc.current.canvas;
 
   const baseImageUrl = useObjectUrl(opened.base.bytes, opened.base.mediaType);
+  const aiSuggest = useAiSuggest({
+    doc: state.doc,
+    dispatch,
+    base: opened.base,
+    ...(dom === undefined || rebased ? {} : { dom }),
+    onStatus: setStatus,
+  });
 
   useEffect(() => {
     onDirtyChange?.(dirty);
@@ -352,14 +359,8 @@ export function Workspace({
           onShowShortcuts={() => setShortcutsOpen(true)}
           elements={elements}
           elementPixelRatio={dom?.viewport.devicePixelRatio ?? 1}
-          aside={
-            <AiSuggestPanel
-              doc={state.doc}
-              dispatch={dispatch}
-              base={opened.base}
-              {...(dom === undefined || rebased ? {} : { dom })}
-            />
-          }
+          {...(aiSuggest.action === null ? {} : { paletteActions: [aiSuggest.action] })}
+          aside={aiSuggest.pendingCard}
           maskAside={
             <AiPiiPanel
               doc={state.doc}
@@ -371,6 +372,7 @@ export function Workspace({
             />
           }
         />
+        {aiSuggest.dialog}
       </main>
     </>
   );

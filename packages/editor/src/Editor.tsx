@@ -29,7 +29,7 @@ import { EDITOR_MESSAGES, type EditorMessages } from "./i18n/messages";
 import { useMessages } from "./i18n/use-locale";
 import { MaskPanel } from "./MaskPanel";
 import { type AppliedMask, type MaskDraft, newMaskDraft, toPiiMasks } from "./masks";
-import { Icon, Palette, type PaletteTool, TOOL_ICONS } from "./Palette";
+import { Icon, Palette, type PaletteAction, type PaletteTool, TOOL_ICONS } from "./Palette";
 import { moveOps, pasteOps, type Reorder, removeOps, reorderOps, resizeOps } from "./selection";
 import { formatShortcut, isMacPlatform, matchesShortcut, type ShortcutId } from "./shortcuts";
 import { adoptSuggestionOps, rejectSuggestionOps } from "./suggestions";
@@ -103,6 +103,8 @@ export type EditorProps = {
    * 選んだ注釈の設定の邪魔をしない
    */
   aside?: ReactNode;
+  /** パレットの道具の後ろに並べる操作（AI の提案など） */
+  paletteActions?: readonly PaletteAction[];
   /** 個人情報のマスクの欄の末尾に出す内容（個人情報を探す操作など）。マスクの範囲を選んでいる間だけ出す */
   maskAside?: ReactNode;
   /** ショートカット一覧を開く（? キー・パレットのボタン）。省略すると開く手段を出さない */
@@ -125,6 +127,7 @@ export function Editor({
   onUnmask,
   aside,
   maskAside,
+  paletteActions = [],
   onShowShortcuts,
   elements = [],
   elementPixelRatio = 1,
@@ -401,6 +404,7 @@ export function Editor({
             collapsed={paletteCollapsed}
             onCollapsedChange={setPaletteCollapsed}
             onShowShortcuts={onShowShortcuts}
+            actions={paletteActions}
           />
         </div>
         <aside className="harie-inspector" aria-label={m.inspector.label}>
@@ -436,7 +440,9 @@ export function Editor({
               <>
                 <StepsCard doc={state.doc} dispatch={dispatch} drawDefaults={drawDefaults} />
                 <EmptyInspector tools={tools} onShowShortcuts={onShowShortcuts} />
-                {aside !== undefined && <div className="harie-inspector-extra">{aside}</div>}
+                {aside !== undefined && aside !== null && (
+                  <div className="harie-inspector-extra">{aside}</div>
+                )}
               </>
             )
           ) : (

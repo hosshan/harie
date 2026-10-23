@@ -74,8 +74,7 @@ test("FR-AI-05, ADR-0012: OpenRouter で接続すると、キーを貼らずに 
     .setInputFiles({ name: "large-base.jpg", mimeType: "image/jpeg", buffer: fixture });
   await expect(page.getByRole("application", { name: "注釈の編集面" })).toBeVisible();
 
-  const ai = page.getByRole("region", { name: "AIでガイドを作成" });
-  await ai.getByRole("button", { name: "設定を開く" }).click();
+  await page.getByRole("banner").getByRole("button", { name: "設定" }).click();
   const settings = page.getByRole("dialog", { name: "設定" });
   const [popup] = await Promise.all([
     page.waitForEvent("popup"),
@@ -103,10 +102,12 @@ test("FR-AI-05, ADR-0012: OpenRouter で接続すると、キーを貼らずに 
 
   // 編集中の画像はそのままで、送信先の案内は OpenRouter 経由になる
   await expect(page.getByRole("application", { name: "注釈の編集面" })).toBeVisible();
-  await expect(ai).toContainText("OpenRouter 経由で Anthropic の Claude に送信します");
-  await ai.getByLabel("この画像を送信してよい").check();
-  await ai.getByRole("button", { name: "AI に提案してもらう" }).click();
-  await expect(ai.locator(".app-ai-suggestions li")).toHaveCount(1);
+  await page.getByRole("button", { name: "AI提案" }).click();
+  const dialog = page.getByRole("dialog", { name: "AIでガイドを作成" });
+  await expect(dialog).toContainText("OpenRouter 経由で Anthropic の Claude に送信します");
+  await dialog.getByLabel("この画像を送信してよい").check();
+  await dialog.getByRole("button", { name: "AI に提案してもらう" }).click();
+  await expect(page.getByRole("region", { name: "AI提案" }).locator("li")).toHaveCount(1);
   expect(completions).toHaveLength(1);
   expect(completions[0]?.headers.authorization).toBe("Bearer sk-or-e2e-dummy");
 

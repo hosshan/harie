@@ -671,10 +671,10 @@ test("FR-AI-01, 02, NFR-SEC-01, 04: AI の提案は同意してから送り、�
 }) => {
   const requests = await fakeClaude(page);
   await openFixture(page, "large-base.jpg");
-  const ai = page.getByRole("region", { name: "AIでガイドを作成" });
-  // API キーは右の欄ではなく、ヘッダーの「設定」（AI に関する設定）で登録する。未登録の間は送る操作を出さない
-  await expect(ai.getByRole("button", { name: "設定を開く" })).toBeVisible();
-  await expect(ai.getByRole("button", { name: "AI に提案してもらう" })).toHaveCount(0);
+  // AI に接続するまでは、普段の画面に AI の操作を出さない（パレットにも右の欄にも出ない）
+  const action = page.getByRole("button", { name: "AI提案" });
+  await expect(action).toHaveCount(0);
+  await expect(page.locator(".app-ai")).toHaveCount(0);
   await page.getByRole("banner").getByRole("button", { name: "設定" }).click();
   const settings = page.getByRole("dialog", { name: "設定" });
   await settings.getByLabel("API キー").fill("sk-ant-e2e-dummy");
@@ -683,15 +683,20 @@ test("FR-AI-01, 02, NFR-SEC-01, 04: AI の提案は同意してから送り、�
   await settings.getByRole("button", { name: "閉じる" }).click();
   await expect(settings).toBeHidden();
 
-  // 同意するまでは送れない
-  const suggest = ai.getByRole("button", { name: "AI に提案してもらう" });
-  await expect(ai).toContainText("Anthropic の Claude API に送信します");
+  // 接続するとパレットに「AI提案」が出て、押すとダイアログで聞く。同意するまでは送れない
+  await action.click();
+  const dialog = page.getByRole("dialog", { name: "AIでガイドを作成" });
+  const suggest = dialog.getByRole("button", { name: "AI に提案してもらう" });
+  await expect(dialog).toContainText("Anthropic の Claude API に送信します");
   await expect(suggest).toBeDisabled();
-  await ai.getByLabel("この画像を送信してよい").check();
-  await ai.getByLabel("説明したいこと").fill("通知の設定方法");
+  await dialog.getByLabel("この画像を送信してよい").check();
+  await dialog.getByLabel("説明したいこと").fill("通知の設定方法");
   await suggest.click();
+  await expect(dialog).toBeHidden();
 
-  const list = ai.locator(".app-ai-suggestions li");
+  // 提案が残っている間だけ、右の欄の末尾にまとめて採用・却下する欄が出る
+  const ai = page.getByRole("region", { name: "AI提案" });
+  const list = ai.locator("li");
   await expect(list).toHaveCount(2);
   await expect(page.locator("[data-suggested]")).toHaveCount(4);
   expect(requests).toHaveLength(1);
