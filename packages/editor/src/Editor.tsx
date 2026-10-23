@@ -29,7 +29,7 @@ import { EDITOR_MESSAGES, type EditorMessages } from "./i18n/messages";
 import { useMessages } from "./i18n/use-locale";
 import { MaskPanel } from "./MaskPanel";
 import { type AppliedMask, type MaskDraft, newMaskDraft, toPiiMasks } from "./masks";
-import { Icon, Palette, type PaletteTool, TOOL_ICONS } from "./Palette";
+import { Icon, Palette, type PaletteAction, type PaletteTool, TOOL_ICONS } from "./Palette";
 import { moveOps, pasteOps, type Reorder, removeOps, reorderOps, resizeOps } from "./selection";
 import { formatShortcut, isMacPlatform, matchesShortcut, type ShortcutId } from "./shortcuts";
 import { adoptSuggestionOps, rejectSuggestionOps } from "./suggestions";
@@ -94,18 +94,19 @@ export type EditorProps = {
    * `applyMasks` で新しいベース画像を作り、`piiApplied` を dispatch する。省略するとマスクの道具を出さない
    */
   onApplyMasks?: (masks: PiiMask[]) => Promise<void>;
-  /**
-   * 適用前のマスク範囲を呼び出し側で持つとき（個人情報の検出結果を下書きとして渡す。FR-PII-01）。
-   * 省略するとエディタの中で持つ
-   */
-  masks?: MaskDraft[];
-  onMasksChange?: (masks: MaskDraft[]) => void;
   /** 適用済みで、まだ保存していないマスク。選択の道具で選んで外せる（ADR-0009） */
   appliedMasks?: readonly AppliedMask[];
   /** 適用済みのマスクを外す（加工前の画像から、残りのマスクをかけ直す） */
   onUnmask?: (id: string) => Promise<void>;
-  /** 右側の欄の先頭に出す内容（AI のパネルなど） */
+  /**
+   * 右側の欄の末尾に出す内容（AI の提案など）。注釈を選んでいない・マスクの範囲を選んでいないときだけ出し、
+   * 選んだ注釈の設定の邪魔をしない
+   */
   aside?: ReactNode;
+  /** パレットの道具の後ろに並べる操作（AI の提案など） */
+  paletteActions?: readonly PaletteAction[];
+  /** 個人情報のマスクの欄の末尾に出す内容（個人情報を探す操作など）。マスクの範囲を選んでいる間だけ出す */
+  maskAside?: ReactNode;
   /** ショートカット一覧を開く（? キー・パレットのボタン）。省略すると開く手段を出さない */
   onShowShortcuts?: () => void;
   /**
@@ -122,11 +123,11 @@ export function Editor({
   dispatch,
   baseImageUrl,
   onApplyMasks,
-  masks: controlledMasks,
-  onMasksChange,
   appliedMasks = [],
   onUnmask,
   aside,
+  maskAside,
+  paletteActions = [],
   onShowShortcuts,
   elements = [],
   elementPixelRatio = 1,
@@ -147,12 +148,9 @@ export function Editor({
       return next;
     });
   }, []);
-  const [ownMasks, setOwnMasks] = useState<MaskDraft[]>([]);
-  const masks = controlledMasks ?? ownMasks;
-  const setMasks = (next: MaskDraft[]) => {
-    if (controlledMasks === undefined) setOwnMasks(next);
-    onMasksChange?.(next);
-  };
+  // マスクの範囲の下書きは履歴に入れ、足す・変える・消すを元に戻せるようにする
+  const masks = state.masks;
+  const setMasks = (next: readonly MaskDraft[]) => dispatch({ type: "masks", masks: next });
   const [selectedMaskId, setSelectedMaskId] = useState<string | null>(null);
   const selectedMask = appliedMasks.find((m) => m.id === selectedMaskId);
   const [unmasking, setUnmasking] = useState(false);
@@ -406,10 +404,10 @@ export function Editor({
             collapsed={paletteCollapsed}
             onCollapsedChange={setPaletteCollapsed}
             onShowShortcuts={onShowShortcuts}
+            actions={paletteActions}
           />
         </div>
         <aside className="harie-inspector" aria-label={m.inspector.label}>
-          {aside}
           {onApplyMasks !== undefined && (tool === "mask" || masks.length > 0) && (
             <MaskPanel
               drafts={masks}
@@ -417,10 +415,12 @@ export function Editor({
               onCancel={cancelMasks}
               onApply={async () => {
                 await onApplyMasks(toPiiMasks(masks));
-                setMasks([]);
+                dispatch({ type: "masksApplied" });
                 setTool("select");
               }}
-            />
+            >
+              {maskAside}
+            </MaskPanel>
           )}
           {selected.length === 0 && selectedMask !== undefined ? (
             <section className="harie-inspector-body" aria-label={m.appliedMask.label}>
@@ -440,6 +440,9 @@ export function Editor({
               <>
                 <StepsCard doc={state.doc} dispatch={dispatch} drawDefaults={drawDefaults} />
                 <EmptyInspector tools={tools} onShowShortcuts={onShowShortcuts} />
+                {aside !== undefined && aside !== null && (
+                  <div className="harie-inspector-extra">{aside}</div>
+                )}
               </>
             )
           ) : (

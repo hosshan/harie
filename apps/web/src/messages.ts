@@ -145,14 +145,17 @@ const ja = {
     copyLabel: (label: string) => `${label}をコピー`,
   },
   ai: {
-    title: "AI",
+    title: "AIでガイドを作成",
+    action: "AI提案",
+    cancel: "キャンセル",
     intent: "説明したいこと",
-    intentPlaceholder: "例: 通知の設定方法",
+    intentPlaceholder: "説明したいこと（例：通知の設定方法）",
     notice: (withDom: boolean, provider: "anthropic" | "openrouter") =>
       `ボタンを押すと、この画像${withDom ? "と、キャプチャしたページの文字・要素の位置" : ""}を${provider === "openrouter" ? " OpenRouter 経由で Anthropic の Claude" : " Anthropic の Claude API"} に送信します。個人情報が写っている場合は、先に隠してから使ってください。`,
     consent: "この画像を送信してよい",
     suggest: "AI に提案してもらう",
-    detectPii: "個人情報を探す",
+    detectPii: "AI で画像から探す",
+    piiTitle: "個人情報を探す",
     localNote:
       "キャプチャしたページの文字から、メールアドレス・電話番号・氏名欄などを探します。画像はどこにも送りません。画像の中の文字や顔は見つけられないので、目でも確認してください。",
     detectPiiLocal: "ページの文字から探す",
@@ -329,14 +332,17 @@ const en: WebMessages = {
     copyLabel: (label) => `Copy ${label.charAt(0).toLowerCase()}${label.slice(1)}`,
   },
   ai: {
-    title: "AI",
+    title: "Create a guide with AI",
+    action: "AI suggest",
+    cancel: "Cancel",
     intent: "What to explain",
-    intentPlaceholder: "e.g. How to set up notifications",
+    intentPlaceholder: "What to explain (e.g. how to set up notifications)",
     notice: (withDom, provider) =>
       `When you press a button, this image${withDom ? " and the text and element positions of the captured page" : ""} will be sent to ${provider === "openrouter" ? "Anthropic's Claude through OpenRouter" : "Anthropic's Claude API"}. If personal info is visible, hide it first.`,
     consent: "OK to send this image",
     suggest: "Get AI suggestions",
-    detectPii: "Find personal info",
+    detectPii: "Search the image with AI",
+    piiTitle: "Find personal info",
     localNote:
       "Looks for email addresses, phone numbers, name fields and more in the text of the captured page. Nothing is sent anywhere. Text and faces inside the image can't be found this way, so check with your own eyes too.",
     detectPiiLocal: "Search the page text",

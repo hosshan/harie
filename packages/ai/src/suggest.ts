@@ -34,6 +34,12 @@ ${[
   .map((rule) => `- ${rule}`)
   .join("\n")}`;
 
+/** AI の提案に添える情報の 1 項目 */
+export type SuggestContext = { label: string; text: string };
+
+/** 1 項目の長さの上限（入力欄に貼った長文をそのまま送らない） */
+const MAX_CONTEXT_TEXT = 1000;
+
 export type SuggestInput = {
   client: LlmClient;
   /** LLM に送る画像（キャンバスを縮小したもの） */
@@ -46,6 +52,11 @@ export type SuggestInput = {
    * 英語は同じ文字数だと短すぎるので、上限を 2 倍にする
    */
   language?: "ja" | "en";
+  /**
+   * 説明したいこと以外に一緒に伝える情報（読者・画面の名前など）。利用者の入力なので、項目名と中身をそのまま伝える。
+   * 空の項目は送らない
+   */
+  context?: readonly SuggestContext[];
   dom?: DomSnapshot;
 };
 
@@ -82,6 +93,11 @@ export function buildSuggestPrompt(input: Omit<SuggestInput, "client">): string 
       : []),
     `画像の大きさ: ${image.width}x${image.height} ピクセル`,
     `説明したいこと: ${intent.trim() === "" ? "（指定なし。この画面の主な操作）" : intent.trim()}`,
+    ...(input.context ?? []).flatMap((c) =>
+      c.text.trim() === ""
+        ? []
+        : [`${c.label.trim()}: ${c.text.trim().slice(0, MAX_CONTEXT_TEXT)}`],
+    ),
     `既に付いている注釈（座標は元画像の ${doc.canvas.width}x${doc.canvas.height} ピクセル）:\n${existingSummary(doc)}`,
   ];
   if (dom !== undefined && dom.elements.length > 0) {

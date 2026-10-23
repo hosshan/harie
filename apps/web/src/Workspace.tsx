@@ -5,7 +5,6 @@ import {
   EDITOR_MESSAGES,
   Editor,
   isMacPlatform,
-  type MaskDraft,
   matchesShortcut,
   type PickableElement,
   ShortcutList,
@@ -17,7 +16,7 @@ import { type ImageFormat, readBaseImage } from "@harie/format";
 import { type PiiMask, recordPiiApplied } from "@harie/model";
 import { rebaseDocument } from "@harie/render";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { AiPanel } from "./ai/AiPanel";
+import { AiPiiPanel, useAiSuggest } from "./ai/AiPanel";
 import { browserRenderer } from "./browser-renderer";
 import { Header, type HeaderAction, HeaderButton } from "./Header";
 import { mismatchMessage, type Opened } from "./load";
@@ -82,7 +81,6 @@ export function Workspace({
   const [saving, setSaving] = useState(false);
   const [format, setFormat] = useState<ImageFormat>(opened.format);
   const [showWarning, setShowWarning] = useState(opened.warning !== undefined);
-  const [masks, setMasks] = useState<MaskDraft[]>([]);
   // 保存するまでは、適用したマスクを外せるように加工前の画像を持つ（ADR-0009）
   const [unsaved, setUnsaved] = useState<UnsavedMasks | null>(null);
   const [confirmOpen, setConfirmOpen] = useState(false);
@@ -93,6 +91,9 @@ export function Workspace({
     [dom, rebased],
   );
   const replaceInput = useRef<HTMLInputElement>(null);
+  // 個人情報の検出は時間がかかる。待つ間に描いた範囲を消さないよう、終わった時点の下書きに足す
+  const masksRef = useRef(state.masks);
+  masksRef.current = state.masks;
   const savedDoc = useRef(opened.doc);
   const dirty =
     state.doc.annotations !== savedDoc.current.annotations ||
@@ -100,6 +101,13 @@ export function Workspace({
     state.doc.canvas !== savedDoc.current.canvas;
 
   const baseImageUrl = useObjectUrl(opened.base.bytes, opened.base.mediaType);
+  const aiSuggest = useAiSuggest({
+    doc: state.doc,
+    dispatch,
+    base: opened.base,
+    ...(dom === undefined || rebased ? {} : { dom }),
+    onStatus: setStatus,
+  });
 
   useEffect(() => {
     onDirtyChange?.(dirty);
@@ -194,14 +202,15 @@ export function Workspace({
       return;
     }
     const { doc, previousPii } = rebaseDocument(state.doc, next);
-    dispatch({ type: "reset", doc });
-    setUnsaved(null);
-    setMasks(
-      addDetectedMasks(
+    dispatch({
+      type: "reset",
+      doc,
+      masks: addDetectedMasks(
         [],
         previousPii.map((p) => ({ ...p, replacement: "" })),
       ),
-    );
+    });
+    setUnsaved(null);
     setRebased(true);
     setShowWarning(false);
     const { alternative: _, warning: __, ...rest } = opened;
@@ -345,23 +354,25 @@ export function Workspace({
           dispatch={dispatch}
           baseImageUrl={baseImageUrl}
           onApplyMasks={applyMasks}
-          masks={masks}
-          onMasksChange={setMasks}
           appliedMasks={unsaved?.entries.map((e) => ({ id: e.id, rect: e.record.rect })) ?? []}
           onUnmask={unmask}
           onShowShortcuts={() => setShortcutsOpen(true)}
           elements={elements}
           elementPixelRatio={dom?.viewport.devicePixelRatio ?? 1}
-          aside={
-            <AiPanel
+          {...(aiSuggest.action === null ? {} : { paletteActions: [aiSuggest.action] })}
+          aside={aiSuggest.pendingCard}
+          maskAside={
+            <AiPiiPanel
               doc={state.doc}
-              dispatch={dispatch}
               base={opened.base}
               {...(dom === undefined || rebased ? {} : { dom })}
-              onPiiFound={(found) => setMasks((current) => addDetectedMasks(current, found))}
+              onPiiFound={(found) =>
+                dispatch({ type: "masks", masks: addDetectedMasks(masksRef.current, found) })
+              }
             />
           }
         />
+        {aiSuggest.dialog}
       </main>
     </>
   );

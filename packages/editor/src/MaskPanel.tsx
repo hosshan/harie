@@ -1,6 +1,6 @@
 // 個人情報のマスクの設定と適用（FR-EDIT-05, FR-PII-02〜04）
 import type { PiiMethod } from "@harie/model";
-import { useState } from "react";
+import { type ReactNode, useEffect, useState } from "react";
 import { EDITOR_MESSAGES } from "./i18n/messages";
 import { useMessages } from "./i18n/use-locale";
 import { MASK_METHODS, type MaskDraft } from "./masks";
@@ -11,9 +11,72 @@ export type MaskPanelProps = {
   /** 適用せずにやめる（範囲はすべて捨てる） */
   onCancel: () => void;
   onApply: () => Promise<void>;
+  /** 欄の末尾に出す内容（個人情報を探す操作など）。範囲の設定と適用の邪魔をしないよう後ろに置く */
+  children?: ReactNode;
 };
 
-export function MaskPanel({ drafts, onChange, onCancel, onApply }: MaskPanelProps) {
+/** 隠し方の見本（仕上がりの見た目を小さく示す。右の欄のほかのタイルと同じ「見て選ぶ」形） */
+const METHOD_SAMPLES: Record<PiiMethod, ReactNode> = {
+  fill: <rect x="3" y="4" width="22" height="10" rx="1.5" fill="currentColor" />,
+  replace: (
+    <>
+      <rect x="3" y="4" width="22" height="10" rx="1.5" fill="none" stroke="currentColor" />
+      <path d="M7 9h4M13 9h8" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+    </>
+  ),
+  mosaic: (
+    <g fill="currentColor">
+      <rect x="3" y="4" width="5" height="5" opacity="0.9" />
+      <rect x="8" y="4" width="5" height="5" opacity="0.45" />
+      <rect x="13" y="4" width="6" height="5" opacity="0.75" />
+      <rect x="19" y="4" width="6" height="5" opacity="0.35" />
+      <rect x="3" y="9" width="5" height="5" opacity="0.4" />
+      <rect x="8" y="9" width="5" height="5" opacity="0.8" />
+      <rect x="13" y="9" width="6" height="5" opacity="0.5" />
+      <rect x="19" y="9" width="6" height="5" opacity="0.85" />
+    </g>
+  ),
+  // フィルタは ID が範囲ごとに重なるので使わず、輪郭をぼかした重ねで見せる
+  blur: (
+    <g fill="currentColor">
+      <rect x="2" y="3" width="24" height="12" rx="6" opacity="0.15" />
+      <rect x="4" y="5" width="20" height="8" rx="4" opacity="0.25" />
+      <rect x="6" y="6.5" width="16" height="5" rx="2.5" opacity="0.35" />
+    </g>
+  ),
+};
+
+/** 置き換える文字。打つたびではなく、入力欄を離れたときに 1 回の操作として確定する（元に戻す単位） */
+function ReplacementField({
+  value,
+  onCommit,
+}: {
+  value: string;
+  onCommit: (value: string) => void;
+}) {
+  const m = useMessages(EDITOR_MESSAGES);
+  const [text, setText] = useState(value);
+  useEffect(() => setText(value), [value]);
+  const commit = () => {
+    if (text !== value) onCommit(text);
+  };
+  return (
+    <label>
+      {m.mask.replacement}
+      <input
+        value={text}
+        placeholder={m.mask.replacementPlaceholder}
+        onChange={(e) => setText(e.target.value)}
+        onBlur={commit}
+        onKeyDown={(e) => {
+          if (e.key === "Enter") commit();
+        }}
+      />
+    </label>
+  );
+}
+
+export function MaskPanel({ drafts, onChange, onCancel, onApply, children }: MaskPanelProps) {
   const m = useMessages(EDITOR_MESSAGES);
   const [busy, setBusy] = useState(false);
   // 適用は画像そのものを書き換える（保存すると戻せない）ので、押し間違いに備えてもう一度確かめる
@@ -44,28 +107,34 @@ export function MaskPanel({ drafts, onChange, onCancel, onApply }: MaskPanelProp
         <ol className="harie-mask-list">
           {drafts.map((d, i) => (
             <li key={d.id}>
-              <label>
-                {m.mask.method(i + 1, d.kind === undefined ? undefined : m.mask.kinds[d.kind])}
-                <select
-                  value={d.method}
-                  onChange={(e) => update(d.id, { method: e.target.value as PiiMethod })}
-                >
+              <fieldset className="harie-field harie-mask-method">
+                <legend className="harie-field-label">
+                  {m.mask.method(i + 1, d.kind === undefined ? undefined : m.mask.kinds[d.kind])}
+                </legend>
+                <div className="harie-tiles">
                   {MASK_METHODS.map((method) => (
-                    <option key={method} value={method}>
-                      {m.mask.methods[method]}
-                    </option>
+                    <button
+                      key={method}
+                      type="button"
+                      className="harie-tile"
+                      aria-label={m.mask.methods[method]}
+                      aria-pressed={d.method === method}
+                      title={m.mask.methods[method]}
+                      onClick={() => d.method !== method && update(d.id, { method })}
+                    >
+                      <svg viewBox="0 0 28 18" width="28" height="18" aria-hidden="true">
+                        {METHOD_SAMPLES[method]}
+                      </svg>
+                      <small aria-hidden="true">{m.mask.methodsShort[method]}</small>
+                    </button>
                   ))}
-                </select>
-              </label>
+                </div>
+              </fieldset>
               {d.method === "replace" && (
-                <label>
-                  {m.mask.replacement}
-                  <input
-                    value={d.replacement}
-                    placeholder={m.mask.replacementPlaceholder}
-                    onChange={(e) => update(d.id, { replacement: e.target.value })}
-                  />
-                </label>
+                <ReplacementField
+                  value={d.replacement}
+                  onCommit={(replacement) => update(d.id, { replacement })}
+                />
               )}
               <button type="button" onClick={() => onChange(drafts.filter((x) => x.id !== d.id))}>
                 {m.mask.remove(i + 1)}
@@ -105,6 +174,7 @@ export function MaskPanel({ drafts, onChange, onCancel, onApply }: MaskPanelProp
         </p>
       )}
       {error !== null && <p role="alert">{error}</p>}
+      {children !== undefined && <div className="harie-mask-extra">{children}</div>}
     </section>
   );
 }

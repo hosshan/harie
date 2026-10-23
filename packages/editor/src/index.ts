@@ -9,6 +9,7 @@ export { useLocale, useMessages } from "./i18n/use-locale";
 export { MaskPanel } from "./MaskPanel";
 export * from "./masks";
 export { useObjectUrl } from "./object-url";
+export { ACTION_ICONS, type PaletteAction } from "./Palette";
 export { ShortcutList, type ShortcutListProps } from "./ShortcutList";
 export * from "./shortcuts";
 export * from "./suggestions";

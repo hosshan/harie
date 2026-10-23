@@ -1,12 +1,19 @@
 // エディタの状態と元に戻す／やり直す（FR-EDIT-07）
-// 変更はすべて applyOps の操作として適用する。ドラッグ中の途中経過は履歴に積まず、離したときに 1 回だけ積む
+// 変更はすべて applyOps の操作として適用する。ドラッグ中の途中経過は履歴に積まず、離したときに 1 回だけ積む。
+// 個人情報のマスクの範囲（適用前の下書き）も、足す・変える・消すを同じ履歴で元に戻せる
 import { applyOps, type HarieDocument, type OpError } from "@harie/model";
 import { layoutAnchors } from "@harie/render";
+import type { MaskDraft } from "./masks";
+
+/** 履歴の 1 コマ。ドキュメントと、マスクの範囲の下書き */
+export type Snapshot = { doc: HarieDocument; masks: readonly MaskDraft[] };
 
 export type EditorState = {
   doc: HarieDocument;
-  past: HarieDocument[];
-  future: HarieDocument[];
+  /** 個人情報のマスクの範囲（適用前の下書き。ドキュメントには入れない。FR-EDIT-05） */
+  masks: readonly MaskDraft[];
+  past: Snapshot[];
+  future: Snapshot[];
   /** 選んでいる注釈（複数選べる。先に選んだものから順に並ぶ） */
   selectedIds: readonly string[];
   /** 直前の操作が失敗した理由（UI に出す） */
@@ -18,7 +25,12 @@ export type EditorAction =
   | { type: "undo" }
   | { type: "redo" }
   | { type: "select"; ids: Selecting }
-  | { type: "reset"; doc: HarieDocument }
+  /** 履歴を捨てて開き直す。masks を渡すと、その範囲を下書きにする（画像の差し替えでかけ直してもらうとき） */
+  | { type: "reset"; doc: HarieDocument; masks?: readonly MaskDraft[] }
+  /** マスクの範囲の下書きを変える（1 回の操作として元に戻せる） */
+  | { type: "masks"; masks: readonly MaskDraft[] }
+  /** マスクを画像に適用した。下書きは使い終わったので、元に戻すで戻らないよう履歴からも消す */
+  | { type: "masksApplied" }
   /** 保存した。以後の保存でリビジョンが戻らないよう、履歴中のドキュメントにも新しいリビジョンを反映する */
   | { type: "saved"; revision: number; meta: HarieDocument["meta"] }
   /**
@@ -32,9 +44,11 @@ export type Selecting = string | null | readonly string[];
 
 const HISTORY_LIMIT = 100;
 
-export function initialState(doc: HarieDocument): EditorState {
-  return { doc, past: [], future: [], selectedIds: [], error: null };
+export function initialState(doc: HarieDocument, masks: readonly MaskDraft[] = []): EditorState {
+  return { doc, masks, past: [], future: [], selectedIds: [], error: null };
 }
+
+const snapshot = (state: EditorState): Snapshot => ({ doc: state.doc, masks: state.masks });
 
 /** ドキュメントに残っている注釈だけを、重ねずに選ぶ */
 function exists(doc: HarieDocument, select: Selecting): readonly string[] {
@@ -53,10 +67,28 @@ export function editorReducer(state: EditorState, action: EditorAction): EditorS
       const select = action.select === undefined ? state.selectedIds : action.select;
       return {
         doc,
-        past: [...state.past, state.doc].slice(-HISTORY_LIMIT),
+        masks: state.masks,
+        past: [...state.past, snapshot(state)].slice(-HISTORY_LIMIT),
         future: [],
         selectedIds: exists(doc, select),
         error: null,
+      };
+    }
+    case "masks":
+      return {
+        ...state,
+        masks: action.masks,
+        past: [...state.past, snapshot(state)].slice(-HISTORY_LIMIT),
+        future: [],
+        error: null,
+      };
+    case "masksApplied": {
+      const clear = (s: Snapshot): Snapshot => (s.masks.length === 0 ? s : { ...s, masks: [] });
+      return {
+        ...state,
+        masks: [],
+        past: state.past.map(clear),
+        future: state.future.map(clear),
       };
     }
     case "undo": {
@@ -64,10 +96,10 @@ export function editorReducer(state: EditorState, action: EditorAction): EditorS
       if (prev === undefined) return state;
       return {
         ...state,
-        doc: prev,
+        ...prev,
         past: state.past.slice(0, -1),
-        future: [state.doc, ...state.future],
-        selectedIds: exists(prev, state.selectedIds),
+        future: [snapshot(state), ...state.future],
+        selectedIds: exists(prev.doc, state.selectedIds),
         error: null,
       };
     }
@@ -76,17 +108,17 @@ export function editorReducer(state: EditorState, action: EditorAction): EditorS
       if (next === undefined) return state;
       return {
         ...state,
-        doc: next,
-        past: [...state.past, state.doc],
+        ...next,
+        past: [...state.past, snapshot(state)],
         future: rest,
-        selectedIds: exists(next, state.selectedIds),
+        selectedIds: exists(next.doc, state.selectedIds),
         error: null,
       };
     }
     case "select":
       return { ...state, selectedIds: exists(state.doc, action.ids) };
     case "reset":
-      return initialState(action.doc);
+      return initialState(action.doc, action.masks);
     case "saved": {
       const mark = (d: HarieDocument): HarieDocument => ({
         ...d,
@@ -96,8 +128,8 @@ export function editorReducer(state: EditorState, action: EditorAction): EditorS
       return {
         ...state,
         doc: mark(state.doc),
-        past: state.past.map(mark),
-        future: state.future.map(mark),
+        past: state.past.map((s) => ({ ...s, doc: mark(s.doc) })),
+        future: state.future.map((s) => ({ ...s, doc: mark(s.doc) })),
       };
     }
     case "piiApplied": {
@@ -105,8 +137,8 @@ export function editorReducer(state: EditorState, action: EditorAction): EditorS
       return {
         ...state,
         doc: mark(state.doc),
-        past: state.past.map(mark),
-        future: state.future.map(mark),
+        past: state.past.map((s) => ({ ...s, doc: mark(s.doc) })),
+        future: state.future.map((s) => ({ ...s, doc: mark(s.doc) })),
       };
     }
   }
