@@ -270,6 +270,41 @@ test("FR-EDIT-03: テキストは置いた直後とダブルクリックで、�
   await expect(page.getByRole("button", { name: "特大" })).toHaveAttribute("aria-pressed", "false");
 });
 
+test("FR-EDIT-16: 大きな画像では既定の線の太さと候補を倍率に合わせ、選んだ太さは等倍に戻して覚える", async ({
+  page,
+}) => {
+  await page.goto("/");
+  // 2880x1800（Retina の画面を撮った大きさ）の PNG をその場で作る
+  const png = await page.evaluate(async () => {
+    const canvas = new OffscreenCanvas(2880, 1800);
+    const ctx = canvas.getContext("2d");
+    if (ctx === null) throw new Error("2d がない");
+    ctx.fillStyle = "#e8eef6";
+    ctx.fillRect(0, 0, 2880, 1800);
+    const blob = await canvas.convertToBlob({ type: "image/png" });
+    return [...new Uint8Array(await blob.arrayBuffer())];
+  });
+  await page
+    .getByLabel("画像ファイル")
+    .setInputFiles({ name: "retina.png", mimeType: "image/png", buffer: Buffer.from(png) });
+  await expect(page.getByRole("application", { name: "注釈の編集面" })).toBeVisible();
+  await page.getByRole("button", { name: "四角" }).click();
+  await drag(page, [400, 400], [1600, 900], [2880, 1800]);
+  const rect = annotationRects(page).first();
+  await expect(rect).toHaveAttribute("stroke-width", "8");
+  // 候補も 2 倍で出す（中 = 8、太 = 12）
+  const thick = page.getByRole("button", { name: "太", exact: true });
+  await expect(thick).toContainText("12");
+  await thick.click();
+  await expect(rect).toHaveAttribute("stroke-width", "12");
+
+  // 等倍の画像では、覚えた「太」は 6 になる
+  await openFixture(page, "large-base.jpg");
+  await page.getByRole("button", { name: "四角" }).click();
+  await drag(page, [40, 40], [240, 120]);
+  await expect(annotationRects(page).first()).toHaveAttribute("stroke-width", "6");
+});
+
 test("FR-EDIT-01: 四角の線の太さと種類を変えられ、選んだ太さ・文字サイズ・番号の大きさは次に描くときの初期値になる", async ({
   page,
 }) => {

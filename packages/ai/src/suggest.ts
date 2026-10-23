@@ -1,7 +1,7 @@
 // AI による補足の提案（FR-AI-01〜03, architecture 3.3）。
 // 画像と「何を説明したいか」から、強調する範囲と説明文を提案させ、提案中（status: "suggested"）の注釈にする
 import { type Annotation, AnnotationSchema, type HarieDocument } from "@harie/model";
-import { annotationBounds, calloutWidth, placeCallout } from "@harie/render";
+import { annotationBounds, calloutWidth, placeCallout, scaledDefaults } from "@harie/render";
 import { z } from "zod";
 import { type DomSnapshot, describeElements, MAX_PROMPT_ELEMENTS, snapToElement } from "./dom";
 import { pad, toCanvasRect } from "./geometry";
@@ -58,6 +58,11 @@ export type SuggestInput = {
    */
   context?: readonly SuggestContext[];
   dom?: DomSnapshot;
+  /**
+   * 画像の解像度に合わせる倍率（`estimateImageScale`。FR-EDIT-16）。1 より大きいと、提案の枠の線と吹き出しの文字を
+   * その倍率で太く・大きくする。省略すると 1（テーマの既定のまま）
+   */
+  scale?: number;
 };
 
 /** 説明文の文字数の上限（言語ごと） */
@@ -127,9 +132,13 @@ export function toSuggestions(
   const { doc, image, dom, language } = input;
   const canvas = doc.canvas;
   const scale = canvas.width / image.width;
+  const k = input.scale !== undefined && input.scale > 1 ? input.scale : 1;
+  const sized = scaledDefaults(k);
+  const rectStyle = k === 1 ? {} : { style: { strokeWidth: sized.strokeWidth } };
+  const noteStyle = k === 1 ? {} : { style: { fontSize: sized.fontSize } };
   const elements = dom?.elements.slice(0, MAX_PROMPT_ELEMENTS) ?? [];
   const taken = new Set(doc.annotations.map((a) => a.id));
-  const width = calloutWidth(canvas);
+  const width = calloutWidth(canvas, sized.fontSize);
   const result: Suggestion[] = [];
 
   for (const s of output.suggestions.slice(0, MAX_SUGGESTIONS)) {
@@ -139,15 +148,23 @@ export function toSuggestions(
     if (estimated === null) continue;
     const indexed = s.elementIndex === null ? undefined : elements[s.elementIndex];
     const snapped = indexed?.rect ?? snapToElement(estimated, elements) ?? estimated;
-    const box = pad(snapped, 4, canvas);
+    const box = pad(snapped, Math.round(4 * k), canvas);
 
     const boxId = uniqueId("ai-box", taken);
     const noteId = uniqueId("ai-note", taken);
-    const draftNote = { id: noteId, type: "callout" as const, x: 0, y: 0, w: width, text };
+    const draftNote = {
+      id: noteId,
+      type: "callout" as const,
+      x: 0,
+      y: 0,
+      w: width,
+      text,
+      ...noteStyle,
+    };
     const size = annotationBounds(draftNote);
     const at = placeCallout(box, { w: size.w, h: size.h }, canvas);
     const candidates = [
-      { id: boxId, type: "rect", ...box, status: "suggested" },
+      { id: boxId, type: "rect", ...box, ...rectStyle, status: "suggested" },
       {
         ...draftNote,
         x: Math.round(at.x),

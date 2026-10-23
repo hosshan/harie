@@ -5,7 +5,9 @@ import {
   DRAW_DEFAULTS_KEY,
   loadDrawDefaults,
   saveDrawDefaults,
+  scaleDrawDefaults,
   styleForNew,
+  unscaleDrawDefaults,
 } from "./draw-defaults";
 import { boxFrom, handlesFor, movePatch, resizePatch } from "./geometry";
 import { editorReducer, initialState, newAnnotationId } from "./history";
@@ -371,5 +373,29 @@ describe("次に描く注釈の初期値（FR-EDIT-01・FR-EDIT-03）", () => {
     // 吹き出しの文字サイズは番号に引き継がない
     expect(styleForNew("badge", { fontSize: 36 })).toBeUndefined();
     expect(styleForNew("rect", { fontSize: 36 })).toBeUndefined();
+  });
+});
+
+describe("解像度に合わせた初期値（FR-EDIT-16）", () => {
+  it("等倍なら記録のまま、2 倍なら未記録の項目もテーマの既定に倍率を掛けて埋める", () => {
+    expect(scaleDrawDefaults({}, 1)).toEqual({});
+    expect(scaleDrawDefaults({ strokeWidth: 6 }, 1)).toEqual({ strokeWidth: 6 });
+    expect(scaleDrawDefaults({}, 2)).toEqual({ strokeWidth: 8, fontSize: 48, badgeFontSize: 48 });
+    expect(scaleDrawDefaults({ strokeWidth: 6, badgeFontSize: 16 }, 1.5)).toEqual({
+      strokeWidth: 9,
+      fontSize: 36,
+      badgeFontSize: 24,
+    });
+    expect(styleForNew("rect", scaleDrawDefaults({}, 2))).toEqual({ strokeWidth: 8 });
+  });
+
+  it("画像のピクセルで選んだ値は、等倍の値に戻して記録する", () => {
+    expect(unscaleDrawDefaults({ strokeWidth: 12, fontSize: 72 }, 2)).toEqual({
+      strokeWidth: 6,
+      fontSize: 36,
+    });
+    expect(unscaleDrawDefaults({ strokeWidth: 9 }, 1)).toEqual({ strokeWidth: 9 });
+    // 戻した値に倍率を掛けると、選んだ値になる
+    expect(scaleDrawDefaults(unscaleDrawDefaults({ strokeWidth: 9 }, 2), 2).strokeWidth).toBe(9);
   });
 });

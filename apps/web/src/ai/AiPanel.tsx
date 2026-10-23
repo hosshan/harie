@@ -72,6 +72,8 @@ export type AiSuggestOptions = {
   base: Base;
   /** キャプチャ時の DOM 情報。あれば枠を要素に合わせる（FR-AI-03） */
   dom?: DomSnapshot;
+  /** 画像の解像度の倍率。提案の線・文字をこれに合わせる（FR-EDIT-16） */
+  scale?: number;
   /** 提案を追加した・失敗したなどを、画面上部の状態の欄に出す */
   onStatus: (status: string) => void;
 };
@@ -81,7 +83,7 @@ export type AiSuggestOptions = {
  * 説明したいことなどを聞いてから送る。普段の画面には何も足さない。提案が残っている間だけ、右の欄の末尾に
  * まとめて採用・却下する欄を出す
  */
-export function useAiSuggest({ doc, dispatch, base, dom, onStatus }: AiSuggestOptions): {
+export function useAiSuggest({ doc, dispatch, base, dom, scale = 1, onStatus }: AiSuggestOptions): {
   action: PaletteAction | null;
   dialog: ReactNode;
   pendingCard: ReactNode;
@@ -113,7 +115,7 @@ export function useAiSuggest({ doc, dispatch, base, dom, onStatus }: AiSuggestOp
           onCancel={() => setOpen(false)}
           onRun={async (request) => {
             const { runSuggest } = await import("./run");
-            const found = await runSuggest(credential, base, doc, request, locale, dom);
+            const found = await runSuggest(credential, base, doc, request, locale, dom, scale);
             // 提案はまとめて 1 回の操作として追加する（元に戻すで一度に消せる）
             dispatch({
               type: "apply",
