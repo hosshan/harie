@@ -11,6 +11,7 @@
 <p align="center">
   <a href="https://harie.studio/en/">Website</a> ·
   <a href="https://harie.studio/app/">Open the web editor</a> ·
+  <a href="https://chromewebstore.google.com/detail/harie/dgbghdgnmjcgjdmhfnmcdphkafkbefll?hl=en">Chrome extension</a> ·
   <a href="https://www.npmjs.com/package/@harie/mcp">MCP server</a>
 </p>
 

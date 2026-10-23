@@ -11,6 +11,7 @@
 <p align="center">
   <a href="https://harie.studio/">サイト</a> ·
   <a href="https://harie.studio/app/">Web エディタを開く</a> ·
+  <a href="https://chromewebstore.google.com/detail/harie/dgbghdgnmjcgjdmhfnmcdphkafkbefll">Chrome 拡張</a> ·
   <a href="https://www.npmjs.com/package/@harie/mcp">MCP サーバー</a>
 </p>
 
