@@ -3,6 +3,9 @@
 import { cp, rm } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
 
+// 先に検索・AI 向けの情報が本文とずれていないかを確かめる（ずれていたら止める）
+await import("./check-seo.mjs");
+
 const root = fileURLToPath(new URL("..", import.meta.url));
 const dist = `${root}dist`;
 

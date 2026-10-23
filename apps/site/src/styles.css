@@ -1040,6 +1040,42 @@ code,
   }
 }
 
+/* よくある質問。答えは畳まずに全部見せる（検索エンジンと AI が読む本文でもある） */
+.faq {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 20px;
+  margin-top: 28px;
+}
+
+.faq-item {
+  background: var(--paper);
+  border-radius: 6px;
+  padding: 22px 24px;
+  min-width: 0;
+  box-shadow: 0 12px 28px -18px rgb(80 60 20 / 0.55);
+}
+
+.faq-item h3 {
+  font-family: var(--display);
+  font-weight: 900;
+  font-size: 18px;
+  line-height: 1.5;
+  margin: 0 0 8px;
+}
+
+.faq-item p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 15px;
+}
+
+@media (max-width: 900px) {
+  .faq {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
 /* プライバシーポリシーなどの文書ページ */
 .doc-page .nav-in .lang {
   margin-left: auto;

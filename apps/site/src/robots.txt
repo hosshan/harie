@@ -1,0 +1,5 @@
+# 検索エンジンと AI のクローラーを区別せず、すべてのページを読んでよい
+User-agent: *
+Allow: /
+
+Sitemap: https://harie.studio/sitemap.xml
