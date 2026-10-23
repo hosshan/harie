@@ -72,7 +72,9 @@ function AiSettings() {
       <h2>{m.settings.ai}</h2>
       {credential === null ? (
         <>
-          <p className="harie-muted">{m.settings.aiNote}</p>
+          <p className="harie-muted">
+            {canConnectOpenRouter() ? m.settings.aiNote : m.settings.aiNoteKeyOnly}
+          </p>
           {canConnectOpenRouter() && <OpenRouterConnect />}
           <AnthropicKeyForm />
         </>
