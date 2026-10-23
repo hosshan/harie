@@ -342,8 +342,32 @@ input {
   margin: 4px 0;
   padding-left: 20px;
 }
-.app-ai-suggestions li span {
-  margin-right: 6px;
+.app-ai-suggestions li {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+}
+/* 採用と却下は間を空け、色で見分けられるようにする（採用 = 緑の塗り、却下 = 赤の枠） */
+.app-ai-choice {
+  display: flex;
+  gap: 8px;
+}
+.app-ai-adopt {
+  background: #e7f4ea;
+  border-color: #6fb07f;
+  color: #1f6b33;
+}
+.app-ai-adopt:hover:not(:disabled) {
+  background: #d4ecda;
+}
+.app-ai-reject {
+  background: #fff;
+  border-color: #e3a9a3;
+  color: #b42318;
+}
+.app-ai-reject:hover:not(:disabled) {
+  background: #fdecec;
 }
 .app-ai-local,
 .app-ai-setup {
