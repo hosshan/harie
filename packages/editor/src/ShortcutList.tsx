@@ -16,11 +16,13 @@ export type ShortcutListProps = {
   file?: { save?: boolean; open?: boolean };
   /** 個人情報を隠す道具があるか */
   mask?: boolean;
+  /** 要素で囲む道具があるか（Chrome 拡張で撮った画像） */
+  element?: boolean;
 };
 
 type Row = { label: string; keys: string[] };
 
-export function ShortcutList({ file = {}, mask = true }: ShortcutListProps) {
+export function ShortcutList({ file = {}, mask = true, element = false }: ShortcutListProps) {
   const m = useMessages(EDITOR_MESSAGES);
   const mac = isMacPlatform();
   const row = (id: ShortcutId, label: string = shortcutLabel(m, id)): Row => ({
@@ -69,7 +71,9 @@ export function ShortcutList({ file = {}, mask = true }: ShortcutListProps) {
     },
     {
       title: m.shortcuts.groups.tools,
-      rows: TOOL_SHORTCUTS.filter((t) => mask || t.tool !== "mask").map((t) => ({
+      rows: TOOL_SHORTCUTS.filter(
+        (t) => (mask || t.tool !== "mask") && (element || t.tool !== "element"),
+      ).map((t) => ({
         label: m.tools[t.tool],
         keys: [t.key.toUpperCase()],
       })),

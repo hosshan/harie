@@ -119,6 +119,18 @@ describe("補足の提案（FR-AI-01〜03）", () => {
     // 要素の座標は送った画像の座標（1/2）で伝える
     expect(prompt).toContain("0: button (50, 100, 150x30) 通知を保存");
     expect(buildSuggestPrompt({ image, doc, intent: "" })).toContain("指定なし");
+    // 説明したいこと以外の情報も、項目名を付けて伝える。空の項目は送らない
+    const withContext = buildSuggestPrompt({
+      image,
+      doc,
+      intent: "",
+      context: [
+        { label: "読者", text: "初めて使う管理者" },
+        { label: "画面", text: "  " },
+      ],
+    });
+    expect(withContext).toContain("読者: 初めて使う管理者");
+    expect(withContext).not.toContain("画面:");
   });
 
   it("NFR-I18N-01: 表示言語が英語なら、説明文を英語で書くよう頼み、文字数の上限を広げる", async () => {

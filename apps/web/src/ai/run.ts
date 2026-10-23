@@ -6,6 +6,7 @@ import {
   type DomSnapshot,
   detectPii,
   type PiiCandidate,
+  type SuggestContext,
   type Suggestion,
   suggestAnnotations,
 } from "@harie/ai";
@@ -24,7 +25,7 @@ export async function runSuggest(
   credential: AiCredential,
   base: Base,
   doc: HarieDocument,
-  intent: string,
+  request: { intent: string; context: readonly SuggestContext[] },
   language: "ja" | "en",
   dom?: DomSnapshot,
 ): Promise<Suggestion[]> {
@@ -33,7 +34,8 @@ export async function runSuggest(
     client: client(credential),
     image,
     doc,
-    intent,
+    intent: request.intent,
+    context: request.context,
     language,
     ...(dom === undefined ? {} : { dom }),
   });

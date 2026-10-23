@@ -183,11 +183,12 @@ input {
 .app-modal p {
   margin: 0 0 8px;
 }
-.app-modal-actions {
+/* .app-modal p の余白に負けないよう、詳細度を上げる（閉じるボタンの上が詰まっていた） */
+.app-modal .app-modal-actions {
   display: flex;
   justify-content: flex-end;
   gap: 8px;
-  margin: 16px 0 0;
+  margin: 20px 0 0;
 }
 .app-settings form,
 .app-settings label {
@@ -298,10 +299,11 @@ input {
 .harie-muted {
   color: var(--muted);
 }
+/* AI の欄は右の欄・マスクの欄の末尾に置く（区切り線はエディタ側の .harie-inspector-extra / .harie-mask-extra） */
 .app-ai {
-  padding-bottom: 12px;
-  margin-bottom: 12px;
-  border-bottom: 1px solid var(--line);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
 .app-ai h2,
 .app-ai h3 {
@@ -324,7 +326,8 @@ input {
   border-radius: 6px;
   background: #f4f0ff;
   color: #4a3a8c;
-  font-size: 13px;
+  font-size: 12px;
+  line-height: 1.5;
 }
 .app-ai-actions {
   display: flex;

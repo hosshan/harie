@@ -8,6 +8,24 @@ import { formatShortcut, isMacPlatform } from "./shortcuts";
 
 export type PaletteTool = { tool: Tool; label: string; key: string };
 
+/**
+ * 道具の後ろに並べる操作（押すとすぐ何かをする。道具のように選んだ状態にはならない）。
+ * アプリ側の機能（AI の提案など）をパレットから呼ぶのに使う
+ */
+export type PaletteAction = { id: string; label: string; icon: ReactNode; onClick: () => void };
+
+/** 操作のアイコン */
+export const ACTION_ICONS = {
+  // きらめき（AI の提案）
+  sparkles: (
+    <>
+      <path d="M10 3.5l1.6 4.4 4.4 1.6-4.4 1.6L10 15.5l-1.6-4.4L4 9.5l4.4-1.6z" />
+      <path d="M17.5 13.5l.8 2.2 2.2.8-2.2.8-.8 2.2-.8-2.2-2.2-.8 2.2-.8z" />
+      <path d="M17 3.5l.5 1.5 1.5.5-1.5.5-.5 1.5-.5-1.5-1.5-.5 1.5-.5z" />
+    </>
+  ),
+} satisfies Record<string, ReactNode>;
+
 /** 道具のアイコン。右の欄の見出しでも、選んだ注釈の種類を示すのに使う */
 export const TOOL_ICONS: Record<Tool, ReactNode> = {
   select: <path d="M6 3l12 9-5.5 1L16 20l-2.5 1-2.6-6.6L6 18z" />,
@@ -27,6 +45,13 @@ export const TOOL_ICONS: Record<Tool, ReactNode> = {
     <>
       <circle cx="12" cy="12" r="8.5" />
       <path d="M10.5 9l2-1.5V16" />
+    </>
+  ),
+  // 点線の枠の中を指でさす（クリックした要素を囲む）
+  element: (
+    <>
+      <rect x="3" y="3" width="14" height="10" rx="1.5" strokeDasharray="2.5 2" />
+      <path d="M11 9l8 3-3.5 1.2L14 17z" />
     </>
   ),
   mask: (
@@ -60,6 +85,8 @@ export type PaletteProps = {
   onCollapsedChange: (collapsed: boolean) => void;
   /** ショートカット一覧を開く。省略するとボタンを出さない */
   onShowShortcuts?: (() => void) | undefined;
+  /** 道具の後ろに並べる操作 */
+  actions?: readonly PaletteAction[];
 };
 
 export function Palette({
@@ -71,6 +98,7 @@ export function Palette({
   onUndo,
   onRedo,
   hidden,
+  actions = [],
   collapsed,
   onCollapsedChange,
   onShowShortcuts,
@@ -138,6 +166,19 @@ export function Palette({
               >
                 <Icon>{TOOL_ICONS[t.tool]}</Icon>
                 <span aria-hidden="true">{t.label}</span>
+              </button>
+            ))}
+            {actions.map((a) => (
+              <button
+                key={a.id}
+                type="button"
+                className="harie-palette-tool"
+                aria-label={a.label}
+                title={a.label}
+                onClick={a.onClick}
+              >
+                <Icon>{a.icon}</Icon>
+                <span aria-hidden="true">{a.label}</span>
               </button>
             ))}
             <span className="harie-palette-sep" />

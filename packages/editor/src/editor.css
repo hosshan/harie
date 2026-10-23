@@ -268,6 +268,9 @@
 .harie-canvas-overlay:not([data-tool="select"]) {
   cursor: crosshair;
 }
+.harie-canvas-overlay[data-tool="element"] {
+  cursor: pointer;
+}
 /* なぞった線が図形にならなかったときの案内（編集面の上端中央） */
 .harie-sketch-miss {
   position: absolute;
@@ -822,4 +825,24 @@ label.harie-field .harie-field-label {
   stroke-width: 1.8;
   stroke-linecap: round;
   stroke-linejoin: round;
+}
+/* 欄の末尾に足す内容（AI の提案・個人情報を探す操作）。本来の設定と区切る */
+.harie-inspector-extra,
+.harie-mask-extra {
+  margin-top: 16px;
+  padding-top: 12px;
+  border-top: 1px solid var(--harie-line);
+}
+/* 隠し方のタイルは、名前が長いので 2 列にして見本と名前を横に並べる */
+.harie-mask-method .harie-tiles {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+.harie-inspector-body .harie-mask-method .harie-tile {
+  flex-direction: row;
+  height: 36px;
+  gap: 6px;
+}
+.harie-mask-method .harie-tile small {
+  font-size: 12px;
+  color: inherit;
 }
