@@ -3,10 +3,12 @@ import { ascii, type Bytes, concat, readU16, readU32, startsWith, u16, u32 } fro
 
 const SOI = 0xffd8;
 const SOS = 0xffda;
+const APP0 = 0xffe0;
 const APP1 = 0xffe1;
 const APP11 = 0xffeb;
 const XMP_HEADER = ascii("http://ns.adobe.com/xap/1.0/\0");
 const JP = ascii("JP");
+const JFIF = ascii("JFIF\0");
 /** セグメント本体の上限（長さフィールド 2 バイトを除く）。 */
 const MAX_SEGMENT_DATA = 0xffff - 2;
 /** APP11 のヘッダ: CI(2) + En(2) + Z(4) + LBox(4) + TBox(4) */
@@ -133,4 +135,14 @@ export function jpegSize(jpeg: Bytes): { width: number; height: number } {
     }
   }
   throw new RangeError("SOF not found");
+}
+
+/** JFIF（APP0）の密度から解像度（dpi）を読む。単位がない（縦横比だけ）・縦横で違う・ないときは null */
+export function jpegDpi(jpeg: Bytes): number | null {
+  const app0 = scan(jpeg).segments.find((s) => s.marker === APP0 && startsWith(s.data, JFIF));
+  if (app0 === undefined || app0.data.length < 12) return null;
+  const unit = app0.data[7];
+  const x = readU16(app0.data, 8);
+  if (x === 0 || x !== readU16(app0.data, 10)) return null;
+  return unit === 1 ? x : unit === 2 ? x * 2.54 : null;
 }

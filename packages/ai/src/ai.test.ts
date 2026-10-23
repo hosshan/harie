@@ -110,6 +110,15 @@ describe("補足の提案（FR-AI-01〜03）", () => {
     expect(s?.annotations[0]).toMatchObject({ id: "ai-box-2", x: 100, y: 192, w: 304, h: 76 });
   });
 
+  it("FR-EDIT-16: 解像度の倍率があれば、提案の枠の線と吹き出しの文字をその倍率で太く・大きくする", () => {
+    const [plain] = toSuggestions(output, { doc, image, dom });
+    const [scaled] = toSuggestions(output, { doc, image, dom, scale: 2 });
+    expect(plain?.annotations[0]?.style).toBeUndefined();
+    expect(plain?.annotations[1]?.style).toBeUndefined();
+    expect(scaled?.annotations[0]).toMatchObject({ style: { strokeWidth: 8 }, x: 92, y: 192 });
+    expect(scaled?.annotations[1]).toMatchObject({ style: { fontSize: 48 } });
+  });
+
   it("プロンプトに意図・画像の大きさ・既存の注釈・要素の一覧を含める", async () => {
     const client = mockClient({ suggestions: [] });
     await suggestAnnotations({ client, image, doc, intent: "通知の設定方法", dom });

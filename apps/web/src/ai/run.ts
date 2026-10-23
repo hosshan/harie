@@ -28,6 +28,7 @@ export async function runSuggest(
   request: { intent: string; context: readonly SuggestContext[] },
   language: "ja" | "en",
   dom?: DomSnapshot,
+  scale = 1,
 ): Promise<Suggestion[]> {
   const image = await prepareImage(base, doc.canvas);
   return suggestAnnotations({
@@ -37,6 +38,7 @@ export async function runSuggest(
     intent: request.intent,
     context: request.context,
     language,
+    scale,
     ...(dom === undefined ? {} : { dom }),
   });
 }

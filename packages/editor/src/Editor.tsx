@@ -21,7 +21,9 @@ import {
   type DrawDefaults,
   loadDrawDefaults,
   saveDrawDefaults,
+  scaleDrawDefaults,
   styleForNew,
+  unscaleDrawDefaults,
 } from "./draw-defaults";
 import { elementPadding, elementStepOps, type PickableElement } from "./element-pick";
 import { type EditorAction, type EditorState, editorReducer, initialState } from "./history";
@@ -114,8 +116,11 @@ export type EditorProps = {
    * 空か省略すると道具を出さない
    */
   elements?: readonly PickableElement[];
-  /** 画像の 1px がページの何 CSS px か（撮ったときの devicePixelRatio）。要素と枠の間の余白をこれに合わせる */
-  elementPixelRatio?: number;
+  /**
+   * 画像の解像度の倍率（`estimateImageScale`。FR-EDIT-16）。新しく描く注釈の線の太さ・文字サイズ、太さ・大きさの候補、
+   * 要素と枠の間の余白にこの倍率を掛ける。省略すると 1
+   */
+  imageScale?: number;
 };
 
 export function Editor({
@@ -130,7 +135,7 @@ export function Editor({
   paletteActions = [],
   onShowShortcuts,
   elements = [],
-  elementPixelRatio = 1,
+  imageScale = 1,
 }: EditorProps) {
   const m = useMessages(EDITOR_MESSAGES);
   const mac = useMemo(() => isMacPlatform(), []);
@@ -140,14 +145,22 @@ export function Editor({
   const [dragging, setDragging] = useState(false);
   const [paletteCollapsed, setPaletteCollapsed] = useState(false);
   // 前回選んだ線の太さ・文字サイズを、次に描く注釈の初期値にする
-  const [drawDefaults, setDrawDefaults] = useState<DrawDefaults>(() => loadDrawDefaults());
-  const rememberDrawDefaults = useCallback((patch: DrawDefaults) => {
-    setDrawDefaults((prev) => {
-      const next = { ...prev, ...patch };
-      saveDrawDefaults(next);
-      return next;
-    });
-  }, []);
+  // 記録は等倍の画面での値で持ち、使うときに画像の解像度の倍率を掛ける（別の解像度の画像でも同じ見た目になる）
+  const [storedDefaults, setStoredDefaults] = useState<DrawDefaults>(() => loadDrawDefaults());
+  const drawDefaults = useMemo(
+    () => scaleDrawDefaults(storedDefaults, imageScale),
+    [storedDefaults, imageScale],
+  );
+  const rememberDrawDefaults = useCallback(
+    (patch: DrawDefaults) => {
+      setStoredDefaults((prev) => {
+        const next = { ...prev, ...unscaleDrawDefaults(patch, imageScale) };
+        saveDrawDefaults(next);
+        return next;
+      });
+    },
+    [imageScale],
+  );
   // マスクの範囲の下書きは履歴に入れ、足す・変える・消すを元に戻せるようにする
   const masks = state.masks;
   const setMasks = (next: readonly MaskDraft[]) => dispatch({ type: "masks", masks: next });
@@ -189,7 +202,7 @@ export function Editor({
     [canMask, canPickElement, m],
   );
   // 要素で囲む: 枠・番号・吹き出しを 1 回の操作で足す（元に戻すで一度に消せる）
-  const padding = elementPadding(elementPixelRatio);
+  const padding = elementPadding(imageScale);
   const pickElement = useCallback(
     (element: PickableElement) => {
       const { ops, rectId } = elementStepOps(state.doc, element, {
@@ -453,6 +466,7 @@ export function Editor({
               annotations={selected}
               dispatch={dispatch}
               onDrawDefaults={rememberDrawDefaults}
+              scale={imageScale}
             />
           )}
           {state.error !== null && <p role="alert">{state.error.message}</p>}
@@ -579,12 +593,15 @@ function Inspector({
   annotations,
   dispatch,
   onDrawDefaults,
+  scale,
 }: {
   doc: HarieDocument;
   annotations: readonly Annotation[];
   dispatch: Dispatch<EditorAction>;
   /** 選んだ線の太さ・文字サイズを、次に描く注釈の初期値として記録する */
   onDrawDefaults: (patch: DrawDefaults) => void;
+  /** 画像の解像度の倍率。太さ・大きさの候補をこの倍率で出す（FR-EDIT-16） */
+  scale: number;
 }) {
   const m = useMessages(EDITOR_MESSAGES);
   const defaults = THEMES.default.defaults;
@@ -738,7 +755,10 @@ function Inspector({
       {withFont && (
         <SizeField
           legend={m.inspector.fontSize}
-          options={FONT_SIZES.map((o) => ({ label: m.fontSizes[o.name], value: o.value }))}
+          options={FONT_SIZES.map((o) => ({
+            label: m.fontSizes[o.name],
+            value: Math.round(o.value * scale),
+          }))}
           min={FONT_SIZE_MIN}
           max={FONT_SIZE_MAX}
           value={fontSize}
@@ -753,13 +773,20 @@ function Inspector({
       {withLine && (
         <SizeField
           legend={m.inspector.strokeWidth}
-          options={STROKE_WIDTHS.map((o) => ({ label: m.strokeWidths[o.name], value: o.value }))}
+          options={STROKE_WIDTHS.map((o) => ({
+            label: m.strokeWidths[o.name],
+            value: Math.round(o.value * scale),
+          }))}
           min={STROKE_WIDTH_MIN}
           max={STROKE_WIDTH_MAX}
           value={strokeWidth}
           onChange={setStrokeWidth}
-          sample={(o) => (
-            <span className="harie-sample-line" style={{ height: Math.max(1.5, o.value * 0.8) }} />
+          // 見本の太さは候補の順で決める（倍率を掛けた値だと太くなりすぎる）
+          sample={(_, i) => (
+            <span
+              className="harie-sample-line"
+              style={{ height: Math.max(1.5, (STROKE_WIDTHS[i]?.value ?? 4) * 0.8) }}
+            />
           )}
         />
       )}

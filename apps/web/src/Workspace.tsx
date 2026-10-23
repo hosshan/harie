@@ -12,9 +12,9 @@ import {
   useMessages,
   useObjectUrl,
 } from "@harie/editor";
-import { type ImageFormat, readBaseImage } from "@harie/format";
+import { type ImageFormat, readBaseImage, readImageDpi } from "@harie/format";
 import { type PiiMask, recordPiiApplied } from "@harie/model";
-import { rebaseDocument } from "@harie/render";
+import { estimateImageScale, rebaseDocument } from "@harie/render";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { AiPiiPanel, useAiSuggest } from "./ai/AiPanel";
 import { browserRenderer } from "./browser-renderer";
@@ -101,11 +101,26 @@ export function Workspace({
     state.doc.canvas !== savedDoc.current.canvas;
 
   const baseImageUrl = useObjectUrl(opened.base.bytes, opened.base.mediaType);
+  // 画像の解像度の倍率（FR-EDIT-16）。撮ったときの devicePixelRatio、画像の dpi、大きさの順に手がかりにする
+  const { width: canvasWidth, height: canvasHeight } = state.doc.canvas;
+  const imageScale = useMemo(
+    () =>
+      estimateImageScale(
+        { width: canvasWidth, height: canvasHeight },
+        {
+          devicePixelRatio:
+            dom === undefined || rebased ? undefined : dom.viewport.devicePixelRatio,
+          dpi: readImageDpi(opened.base.bytes),
+        },
+      ),
+    [canvasWidth, canvasHeight, dom, rebased, opened.base.bytes],
+  );
   const aiSuggest = useAiSuggest({
     doc: state.doc,
     dispatch,
     base: opened.base,
     ...(dom === undefined || rebased ? {} : { dom }),
+    scale: imageScale,
     onStatus: setStatus,
   });
 
@@ -358,7 +373,7 @@ export function Workspace({
           onUnmask={unmask}
           onShowShortcuts={() => setShortcutsOpen(true)}
           elements={elements}
-          elementPixelRatio={dom?.viewport.devicePixelRatio ?? 1}
+          imageScale={imageScale}
           {...(aiSuggest.action === null ? {} : { paletteActions: [aiSuggest.action] })}
           aside={aiSuggest.pendingCard}
           maskAside={

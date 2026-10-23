@@ -90,3 +90,15 @@ export function pngSize(png: Bytes): { width: number; height: number } {
   if (ihdr?.type !== "IHDR" || ihdr.data.length < 8) throw new RangeError("IHDR not found");
   return { width: readU32(ihdr.data, 0), height: readU32(ihdr.data, 4) };
 }
+
+/**
+ * pHYs チャンクから解像度（dpi）を読む。単位がメートルでない（縦横比だけ）・縦横で違う・ないときは null。
+ * Mac の Retina のスクリーンショットは 144 dpi が入る
+ */
+export function pngDpi(png: Bytes): number | null {
+  const phys = chunks(png).find((c) => c.type === "pHYs");
+  if (phys === undefined || phys.data.length < 9 || phys.data[8] !== 1) return null;
+  const x = readU32(phys.data, 0);
+  if (x === 0 || x !== readU32(phys.data, 4)) return null;
+  return x * 0.0254;
+}

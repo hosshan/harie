@@ -13,10 +13,18 @@ const CALLOUT_GAP = 16;
 /** 紐付けていない番号・吹き出しでも、枠からこの距離（画像のピクセル）までにあれば「付いている」とみなす */
 const NEAR_BADGE = 40;
 const NEAR_CALLOUT = 48;
+const DEFAULT_FONT_SIZE = THEMES.default.defaults.fontSize;
 
-/** 吹き出しの幅。画像が大きいほど広くする */
-export function calloutWidth(canvas: { width: number }): number {
-  return Math.max(200, Math.min(360, Math.round(canvas.width * 0.2)));
+/**
+ * 吹き出しの幅。画像が大きいほど広くする。文字が既定（24px）より大きいときは、1 行に入る文字数が
+ * 変わらないよう上限・下限も同じ比で広げる（解像度に合わせた文字サイズ。FR-EDIT-16）
+ */
+export function calloutWidth(
+  canvas: { width: number },
+  fontSize: number = DEFAULT_FONT_SIZE,
+): number {
+  const k = Math.max(1, fontSize / DEFAULT_FONT_SIZE);
+  return Math.round(Math.max(200 * k, Math.min(360 * k, canvas.width * 0.2)));
 }
 
 const overlaps = (a: Bounds, b: Bounds) =>
@@ -127,7 +135,7 @@ export function completeSteps(
   const obstacles = committed
     .filter((a) => a.type !== "spotlight")
     .map((a) => annotationBounds(a, theme));
-  const width = calloutWidth(doc.canvas);
+  const width = calloutWidth(doc.canvas, options.calloutStyle?.fontSize ?? theme.defaults.fontSize);
   const result: CompleteStepsResult = { ops: [], ids: [], boxes: 0 };
   const add = (annotation: Annotation) => {
     result.ops.push({ op: "add", annotation });
