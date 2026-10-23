@@ -1,5 +1,6 @@
 export { Canvas, hitTest, type Tool } from "./Canvas";
 export { Editor, type EditorProps, useEditorState } from "./Editor";
+export * from "./element-pick";
 export * from "./geometry";
 export * from "./history";
 export * from "./i18n/locale";

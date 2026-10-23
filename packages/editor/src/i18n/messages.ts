@@ -2,6 +2,20 @@
 import type { PiiKind, PiiMethod } from "@harie/model";
 import type { Locale, Messages } from "./locale";
 
+/** 要素で囲む道具の文の言い方を決める、要素の種類（ARIA のロール） */
+const TYPING_ROLES = new Set(["textbox", "searchbox"]);
+const CLICK_ROLES = new Set([
+  "button",
+  "link",
+  "tab",
+  "menuitem",
+  "checkbox",
+  "radio",
+  "switch",
+  "combobox",
+  "option",
+]);
+
 const ja = {
   /** 操作の名前に、ショートカットのキーを添える（ボタンの title） */
   withKey: (label: string, key: string) => `${label}（${key}）`,
@@ -15,6 +29,7 @@ const ja = {
     callout: "吹き出し",
     badge: "番号",
     mask: "個人情報を隠す",
+    element: "要素で囲む",
   },
   types: {
     rect: "四角",
@@ -42,6 +57,15 @@ const ja = {
     newText: "テキスト",
     newCallout: "説明文を入力",
     sketchMiss: "図形として読み取れませんでした。四角・丸・線・矢印の形でなぞってください",
+    /** 要素で囲む道具の吹き出しの文（FR-EDIT-15）。要素の名前がなければ、ふつうの吹き出しと同じ文 */
+    elementCallout: (role: string, label: string) =>
+      label === ""
+        ? "説明文を入力"
+        : TYPING_ROLES.has(role)
+          ? `「${label}」に入力します`
+          : CLICK_ROLES.has(role)
+            ? `「${label}」を押します`
+            : `「${label}」を確認します`,
   },
   steps: {
     label: "番号と吹き出し",
@@ -186,6 +210,7 @@ const en: EditorMessages = {
     callout: "Callout",
     badge: "Number",
     mask: "Hide personal info",
+    element: "Box an element",
   },
   types: {
     rect: "Box",
@@ -213,6 +238,14 @@ const en: EditorMessages = {
     newText: "Text",
     newCallout: "Enter a description",
     sketchMiss: "Couldn't recognize a shape. Trace a box, circle, line or arrow.",
+    elementCallout: (role, label) =>
+      label === ""
+        ? "Enter a description"
+        : TYPING_ROLES.has(role)
+          ? `Enter ${label}`
+          : CLICK_ROLES.has(role)
+            ? `Click “${label}”`
+            : `Check “${label}”`,
   },
   steps: {
     label: "Numbers and callouts",

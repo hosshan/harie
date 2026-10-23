@@ -23,6 +23,7 @@ import {
   saveDrawDefaults,
   styleForNew,
 } from "./draw-defaults";
+import { elementPadding, elementStepOps, type PickableElement } from "./element-pick";
 import { type EditorAction, type EditorState, editorReducer, initialState } from "./history";
 import { EDITOR_MESSAGES, type EditorMessages } from "./i18n/messages";
 import { useMessages } from "./i18n/use-locale";
@@ -107,6 +108,13 @@ export type EditorProps = {
   aside?: ReactNode;
   /** ショートカット一覧を開く（? キー・パレットのボタン）。省略すると開く手段を出さない */
   onShowShortcuts?: () => void;
+  /**
+   * 要素で囲む道具で選べる要素（Chrome 拡張で取った DOM。FR-EDIT-15）。
+   * 空か省略すると道具を出さない
+   */
+  elements?: readonly PickableElement[];
+  /** 画像の 1px がページの何 CSS px か（撮ったときの devicePixelRatio）。要素と枠の間の余白をこれに合わせる */
+  elementPixelRatio?: number;
 };
 
 export function Editor({
@@ -120,6 +128,8 @@ export function Editor({
   onUnmask,
   aside,
   onShowShortcuts,
+  elements = [],
+  elementPixelRatio = 1,
 }: EditorProps) {
   const m = useMessages(EDITOR_MESSAGES);
   const mac = useMemo(() => isMacPlatform(), []);
@@ -169,13 +179,31 @@ export function Editor({
     if (hasSelection) setSelectedMaskId(null);
   }, [hasSelection]);
   const canMask = onApplyMasks !== undefined;
+  const canPickElement = elements.length > 0;
   const tools = useMemo<PaletteTool[]>(
     () =>
-      TOOL_SHORTCUTS.filter((t) => canMask || t.tool !== "mask").map((t) => ({
+      TOOL_SHORTCUTS.filter(
+        (t) => (canMask || t.tool !== "mask") && (canPickElement || t.tool !== "element"),
+      ).map((t) => ({
         ...t,
         label: m.tools[t.tool],
       })),
-    [canMask, m],
+    [canMask, canPickElement, m],
+  );
+  // 要素で囲む: 枠・番号・吹き出しを 1 回の操作で足す（元に戻すで一度に消せる）
+  const padding = elementPadding(elementPixelRatio);
+  const pickElement = useCallback(
+    (element: PickableElement) => {
+      const { ops, rectId } = elementStepOps(state.doc, element, {
+        padding,
+        calloutText: m.canvas.elementCallout(element.role, element.label),
+        rectStyle: styleForNew("rect", drawDefaults),
+        calloutStyle: styleForNew("callout", drawDefaults),
+        badgeStyle: styleForNew("badge", drawDefaults),
+      });
+      dispatch({ type: "apply", ops, select: rectId });
+    },
+    [state.doc, padding, m, drawDefaults, dispatch],
   );
   // マスクの範囲を選んでいる間は注釈の選択を外す。右の欄の「削除」や Delete キーで、
   // マスクの範囲ではなく前に選んでいた注釈が消えてしまうのを防ぐ
@@ -360,6 +388,9 @@ export function Editor({
                   })}
               onDraggingChange={setDragging}
               drawDefaults={drawDefaults}
+              {...(canPickElement
+                ? { elements, elementPadding: padding, onPickElement: pickElement }
+                : {})}
             />
           </div>
           {/* 道具のパレットは台の下端中央に浮かべる（画像の大きさに左右されない） */}

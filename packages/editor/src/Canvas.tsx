@@ -12,6 +12,7 @@ import {
   useState,
 } from "react";
 import { type DrawDefaults, styleForNew } from "./draw-defaults";
+import { elementBox, type PickableElement, pickElement } from "./element-pick";
 import {
   boxFrom,
   contains,
@@ -37,7 +38,9 @@ export type Tool =
   | "text"
   | "callout"
   | "badge"
-  | "mask";
+  | "mask"
+  /** クリックした要素（Chrome 拡張で取った DOM）を囲み、番号と吹き出しを付ける（FR-EDIT-15） */
+  | "element";
 
 type Drag =
   /** 選んだ注釈をまとめて動かす */
@@ -173,6 +176,12 @@ export type CanvasProps = {
    */
   editingId?: string | null;
   onEditingChange?: (id: string | null) => void;
+  /** 要素で囲む道具で選べる要素（Chrome 拡張で取った DOM） */
+  elements?: readonly PickableElement[];
+  /** 要素と枠の間の余白（画像のピクセル） */
+  elementPadding?: number;
+  /** 要素で囲む道具で、要素をクリックしたとき */
+  onPickElement?: (element: PickableElement) => void;
 };
 
 type TextAnnotation = Extract<Annotation, { type: "text" | "callout" }>;
@@ -194,10 +203,18 @@ export function Canvas({
   drawDefaults = {},
   editingId: controlledEditingId,
   onEditingChange,
+  elements = [],
+  elementPadding,
+  onPickElement,
 }: CanvasProps) {
   const m = useMessages(EDITOR_MESSAGES);
   const overlay = useRef<SVGSVGElement>(null);
   const [drag, setDrag] = useState<Drag | null>(null);
+  /** 要素で囲む道具で、ポインタの下にある要素（クリックすると囲む範囲を先に示す） */
+  const [hoverElement, setHoverElement] = useState<PickableElement | undefined>(undefined);
+  useEffect(() => {
+    if (tool !== "element") setHoverElement(undefined);
+  }, [tool]);
   /** その場で文字を編集している注釈（ダブルクリック、またはテキスト・吹き出しを置いた直後） */
   const [ownEditingId, setOwnEditingId] = useState<string | null>(null);
   const editingId = controlledEditingId === undefined ? ownEditingId : controlledEditingId;
@@ -261,6 +278,12 @@ export function Canvas({
     e.currentTarget.setPointerCapture(e.pointerId);
     const p = toPoint(e);
     setSketchMiss(false);
+    if (tool === "element") {
+      // 続けて次の要素を選べるよう、道具はそのままにする
+      const picked = pickElement(elements, p);
+      if (picked !== undefined) onPickElement?.(picked);
+      return;
+    }
     if (tool === "sketch") {
       // 選んでいる図形は、スケッチの道具のままでもつまみで大きさを変え、掴んで動かせる
       const grip = (e.target as Element).getAttribute("data-handle") as Handle | null;
@@ -353,6 +376,10 @@ export function Canvas({
   };
 
   const onPointerMove = (e: PointerEvent<SVGSVGElement>) => {
+    if (tool === "element") {
+      setHoverElement(pickElement(elements, toPoint(e)));
+      return;
+    }
     if (drag === null) return;
     if (drag.kind === "sketch") {
       // 速く動かしたときに間引かれた点も拾う（対応していないブラウザでは今の点だけ）
@@ -459,8 +486,27 @@ export function Canvas({
         onPointerMove={onPointerMove}
         onPointerUp={onPointerUp}
         onDoubleClick={onDoubleClick}
+        onPointerLeave={() => setHoverElement(undefined)}
       >
         <rect x={0} y={0} width={width} height={height} fill="transparent" />
+        {hoverElement !== undefined &&
+          (() => {
+            const box = elementBox(hoverElement.rect, doc.canvas, elementPadding);
+            return (
+              <rect
+                className="harie-element-hover"
+                x={box.x}
+                y={box.y}
+                width={box.w}
+                height={box.h}
+                fill="rgba(176, 134, 26, 0.12)"
+                stroke={SELECTION_COLOR}
+                strokeWidth={screenPx(1.5)}
+                strokeDasharray={`${screenPx(4)} ${screenPx(3)}`}
+                pointerEvents="none"
+              />
+            );
+          })()}
         {display.annotations
           .filter((a) => a.status === "suggested")
           .map((a) => (
