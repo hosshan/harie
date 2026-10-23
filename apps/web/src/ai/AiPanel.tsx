@@ -140,30 +140,36 @@ export function useAiSuggest({ doc, dispatch, base, dom, scale = 1, onStatus }: 
           {pending.map((s) => (
             <li key={ids(s).join(" ")}>
               <span>{s.text}</span>
-              <button
-                type="button"
-                onClick={() => dispatch({ type: "apply", ops: adoptSuggestionOps(doc, ids(s)) })}
-              >
-                {m.ai.adopt}
-              </button>
-              <button
-                type="button"
-                onClick={() => dispatch({ type: "apply", ops: rejectSuggestionOps(doc, ids(s)) })}
-              >
-                {m.ai.reject}
-              </button>
+              <span className="app-ai-choice">
+                <button
+                  type="button"
+                  className="app-ai-adopt"
+                  onClick={() => dispatch({ type: "apply", ops: adoptSuggestionOps(doc, ids(s)) })}
+                >
+                  {m.ai.adopt}
+                </button>
+                <button
+                  type="button"
+                  className="app-ai-reject"
+                  onClick={() => dispatch({ type: "apply", ops: rejectSuggestionOps(doc, ids(s)) })}
+                >
+                  {m.ai.reject}
+                </button>
+              </span>
             </li>
           ))}
         </ol>
         <p className="app-ai-actions">
           <button
             type="button"
+            className="app-ai-adopt"
             onClick={() => dispatch({ type: "apply", ops: adoptSuggestionOps(doc, allIds) })}
           >
             {m.ai.adoptAll}
           </button>
           <button
             type="button"
+            className="app-ai-reject"
             onClick={() => dispatch({ type: "apply", ops: rejectSuggestionOps(doc, allIds) })}
           >
             {m.ai.rejectAll}
