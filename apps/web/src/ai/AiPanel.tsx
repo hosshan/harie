@@ -13,7 +13,7 @@ import type { HarieDocument } from "@harie/model";
 import { type Dispatch, useState } from "react";
 import { useWebMessages, type WebMessages } from "../messages";
 import { useSettingsDialog } from "../Settings";
-import { useApiKey } from "./api-key";
+import { type AiProvider, useAiCredential } from "./api-key";
 
 type Base = { bytes: Uint8Array; mediaType: "image/jpeg" | "image/png" };
 
@@ -43,7 +43,7 @@ function message(m: WebMessages, e: unknown): string {
 export function AiPanel({ doc, dispatch, base, onPiiFound, dom }: AiPanelProps) {
   const m = useWebMessages();
   const locale = useLocale();
-  const apiKey = useApiKey();
+  const credential = useAiCredential();
   const settings = useSettingsDialog();
   const [consent, setConsent] = useState(false);
   const [intent, setIntent] = useState("");
@@ -56,14 +56,14 @@ export function AiPanel({ doc, dispatch, base, onPiiFound, dom }: AiPanelProps) 
   const allIds = pending.flatMap(ids);
 
   const run = async (kind: "suggest" | "pii") => {
-    if (apiKey === null) return;
+    if (credential === null) return;
     setBusy(kind);
     setError(null);
     setStatus(kind === "suggest" ? m.ai.suggesting : m.ai.detecting);
     try {
       const { runDetectPii, runSuggest } = await import("./run");
       if (kind === "suggest") {
-        const found = await runSuggest(apiKey, base, doc, intent, locale, dom);
+        const found = await runSuggest(credential, base, doc, intent, locale, dom);
         // 提案はまとめて 1 回の操作として追加する（元に戻すで一度に消せる）
         dispatch({
           type: "apply",
@@ -72,7 +72,7 @@ export function AiPanel({ doc, dispatch, base, onPiiFound, dom }: AiPanelProps) 
         setSuggestions((prev) => [...prev, ...found]);
         setStatus(found.length === 0 ? m.ai.noSuggestions : m.ai.suggested(found.length));
       } else {
-        const found = await runDetectPii(apiKey, base, doc, dom);
+        const found = await runDetectPii(credential, base, doc, dom);
         onPiiFound(found);
         setStatus(found.length === 0 ? m.ai.noPii : m.ai.piiFound(found.length));
       }
@@ -112,7 +112,7 @@ export function AiPanel({ doc, dispatch, base, onPiiFound, dom }: AiPanelProps) 
           </button>
         </div>
       )}
-      {apiKey === null ? (
+      {credential === null ? (
         // API キーはヘッダーの「設定」で登録する。ここからも同じ設定を開ける
         <p className="app-ai-setup">
           <span className="harie-muted">{m.ai.needKey}</span>
@@ -125,6 +125,7 @@ export function AiPanel({ doc, dispatch, base, onPiiFound, dom }: AiPanelProps) 
           intent={intent}
           onIntentChange={setIntent}
           withDom={dom !== undefined}
+          provider={credential.provider}
           consent={consent}
           onConsentChange={setConsent}
           busy={busy !== null}
@@ -184,6 +185,7 @@ type AiRequestFormProps = {
   intent: string;
   onIntentChange: (intent: string) => void;
   withDom: boolean;
+  provider: AiProvider;
   consent: boolean;
   onConsentChange: (consent: boolean) => void;
   busy: boolean;
@@ -195,6 +197,7 @@ function AiRequestForm({
   intent,
   onIntentChange,
   withDom,
+  provider,
   consent,
   onConsentChange,
   busy,
@@ -212,7 +215,7 @@ function AiRequestForm({
           onChange={(e) => onIntentChange(e.target.value)}
         />
       </label>
-      <p className="app-ai-notice">{m.ai.notice(withDom)}</p>
+      <p className="app-ai-notice">{m.ai.notice(withDom, provider)}</p>
       <label className="app-ai-consent">
         <input
           type="checkbox"

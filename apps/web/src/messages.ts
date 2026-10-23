@@ -75,13 +75,23 @@ const ja = {
     languageNote: "画面の表示に使う言語です。注釈の文字は変わりません。",
     ai: "AI に関する設定",
     aiNote:
-      "AI による説明の提案と、画像からの個人情報の検出には、Anthropic の API キーが必要です。キーはこのブラウザにだけ保存し、ファイルには含めません。",
+      "AI による説明の提案と、画像からの個人情報の検出には、AI のサービスへの接続が必要です。OpenRouter で接続するか、Anthropic の API キーを登録してください。キーはこのブラウザにだけ保存し、ファイルには含めません。",
     keySteps: [
       "下のリンクから Anthropic Console にログインし、「Create Key」でキーを作ります。",
       "作ったキー（sk-ant- で始まる文字列）を貼り付けて登録します。",
     ],
     keyLink: "API キーを作る（Anthropic Console）",
     keyBilling: "利用料は使った分だけ Anthropic から請求されます。Harie への支払いはありません。",
+    openRouterTitle: "OpenRouter で接続する（キーの貼り付け不要）",
+    openRouterNote:
+      "OpenRouter のアカウントでログインして許可すると、キーを貼らずに使えます。利用料は OpenRouter のクレジットから使った分だけ支払います。",
+    openRouterConnect: "OpenRouter で接続",
+    openRouterWaiting: "開いたウィンドウで許可してください。",
+    openRouterBlocked:
+      "ウィンドウを開けませんでした。ポップアップを許可してから、もう一度押してください。",
+    openRouterConnected: "OpenRouter で接続済みです。",
+    openRouterDisconnect: "接続を解除",
+    anthropicTitle: "Anthropic の API キーを使う",
     apiKey: "API キー",
     register: "キーを登録",
     registered: "API キーは登録済みです。",
@@ -138,8 +148,8 @@ const ja = {
     title: "AI",
     intent: "説明したいこと",
     intentPlaceholder: "例: 通知の設定方法",
-    notice: (withDom: boolean) =>
-      `ボタンを押すと、この画像${withDom ? "と、キャプチャしたページの文字・要素の位置" : ""}を Anthropic の Claude API に送信します。個人情報が写っている場合は、先に隠してから使ってください。`,
+    notice: (withDom: boolean, provider: "anthropic" | "openrouter") =>
+      `ボタンを押すと、この画像${withDom ? "と、キャプチャしたページの文字・要素の位置" : ""}を${provider === "openrouter" ? " OpenRouter 経由で Anthropic の Claude" : " Anthropic の Claude API"} に送信します。個人情報が写っている場合は、先に隠してから使ってください。`,
     consent: "この画像を送信してよい",
     suggest: "AI に提案してもらう",
     detectPii: "個人情報を探す",
@@ -148,7 +158,8 @@ const ja = {
     detectPiiLocal: "ページの文字から探す",
     noPiiLocal:
       "ページの文字には個人情報らしきものはありませんでした。画像の中も目で確認してください",
-    needKey: "AI による説明の提案を使うには、設定で API キーを登録してください。",
+    needKey:
+      "AI による説明の提案を使うには、設定で OpenRouter に接続するか、API キーを登録してください。",
     openSettings: "設定を開く",
     suggesting: "AI が画像を見ています…",
     detecting: "個人情報を探しています…",
@@ -164,12 +175,18 @@ const ja = {
     rejectAll: "すべて却下",
     errors: {
       auth: "API キーが正しくないか、使える権限がありません",
+      credits: "OpenRouter のクレジットが足りません。OpenRouter でクレジットを追加してください",
       "rate-limit": "利用の上限に達しました。しばらくしてから試してください",
       refusal: "この画像は AI で処理できませんでした",
       "invalid-output": "AI の応答を読み取れませんでした",
-      network: "Claude API に接続できませんでした",
+      network: "AI のサービスに接続できませんでした",
       other: "AI の呼び出しに失敗しました",
     },
+  },
+  openRouter: {
+    connecting: "OpenRouter と接続しています…",
+    done: "接続しました。このウィンドウを閉じて Harie に戻ってください。",
+    failed: "接続できませんでした。Harie の設定から、もう一度試してください。",
   },
   desktop: {
     discardOpen: "保存していない変更があります。保存せずに開くと、変更は失われます。",
@@ -255,13 +272,22 @@ const en: WebMessages = {
     languageNote: "The language of the screens. Annotation text isn't changed.",
     ai: "AI settings",
     aiNote:
-      "AI suggestions and finding personal info in the image need an Anthropic API key. The key is stored only in this browser and is never included in files.",
+      "AI suggestions and finding personal info in the image need a connection to an AI service. Connect with OpenRouter or save an Anthropic API key. Keys are stored only in this browser and are never included in files.",
     keySteps: [
       "Sign in to the Anthropic Console from the link below and create a key with “Create Key”.",
       "Paste the key (it starts with sk-ant-) and save it.",
     ],
     keyLink: "Create an API key (Anthropic Console)",
     keyBilling: "Anthropic bills you only for what you use. You pay nothing to Harie.",
+    openRouterTitle: "Connect with OpenRouter (no key to paste)",
+    openRouterNote:
+      "Sign in to OpenRouter and allow access to use AI without pasting a key. Usage is paid from your OpenRouter credits.",
+    openRouterConnect: "Connect with OpenRouter",
+    openRouterWaiting: "Allow access in the window that opened.",
+    openRouterBlocked: "Couldn't open a window. Allow pop-ups and press the button again.",
+    openRouterConnected: "Connected with OpenRouter.",
+    openRouterDisconnect: "Disconnect",
+    anthropicTitle: "Use an Anthropic API key",
     apiKey: "API key",
     register: "Save key",
     registered: "An API key is saved.",
@@ -306,8 +332,8 @@ const en: WebMessages = {
     title: "AI",
     intent: "What to explain",
     intentPlaceholder: "e.g. How to set up notifications",
-    notice: (withDom) =>
-      `When you press a button, this image${withDom ? " and the text and element positions of the captured page" : ""} will be sent to Anthropic's Claude API. If personal info is visible, hide it first.`,
+    notice: (withDom, provider) =>
+      `When you press a button, this image${withDom ? " and the text and element positions of the captured page" : ""} will be sent to ${provider === "openrouter" ? "Anthropic's Claude through OpenRouter" : "Anthropic's Claude API"}. If personal info is visible, hide it first.`,
     consent: "OK to send this image",
     suggest: "Get AI suggestions",
     detectPii: "Find personal info",
@@ -316,7 +342,7 @@ const en: WebMessages = {
     detectPiiLocal: "Search the page text",
     noPiiLocal:
       "No personal info found in the page text. Please check the image with your own eyes, too",
-    needKey: "To get AI suggestions, save an API key in Settings.",
+    needKey: "To get AI suggestions, connect with OpenRouter or save an API key in Settings.",
     openSettings: "Open settings",
     suggesting: "AI is looking at the image…",
     detecting: "Looking for personal info…",
@@ -333,12 +359,18 @@ const en: WebMessages = {
     rejectAll: "Reject all",
     errors: {
       auth: "The API key is wrong or doesn't have permission",
+      credits: "Not enough OpenRouter credits. Add credits on OpenRouter",
       "rate-limit": "You've hit the usage limit. Please try again later",
       refusal: "AI couldn't process this image",
       "invalid-output": "Couldn't read the AI's response",
-      network: "Couldn't connect to the Claude API",
+      network: "Couldn't connect to the AI service",
       other: "The AI call failed",
     },
+  },
+  openRouter: {
+    connecting: "Connecting with OpenRouter…",
+    done: "Connected. Close this window and go back to Harie.",
+    failed: "Couldn't connect. Please try again from Harie's settings.",
   },
   desktop: {
     discardOpen:

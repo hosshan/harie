@@ -27,3 +27,4 @@
 | [0009](./0009-pii-mask-editable-until-save.md) | 個人情報のマスクは保存するまで選んで外せるようにする | 承認 |
 | [0010](./0010-ui-components.md) | UI 部品に shadcn/ui（Tailwind CSS + Radix UI）を使う | 承認 |
 | [0011](./0011-badge-anchor.md) | 番号バッジを枠に紐付け、描画時に枠の左上へ置く | 承認 |
+| [0012](./0012-openrouter-oauth.md) | AI の接続先に OpenRouter（OAuth PKCE）を加え、API キーを貼らずに使えるようにする | 承認 |
