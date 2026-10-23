@@ -75,23 +75,23 @@ Refs: FR-FILE-03, ADR-0004
 ## 8. リリース
 
 - バージョンは SemVer。ファイル形式のバージョン（`formatVersion`）はアプリのバージョンと独立して管理する。
-- リリースは `main` の版を上げるコミットにタグを付けて push し、GitHub Actions に任せる。手元から `npm publish` しない。
+- リリースは GitHub Actions から行う。版を上げる PR をマージすると、タグ付けと公開が自動で走る。手元から `npm publish` しない。
 
-| 対象 | タグ | ワークフロー | 行うこと |
+| 対象 | タグ | 公開のワークフロー | 行うこと |
 |---|---|---|---|
 | `@harie/mcp` | `mcp-v<version>` | `.github/workflows/release-mcp.yml` | タグと `apps/mcp/package.json` の版の一致を確認 → `pnpm check` → npm に公開（Trusted Publishing、provenance 付き。公開済みの版なら飛ばす）→ GitHub Release に tarball を添付 |
 | Chrome 拡張 | `extension-v<version>` | `.github/workflows/release-extension.yml` | 版の一致を確認 → `pnpm check` と拡張の E2E → ストア提出用 zip を GitHub Release に添付。ストアへのアップロードは手動（[apps/extension/README.md](../../apps/extension/README.md#リリース)） |
 
-手順（`@harie/mcp` の例）:
+手順:
 
-1. `apps/mcp/package.json` の `version` を上げる PR を出し、マージする。
-2. `main` を最新にしてタグを付けて push する。
+1. GitHub の Actions → 「Release (prepare)」→ Run workflow で、対象（`mcp` / `extension`）と上げ方（`patch` / `minor` / `major`、または版を直接指定）を選んで実行する。`release-prepare.yml` が `package.json` の版を上げた PR（ブランチ `release/<タグ>`）を作り、その PR で CI を起動する。
+2. CI が緑になったら PR をマージする。
+3. `release-tag.yml` が、版が変わった対象にタグ（`mcp-v<version>` など）を付け、公開のワークフローをそのタグで起動する。
+4. Actions の公開のワークフローが緑になり、npm と GitHub Release に出たことを確かめる。
 
-   ```sh
-   git switch main && git pull
-   git tag mcp-v0.4.0 && git push origin mcp-v0.4.0
-   ```
-
-3. Actions の「Release @harie/mcp」が緑になり、npm と GitHub Release に出たことを確かめる。
+- 版上げを手で PR にしてもよい。マージ後の動きは同じ。
+- タグを手で push しても公開のワークフローは動く（タグの push で起動する）。
+- 設定の不足など一時的な原因で公開に失敗したときは、Actions で公開のワークフローを Run workflow し、ブランチの代わりにタグを選んで再実行する（公開済みの npm の版は飛ばす）。コードの修正が要るときは、直したうえで次の版を出す。
+- `main` はブランチ保護で直接 push できないため、Actions も版上げを PR 経由で行う。GITHUB_TOKEN で作った PR やタグは他のワークフローを起動しないので、CI と公開は `workflow_dispatch` で明示的に起動している。
 
 npm への認証は Trusted Publishing（OIDC）で、リポジトリのシークレットに npm トークンを置かない。npmjs.com の `@harie/mcp` → Settings → Trusted Publisher に、GitHub Actions・`hosshan`・`harie`・`release-mcp.yml`・環境 `npm` を登録しておく。

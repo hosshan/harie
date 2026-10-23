@@ -5,6 +5,8 @@ name: Release Chrome extension
 on:
   push:
     tags: ["extension-v*"]
+  # release-tag.yml がタグを指定して起動する（Actions の画面から既存のタグを選んで再実行もできる）
+  workflow_dispatch:
 
 permissions:
   contents: read
@@ -27,6 +29,10 @@ jobs:
       - name: タグと package.json の版が一致するか確かめる
         id: version
         run: |
+          if [ "$GITHUB_REF_TYPE" != "tag" ]; then
+            echo "::error::タグを指定して実行してください（今の ref: $GITHUB_REF_NAME）"
+            exit 1
+          fi
           version=$(node -p "require('./apps/extension/package.json').version")
           tag="${GITHUB_REF_NAME#extension-v}"
           if [ "$version" != "$tag" ]; then

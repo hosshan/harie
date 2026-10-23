@@ -1,0 +1,96 @@
+name: Release (prepare)
+
+# Actions の画面から実行すると、対象の版を上げる PR を作る。
+# PR をマージすると release-tag.yml がタグを付け、release-mcp.yml / release-extension.yml が公開する。
+# main はブランチ保護で直接 push できないため、版上げは PR を通す。
+on:
+  workflow_dispatch:
+    inputs:
+      target:
+        description: リリースする対象
+        type: choice
+        options: [mcp, extension]
+      bump:
+        description: 版の上げ方（version を指定したときは無視）
+        type: choice
+        options: [patch, minor, major]
+        default: patch
+      version:
+        description: 版を直接指定する（例 0.5.0。空なら bump に従う）
+        type: string
+        required: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: release-prepare
+  cancel-in-progress: false
+
+jobs:
+  bump:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write # 版上げのブランチを push する
+      pull-requests: write # 版上げの PR を作る
+      actions: write # 版上げの PR で CI を起動する
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: main
+          fetch-depth: 0
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+
+      - name: 版を上げる
+        id: bump
+        env:
+          TARGET: ${{ inputs.target }}
+          BUMP: ${{ inputs.bump }}
+          VERSION: ${{ inputs.version }}
+        run: |
+          case "$TARGET" in
+            mcp) pkg=apps/mcp/package.json; name="@harie/mcp" ;;
+            extension) pkg=apps/extension/package.json; name="Chrome 拡張" ;;
+            *) echo "::error::target が不正です ($TARGET)"; exit 1 ;;
+          esac
+          version=$(node .github/scripts/bump-version.mjs "$pkg" "$BUMP" "$VERSION")
+          tag="$TARGET-v$version"
+          if git rev-parse -q --verify "refs/tags/$tag" >/dev/null; then
+            echo "::error::タグ $tag は既にあります"
+            exit 1
+          fi
+          {
+            echo "pkg=$pkg"
+            echo "name=$name"
+            echo "version=$version"
+            echo "tag=$tag"
+            echo "branch=release/$tag"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: 版上げの PR を作る
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PKG: ${{ steps.bump.outputs.pkg }}
+          NAME: ${{ steps.bump.outputs.name }}
+          VERSION: ${{ steps.bump.outputs.version }}
+          TAG: ${{ steps.bump.outputs.tag }}
+          BRANCH: ${{ steps.bump.outputs.branch }}
+          TARGET: ${{ inputs.target }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git switch -c "$BRANCH"
+          git commit -am "chore($TARGET): $NAME を $VERSION にする"
+          git push origin "$BRANCH"
+          gh pr create --base main --head "$BRANCH" \
+            --title "chore($TARGET): $NAME を $VERSION にする" \
+            --body "Actions の「Release (prepare)」で作った版上げの PR です（実行: @${GITHUB_ACTOR}）。
+
+          マージすると \`$TAG\` のタグが付き、公開のワークフローが走ります。
+
+          - 変更: \`$PKG\` の version を $VERSION にする"
+          # GITHUB_TOKEN で作った PR では pull_request の CI が起動しないので、ブランチに対して CI を直接起動する
+          gh workflow run ci.yml --ref "$BRANCH"

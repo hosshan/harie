@@ -4,6 +4,8 @@ on:
   pull_request:
   push:
     branches: [main]
+  # release-prepare.yml が作る版上げの PR（GITHUB_TOKEN 製で pull_request が起動しない）で CI を回す
+  workflow_dispatch:
 
 permissions:
   contents: read

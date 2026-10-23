@@ -39,8 +39,8 @@ pnpm --filter @harie/extension e2e      # 配布用とテスト用をビルド�
 
 Chrome ウェブストアに公開（検索に出る）で出している（0.1.0 を 2026-10-23 に公開）。版を上げるたびに次を行う。
 
-1. `apps/extension/package.json` の `version` を上げる PR をマージする（WXT は manifest の版にこの値を使う。タグと違うとリリースのワークフローが止まる）。
-2. `main` で `extension-v<version>` のタグを push する。GitHub Actions（`release-extension.yml`）が check と E2E のあと、ストア提出用の zip を GitHub Release に添付する。手元で作るときは次のとおり。
+1. GitHub の Actions →「Release (prepare)」を対象 `extension` で実行し、できた版上げの PR をマージする（WXT は manifest の版に `package.json` の `version` を使う）。
+2. マージで `extension-v<version>` のタグが付き、`release-extension.yml` が check と E2E のあと、ストア提出用の zip を GitHub Release に添付する。手順の詳細は [開発ルール 8 章](../../docs/05-development/development-rules.md#8-リリース)。手元で作るときは次のとおり。
 
    ```sh
    pnpm --filter @harie/extension zip      # → apps/extension/.output/harie-extension-<version>-chrome.zip
