@@ -14,6 +14,7 @@ import { type Dispatch, useState } from "react";
 import { useWebMessages, type WebMessages } from "../messages";
 import { useSettingsDialog } from "../Settings";
 import { type AiProvider, useAiCredential } from "./api-key";
+import { canConnectOpenRouter } from "./openrouter-auth";
 
 type Base = { bytes: Uint8Array; mediaType: "image/jpeg" | "image/png" };
 
@@ -115,7 +116,10 @@ export function AiPanel({ doc, dispatch, base, onPiiFound, dom }: AiPanelProps) 
       {credential === null ? (
         // API キーはヘッダーの「設定」で登録する。ここからも同じ設定を開ける
         <p className="app-ai-setup">
-          <span className="harie-muted">{m.ai.needKey}</span>
+          {/* Chrome 拡張とデスクトップでは OpenRouter に接続できないので、キーの登録だけを案内する */}
+          <span className="harie-muted">
+            {canConnectOpenRouter() ? m.ai.needKey : m.ai.needKeyOnly}
+          </span>
           <button type="button" onClick={settings.open}>
             {m.ai.openSettings}
           </button>

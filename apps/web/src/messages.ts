@@ -76,6 +76,8 @@ const ja = {
     ai: "AI に関する設定",
     aiNote:
       "AI による説明の提案と、画像からの個人情報の検出には、AI のサービスへの接続が必要です。OpenRouter で接続するか、Anthropic の API キーを登録してください。キーはこのブラウザにだけ保存し、ファイルには含めません。",
+    aiNoteKeyOnly:
+      "AI による説明の提案と、画像からの個人情報の検出には、Anthropic の API キーが必要です。キーはここにだけ保存し、ファイルには含めません。",
     keySteps: [
       "下のリンクから Anthropic Console にログインし、「Create Key」でキーを作ります。",
       "作ったキー（sk-ant- で始まる文字列）を貼り付けて登録します。",
@@ -147,6 +149,7 @@ const ja = {
       "ページの文字には個人情報らしきものはありませんでした。画像の中も目で確認してください",
     needKey:
       "AI による説明の提案を使うには、設定で OpenRouter に接続するか、API キーを登録してください。",
+    needKeyOnly: "AI による説明の提案を使うには、設定で API キーを登録してください。",
     openSettings: "設定を開く",
     suggesting: "AI が画像を見ています…",
     detecting: "個人情報を探しています…",
@@ -260,6 +263,8 @@ const en: WebMessages = {
     ai: "AI settings",
     aiNote:
       "AI suggestions and finding personal info in the image need a connection to an AI service. Connect with OpenRouter or save an Anthropic API key. Keys are stored only in this browser and are never included in files.",
+    aiNoteKeyOnly:
+      "AI suggestions and finding personal info in the image need an Anthropic API key. The key is stored only here and is never included in files.",
     keySteps: [
       "Sign in to the Anthropic Console from the link below and create a key with “Create Key”.",
       "Paste the key (it starts with sk-ant-) and save it.",
@@ -325,6 +330,7 @@ const en: WebMessages = {
     noPiiLocal:
       "No personal info found in the page text. Please check the image with your own eyes, too",
     needKey: "To get AI suggestions, connect with OpenRouter or save an API key in Settings.",
+    needKeyOnly: "To get AI suggestions, save an API key in Settings.",
     openSettings: "Open settings",
     suggesting: "AI is looking at the image…",
     detecting: "Looking for personal info…",
