@@ -100,12 +100,18 @@ test("FR-PII-01: DOM の入力欄とテキストから、個人情報をマス�
   );
   await editor.evaluate(() => localStorage.setItem("harie.anthropicApiKey", "sk-ant-e2e-dummy"));
   await editor.reload();
-  const ai = editor.getByRole("region", { name: "AI" });
-  await ai.getByLabel("この画像を送信してよい").check();
-  await ai.getByRole("button", { name: "個人情報を探す" }).click();
+  // 個人情報を探す操作は、個人情報を隠す道具を選んだときだけ、マスクの欄の末尾に出る
+  await editor.getByRole("button", { name: "個人情報を隠す" }).click();
   const panel = editor.getByRole("region", { name: "個人情報のマスク" });
+  const pii = panel.getByRole("region", { name: "個人情報を探す" });
+  await pii.getByLabel("この画像を送信してよい").check();
+  await pii.getByRole("button", { name: "AI で画像から探す" }).click();
   // 画像の検出が空でも、DOM の type=email の入力欄が候補になる
-  await expect(panel.getByLabel("範囲 1（メール）の隠し方")).toHaveValue("replace");
+  await expect(
+    panel
+      .getByRole("group", { name: "範囲 1（メール）の隠し方" })
+      .getByRole("button", { name: "ダミーの文字に置き換え" }),
+  ).toHaveAttribute("aria-pressed", "true");
 });
 
 test("FR-PII-06: API キーがなくても、DOM のテキストから個人情報をマスクの候補にでき、何も送らない", async ({
@@ -124,9 +130,15 @@ test("FR-PII-06: API キーがなくても、DOM のテキストから個人情�
   });
   const ai = editor.getByRole("region", { name: "AI" });
   await expect(ai.getByRole("button", { name: "AI に提案してもらう" })).toHaveCount(0);
-  await ai.getByRole("button", { name: "ページの文字から探す" }).click();
+  await expect(editor.getByRole("button", { name: "ページの文字から探す" })).toHaveCount(0);
+  await editor.getByRole("button", { name: "個人情報を隠す" }).click();
   const panel = editor.getByRole("region", { name: "個人情報のマスク" });
-  await expect(panel.getByLabel("範囲 1（メール）の隠し方")).toHaveValue("replace");
+  await panel.getByRole("button", { name: "ページの文字から探す" }).click();
+  await expect(
+    panel
+      .getByRole("group", { name: "範囲 1（メール）の隠し方" })
+      .getByRole("button", { name: "ダミーの文字に置き換え" }),
+  ).toHaveAttribute("aria-pressed", "true");
   expect(sent).toBe(0);
 });
 

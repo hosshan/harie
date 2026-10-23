@@ -506,7 +506,10 @@ test("FR-EDIT-05, FR-PII-04: 個人情報のマスクはベース画像に焼き
   await drag(page, [20, 20], [220, 60]);
   await drag(page, [20, 100], [220, 140]);
   const panel = page.getByRole("region", { name: "個人情報のマスク" });
-  await panel.getByLabel("範囲 2 の隠し方").selectOption("replace");
+  await panel
+    .getByRole("group", { name: "範囲 2 の隠し方" })
+    .getByRole("button", { name: "ダミーの文字に置き換え" })
+    .click();
   await panel.getByLabel("置き換える文字").fill("佐藤 花子");
   await panel.getByRole("button", { name: "マスクを適用する" }).click();
   await panel.getByRole("button", { name: "適用する", exact: true }).click();
@@ -729,15 +732,26 @@ test("FR-PII-01, 02: 見つけた個人情報はマスクの下書きになり�
   await fakeClaude(page);
   await page.addInitScript(() => localStorage.setItem("harie.anthropicApiKey", "sk-ant-e2e-dummy"));
   await openFixture(page, "large-base.jpg");
-  const ai = page.getByRole("region", { name: "AI" });
-  await ai.getByLabel("この画像を送信してよい").check();
-  await ai.getByRole("button", { name: "個人情報を探す" }).click();
-  await expect(ai.getByRole("status")).toContainText("2 か所の候補");
-
+  // 個人情報を探す操作は、個人情報を隠す道具を選んだときだけ、マスクの欄の末尾に出る
+  await expect(page.getByRole("region", { name: "個人情報を探す" })).toHaveCount(0);
+  await page.getByRole("button", { name: "個人情報を隠す" }).click();
   const panel = page.getByRole("region", { name: "個人情報のマスク" });
-  await expect(panel.getByLabel("範囲 1（メール）の隠し方")).toHaveValue("replace");
+  const pii = panel.getByRole("region", { name: "個人情報を探す" });
+  await pii.getByLabel("この画像を送信してよい").check();
+  await pii.getByRole("button", { name: "AI で画像から探す" }).click();
+  await expect(pii.getByRole("status")).toContainText("2 か所の候補");
+
+  await expect(
+    panel
+      .getByRole("group", { name: "範囲 1（メール）の隠し方" })
+      .getByRole("button", { name: "ダミーの文字に置き換え" }),
+  ).toHaveAttribute("aria-pressed", "true");
   await expect(panel.getByLabel("置き換える文字")).toHaveValue("user1@example.com");
-  await expect(panel.getByLabel("範囲 2（顔）の隠し方")).toHaveValue("fill");
+  await expect(
+    panel
+      .getByRole("group", { name: "範囲 2（顔）の隠し方" })
+      .getByRole("button", { name: "塗りつぶし" }),
+  ).toHaveAttribute("aria-pressed", "true");
   await panel.getByRole("button", { name: "マスクを適用する" }).click();
   await panel.getByRole("button", { name: "適用する", exact: true }).click();
   await expect(page.getByRole("status").first()).toContainText("2 か所をマスクしました");
@@ -758,6 +772,26 @@ test("FR-EDIT-05: 個人情報を隠すを押し間違えたら、キャンセ�
   await expect(panel).toBeHidden();
   await expect(page.locator(".harie-mask-draft")).toHaveCount(0);
   await expect(page.getByRole("button", { name: "選択" })).toHaveAttribute("aria-pressed", "true");
+});
+
+test("FR-EDIT-05, 07: マスクの範囲を足す・隠し方を変えるのも、元に戻す・やり直すの対象になる", async ({
+  page,
+}) => {
+  await openFixture(page, "large-base.jpg");
+  await page.getByRole("button", { name: "個人情報を隠す" }).click();
+  await drag(page, [20, 20], [220, 60]);
+  const panel = page.getByRole("region", { name: "個人情報のマスク" });
+  const blur = panel
+    .getByRole("group", { name: "範囲 1 の隠し方" })
+    .getByRole("button", { name: "ぼかし" });
+  await blur.click();
+  await expect(blur).toHaveAttribute("aria-pressed", "true");
+  await page.getByRole("button", { name: "元に戻す" }).click();
+  await expect(blur).toHaveAttribute("aria-pressed", "false");
+  await page.keyboard.press("Control+Z");
+  await expect(page.locator(".harie-mask-draft")).toHaveCount(0);
+  await page.keyboard.press("Control+Shift+Z");
+  await expect(page.locator(".harie-mask-draft")).toHaveCount(1);
 });
 
 test("FR-EDIT-05: マスクの範囲を選んでいる間に削除しても、前に選んでいた注釈は消えない", async ({

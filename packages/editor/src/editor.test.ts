@@ -48,6 +48,36 @@ describe("editorReducer（FR-EDIT-07）", () => {
     expect(editorReducer(s, { type: "redo" })).toBe(s);
   });
 
+  it("FR-EDIT-05, 07: マスクの範囲を足す・変える・消すも、注釈と同じ履歴で元に戻せる", () => {
+    let s = initialState(base());
+    const m1 = newMaskDraft([], { x: 0, y: 0, w: 100, h: 20 });
+    s = editorReducer(s, { type: "masks", masks: [m1] });
+    s = editorReducer(s, { type: "apply", ops: [{ op: "add", annotation: rect }] });
+    s = editorReducer(s, { type: "masks", masks: [{ ...m1, method: "blur" }] });
+    s = editorReducer(s, { type: "undo" });
+    expect(s.masks).toEqual([m1]);
+    expect(s.doc.annotations).toHaveLength(1);
+    s = editorReducer(s, { type: "undo" });
+    expect(s.doc.annotations).toHaveLength(0);
+    expect(s.masks).toEqual([m1]);
+    s = editorReducer(s, { type: "undo" });
+    expect(s.masks).toEqual([]);
+    s = editorReducer(s, { type: "redo" });
+    expect(s.masks).toEqual([m1]);
+  });
+
+  it("FR-EDIT-05: 適用したマスクの下書きは、元に戻しても戻らない（画像はもう書き換えた）", () => {
+    let s = initialState(base());
+    const m1 = newMaskDraft([], { x: 0, y: 0, w: 100, h: 20 });
+    s = editorReducer(s, { type: "masks", masks: [m1] });
+    s = editorReducer(s, { type: "apply", ops: [{ op: "add", annotation: rect }] });
+    s = editorReducer(s, { type: "masksApplied" });
+    expect(s.masks).toEqual([]);
+    s = editorReducer(s, { type: "undo" });
+    expect(s.masks).toEqual([]);
+    expect(s.doc.annotations).toHaveLength(0);
+  });
+
   it("新しい操作をするとやり直しの履歴は消える", () => {
     let s = initialState(base());
     s = editorReducer(s, { type: "apply", ops: [{ op: "add", annotation: rect }] });

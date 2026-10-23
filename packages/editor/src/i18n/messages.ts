@@ -193,6 +193,13 @@ const ja = {
       mosaic: "モザイク",
       blur: "ぼかし",
     } satisfies Record<PiiMethod, string>,
+    /** タイルの下に出す短い名前 */
+    methodsShort: {
+      fill: "塗りつぶし",
+      replace: "ダミー文字",
+      mosaic: "モザイク",
+      blur: "ぼかし",
+    } satisfies Record<PiiMethod, string>,
   },
 } as const;
 
@@ -367,6 +374,12 @@ const en: EditorMessages = {
     methods: {
       fill: "Fill",
       replace: "Replace with dummy text",
+      mosaic: "Mosaic",
+      blur: "Blur",
+    },
+    methodsShort: {
+      fill: "Fill",
+      replace: "Dummy",
       mosaic: "Mosaic",
       blur: "Blur",
     },
