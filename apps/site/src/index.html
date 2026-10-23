@@ -192,9 +192,11 @@
             </p>
             <div class="cta">
               <a class="btn btn-primary" href="./app/">ブラウザで使う</a>
-              <a class="btn btn-ghost" href="https://github.com/hosshan/harie">GitHub を見る</a>
+              <a class="btn btn-ghost" href="https://chromewebstore.google.com/detail/harie/dgbghdgnmjcgjdmhfnmcdphkafkbefll">Chrome 拡張を入れる</a>
             </div>
-            <p class="note">無料のオープンソース（MIT）です。インストールも登録もいりません。</p>
+            <p class="note">
+              無料のオープンソース（MIT）で、ソースは<a href="https://github.com/hosshan/harie">GitHub</a>で公開しています。ブラウザ版はインストールも登録もいりません。
+            </p>
           </div>
           <figure class="hero-demo">
             <div class="sheet">
@@ -465,12 +467,13 @@
           <div class="split-copy">
             <p class="eyebrow">MCP の始め方</p>
             <h2 id="mcp-title" class="h2"><span class="nb">Claude に頼んで、</span><span class="nb">注釈を付ける。</span></h2>
-            <p>MCP サーバー <code>@harie/mcp</code> を登録すると、Claude Code や Claude Desktop から Harie の画像を開いて、注釈を付けたり直したりできるようになります。</p>
+            <p>MCP サーバー <code>@harie/mcp</code> を登録すると、Claude Code や Claude Desktop、ChatGPT のデスクトップアプリから Harie の画像を開いて、注釈を付けたり直したりできるようになります。</p>
           </div>
           <div class="setup-card">
             <div class="tabs" role="tablist" aria-label="登録するアプリ">
               <button type="button" role="tab" id="tab-code" aria-controls="setup-code" aria-selected="true">Claude Code</button>
               <button type="button" role="tab" id="tab-desktop" aria-controls="setup-desktop" aria-selected="false" tabindex="-1">Claude Desktop</button>
+              <button type="button" role="tab" id="tab-chatgpt" aria-controls="setup-chatgpt" aria-selected="false" tabindex="-1">ChatGPT</button>
             </div>
             <div class="tab-panel" role="tabpanel" id="setup-code" aria-labelledby="tab-code">
               <p class="small muted">ターミナルで次のコマンドを実行します。</p>
@@ -493,12 +496,22 @@
                 <button class="copy" type="button" data-copy="mcp-json" data-copied="コピーしました">コピー</button>
               </div>
             </div>
+            <div class="tab-panel" role="tabpanel" id="setup-chatgpt" aria-labelledby="tab-chatgpt" hidden>
+              <p class="small muted">ChatGPT のデスクトップアプリで使えます。<code>~/.codex/config.toml</code> に次の設定を足して、アプリを再起動します。この設定は Codex の CLI や IDE 拡張とも共通です。アプリの設定にある MCP サーバーの画面から、STDIO で同じコマンドを登録することもできます。</p>
+              <div class="cmd cmd-block">
+                <pre id="mcp-toml">[mcp_servers.harie]
+command = "npx"
+args = ["-y", "@harie/mcp", "--root", "/Users/you/Pictures/guides"]</pre>
+                <button class="copy" type="button" data-copy="mcp-toml" data-copied="コピーしました">コピー</button>
+              </div>
+              <p class="small muted">Web 版の ChatGPT は、パソコンの中で動く MCP サーバーにはつながりません。</p>
+            </div>
             <ul class="setup-notes">
               <li>Node.js 22 以上が必要です。サーバーは <code>npx</code> が npm から取ってきて動かすので、ほかに入れるものはありません。</li>
               <li><code>--root</code> には、注釈を付けたい画像を置くフォルダを指定します。サーバーが読み書きできるのは、このフォルダの中だけです。</li>
             </ul>
             <a class="link" href="https://github.com/hosshan/harie/blob/main/apps/mcp/README.ja.md">ツールの一覧と詳しい使い方（GitHub）</a>
-            <figure class="chat chat-examples" aria-label="Claude への頼み方の例">
+            <figure class="chat chat-examples" aria-label="頼み方の例">
               <figcaption class="small muted">頼み方の例</figcaption>
               <p class="chat-user">settings.png を Harie ファイルにして、保存ボタンを赤枠で囲み、「ここで保存します」と吹き出しを付けて</p>
               <p class="chat-user">guides の画像で、メールアドレスが映っているところをダミーに置き換えて</p>
@@ -554,7 +567,7 @@
           <h2 class="h2">次のガイドは、<span class="nb">何度でも直せる画像で作りませんか。</span></h2>
           <div class="cta">
             <a class="btn btn-primary" href="./app/">ブラウザで使う</a>
-            <a class="btn btn-ghost" href="https://github.com/hosshan/harie">GitHub を見る</a>
+            <a class="btn btn-ghost" href="https://chromewebstore.google.com/detail/harie/dgbghdgnmjcgjdmhfnmcdphkafkbefll">Chrome 拡張を入れる</a>
           </div>
         </div>
       </section>

@@ -191,11 +191,11 @@
             </p>
             <div class="cta">
               <a class="btn btn-primary" href="../app/">Open in browser</a>
-              <a class="btn btn-ghost" href="https://github.com/hosshan/harie">View on GitHub</a>
+              <a class="btn btn-ghost" href="https://chromewebstore.google.com/detail/harie/dgbghdgnmjcgjdmhfnmcdphkafkbefll?hl=en">Add to Chrome</a>
             </div>
             <p class="note">
-              It's free and open source (MIT), with nothing to install and no account to create. The
-              editor works in English and Japanese.
+              Free and open source (MIT), with the source on <a href="https://github.com/hosshan/harie">GitHub</a>.
+              The browser version needs no install or account, and the editor works in English and Japanese.
             </p>
           </div>
           <figure class="hero-demo">
@@ -473,12 +473,13 @@
           <div class="split-copy">
             <p class="eyebrow">Getting started with MCP</p>
             <h2 id="mcp-title" class="h2">Ask Claude to annotate for you.</h2>
-            <p>Once you register the <code>@harie/mcp</code> server, Claude Code and Claude Desktop can open Harie images and add or fix annotations.</p>
+            <p>Once you register the <code>@harie/mcp</code> server, Claude Code, Claude Desktop and the ChatGPT desktop app can open Harie images and add or fix annotations.</p>
           </div>
           <div class="setup-card">
             <div class="tabs" role="tablist" aria-label="App to register with">
               <button type="button" role="tab" id="tab-code" aria-controls="setup-code" aria-selected="true">Claude Code</button>
               <button type="button" role="tab" id="tab-desktop" aria-controls="setup-desktop" aria-selected="false" tabindex="-1">Claude Desktop</button>
+              <button type="button" role="tab" id="tab-chatgpt" aria-controls="setup-chatgpt" aria-selected="false" tabindex="-1">ChatGPT</button>
             </div>
             <div class="tab-panel" role="tabpanel" id="setup-code" aria-labelledby="tab-code">
               <p class="small muted">Run this command in your terminal.</p>
@@ -501,12 +502,22 @@
                 <button class="copy" type="button" data-copy="mcp-json" data-copied="Copied">Copy</button>
               </div>
             </div>
+            <div class="tab-panel" role="tabpanel" id="setup-chatgpt" aria-labelledby="tab-chatgpt" hidden>
+              <p class="small muted">Works in the ChatGPT desktop app. Add this to <code>~/.codex/config.toml</code> and restart the app. The same config is shared with the Codex CLI and IDE extension. You can also add the same command as a STDIO server under MCP servers in the app's settings.</p>
+              <div class="cmd cmd-block">
+                <pre id="mcp-toml">[mcp_servers.harie]
+command = "npx"
+args = ["-y", "@harie/mcp", "--root", "/Users/you/Pictures/guides"]</pre>
+                <button class="copy" type="button" data-copy="mcp-toml" data-copied="Copied">Copy</button>
+              </div>
+              <p class="small muted">ChatGPT on the web can't connect to MCP servers running on your computer.</p>
+            </div>
             <ul class="setup-notes">
               <li>Requires Node.js 22 or later. The server runs from npm with <code>npx</code>, so there's nothing else to install.</li>
               <li>Point <code>--root</code> at the folder that holds your images. The server can only read and write inside that folder.</li>
             </ul>
             <a class="link" href="https://github.com/hosshan/harie/blob/main/apps/mcp/README.md">Full tool list and usage (GitHub)</a>
-            <figure class="chat chat-examples" aria-label="Example requests to Claude">
+            <figure class="chat chat-examples" aria-label="Example requests">
               <figcaption class="small muted">Example requests</figcaption>
               <p class="chat-user">Turn settings.png into a Harie file, put a red box around the Save button and add a callout that says Save here</p>
               <p class="chat-user">In the images under guides, replace any visible email addresses with dummy values</p>
@@ -562,7 +573,7 @@
           <h2 class="h2">Make your next guide editable anytime.</h2>
           <div class="cta">
             <a class="btn btn-primary" href="../app/">Open in browser</a>
-            <a class="btn btn-ghost" href="https://github.com/hosshan/harie">View on GitHub</a>
+            <a class="btn btn-ghost" href="https://chromewebstore.google.com/detail/harie/dgbghdgnmjcgjdmhfnmcdphkafkbefll?hl=en">Add to Chrome</a>
           </div>
         </div>
       </section>

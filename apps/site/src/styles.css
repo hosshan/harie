@@ -949,6 +949,7 @@ code,
   display: flex;
   gap: 4px;
   border-bottom: 1px solid var(--line);
+  overflow-x: auto;
 }
 
 .tabs [role="tab"] {
@@ -961,6 +962,7 @@ code,
   padding: 8px 12px;
   margin-bottom: -1px;
   border-bottom: 3px solid transparent;
+  white-space: nowrap;
   cursor: pointer;
 }
 
@@ -1035,6 +1037,11 @@ code,
 }
 
 @media (max-width: 640px) {
+  .tabs [role="tab"] {
+    padding-inline: 8px;
+    font-size: 13px;
+  }
+
   .pains {
     grid-template-columns: minmax(0, 1fr);
   }
