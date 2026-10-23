@@ -4,5 +4,6 @@ export * from "./dummy";
 export * from "./geometry";
 export * from "./guide";
 export * from "./llm";
+export * from "./openrouter";
 export * from "./pii";
 export * from "./suggest";

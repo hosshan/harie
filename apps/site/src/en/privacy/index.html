@@ -32,7 +32,7 @@
 
     <main class="container doc">
       <h1>Privacy Policy</h1>
-      <p class="muted">Effective: October 22, 2026</p>
+      <p class="muted">Effective: October 22, 2026 / Updated: October 23, 2026 (added connecting with OpenRouter)</p>
 
       <p>
         This page explains what data Harie (the web editor, Chrome extension, desktop app and MCP server) handles. Harie is open-source software developed by an individual, and its source code is available on
@@ -50,14 +50,16 @@
         <li>
           The Chrome extension temporarily keeps the captured image, and a list of element positions and text on that page, inside the extension (IndexedDB) to hand them to the editor page. Entries older than 24 hours are deleted the next time you capture. The page element information is never written into saved files. Password field values are never read.
         </li>
-        <li>Your display language, drawing settings such as line width, and the API key for the AI features are stored only in that browser's (or the extension's) localStorage.</li>
+        <li>Your display language, drawing settings such as line width, and the API key for the AI features (an Anthropic key, or the key issued when you connect with OpenRouter) are stored only in that browser's (or the extension's) localStorage.</li>
       </ul>
 
       <h2>Data sent outside your device</h2>
       <p>
-        The AI features (annotation suggestions and personal-data detection) are optional and work only after you register your own Anthropic API key. When you press the button, Harie shows where the data will go, asks for your consent, and then sends the image directly to Anthropic's Claude API. For images captured with the Chrome extension, the list of element positions and text on the page is sent along with it. That data is handled under your agreement with Anthropic and
-        <a href="https://www.anthropic.com/legal/privacy">Anthropic's Privacy Policy</a>. It never passes through the developer.
+        The AI features (annotation suggestions and personal-data detection) are optional and work only after you register your own Anthropic API key or, in the web version, connect your own OpenRouter account. When you press the button, Harie shows where the data will go, asks for your consent, and then sends the image directly to Anthropic's Claude API (or, when connected with OpenRouter, to Anthropic's Claude through OpenRouter). For images captured with the Chrome extension, the list of element positions and text on the page is sent along with it. That data is handled under your agreement with Anthropic (and OpenRouter, when connected with it),
+        <a href="https://www.anthropic.com/legal/privacy">Anthropic's Privacy Policy</a> and
+        <a href="https://openrouter.ai/privacy">OpenRouter's Privacy Policy</a>. It never passes through the developer.
       </p>
+      <p>When you connect with OpenRouter, the temporary code you receive on returning from OpenRouter's authorization page is sent from your browser to OpenRouter and exchanged for a key. That key is also stored only in your browser and is never sent to the developer.</p>
       <p>If you don't use the AI features, Harie does not send images or page content anywhere.</p>
 
       <h2>Chrome extension permissions</h2>

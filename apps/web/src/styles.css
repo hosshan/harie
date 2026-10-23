@@ -216,6 +216,23 @@ input {
   color: var(--accent-text);
   font-weight: 600;
 }
+/* AI の接続方法（OpenRouter / Anthropic のキー）。それぞれを薄い枠で囲んで並べる */
+.app-settings-option {
+  margin-top: 10px;
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+}
+.app-settings-option h3 {
+  font-size: 14px;
+  margin: 0 0 4px;
+}
+.app-callback {
+  display: grid;
+  place-items: center;
+  min-height: 100dvh;
+  padding: 16px;
+}
 /* キーの作り方。説明文と同じ大きさにし、リンクは黄土色の文字にする */
 .app-settings-steps {
   margin: 0 0 8px;

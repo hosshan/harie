@@ -1,7 +1,8 @@
-// 設定（ヘッダー右端、狭い画面では三点メニュー）。表示言語と、AI に関する設定（API キー）を持つ
+// 設定（ヘッダー右端、狭い画面では三点メニュー）。表示言語と、AI に関する設定（OpenRouter の接続か API キー）を持つ
 import { type Locale, setLocale, useLocale } from "@harie/editor";
 import { type ReactNode, useState } from "react";
-import { storeApiKey, useApiKey } from "./ai/api-key";
+import { storeCredential, useAiCredential } from "./ai/api-key";
+import { canConnectOpenRouter, connectOpenRouter } from "./ai/openrouter-auth";
 import { Modal } from "./Modal";
 import { useWebMessages } from "./messages";
 
@@ -65,56 +66,96 @@ function LanguageSettings() {
 
 function AiSettings() {
   const m = useWebMessages();
-  const apiKey = useApiKey();
-  const [draft, setDraft] = useState("");
+  const credential = useAiCredential();
   return (
     <section className="app-settings-section" aria-label={m.settings.ai}>
       <h2>{m.settings.ai}</h2>
-      <p className="harie-muted">{m.settings.aiNote}</p>
-      {apiKey === null ? (
+      {credential === null ? (
         <>
-          <ol className="app-settings-steps">
-            {m.settings.keySteps.map((step) => (
-              <li key={step}>{step}</li>
-            ))}
-          </ol>
-          <p className="app-settings-link">
-            <a href={KEYS_URL} target="_blank" rel="noreferrer">
-              {m.settings.keyLink}
-            </a>
-          </p>
-          <p className="harie-muted">{m.settings.keyBilling}</p>
-          <form
-            onSubmit={(e) => {
-              e.preventDefault();
-              const key = draft.trim();
-              if (key === "") return;
-              storeApiKey(key);
-              setDraft("");
-            }}
-          >
-            <label>
-              {m.settings.apiKey}
-              <input
-                type="password"
-                autoComplete="off"
-                value={draft}
-                onChange={(e) => setDraft(e.target.value)}
-              />
-            </label>
-            <button type="submit" disabled={draft.trim() === ""}>
-              {m.settings.register}
-            </button>
-          </form>
+          <p className="harie-muted">{m.settings.aiNote}</p>
+          {canConnectOpenRouter() && <OpenRouterConnect />}
+          <AnthropicKeyForm />
         </>
       ) : (
         <p className="app-settings-row">
-          <span>{m.settings.registered}</span>
-          <button type="button" onClick={() => storeApiKey(null)}>
-            {m.settings.remove}
+          <span>
+            {credential.provider === "openrouter"
+              ? m.settings.openRouterConnected
+              : m.settings.registered}
+          </span>
+          <button type="button" onClick={() => storeCredential(null)}>
+            {credential.provider === "openrouter"
+              ? m.settings.openRouterDisconnect
+              : m.settings.remove}
           </button>
         </p>
       )}
     </section>
+  );
+}
+
+/** OpenRouter の OAuth で接続する（ADR-0012）。許可は別のウィンドウで行い、終わるとこの画面が接続済みに変わる */
+function OpenRouterConnect() {
+  const m = useWebMessages();
+  const [state, setState] = useState<"idle" | "waiting" | "blocked">("idle");
+  return (
+    <div className="app-settings-option">
+      <h3>{m.settings.openRouterTitle}</h3>
+      <p className="harie-muted">{m.settings.openRouterNote}</p>
+      <button
+        type="button"
+        onClick={async () => setState((await connectOpenRouter()) ? "waiting" : "blocked")}
+      >
+        {m.settings.openRouterConnect}
+      </button>
+      {state !== "idle" && (
+        <p className="harie-muted" role="status">
+          {state === "waiting" ? m.settings.openRouterWaiting : m.settings.openRouterBlocked}
+        </p>
+      )}
+    </div>
+  );
+}
+
+function AnthropicKeyForm() {
+  const m = useWebMessages();
+  const [draft, setDraft] = useState("");
+  return (
+    <div className="app-settings-option">
+      <h3>{m.settings.anthropicTitle}</h3>
+      <ol className="app-settings-steps">
+        {m.settings.keySteps.map((step) => (
+          <li key={step}>{step}</li>
+        ))}
+      </ol>
+      <p className="app-settings-link">
+        <a href={KEYS_URL} target="_blank" rel="noreferrer">
+          {m.settings.keyLink}
+        </a>
+      </p>
+      <p className="harie-muted">{m.settings.keyBilling}</p>
+      <form
+        onSubmit={(e) => {
+          e.preventDefault();
+          const key = draft.trim();
+          if (key === "") return;
+          storeCredential({ provider: "anthropic", key });
+          setDraft("");
+        }}
+      >
+        <label>
+          {m.settings.apiKey}
+          <input
+            type="password"
+            autoComplete="off"
+            value={draft}
+            onChange={(e) => setDraft(e.target.value)}
+          />
+        </label>
+        <button type="submit" disabled={draft.trim() === ""}>
+          {m.settings.register}
+        </button>
+      </form>
+    </div>
   );
 }

@@ -23,11 +23,18 @@ export interface LlmClient {
   generate<T>(request: LlmRequest<T>): Promise<T>;
 }
 
-/** 利用者に見せる理由付きの失敗（キーが違う、断られた、形式が違う等） */
+/** 利用者に見せる理由付きの失敗（キーが違う、クレジットが足りない、断られた、形式が違う等） */
 export class AiError extends Error {
   constructor(
     message: string,
-    readonly kind: "auth" | "rate-limit" | "refusal" | "invalid-output" | "network" | "other",
+    readonly kind:
+      | "auth"
+      | "credits"
+      | "rate-limit"
+      | "refusal"
+      | "invalid-output"
+      | "network"
+      | "other",
   ) {
     super(message);
     this.name = "AiError";

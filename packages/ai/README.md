@@ -1,8 +1,8 @@
 # @harie/ai
 
-AI による補足の提案（FR-AI-01〜03）と、個人情報の検出（FR-PII-01, 02）。Claude API を利用者自身の API キー（BYOK）で呼ぶ。
+AI による補足の提案（FR-AI-01〜03）と、個人情報の検出（FR-PII-01, 02）。Claude API を利用者自身の API キー（BYOK）で呼ぶか、利用者が OAuth で接続した OpenRouter 経由で呼ぶ（ADR-0012）。
 
-- LLM は `LlmClient` 越しに呼ぶ。Claude API の実装は `createAnthropicClient`（`src/anthropic.ts`）だけで、ほかは SDK に依存しない。テストではモックの `LlmClient` を渡す。
+- LLM は `LlmClient` 越しに呼ぶ。実装は Claude API の `createAnthropicClient`（`src/anthropic.ts`、SDK を使う）と、OpenRouter の `createOpenRouterClient`（`src/openrouter.ts`、fetch で OpenAI 互換の Chat Completions を呼ぶ）。ほかは SDK に依存しない。テストではモックの `LlmClient` を渡す。
 - LLM の出力は外部入力として zod で検証し、座標を画像の範囲に収めてから注釈にする。
 - 提案は `status: "suggested"` の注釈として返す。採用・却下はエディタが行う。
 - 個人情報の候補はマスクの下書きにするだけで、加工は利用者が確認してから `@harie/render` の `applyMasks` で行う（ADR-0007）。読み取った元の文字列は保存しない。
@@ -13,6 +13,8 @@ AI による補足の提案（FR-AI-01〜03）と、個人情報の検出（FR-P
 | 名前 | 内容 |
 |---|---|
 | `createAnthropicClient({ apiKey, ... })` | Claude API の `LlmClient` を作る（既定のモデルは `DEFAULT_MODEL`） |
+| `createOpenRouterClient({ apiKey, appUrl?, ... })` | OpenRouter の `LlmClient` を作る（既定のモデルは `OPENROUTER_DEFAULT_MODEL` = 最新の Claude Opus の別名） |
+| `detectPiiFromDom(dom)` | LLM を使わずに、DOM のテキストだけから個人情報の候補を返す（FR-PII-06） |
 | `suggestAnnotations({ client, image, doc, intent, dom? })` | 「何を説明したいか」から、枠・吹き出しなどの注釈を提案する |
 | `detectPii({ client, image, canvas, dom? })` | 画像（と Chrome 拡張で取れた DOM）から個人情報の候補を返す |
 | `detectPiiInDom` / `mergePiiFindings` | DOM だけからの検出と、画像からの検出結果との統合 |

@@ -32,7 +32,7 @@
 
     <main class="container doc">
       <h1>プライバシーポリシー</h1>
-      <p class="muted">制定日: 2026 年 10 月 22 日</p>
+      <p class="muted">制定日: 2026 年 10 月 22 日 / 改定日: 2026 年 10 月 23 日（OpenRouter での接続を追加）</p>
 
       <p>
         このページは、Harie（Web エディタ、Chrome 拡張、デスクトップ版、MCP サーバー）が扱うデータについて説明するものです。Harie は個人が開発しているオープンソースのソフトウェアで、ソースコードは
@@ -50,14 +50,16 @@
         <li>
           Chrome 拡張は、キャプチャした画像と、そのページの要素の位置と文字の一覧を、編集画面に渡すために拡張の中（IndexedDB）に一時的に置きます。24 時間より古いものは次にキャプチャしたときに消します。ページの要素の情報は保存するファイルには入れません。パスワード欄の値は読み取りません。
         </li>
-        <li>表示言語、線の太さなどの描画の設定、AI 機能のための API キーは、そのブラウザ（または拡張）の localStorage にだけ保存します。</li>
+        <li>表示言語、線の太さなどの描画の設定、AI 機能のための API キー（Anthropic のキー、または OpenRouter で接続して発行されたキー）は、そのブラウザ（または拡張）の localStorage にだけ保存します。</li>
       </ul>
 
       <h2>外部に送るデータ</h2>
       <p>
-        AI 機能（補足の提案と個人情報の検出）は任意の機能で、利用者が自分の Anthropic の API キーを登録したときだけ使えます。ボタンを押すと、送信先を表示して同意を確かめたうえで、画像を Anthropic の Claude API に直接送ります。Chrome 拡張でキャプチャした画像では、ページの要素の位置と文字の一覧も一緒に送ります。送ったデータは、利用者と Anthropic との契約と
-        <a href="https://www.anthropic.com/legal/privacy">Anthropic のプライバシーポリシー</a>に従って扱われます。開発者を経由することはありません。
+        AI 機能（補足の提案と個人情報の検出）は任意の機能で、利用者が自分の Anthropic の API キーを登録するか、Web 版で自分の OpenRouter のアカウントで接続したときだけ使えます。ボタンを押すと、送信先を表示して同意を確かめたうえで、画像を Anthropic の Claude API に直接送ります（OpenRouter で接続したときは、OpenRouter を経由して Anthropic の Claude に送ります）。Chrome 拡張でキャプチャした画像では、ページの要素の位置と文字の一覧も一緒に送ります。送ったデータは、利用者と Anthropic（OpenRouter で接続したときは OpenRouter も）との契約と
+        <a href="https://www.anthropic.com/legal/privacy">Anthropic のプライバシーポリシー</a>、
+        <a href="https://openrouter.ai/privacy">OpenRouter のプライバシーポリシー</a>に従って扱われます。開発者を経由することはありません。
       </p>
+      <p>OpenRouter での接続では、OpenRouter の許可の画面から戻ったときに受け取る一時的なコードを、お使いのブラウザから OpenRouter に送ってキーに換えます。このキーもブラウザの中にだけ保存し、開発者には送りません。</p>
       <p>AI 機能を使わなければ、Harie が画像やページの内容を外部に送ることはありません。</p>
 
       <h2>Chrome 拡張の権限</h2>

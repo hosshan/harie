@@ -133,7 +133,7 @@ sequenceDiagram
 
 | 場面 | LLM の所在 | 方針 |
 |---|---|---|
-| Web / 拡張 / デスクトップの提案・PII 検出 | Harie が呼ぶ | MVP は BYOK（ユーザーの API キーをローカル保存）。本番は薄い API プロキシ（キー秘匿・利用量管理）を用意 |
+| Web / 拡張 / デスクトップの提案・PII 検出 | Harie が呼ぶ | BYOK（ユーザーの API キーをローカル保存）。Anthropic のキーを貼るか、OpenRouter の OAuth（PKCE）で接続する（[ADR-0012](../adr/0012-openrouter-oauth.md)）。Harie が費用を持つプロキシは置かない（利用者が増えたら別の ADR で再検討） |
 | MCP 経由 | MCP クライアント側の LLM | MCP サーバーは LLM を呼ばない。画像と注釈を返し、変更を受け付けるだけ。提案はクライアント側の LLM が行う |
 
 - 既定モデルは画像入力に対応した Claude の最新モデル（`claude-opus-5-5`）。`packages/ai` はプロバイダ非依存のインターフェース（`LlmClient`）にして、テストではモックを注入する。
@@ -143,6 +143,7 @@ sequenceDiagram
 - 提案 1 件は「強調枠（rect）＋説明の吹き出し（callout）」の 2 つの注釈。吹き出しは枠の右 → 左 → 下 → 上の順で画像に収まる側に置く（`placeCallout()`。番号と吹き出しをまとめて付ける操作と共有）。DOM があれば要素番号か重なり（IoU 0.3 以上）で枠を要素の矩形に合わせる（FR-AI-03）。
 - PII の候補は DOM のテキスト（正規表現・入力欄の手がかり）と画像の検出を合わせ、重なりは DOM を優先して 1 つにする。加工方法の既定は文字ならダミー置換（種類と形を保つ値。`example.com` など予約済みの値を使う）、顔は塗りつぶし。候補はエディタのマスクの下書きになり、利用者が確認してから適用する。読み取った元の文字列はメモリ上でだけ使い、保存しない。
 - API キーはブラウザの localStorage にだけ置く。ファイル・ログ・エラー文に含めない（NFR-SEC-04）。
+- OpenRouter の接続（FR-AI-05、ADR-0012）: 設定の「OpenRouter で接続」で別のウィンドウに OpenRouter の許可の画面（`code_challenge` は S256）を開き、今のページに `code` 付きで戻す。戻ったウィンドウが `code_verifier`（接続の間だけ localStorage に置く）と合わせてキーに換えて登録し、自分を閉じる。元のウィンドウは `storage` イベントで接続を受け取るので、編集中の画像はそのまま。戻り先に https のページが要るので Web 版だけで出し、Chrome 拡張とデスクトップでは出さない。呼び出しは `createOpenRouterClient` で、モデルは最新の Claude Opus の別名を使う。
 - API キーがなくても使える部分は使えるようにする。DOM があれば、DOM のテキストだけで個人情報の候補を出す（`detectPiiFromDom()`。画像は送らないので同意は求めない。FR-PII-06）。キーが未登録のときは AI の欄に設定を開くボタンを出し、設定では Anthropic Console のキー作成画面へのリンクと手順を示す。
 - 評価: `packages/ai/eval` の合成画面（架空の値の個人情報と正解の範囲を持つ）で、PII の再現率・適合率と、提案が狙いの要素を指す割合を測る。認証は API キーか、Claude のプランの `CLAUDE_CODE_OAUTH_TOKEN`（Claude Agent SDK 経由。評価専用）。実際に Claude を呼ぶため CI では動かさない。手順は `packages/ai/CLAUDE.md`。
 
