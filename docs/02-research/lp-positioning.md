@@ -2,13 +2,13 @@
 
 - ステータス: ドラフト
 - 最終更新: 2026-10-23
-- 関連: [要求整理](../01-requirements/requirements-analysis.md)、LP の実装は [apps/site](../../apps/site/README.md)
+- 関連: [要求整理](../01-requirements/requirements-analysis.md)、[競合ツールとの比較](competitors.md)、LP の実装は [apps/site](../../apps/site/README.md)
 
 GitHub Pages で公開する LP のために、近いツールの訴求を調べ、Harie が言えることを整理し直した記録。
 
 ## 1. 参考にしたツールと訴求
 
-公開ページ・比較記事（2026-10 時点）から、見出しと主な主張を拾った。
+公開ページ・比較記事（2026-10 時点）から、見出しと主な主張を拾った。機能・形式・価格を項目ごとに比べた表は [競合ツールとの比較](competitors.md) にある。
 
 | 種類 | ツール | 主な訴求 | 編集データの持ち方 |
 |---|---|---|---|

@@ -9,6 +9,7 @@
 | 調査 | [描画・保存の性能](02-research/rendering-performance.md) | resvg-wasm と mozjpeg での保存時間（NFR-PERF-01）、ライセンス |
 | 調査 | [MCP の効果検証](02-research/mcp-effectiveness.md) | MCP あり／なしでのコンテキスト効率と品質の比較 |
 | 調査 | [LP の訴求整理](02-research/lp-positioning.md) | 近いツールの訴求と、LP で Harie が言うこと・言わないこと |
+| 調査 | [競合ツールとの比較](02-research/competitors.md) | 注釈ツール・手順書 SaaS 10 種との機能・形式・価格の比較 |
 | 設計 | [アーキテクチャ](03-design/architecture.md) | 全体構成、パッケージ、主要フロー |
 | 設計 | [ファイル形式仕様](03-design/harie-format-spec.md) | Harie ファイルのバイナリ仕様 |
 | 設計 | [注釈ドキュメントモデル](03-design/document-model.md) | 注釈 JSON の構造と操作 |
