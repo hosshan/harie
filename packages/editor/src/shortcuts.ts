@@ -16,6 +16,7 @@ export type KeyCombo = {
 export type ShortcutId =
   | "save"
   | "open"
+  | "copyImage"
   | "undo"
   | "redo"
   | "selectAll"
@@ -40,6 +41,8 @@ export type ShortcutId =
 export const SHORTCUTS: Record<ShortcutId, readonly KeyCombo[]> = {
   save: [{ key: "s", mod: true }],
   open: [{ key: "o", mod: true }],
+  // 描いた画像をクリップボードへ（注釈のコピー ⌘C と分ける）
+  copyImage: [{ key: "c", mod: true, shift: true }],
   undo: [{ key: "z", mod: true }],
   redo: [
     { key: "z", mod: true, shift: true },

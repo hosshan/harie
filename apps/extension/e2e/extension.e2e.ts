@@ -248,3 +248,19 @@ test("NFR-SEC-03: 常時のサイト権限を持たない（テスト用のビ�
   expect(manifest.permissions.sort()).toEqual(["activeTab", "downloads", "scripting"]);
   expect(manifest.host_permissions).toBeUndefined();
 });
+
+test("FR-FILE-11: 撮った画像を保存せずにクリップボードへコピーできる", async ({
+  context,
+  worker,
+  extensionId,
+  target,
+}) => {
+  const opened = editorOpened(context, extensionId);
+  expect(await startCapture(worker, target, "visible")).toEqual({ ok: true });
+  const editor = await opened;
+  await expect(editor.locator(".harie-canvas-overlay")).toHaveAttribute("viewBox", "0 0 800 600");
+
+  // 拡張のページには clipboard-read を与えられないので、書き込めたこと（失敗の表示が出ないこと）を確かめる
+  await editor.getByRole("button", { name: "コピー", exact: true }).click();
+  await expect(editor.getByRole("status")).toHaveText("画像をコピーしました");
+});
