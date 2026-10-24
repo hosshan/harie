@@ -2,24 +2,26 @@
 
 - ステータス: ドラフト
 - 最終更新: 2026-10-23
-- 関連: [要求整理](../01-requirements/requirements-analysis.md)、LP の実装は [apps/site](../../apps/site/README.md)
+- 関連: [要求整理](../01-requirements/requirements-analysis.md)、[競合ツールとの比較](competitors.md)、LP の実装は [apps/site](../../apps/site/README.md)
 
 GitHub Pages で公開する LP のために、近いツールの訴求を調べ、Harie が言えることを整理し直した記録。
 
 ## 1. 参考にしたツールと訴求
 
-公開ページ・比較記事（2026-10 時点）から、見出しと主な主張を拾った。
+公開ページ・比較記事（2026-10 時点）から、見出しと主な主張を拾った。機能・形式・価格を項目ごとに比べた表は [競合ツールとの比較](competitors.md) にある。
 
 | 種類 | ツール | 主な訴求 | 編集データの持ち方 |
 |---|---|---|---|
 | キャプチャ＋注釈 | Snagit | 1 本で撮る・描く・共有。手順書テンプレート、Step Capture、Smart Redact（機密の自動検出）、UI の簡略化 | 独自形式のプロジェクトで再編集。書き出した画像は焼き込み |
 | キャプチャ＋注釈 | CleanShot X | 「1 本で複数ツールを置き換える」、14 種以上の注釈（番号・スポットライト・モザイク）、共有リンク | 独自形式で非破壊編集。書き出すと焼き込み |
 | キャプチャ＋注釈 | Shottr | 速さ（撮影 17ms）、軽さ、安さ、OCR、16 種の注釈 | 画像に焼き込み |
+| キャプチャ＋注釈 | Markup Hero | Chrome 拡張とクラウドで注釈・共有。共有リンクの画像があとから差し替わる | クラウド上で再編集。書き出した画像は焼き込み |
 | 手順書の自動生成 | Scribe | 操作を記録するだけで手順書ができる。Smart Blur で機密を自動でぼかす。AI で文書化 | 手順書はサービス上。画像単体の再編集は前提にしない |
 | 手順書の自動生成 | Tango | 「数分で最初のガイド」、機密の自動ぼかし、アプリ内ガイド、定着の計測 | 同上 |
+| 手順書・デモの自動生成 | Guidde、Supademo、iorad | 動画ガイド・対話型デモ。Supademo は 2026-04 に MCP サーバーを公開し、AI からデモの文言変更や画像の差し替えができる | サービス上 |
 | 国内のマニュアル作成 | Dojo、Teachme Biz など | 作成工数の削減、現場で更新できる、属人化の防止（誰が作っても同じ品質） | マニュアルはサービス上 |
 
-出典: [TechSmith の比較記事](https://www.techsmith.com/blog/cleanshot-alternative/)、[CleanShot X の紹介](https://thegtmdirectory.com/tools/cleanshot-x/md)、[Shottr のレビュー](https://www.bitdoze.com/shottr-mac-screenshot-tool/)、[Scribe の Image Blur](https://scribe.com/tools/image-blur-redaction)、[Tango vs Scribe](https://www.tango.ai/compare/tango-vs-scribe)、[マニュアル作成ツール比較（国内）](https://saas.imitsu.jp/cate-manual-preparation/article/l-2604)。
+出典: [Markup Hero（Capterra）](https://www.capterra.co.uk/software/205064/markup-hero)、[Supademo の MCP サーバー](https://supademo.com/blog/product-update-mcp-server)、[TechSmith の比較記事](https://www.techsmith.com/blog/cleanshot-alternative/)、[CleanShot X の紹介](https://thegtmdirectory.com/tools/cleanshot-x/md)、[Shottr のレビュー](https://www.bitdoze.com/shottr-mac-screenshot-tool/)、[Scribe の Image Blur](https://scribe.com/tools/image-blur-redaction)、[Tango vs Scribe](https://www.tango.ai/compare/tango-vs-scribe)、[マニュアル作成ツール比較（国内）](https://saas.imitsu.jp/cate-manual-preparation/article/l-2604)。
 
 ### 共通して使われている訴求
 
@@ -30,9 +32,11 @@ GitHub Pages で公開する LP のために、近いツールの訴求を調べ
 
 ### どこも言っていないこと
 
+「保存後も直せる」だけなら Markup Hero（クラウド上）や CleanShot X（独自形式）にもある。差は「普通の画像のまま」「誰でも」にある（2026-10-23 の再調査）。
+
 - 書き出した画像そのものを後から直せる。各ツールの再編集は独自形式のプロジェクトファイルかサービス上のデータが前提で、ヘルプページに貼った JPEG/PNG は焼き込みになる。
 - 作った人以外が直せる。プロジェクトファイルは作成者の手元に残り、手順書 SaaS はアカウントと契約が要る。
-- AI エージェントが画像の注釈を直接読み書きできる。
+- AI エージェントが、手元の画像ファイルの注釈を直接読み書きできる。MCP 対応自体は Supademo にもあるが、対象は Supademo 上のデモで、画像ファイルではない。
 - ぼかすのではなく、ダミーに置き換えて「何の画面か」は伝わるまま隠す。
 
 ## 2. Harie の訴求（見直し後）
@@ -60,7 +64,7 @@ GitHub Pages で公開する LP のために、近いツールの訴求を調べ
 | 1 | 保存後も直せる | 画像 1 枚に注釈と元画像が入っている。プロジェクトファイルを探さなくていい | FR-FILE-01〜04、NFR-DATA-01、ADR-0004 | 他は独自形式か SaaS 上のデータが前提 |
 | 2 | 誰でも直せる | ファイルを受け取った人が、そのまま開いて直せる。前任者の画像も | FR-FILE-03、NFR-DATA-04 | 作成者の手元・契約に縛られない |
 | 3 | AI が補足を考える | どこを囲み、何と書くかを AI が提案。採用は 1 クリック | FR-AI-01〜03 | 共通の訴求（時間が減る・品質がそろう）を満たす |
-| 4 | AI エージェントから直せる | Claude などに「保存ボタンを赤枠で囲んで」と頼めば MCP 経由で注釈が付く。UI の文言変更もまとめて直せる | FR-MCP-01〜05 | 他にない |
+| 4 | AI エージェントから直せる | Claude などに「保存ボタンを赤枠で囲んで」と頼めば MCP 経由で注釈が付く。UI の文言変更もまとめて直せる | FR-MCP-01〜05 | 画像ファイルの注釈を直接扱えるのは他にない（MCP 対応は Supademo にもある） |
 | 5 | 個人情報は伝わる形で消す | 氏名やメールをダミーに置き換える。元に戻せない加工なので、画像を渡しても元の値は残らない | FR-PII-01〜05、ADR-0007 | ぼかしではなく置き換え。復元できない |
 | 6 | 撮ってそのまま書ける | Chrome 拡張で表示中のページを撮り、すぐ注釈を付ける | FR-CAP-01〜04 | 共通の訴求（1 本で済む） |
 | 7 | どこでも同じ見た目 | Web・Chrome 拡張・デスクトップ・MCP で同じ描画 | NFR-PLAT-05、ADR-0005 | — |
@@ -109,5 +113,5 @@ LP の課題の節では P3 と P4 を「文言が 1 つ変わるだけで作り
 7. 使える場所: Web / Chrome 拡張 / デスクトップ / MCP と、準備中のものの提供状況
 8. MCP の始め方: 説明の直後に登録のしかた（Claude Code / Claude Desktop / ChatGPT のタブ。ChatGPT はデスクトップアプリだけで使え、設定は `~/.codex/config.toml`。Web 版はローカルの MCP サーバーにつながらないと書く。Node.js の版と `--root` は注意書き、その下にツール一覧へのリンク）、続けて頼み方の例
 9. 手元で完結・オープンソース
-10. よくある質問: 検索や AI の回答で引かれやすい問い（どんなツールか、ほかのアプリで表示できるか、ほかの人が直せるか、料金、画像の送信、個人情報、使える場所、AI エージェント）に、1 つの答えだけで意味が通る文で答える。同じ内容を構造化データ（`FAQPage`）にも書く
+10. よくある質問: 検索や AI の回答で引かれやすい問い（どんなツールか、ほかのアプリで表示できるか、ほかの人が直せるか、Snagit や Scribe などとの違い、料金、画像の送信、個人情報、使える場所、AI エージェント）に、1 つの答えだけで意味が通る文で答える。同じ内容を構造化データ（`FAQPage`）にも書く
 11. 締めの CTA

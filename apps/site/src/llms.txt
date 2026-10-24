@@ -11,6 +11,7 @@ Key facts:
 - Personal data such as names, email addresses and phone numbers can be replaced with dummy values (or filled, mosaicked or blurred). This is applied to the original image irreversibly, so the original values do not remain in the file.
 - Available as a web editor (https://harie.studio/app/), a Chrome extension (Chrome Web Store), and an MCP server (`npx -y @harie/mcp --root <folder>`) for AI agents such as Claude Code and Claude Desktop. A desktop app for macOS and Windows (Tauri 2) can be built from source; signed binaries are not distributed yet.
 - The editor UI is available in English and Japanese.
+- Compared with screenshot tools such as Snagit or CleanShot X, which keep editable annotations in their own project files, and guide-making services such as Scribe or Tango, which keep guides in their own accounts, Harie keeps the annotations inside the exported image file itself.
 - Harie does not generate step-by-step guides automatically from recorded actions.
 
 ## Pages
