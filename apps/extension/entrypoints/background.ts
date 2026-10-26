@@ -1,4 +1,5 @@
-// service worker。ポップアップ・ショートカット・選択オーバーレイからの指示でキャプチャする（integrations.md 1.1）
+// service worker。ポップアップ・ショートカット・選択オーバーレイからの指示でキャプチャする（integrations.md 1.1）。
+// ページ上の Harie 画像の読み込み・エディタで開く処理も受け持つ（integrations.md 1.5）
 
 import type { Locale } from "@harie/editor/locale";
 import { browser } from "wxt/browser";
@@ -9,6 +10,7 @@ import {
   setCaptureLocale,
   startSelection,
 } from "@/lib/capture";
+import { handlePageMessage, PageMessageSchema, syncPageScripts } from "@/lib/page-fetch";
 import type { CssRect } from "@/lib/snapshot";
 
 type Message =
@@ -32,6 +34,11 @@ async function start(
 
 export default defineBackground(() => {
   browser.runtime.onMessage.addListener((message: Message, sender, sendResponse) => {
+    const page = PageMessageSchema.safeParse(message);
+    if (page.success) {
+      void handlePageMessage(page.data, sender).then(sendResponse);
+      return true;
+    }
     if (message.type === "harie:start") {
       if (message.locale === "ja" || message.locale === "en") setCaptureLocale(message.locale);
       void start(message.mode, message.tabId).then(sendResponse);
@@ -54,6 +61,12 @@ export default defineBackground(() => {
       });
     }
   });
+
+  // ページ用のスクリプトは、利用者がポップアップで許可したサイトにだけ入れる（FR-FILE-12, FR-FILE-13）
+  browser.permissions.onAdded.addListener(() => void syncPageScripts());
+  browser.permissions.onRemoved.addListener(() => void syncPageScripts());
+  browser.runtime.onInstalled.addListener(() => void syncPageScripts());
+  browser.runtime.onStartup.addListener(() => void syncPageScripts());
 
   // E2E から呼ぶ入口（ツールバーのボタンは自動操作できないため）
   (globalThis as { harieStart?: typeof start }).harieStart = start;

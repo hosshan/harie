@@ -19,6 +19,25 @@ const ja = {
   cropFailed: "画像を切り抜けませんでした",
   dragHint: "撮りたい範囲をドラッグしてください（Esc でやめる）",
   clickHint: "撮りたい要素をクリックしてください（Esc でやめる）",
+  pageTitle: "ページ上の Harie 画像",
+  pageGithub: "GitHub で注釈データを文字で表示する",
+  pageAllSites: "ほかのサイトでも画像から編集を開く",
+  pageNote:
+    "オンにすると、そのサイトの画像を読む権限を求めます。画像はこの端末の中で読み、どこにも送りません。",
+  editOnImage: "Harie で編集",
+  editFailed: "画像を開けませんでした",
+  panelTitle: "Harie の注釈データ",
+  panelTitleWith: (label: string) => `Harie の注釈データ（${label}）`,
+  diffBefore: "変更前",
+  diffAfter: "変更後",
+  panelJson: "JSON",
+  panelCopyText: "テキストをコピー",
+  panelCopyJson: "JSON をコピー",
+  panelCopied: "コピーしました",
+  panelEmpty: "（文字の注釈はありません）",
+  panelMismatch: "画像が Harie の外で編集されています。注釈データは保存したときのものです。",
+  panelLoading: "注釈データを読み込み中…",
+  panelFailed: "注釈データを読み込めませんでした",
 } as const;
 
 export type ExtensionMessages = Messages<typeof ja>;
@@ -38,6 +57,26 @@ const en: ExtensionMessages = {
   cropFailed: "Couldn't crop the image",
   dragHint: "Drag over the area to capture (Esc to cancel)",
   clickHint: "Click the element to capture (Esc to cancel)",
+  pageTitle: "Harie images on pages",
+  pageGithub: "Show annotation data as text on GitHub",
+  pageAllSites: "Open images for editing on other sites too",
+  pageNote:
+    "Turning these on asks for permission to read images on those sites. Images are read on this device and sent nowhere.",
+  editOnImage: "Edit in Harie",
+  editFailed: "Couldn't open the image",
+  panelTitle: "Harie annotation data",
+  panelTitleWith: (label) => `Harie annotation data (${label})`,
+  diffBefore: "before",
+  diffAfter: "after",
+  panelJson: "JSON",
+  panelCopyText: "Copy text",
+  panelCopyJson: "Copy JSON",
+  panelCopied: "Copied",
+  panelEmpty: "(No text annotations)",
+  panelMismatch:
+    "The image was edited outside Harie. This annotation data is from when it was saved.",
+  panelLoading: "Loading annotation data…",
+  panelFailed: "Couldn't load the annotation data",
 };
 
 const CATALOG: Record<Locale, ExtensionMessages> = { ja, en };
