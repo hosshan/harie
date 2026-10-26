@@ -99,9 +99,15 @@ importers:
       '@harie/editor':
         specifier: workspace:*
         version: link:../../packages/editor
+      '@harie/format':
+        specifier: workspace:*
+        version: link:../../packages/format
       '@harie/model':
         specifier: workspace:*
         version: link:../../packages/model
+      '@harie/render':
+        specifier: workspace:*
+        version: link:../../packages/render
       '@harie/web':
         specifier: workspace:*
         version: link:../web
@@ -115,9 +121,6 @@ importers:
         specifier: ^4.6.5
         version: 4.6.5
     devDependencies:
-      '@harie/format':
-        specifier: workspace:*
-        version: link:../../packages/format
       '@playwright/test':
         specifier: ^1.64.0
         version: 1.64.0

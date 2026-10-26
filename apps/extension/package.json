@@ -16,14 +16,15 @@
   "dependencies": {
     "@harie/ai": "workspace:*",
     "@harie/editor": "workspace:*",
+    "@harie/format": "workspace:*",
     "@harie/model": "workspace:*",
+    "@harie/render": "workspace:*",
     "@harie/web": "workspace:*",
     "react": "^19.3.0",
     "react-dom": "^19.3.0",
     "zod": "^4.6.5"
   },
   "devDependencies": {
-    "@harie/format": "workspace:*",
     "@playwright/test": "^1.64.0",
     "@tailwindcss/vite": "^4.3.3",
     "@types/chrome": "^0.3.4",

@@ -19,6 +19,24 @@ const ja = {
   cropFailed: "画像を切り抜けませんでした",
   dragHint: "撮りたい範囲をドラッグしてください（Esc でやめる）",
   clickHint: "撮りたい要素をクリックしてください（Esc でやめる）",
+  pageTitle: "サイト上の画像ガイド",
+  pageEdit: "画像に編集ボタンを表示",
+  pageCopy: "画像に文章のコピーボタンを表示",
+  pageSites: "対象サイト",
+  pageSitesAll: "指定がなければ、すべてのサイトを対象にします。",
+  pageSiteInput: "追加するサイト",
+  pageSitePlaceholder: "例: github.com",
+  pageSiteAdd: "追加",
+  pageSiteRemove: (site: string) => `${site} を外す`,
+  pageSiteInvalid: "ドメインの形で入れてください（例: github.com）",
+  pageSiteTooMany: "これ以上は追加できません",
+  pageNote:
+    "Harie 画像にカーソルを当てたときだけボタンを表示し、画像を読むためにサイトへのアクセス権を求めます。画像はこの端末の中で読み、どこにも送りません。",
+  editOnImage: "Harie で編集",
+  editFailed: "画像を開けませんでした",
+  copyText: "この文章をコピー",
+  copyAll: "文章をまとめてコピー",
+  copied: "コピーしました",
 } as const;
 
 export type ExtensionMessages = Messages<typeof ja>;
@@ -38,6 +56,24 @@ const en: ExtensionMessages = {
   cropFailed: "Couldn't crop the image",
   dragHint: "Drag over the area to capture (Esc to cancel)",
   clickHint: "Click the element to capture (Esc to cancel)",
+  pageTitle: "Image guides on sites",
+  pageEdit: "Show an edit button on images",
+  pageCopy: "Show copy buttons for text on images",
+  pageSites: "Sites",
+  pageSitesAll: "If none are listed, all sites are included.",
+  pageSiteInput: "Site to add",
+  pageSitePlaceholder: "e.g. github.com",
+  pageSiteAdd: "Add",
+  pageSiteRemove: (site) => `Remove ${site}`,
+  pageSiteInvalid: "Enter a domain (e.g. github.com)",
+  pageSiteTooMany: "You can't add more sites",
+  pageNote:
+    "Buttons appear only while you hover a Harie image, and site access is requested so images can be read. Images are read on this device and sent nowhere.",
+  editOnImage: "Edit in Harie",
+  editFailed: "Couldn't open the image",
+  copyText: "Copy this text",
+  copyAll: "Copy all text",
+  copied: "Copied",
 };
 
 const CATALOG: Record<Locale, ExtensionMessages> = { ja, en };

@@ -244,9 +244,11 @@ test("FR-CAP-02: 要素を選ぶと、余白付きでその要素を撮る。Esc
 test("NFR-SEC-03: 常時のサイト権限を持たない（テスト用のビルドを除く）", async () => {
   const manifest = JSON.parse(
     readFileSync(new URL("../.output/chrome-mv3/manifest.json", import.meta.url), "utf8"),
-  ) as { permissions: string[]; host_permissions?: string[] };
-  expect(manifest.permissions.sort()).toEqual(["activeTab", "downloads", "scripting"]);
+  ) as { permissions: string[]; host_permissions?: string[]; optional_host_permissions?: string[] };
+  expect(manifest.permissions.sort()).toEqual(["activeTab", "downloads", "scripting", "storage"]);
   expect(manifest.host_permissions).toBeUndefined();
+  // ページ上の Harie 画像（FR-FILE-12, FR-FILE-13）の権限は、利用者がオンにしたときだけ求める
+  expect(manifest.optional_host_permissions).toEqual(["<all_urls>"]);
 });
 
 test("FR-FILE-11: 撮った画像を保存せずにクリップボードへコピーできる", async ({

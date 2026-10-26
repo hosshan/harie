@@ -14,6 +14,7 @@
 | 選択オーバーレイ（押したときに注入） | 範囲・要素選択。選び終えたらオーバーレイを消してから範囲を送る。（Next）DOM テキストのダミー置換 | `entrypoints/select.ts` |
 | DOM スナップショット（押したときに注入） | 可視範囲の主要要素を取る（1.3） | `lib/collect.ts` |
 | service worker | `chrome.tabs.captureVisibleTab` で撮影し、範囲選択なら切り抜く。キャプチャを IndexedDB に置き、エディタページを開く | `entrypoints/background.ts`, `lib/capture.ts` |
+| ページ用スクリプト（許可したサイトにだけ登録） | ページ上の Harie 画像に、カーソルを当てたときだけ編集ボタンと説明文のコピーボタンを出す（1.5） | `entrypoints/page.ts`, `lib/page-image.ts`, `lib/page-copy.ts`, `lib/page-fetch.ts` |
 | エディタページ（拡張内 HTML） | Web と同じ編集画面（`@harie/web` の `Workspace`）を載せる。保存は `chrome.downloads` | `entrypoints/editor/` |
 
 - キャプチャ画像は数 MB になり `chrome.storage.session` の上限に近いため、拡張の IndexedDB に Blob のまま置いてエディタページに渡す。1 日より古いものは次のキャプチャで消す。
@@ -22,7 +23,8 @@
 
 ### 1.2 権限
 
-- `activeTab`, `scripting`, `downloads` のみ。ユーザーがボタン・ショートカットを押したタブにだけ一時的にアクセスする（NFR-SEC-03）。常時のサイト権限（`host_permissions`）は取らない。API キーは拡張ページの localStorage に置くので `storage` も要らない。
+- `activeTab`, `scripting`, `downloads`, `storage` のみ。ユーザーがボタン・ショートカットを押したタブにだけ一時的にアクセスする（NFR-SEC-03）。常時のサイト権限（`host_permissions`）は取らない。
+- 例外として、ページ上の Harie 画像（1.5）のために `optional_host_permissions`（`<all_urls>`）を宣言する。ボタンを出すサイトを絞っても権限は全サイトで求める（画像は CDN など別のドメインから届くことが多く、service worker がそれを読むのに要るため）。インストール時には求めず、利用者がポップアップでオンにしたときだけ `permissions.request` で求める。どのボタンもオフにすると権限を返す。`storage` は、そのボタンの設定をページ用スクリプトと service worker から読むためだけに使う（API キーは拡張ページの localStorage に置く）。
 - 各権限の説明（ストア申請用）は `apps/extension/STORE.md`。
 - E2E 用のビルド（`HARIE_E2E=1`）にだけ `<all_urls>` を付ける。テストではツールバーのボタンを押せず、activeTab が付かないため。配布用のビルドに含まれないことを E2E で確かめている。
 - 全体キャプチャ（FR-CAP-04, Next）はスクロール撮影の合成で実装する。`debugger` 権限（CDP の `captureBeyondViewport`）は警告バーが出るため、使うならオプトインにする。
@@ -53,6 +55,24 @@ type DomSnapshot = {
 ### 1.4 DOM 置換キャプチャ（FR-PII-05, Next）
 
 撮影前に content script が PII 候補のテキストノードをダミー値に書き換え、撮影後に元へ戻す。フォント・レイアウトが本物のまま差し替わるため、画像処理による置換より自然な仕上がりになる。ページの状態を一時的に変えるので、元に戻す処理を確実に行う（例外時も含む）。
+
+### 1.5 ページ上の Harie 画像（FR-FILE-12, FR-FILE-13）
+
+ページの見た目は変えず、Harie 画像にカーソルを当てたときだけボタンを出す。ポップアップの「サイト上の画像ガイド」で、出すボタンとボタンを出すサイトを選ぶ（`lib/page-settings.ts`、`chrome.storage.local` に保存）。
+
+| 項目 | 既定 | 内容 |
+|---|---|---|
+| 画像に編集ボタンを表示 | オフ | FR-FILE-13 |
+| 画像に文章のコピーボタンを表示 | オフ | FR-FILE-12 |
+| 対象サイト | 空（すべてのサイト） | ドメインのホワイトリスト。空ならすべてのサイト、指定があればそのドメインとサブドメインだけ。入力は `https://github.com/o/r` や `*.example.com` もドメインにそろえる（最大 50 件）。`github.com` を入れると、差分の画像を出す `*.githubusercontent.com` の iframe も対象にする |
+
+- ページ上のボタンはアイコンなので、カーソルを当てる（キーボードでフォーカスする）と、何をするかをツールチップで出す。
+- 設定か権限が変わる（`storage.onChanged`・`permissions.onAdded` / `onRemoved`）か、拡張が起動・更新されると、service worker が、全サイトの権限があるときだけ、ボタンを出すサイト（空ならすべて）に `entrypoints/page.ts` を `scripting.registerContentScripts` で登録し直す（`allFrames: true`。GitHub の差分の画像は `viewscreen.githubusercontent.com` の iframe に出るため）。manifest の `content_scripts` には書かない。
+- **Harie 画像の見分け方**: 96 CSS px 以上の画像にカーソルが乗ったら service worker に読ませ、注釈データが埋め込まれていれば Harie 画像とする（ADR-0004）。ファイル名が規則どおり（ADR-0006）ならすぐに、そうでなければ少し止まってから読む。結果は URL ごとに覚える。
+- **編集ボタン（FR-FILE-13）**: 画像の右上に薄く（不透明度 0.55）出す。押すと service worker が画像を読み、キャプチャと同じく IndexedDB に置いて拡張のエディタを開く。ページに戻せないので、保存はダウンロードになる。
+- **説明文のコピー（FR-FILE-12）**: service worker が吹き出し・文字の注釈の範囲（`@harie/render` の `annotationBounds`。切り抜きを考慮）を画像に対する割合にして返す。カーソルがその範囲に入ると、枠の右上の角にコピーボタンを出す。編集ボタンの隣の「まとめてコピー」は「番号. 吹き出しの文」を番号順に並べたテキストをコピーする。AI の提案中（未採用）の注釈は含めない。
+- 画像は service worker が拡張の権限で読む（ページの CORS の制限を受けない。非公開リポジトリのために cookie を付ける）。40 MB より大きいものは読まない。メッセージは zod で形を確かめる。
+- 説明文は content script（ページの JS から見えない隔離された環境）の中だけに持ち、DOM には書かない。読んだ画像はどこにも送らない。
 
 ## 2. MCP サーバー
 
