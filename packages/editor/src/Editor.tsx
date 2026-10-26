@@ -18,6 +18,14 @@ import {
 } from "react";
 import { Canvas, type Tool } from "./Canvas";
 import {
+  addPaletteColor,
+  COLOR_PALETTE_KEY,
+  loadColorPalette,
+  normalizeHex,
+  removePaletteColor,
+  saveColorPalette,
+} from "./color-palette";
+import {
   type DrawDefaults,
   loadDrawDefaults,
   saveDrawDefaults,
@@ -151,6 +159,22 @@ export function Editor({
     () => scaleDrawDefaults(storedDefaults, imageScale),
     [storedDefaults, imageScale],
   );
+  // 自分で作った色のパレット（FR-EDIT-17）。ほかのタブで足した・外した色も受け取る
+  const [colorPalette, setColorPalette] = useState<string[]>(() => loadColorPalette());
+  useEffect(() => {
+    const onStorage = (e: StorageEvent) => {
+      if (e.key === COLOR_PALETTE_KEY) setColorPalette(loadColorPalette());
+    };
+    window.addEventListener("storage", onStorage);
+    return () => window.removeEventListener("storage", onStorage);
+  }, []);
+  const changeColorPalette = useCallback((update: (prev: string[]) => string[]) => {
+    setColorPalette((prev) => {
+      const next = update(prev);
+      saveColorPalette(next);
+      return next;
+    });
+  }, []);
   const rememberDrawDefaults = useCallback(
     (patch: DrawDefaults) => {
       setStoredDefaults((prev) => {
@@ -467,6 +491,8 @@ export function Editor({
               dispatch={dispatch}
               onDrawDefaults={rememberDrawDefaults}
               scale={imageScale}
+              colorPalette={colorPalette}
+              onColorPalette={changeColorPalette}
             />
           )}
           {state.error !== null && <p role="alert">{state.error.message}</p>}
@@ -594,6 +620,8 @@ function Inspector({
   dispatch,
   onDrawDefaults,
   scale,
+  colorPalette,
+  onColorPalette,
 }: {
   doc: HarieDocument;
   annotations: readonly Annotation[];
@@ -602,6 +630,9 @@ function Inspector({
   onDrawDefaults: (patch: DrawDefaults) => void;
   /** 画像の解像度の倍率。太さ・大きさの候補をこの倍率で出す（FR-EDIT-16） */
   scale: number;
+  /** 自分で作った色（FR-EDIT-17。#RRGGBB、新しい順） */
+  colorPalette: readonly string[];
+  onColorPalette: (update: (prev: string[]) => string[]) => void;
 }) {
   const m = useMessages(EDITOR_MESSAGES);
   const defaults = THEMES.default.defaults;
@@ -668,6 +699,7 @@ function Inspector({
         ? null
         : { ...a.style, [colorKey(a)]: value },
     );
+  const [pickerOpen, setPickerOpen] = useState(false);
   const type = common(annotations.map((a) => a.type));
   const summary = withLine
     ? m.inspector.summaryLine(strokeWidth, dash === undefined ? undefined : m.dashes[dash])
@@ -841,8 +873,106 @@ function Inspector({
               onClick={() => setColor(c.value)}
             />
           ))}
+          {colorPalette.map((c) => (
+            <button
+              key={c}
+              type="button"
+              className="harie-swatch"
+              aria-label={m.inspector.paletteColor(c)}
+              title={c}
+              aria-pressed={color === c}
+              style={{ background: c }}
+              onClick={() => setColor(c)}
+            />
+          ))}
+          <button
+            type="button"
+            className="harie-swatch harie-swatch-add"
+            aria-label={m.inspector.addColor}
+            title={m.inspector.addColor}
+            aria-expanded={pickerOpen}
+            onClick={() => setPickerOpen((v) => !v)}
+          >
+            <Icon size={16}>
+              <path d="M12 5v14M5 12h14" />
+            </Icon>
+          </button>
         </div>
+        {color !== undefined && colorPalette.includes(color) && (
+          <button
+            type="button"
+            className="harie-link-button"
+            onClick={() => onColorPalette((prev) => removePaletteColor(prev, color))}
+          >
+            {m.inspector.removeColor}
+          </button>
+        )}
+        {pickerOpen && (
+          <ColorPicker
+            initial={color ?? defaults.stroke}
+            onAdd={(value) => {
+              onColorPalette((prev) => addPaletteColor(prev, value));
+              setColor(value);
+              setPickerOpen(false);
+            }}
+          />
+        )}
       </fieldset>
+    </div>
+  );
+}
+
+/**
+ * 新しい色を作る（FR-EDIT-17）。カラーピッカーかカラーコードで決め、「追加」でパレットに足して選んだ注釈に入れる。
+ * ピッカーを動かすたびには注釈を変えない（元に戻す単位を 1 回にする）
+ */
+function ColorPicker({ initial, onAdd }: { initial: string; onAdd: (color: string) => void }) {
+  const m = useMessages(EDITOR_MESSAGES);
+  const start = normalizeHex(initial) ?? "#E5484D";
+  const [value, setValue] = useState(start);
+  const [code, setCode] = useState(start);
+  const parsed = normalizeHex(code);
+  const add = () => {
+    if (parsed !== undefined) onAdd(parsed);
+  };
+  return (
+    <div className="harie-color-picker">
+      <input
+        type="color"
+        aria-label={m.inspector.pickColor}
+        value={value.toLowerCase()}
+        onChange={(e) => {
+          const v = normalizeHex(e.target.value);
+          if (v === undefined) return;
+          setValue(v);
+          setCode(v);
+        }}
+      />
+      <input
+        type="text"
+        className="harie-color-code"
+        aria-label={m.inspector.colorCode}
+        aria-invalid={parsed === undefined}
+        spellCheck={false}
+        maxLength={7}
+        value={code}
+        onChange={(e) => {
+          setCode(e.target.value);
+          const v = normalizeHex(e.target.value);
+          if (v !== undefined) setValue(v);
+        }}
+        onKeyDown={(e) => {
+          if (e.key === "Enter") add();
+        }}
+      />
+      <button
+        type="button"
+        className="harie-color-add"
+        disabled={parsed === undefined}
+        onClick={add}
+      >
+        {m.inspector.addToPalette}
+      </button>
     </div>
   );
 }

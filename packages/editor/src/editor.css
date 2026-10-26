@@ -434,7 +434,8 @@
   flex: none;
 }
 .harie-inspector-head svg,
-.harie-icon-button svg {
+.harie-icon-button svg,
+.harie-swatch-add svg {
   fill: none;
   stroke: currentColor;
   stroke-width: 1.8;
@@ -652,8 +653,65 @@ label.harie-field .harie-field-label {
   border-width: 0 2px 2px 0;
   transform: rotate(45deg);
 }
+/* 色を作る（FR-EDIT-17）。点線の枠で「足す」ボタンとわかるようにする */
+.harie-inspector-body .harie-swatch-add {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: #fff;
+  color: var(--harie-muted);
+  box-shadow: none;
+  border: 1.5px dashed var(--harie-muted);
+}
+.harie-inspector-body .harie-swatch-add[aria-expanded="true"] {
+  border-style: solid;
+  border-color: var(--harie-accent-strong);
+  color: var(--harie-accent-text);
+}
+.harie-color-picker {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.harie-color-picker input[type="color"] {
+  flex: none;
+  width: 36px;
+  height: 32px;
+  padding: 2px;
+  border: 1px solid var(--harie-line);
+  border-radius: 8px;
+  background: #fff;
+  cursor: pointer;
+}
+.harie-inspector-body .harie-color-code {
+  flex: 1 1 0;
+  width: 0;
+  min-width: 0;
+  height: 32px;
+  padding: 0 8px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 12px;
+  text-transform: uppercase;
+}
+.harie-inspector-body .harie-color-code[aria-invalid="true"] {
+  border-color: #e5484d;
+}
+.harie-inspector-body .harie-color-add {
+  flex: none;
+  height: 32px;
+  padding: 0 12px;
+  border: 1px solid var(--harie-accent-strong);
+  border-radius: 8px;
+  background: var(--harie-accent-tint);
+  color: var(--harie-accent-text);
+  font-size: 12px;
+}
+.harie-inspector-body .harie-color-add:disabled {
+  opacity: 0.5;
+}
 .harie-inspector-body .harie-tile:focus-visible,
 .harie-inspector-body .harie-swatch:focus-visible,
+.harie-inspector-body .harie-color-add:focus-visible,
 .harie-inspector-body .harie-icon-button:focus-visible,
 .harie-inspector-body .harie-link-button:focus-visible {
   outline: 2px solid var(--harie-accent-strong);

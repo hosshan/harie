@@ -368,6 +368,38 @@ test("FR-EDIT-01: 四角の線の太さと種類を変えられ、選んだ太�
   await expect(fontTile("大")).toHaveAttribute("aria-pressed", "true");
 });
 
+test("FR-EDIT-17: 色を作ってパレットに足すと線の色になり、別の画像を開き直しても使える", async ({
+  page,
+}) => {
+  await openFixture(page, "large-base.jpg");
+  await page.getByRole("button", { name: "四角" }).click();
+  await drag(page, [40, 40], [240, 120]);
+  const rect = annotationRects(page).first();
+  await page.getByRole("button", { name: "色を作ってパレットに追加" }).click();
+  const code = page.getByLabel("カラーコード（#RRGGBB）");
+  await code.fill("12345");
+  await expect(page.getByRole("button", { name: "追加", exact: true })).toBeDisabled();
+  await code.fill("#7a3cf0");
+  await page.getByRole("button", { name: "追加", exact: true }).click();
+  await expect(rect).toHaveAttribute("stroke", "#7A3CF0");
+  const saved = page.getByRole("button", { name: "パレットの色 #7A3CF0" });
+  await expect(saved).toHaveAttribute("aria-pressed", "true");
+
+  // 別の画像を開き直しても、パレットの色で塗れる
+  await page.reload();
+  await openFixture(page, "base.png", "image/png");
+  await page.getByRole("button", { name: "四角" }).click();
+  await drag(page, [8, 8], [40, 30], [64, 40]);
+  await page.getByRole("button", { name: "パレットの色 #7A3CF0" }).click();
+  await expect(annotationRects(page).first()).toHaveAttribute("stroke", "#7A3CF0");
+
+  // パレットから外せる
+  await page.getByRole("button", { name: "選んだ色をパレットから外す" }).click();
+  await expect(page.getByRole("button", { name: "パレットの色 #7A3CF0" })).toHaveCount(0);
+  await page.reload();
+  expect(await page.evaluate(() => localStorage.getItem("harie.colorPalette"))).toBe("[]");
+});
+
 test("FR-EDIT-11: 注釈を複数選んで、まとめて線の太さ・色を変え、動かし、削除できる", async ({
   page,
 }) => {
