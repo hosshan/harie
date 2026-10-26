@@ -2,16 +2,8 @@ import { readFileSync } from "node:fs";
 import { readHarie } from "@harie/format";
 import { createDocument, type HarieDocument } from "@harie/model";
 import { describe, expect, it } from "vitest";
-import {
-  annotationText,
-  fileNameFromUrl,
-  githubViewscreenImages,
-  isGitHubImageRequest,
-  isHarieImageUrl,
-  pageScriptMatches,
-} from "./page-image";
-
-const hex = (s: string) => Buffer.from(s, "utf8").toString("hex");
+import { pageImageInfo } from "./page-copy";
+import { annotationText, fileNameFromUrl, isHarieImageUrl, pageScriptMatches } from "./page-image";
 
 describe("ページ上の Harie 画像の見分け方（FR-FILE-13）", () => {
   it("ファイル名が <名前>.harie.<拡張子> の画像の URL を Harie 画像とみなす", () => {
@@ -42,36 +34,9 @@ describe("ページ用スクリプトを入れる先（FR-FILE-12, FR-FILE-13）
     // 関係のないサイトの権限では入れない
     expect(pageScriptMatches(["https://example.com/*"])).toEqual([]);
   });
-
-  it("注釈データをページに返すのは GitHub のページで GitHub の画像を読むときだけ", () => {
-    const raw = "https://raw.githubusercontent.com/o/r/abc/docs/a.harie.png";
-    expect(isGitHubImageRequest("https://github.com/o/r/pull/1/files", raw)).toBe(true);
-    expect(isGitHubImageRequest("https://github.com/o/r/blob/main/a.harie.png", raw)).toBe(true);
-    expect(isGitHubImageRequest("https://evil.example/", raw)).toBe(false);
-    expect(isGitHubImageRequest(undefined, raw)).toBe(false);
-    expect(
-      isGitHubImageRequest("https://github.com/", "https://intranet.example/a.harie.png"),
-    ).toBe(false);
-  });
 });
 
-describe("GitHub の差分の画像（FR-FILE-12）", () => {
-  it("viewscreen の iframe の URL から、ファイルのパスと画像の URL を取り出す", () => {
-    const raw = "https://raw.githubusercontent.com/o/r/abc/docs/a.harie.png";
-    const src = `https://viewscreen.githubusercontent.com/added/img?color_mode=auto&commit=abc&enc_url=${hex(raw)}&path=docs%2Fa.harie.png&repository_id=1#x`;
-    expect(githubViewscreenImages(src)).toEqual({ path: "docs/a.harie.png", urls: [raw] });
-  });
-
-  it("変更された画像は 2 枚の URL を順に返す。http(s) でないものと壊れた値は捨てる", () => {
-    const a = "https://raw.githubusercontent.com/o/r/1/a.harie.png";
-    const b = "https://raw.githubusercontent.com/o/r/2/a.harie.png";
-    const src = `https://viewscreen.githubusercontent.com/modified/img?enc_url1=${hex(a)}&enc_url2=${hex(b)}&enc_url3=${hex("javascript:alert(1)")}&enc_url4=zz&path=a.harie.png`;
-    expect(githubViewscreenImages(src)?.urls).toEqual([a, b]);
-    expect(githubViewscreenImages("https://github.com/o/r")).toBeNull();
-  });
-});
-
-describe("注釈データのテキスト（FR-FILE-12）", () => {
+describe("説明文をまとめてコピーするテキスト（FR-FILE-12）", () => {
   it("番号の順に「番号. 吹き出しの文」を並べ、紐付かない文字はそのあとに並べる", () => {
     const doc: HarieDocument = {
       ...createDocument({ width: 100, height: 100, now: new Date("2026-10-26T00:00:00Z") }),
@@ -117,5 +82,36 @@ describe("注釈データのテキスト（FR-FILE-12）", () => {
     const lines = annotationText(read.doc).split("\n");
     expect(lines[0]).toBe("通知設定");
     expect(lines.filter((l) => /^\d\. \S/.test(l))).toHaveLength(3);
+  });
+});
+
+describe("説明文をその場でコピーする位置（FR-FILE-12）", () => {
+  it("吹き出しと文字の枠を、画像に対する割合で返す。提案中と空の文字は除く", () => {
+    const doc: HarieDocument = {
+      ...createDocument({ width: 200, height: 100, now: new Date("2026-10-26T00:00:00Z") }),
+      annotations: [
+        { id: "r1", type: "rect", x: 0, y: 0, w: 10, h: 10 },
+        { id: "c1", type: "callout", x: 100, y: 50, w: 50, text: "保存します" },
+        { id: "c2", type: "callout", x: 0, y: 0, w: 50, text: "提案", status: "suggested" },
+        { id: "t1", type: "text", x: 20, y: 10, text: "  " },
+      ],
+    };
+    const info = pageImageInfo(doc);
+    if (!info.harie) throw new Error("not harie");
+    expect(info.targets).toHaveLength(1);
+    expect(info.targets[0]).toMatchObject({ x: 0.5, y: 0.5, w: 0.25, text: "保存します" });
+    expect(info.targets[0]?.h).toBeGreaterThan(0);
+    expect(info.all).toBe("- 保存します");
+  });
+
+  it("切り抜いた画像では、切り抜いた範囲に対する割合にする", () => {
+    const base = createDocument({ width: 200, height: 100, now: new Date("2026-10-26T00:00:00Z") });
+    const doc: HarieDocument = {
+      ...base,
+      canvas: { ...base.canvas, crop: { x: 100, y: 0, w: 100, h: 100 } },
+      annotations: [{ id: "c1", type: "callout", x: 150, y: 20, w: 25, text: "a" }],
+    };
+    const info = pageImageInfo(doc);
+    expect(info.harie && info.targets[0]).toMatchObject({ x: 0.5, y: 0.2, w: 0.25 });
   });
 });

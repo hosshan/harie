@@ -1,11 +1,11 @@
 // ページ上の Harie 画像を読む（service worker で動く。FR-FILE-12, FR-FILE-13）。
 // 画像は利用者が許可したサイトの分だけ、拡張の権限で取りに行く（ページの CORS の制限を受けない）
 import { readHarie } from "@harie/format";
-import type { HarieDocument } from "@harie/model";
 import { browser } from "wxt/browser";
 import { z } from "zod";
 import { putCapture } from "./capture-store";
-import { fileNameFromUrl, isGitHubImageRequest, isHttpUrl, pageScriptMatches } from "./page-image";
+import { type PageImageInfo, pageImageInfo } from "./page-copy";
+import { fileNameFromUrl, isHttpUrl, pageScriptMatches } from "./page-image";
 
 /** これより大きい画像は読まない */
 const MAX_BYTES = 40 * 1024 * 1024;
@@ -13,15 +13,10 @@ const PAGE_SCRIPT_ID = "harie-page";
 
 /** ページ用のスクリプトから来るメッセージ。ページの影響を受けうるので、形を確かめてから使う */
 export const PageMessageSchema = z.discriminatedUnion("type", [
-  z.object({ type: z.literal("harie:page-probe"), url: z.string().max(8192) }),
-  z.object({ type: z.literal("harie:page-annotations"), url: z.string().max(8192) }),
+  z.object({ type: z.literal("harie:page-read"), url: z.string().max(8192) }),
   z.object({ type: z.literal("harie:page-edit"), url: z.string().max(8192) }),
 ]);
 export type PageMessage = z.infer<typeof PageMessageSchema>;
-
-export type AnnotationsResponse =
-  | { ok: true; doc: HarieDocument; mismatch: boolean }
-  | { ok: false; reason: "not-harie" | "failed" };
 
 async function fetchImage(url: string): Promise<Uint8Array> {
   if (!isHttpUrl(url)) throw new Error("http(s) の画像だけを読めます");
@@ -35,35 +30,26 @@ async function fetchImage(url: string): Promise<Uint8Array> {
   return bytes;
 }
 
-/** 同じ画像を何度も読まないよう、判定の結果だけを覚えておく */
-const probed = new Map<string, boolean>();
+/** 同じ画像を何度も読まないよう、結果を覚えておく */
+const known = new Map<string, PageImageInfo>();
 
-async function probe(url: string): Promise<boolean> {
-  const known = probed.get(url);
-  if (known !== undefined) return known;
-  let harie = false;
+async function read(url: string): Promise<PageImageInfo> {
+  const cached = known.get(url);
+  if (cached !== undefined) return cached;
+  let info: PageImageInfo = { harie: false };
   try {
-    const kind = readHarie(await fetchImage(url)).kind;
-    harie = kind === "harie" || kind === "harie-mismatch";
-  } catch {
-    harie = false;
-  }
-  if (probed.size > 500) probed.clear();
-  probed.set(url, harie);
-  return harie;
-}
-
-async function annotations(url: string): Promise<AnnotationsResponse> {
-  try {
-    const read = readHarie(await fetchImage(url));
-    if (read.kind === "harie") return { ok: true, doc: read.doc, mismatch: false };
-    if (read.kind === "harie-mismatch" && read.doc !== undefined) {
-      return { ok: true, doc: read.doc, mismatch: true };
+    const r = readHarie(await fetchImage(url));
+    // 画像が外で編集されていても、注釈データが読めれば説明文はコピーできる
+    if (r.kind === "harie") info = pageImageInfo(r.doc);
+    else if (r.kind === "harie-mismatch") {
+      info = r.doc === undefined ? { harie: true, targets: [], all: "" } : pageImageInfo(r.doc);
     }
-    return { ok: false, reason: "not-harie" };
   } catch {
-    return { ok: false, reason: "failed" };
+    info = { harie: false };
   }
+  if (known.size > 200) known.clear();
+  known.set(url, info);
+  return info;
 }
 
 /** 画像を取り込み、拡張のエディタで開く。保存はキャプチャと同じくダウンロードになる */
@@ -90,17 +76,13 @@ async function edit(url: string, tab: { index?: number } | undefined): Promise<{
 
 export async function handlePageMessage(
   message: PageMessage,
-  sender: { url?: string | undefined; tab?: { index?: number } | undefined },
+  sender: { tab?: { index?: number } | undefined },
 ): Promise<unknown> {
   switch (message.type) {
-    case "harie:page-probe":
-      // ページには Harie 画像かどうかだけを返す（中身は返さない）
-      return { harie: await probe(message.url) };
-    case "harie:page-annotations":
-      // 中身（注釈データ）を返すのは GitHub のページで GitHub の画像を読むときだけ。
-      // ほかのサイトで、ログインが要る別サイトの画像の中身をページに渡さないため
-      if (!isGitHubImageRequest(sender.url, message.url)) return { ok: false, reason: "failed" };
-      return annotations(message.url);
+    case "harie:page-read":
+      // 説明文は content script（ページの JS からは見えない隔離された環境）にだけ渡す。
+      // content script はそれを DOM に書かない（閉じた Shadow DOM のボタンからクリップボードに書くだけ）
+      return read(message.url);
     case "harie:page-edit":
       return edit(message.url, sender.tab);
   }

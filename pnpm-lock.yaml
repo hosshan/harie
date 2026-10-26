@@ -105,6 +105,9 @@ importers:
       '@harie/model':
         specifier: workspace:*
         version: link:../../packages/model
+      '@harie/render':
+        specifier: workspace:*
+        version: link:../../packages/render
       '@harie/web':
         specifier: workspace:*
         version: link:../web

@@ -1,23 +1,27 @@
 // ページ上の Harie 画像（FR-FILE-12, FR-FILE-13）。利用者がポップアップで許可したサイトにだけ、
-// background が registerContentScripts で入れる（integrations.md 1.5）。
-// - どのサイトでも: Harie 画像にカーソルを当てると、右上に薄く編集ボタンを出す。押すと拡張のエディタで開く
-// - GitHub: ファイル・差分の Harie 画像の下に、注釈データを文字で出す（選んでコピーできる）
+// background が registerContentScripts で入れる（integrations.md 1.5）。ページの見た目は変えず、
+// - Harie 画像にカーソルを当てると、右上に薄く編集ボタンと「まとめてコピー」を出す。編集は拡張のエディタで開く
+// - 説明文（吹き出し・文字）の枠にカーソルを当てると、その枠の上にコピーボタンを出す
+// 説明文は content script（ページの JS から見えない隔離された環境）の中だけに持ち、DOM には書かない。
 import { getLocale } from "@harie/editor/locale";
-import type { HarieDocument } from "@harie/model";
 import { browser } from "wxt/browser";
-import { type ExtensionMessages, extensionMessages } from "@/lib/messages";
-import type { AnnotationsResponse } from "@/lib/page-fetch";
-import {
-  annotationText,
-  githubViewscreenImages,
-  isHarieImageUrl,
-  isHttpUrl,
-} from "@/lib/page-image";
+import { extensionMessages } from "@/lib/messages";
+import type { CopyTarget, PageImageInfo } from "@/lib/page-copy";
+import { isHarieImageUrl, isHttpUrl } from "@/lib/page-image";
 
-/** これより小さい画像（アイコン・アバターなど）には編集ボタンを出さない */
+/** これより小さい画像（アイコン・アバターなど）は調べない */
 const MIN_SIZE = 96;
+/** 枠の当たり判定の余白（CSS px） */
+const HIT_PAD = 6;
 
-const SYMBOL = `<svg viewBox="0 0 512 512" width="20" height="20" aria-hidden="true"><defs><clipPath id="harie-page-sq"><rect x="72" y="72" width="184" height="184" rx="25.8"/></clipPath></defs><rect x="72" y="72" width="184" height="184" rx="25.8" fill="#EBD08A"/><circle cx="309.9" cy="309.9" r="130.1" fill="#D4A72C"/><circle cx="309.9" cy="309.9" r="130.1" fill="#B0861A" clip-path="url(#harie-page-sq)"/></svg>`;
+const SYMBOL = `<svg viewBox="0 0 512 512" width="18" height="18" aria-hidden="true"><defs><clipPath id="harie-page-sq"><rect x="72" y="72" width="184" height="184" rx="25.8"/></clipPath></defs><rect x="72" y="72" width="184" height="184" rx="25.8" fill="#EBD08A"/><circle cx="309.9" cy="309.9" r="130.1" fill="#D4A72C"/><circle cx="309.9" cy="309.9" r="130.1" fill="#B0861A" clip-path="url(#harie-page-sq)"/></svg>`;
+const icon = (body: string) =>
+  `<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${body}</svg>`;
+const COPY = icon(
+  '<rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15H4a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v1"/>',
+);
+const COPY_ALL = icon('<path d="M8 6h13M8 12h13M8 18h13"/><path d="M3 6h.01M3 12h.01M3 18h.01"/>');
+const CHECK = icon('<path d="M20 6 9 17l-5-5"/>');
 
 const send = <T>(message: { type: string; url: string }) =>
   browser.runtime.sendMessage(message) as Promise<T>;
@@ -27,52 +31,117 @@ export default defineUnlistedScript(() => {
   if (w.__hariePage) return;
   w.__hariePage = true;
   const m = extensionMessages(getLocale());
-  setupEditButton(m);
-  if (location.hostname === "github.com" && window.top === window) setupGitHub(m);
-});
 
-// ---- 編集ボタン（FR-FILE-13） ----
-
-function setupEditButton(m: ExtensionMessages): void {
   const host = document.createElement("div");
-  host.dataset.hariePage = "edit";
+  host.dataset.hariePage = "";
+  // ページの CSS の影響を受けないよう Shadow DOM に入れる
   const shadow = host.attachShadow({ mode: "open" });
   shadow.innerHTML = `<style>
-button{position:fixed;z-index:2147483647;display:none;align-items:center;justify-content:center;width:32px;height:32px;padding:0;
-border:1px solid rgba(43,38,32,.18);border-radius:8px;background:rgba(255,255,255,.85);box-shadow:0 1px 4px rgba(43,38,32,.2);
-cursor:pointer;opacity:.55;transition:opacity .15s}
+.bar,.copy{position:fixed;z-index:2147483647;display:none;gap:4px}
+button{display:flex;align-items:center;justify-content:center;width:30px;height:30px;padding:0;margin:0;
+border:1px solid rgba(43,38,32,.18);border-radius:8px;background:rgba(255,255,255,.88);color:#2B2620;
+box-shadow:0 1px 4px rgba(43,38,32,.2);cursor:pointer;opacity:.55;transition:opacity .15s}
 button:hover,button:focus-visible{opacity:1}
-button[data-busy]{cursor:progress}
-</style><button type="button">${SYMBOL}</button>`;
-  const button = shadow.querySelector("button") as HTMLButtonElement;
-  button.title = m.editOnImage;
-  button.setAttribute("aria-label", m.editOnImage);
+button[data-done]{color:#1F7A3D;opacity:1}
+.copy button{width:26px;height:26px;border-radius:6px}
+</style>
+<div class="bar"><button type="button" data-action="all">${COPY_ALL}</button><button type="button" data-action="edit">${SYMBOL}</button></div>
+<div class="copy"><button type="button" data-action="one">${COPY}</button></div>`;
+  const bar = shadow.querySelector(".bar") as HTMLElement;
+  const copyBox = shadow.querySelector(".copy") as HTMLElement;
+  const buttons = {
+    all: shadow.querySelector('[data-action="all"]') as HTMLButtonElement,
+    edit: shadow.querySelector('[data-action="edit"]') as HTMLButtonElement,
+    one: shadow.querySelector('[data-action="one"]') as HTMLButtonElement,
+  };
+  const label = (b: HTMLButtonElement, text: string) => {
+    b.title = text;
+    b.setAttribute("aria-label", text);
+  };
+  label(buttons.all, m.copyAll);
+  label(buttons.edit, m.editOnImage);
+  label(buttons.one, m.copyText);
   document.documentElement.append(host);
 
-  /** 判定済みの URL（Harie 画像か） */
-  const known = new Map<string, boolean>();
+  const known = new Map<string, PageImageInfo>();
+  const pending = new Set<string>();
   let current: { img: HTMLImageElement; url: string } | null = null;
+  let target: CopyTarget | null = null;
   let hideTimer: number | undefined;
-  let probeTimer: number | undefined;
+  let readTimer: number | undefined;
+
+  const infoOf = (url: string) => {
+    const info = known.get(url);
+    return info?.harie === true ? info : null;
+  };
 
   const hide = () => {
     current = null;
-    button.style.display = "none";
+    target = null;
+    bar.style.display = "none";
+    copyBox.style.display = "none";
   };
-  const show = (img: HTMLImageElement, url: string) => {
-    const r = img.getBoundingClientRect();
-    if (r.width < MIN_SIZE || r.height < MIN_SIZE) return;
-    current = { img, url };
-    Object.assign(button.style, {
+
+  /** 画像の右上にバーを、カーソルの下の説明文の枠の右上にコピーボタンを置く */
+  const place = (x: number, y: number) => {
+    if (current === null) return;
+    const info = infoOf(current.url);
+    if (info === null) {
+      bar.style.display = "none";
+      copyBox.style.display = "none";
+      return;
+    }
+    const r = current.img.getBoundingClientRect();
+    buttons.all.style.display = info.all === "" ? "none" : "flex";
+    Object.assign(bar.style, {
       display: "flex",
-      left: `${Math.round(r.right - 40)}px`,
+      left: `${Math.round(r.right - (info.all === "" ? 38 : 72))}px`,
       top: `${Math.round(Math.max(r.top, 0) + 8)}px`,
+    });
+    const hit = info.targets.find((t) => {
+      const left = r.left + t.x * r.width;
+      const top = r.top + t.y * r.height;
+      return (
+        x >= left - HIT_PAD &&
+        x <= left + t.w * r.width + HIT_PAD &&
+        y >= top - HIT_PAD &&
+        y <= top + t.h * r.height + HIT_PAD
+      );
+    });
+    if (hit === undefined) {
+      if (target !== null) copyBox.style.display = "none";
+      target = null;
+      return;
+    }
+    if (hit !== target) delete buttons.one.dataset.done;
+    target = hit;
+    // 枠の右上の角に、少し重ねて置く
+    const right = r.left + (hit.x + hit.w) * r.width;
+    const top = r.top + hit.y * r.height;
+    Object.assign(copyBox.style, {
+      display: "flex",
+      left: `${Math.round(right - 14)}px`,
+      top: `${Math.round(top - 14)}px`,
     });
   };
 
+  const read = (url: string, then: () => void) => {
+    if (known.has(url) || pending.has(url)) return;
+    pending.add(url);
+    void send<PageImageInfo>({ type: "harie:page-read", url })
+      .catch((): PageImageInfo => ({ harie: false }))
+      .then((info) => {
+        known.set(url, info);
+        pending.delete(url);
+        then();
+      });
+  };
+
+  let last = { x: 0, y: 0 };
   document.addEventListener(
-    "mouseover",
+    "mousemove",
     (e) => {
+      last = { x: e.clientX, y: e.clientY };
       if (e.target === host) {
         clearTimeout(hideTimer);
         return;
@@ -80,209 +149,86 @@ button[data-busy]{cursor:progress}
       const img = e.target instanceof HTMLImageElement ? e.target : null;
       const url = img === null ? "" : img.currentSrc || img.src;
       if (img === null || !isHttpUrl(url)) {
-        clearTimeout(probeTimer);
+        clearTimeout(readTimer);
         clearTimeout(hideTimer);
         // ボタンへ移る間に消えないよう、少し待ってから消す
         hideTimer = window.setTimeout(hide, 200);
         return;
       }
       clearTimeout(hideTimer);
-      clearTimeout(probeTimer);
-      if (isHarieImageUrl(url) || known.get(url) === true) {
-        show(img, url);
-        return;
-      }
-      hide();
-      if (known.has(url)) return;
-      const r = img.getBoundingClientRect();
-      if (r.width < MIN_SIZE || r.height < MIN_SIZE) return;
-      // ファイル名が規則どおりでなくても、埋め込みデータがあれば Harie 画像として扱う（ADR-0004）
-      probeTimer = window.setTimeout(async () => {
-        try {
-          const { harie } = await send<{ harie: boolean }>({ type: "harie:page-probe", url });
-          known.set(url, harie);
-          if (harie && img.matches(":hover")) show(img, url);
-        } catch {
-          known.set(url, false);
+      if (current?.img !== img) {
+        clearTimeout(readTimer);
+        hide();
+        const r = img.getBoundingClientRect();
+        if (r.width < MIN_SIZE || r.height < MIN_SIZE) return;
+        current = { img, url };
+        if (!known.has(url)) {
+          const again = () => {
+            if (current?.img === img) place(last.x, last.y);
+          };
+          // ファイル名が規則どおりならすぐに、そうでなければ少し止まったら読む（判定の本番は埋め込みデータ。ADR-0004）
+          if (isHarieImageUrl(url)) read(url, again);
+          else readTimer = window.setTimeout(() => read(url, again), 250);
         }
-      }, 250);
+      }
+      place(e.clientX, e.clientY);
     },
     { capture: true, passive: true },
   );
   window.addEventListener("scroll", hide, { capture: true, passive: true });
   window.addEventListener("resize", hide, { passive: true });
 
-  button.addEventListener("click", async (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    if (current === null || button.dataset.busy !== undefined) return;
-    button.dataset.busy = "";
+  const done = (b: HTMLButtonElement, original: string) => {
+    b.dataset.done = "";
+    b.innerHTML = CHECK;
+    label(b, m.copied);
+    setTimeout(() => {
+      delete b.dataset.done;
+      b.innerHTML = original;
+      label(b, b === buttons.one ? m.copyText : m.copyAll);
+    }, 1200);
+  };
+
+  const copy = async (text: string): Promise<boolean> => {
     try {
-      const { ok } = await send<{ ok: boolean }>({ type: "harie:page-edit", url: current.url });
-      if (!ok) button.title = m.editFailed;
+      await navigator.clipboard.writeText(text);
+      return true;
     } catch {
-      button.title = m.editFailed;
-    } finally {
-      delete button.dataset.busy;
-    }
-  });
-}
-
-// ---- GitHub の注釈データ（FR-FILE-12） ----
-
-function setupGitHub(m: ExtensionMessages): void {
-  const done = new WeakSet<Element>();
-  let timer: number | undefined;
-
-  const scan = () => {
-    // コミット・PR の差分: 画像は viewscreen.githubusercontent.com の iframe に出る
-    for (const frame of document.querySelectorAll<HTMLIFrameElement>(
-      'iframe[src*="viewscreen.githubusercontent.com"]',
-    )) {
-      if (done.has(frame)) continue;
-      done.add(frame);
-      const info = githubViewscreenImages(frame.src);
-      if (info === null) continue;
-      const name = info.path.split("/").at(-1) ?? "";
-      if (!isHarieImageUrl(`https://github.com/${name}`)) continue;
-      // 変更された画像は、変更前・変更後の 2 枚の URL が入る（並びは前・後）
-      const labels = info.urls.length === 2 ? [m.diffBefore, m.diffAfter] : [];
-      let anchor: Element = frame;
-      info.urls.forEach((url, i) => {
-        const panel = createPanel(m, name, url, labels[i]);
-        anchor.after(panel);
-        anchor = panel;
-      });
-    }
-    // ファイルの表示（/blob/...）: 表示中のファイルそのものの画像だけ（README の中の画像などは除く）
-    if (location.pathname.includes("/blob/")) {
-      for (const img of document.querySelectorAll<HTMLImageElement>("img")) {
-        if (done.has(img)) continue;
-        let path = "";
-        try {
-          path = new URL(img.src).pathname;
-        } catch {
-          continue;
-        }
-        if (path !== location.pathname || !isHarieImageUrl(img.src)) continue;
-        done.add(img);
-        img.after(createPanel(m, path.split("/").at(-1) ?? "", img.src));
-      }
+      // http のページなどで Clipboard API が使えないとき。コピーの間だけ文字を置く
+      const area = document.createElement("textarea");
+      area.value = text;
+      area.style.cssText = "position:fixed;opacity:0;pointer-events:none";
+      shadow.append(area);
+      area.select();
+      const ok = document.execCommand("copy");
+      area.remove();
+      return ok;
     }
   };
 
-  scan();
-  // GitHub は画面を差し替えて遷移するので、変化があるたびに探し直す
-  new MutationObserver(() => {
-    clearTimeout(timer);
-    timer = window.setTimeout(scan, 300);
-  }).observe(document.body, { childList: true, subtree: true });
-}
-
-function createPanel(
-  m: ExtensionMessages,
-  fileName: string,
-  url: string,
-  label?: string,
-): HTMLElement {
-  const host = document.createElement("div");
-  host.dataset.hariePage = "annotations";
-  const shadow = host.attachShadow({ mode: "open" });
-  shadow.innerHTML = `<style>
-:host{display:block;margin:12px 0;text-align:left}
-section{border:1px solid #E6DCC6;border-radius:8px;background:#FBF6E9;color:#2B2620;
-font:13px/1.6 -apple-system,BlinkMacSystemFont,"Hiragino Sans","Noto Sans JP",system-ui,sans-serif;padding:10px 12px}
-header{display:flex;flex-wrap:wrap;align-items:center;gap:6px 8px;margin-bottom:6px}
-h2{display:flex;align-items:center;gap:6px;margin:0;font-size:13px;font-weight:600}
-.file{color:#7A7064;font-weight:400;overflow-wrap:anywhere}
-.actions{display:flex;gap:6px;margin-left:auto}
-button{font:inherit;font-size:12px;padding:2px 10px;border:1px solid #E6DCC6;border-radius:6px;background:#fff;color:#2B2620;cursor:pointer}
-button:hover{border-color:#B0861A}
-pre{margin:0;padding:8px 10px;border-radius:6px;background:#fff;border:1px solid #E6DCC6;white-space:pre-wrap;overflow-wrap:anywhere;
-font:12px/1.6 ui-monospace,SFMono-Regular,Menlo,monospace;user-select:text;max-height:480px;overflow:auto}
-details{margin-top:6px}
-summary{cursor:pointer;color:#7A7064;font-size:12px}
-details pre{margin-top:4px}
-.note{margin:0 0 6px;color:#86650F;font-size:12px}
-.muted{margin:0;color:#7A7064}
-</style><section></section>`;
-  const section = shadow.querySelector("section") as HTMLElement;
-  section.setAttribute("aria-label", m.panelTitle);
-
-  const header = document.createElement("header");
-  const h2 = document.createElement("h2");
-  h2.innerHTML = SYMBOL;
-  const title = document.createElement("span");
-  title.textContent = label === undefined ? m.panelTitle : m.panelTitleWith(label);
-  const file = document.createElement("span");
-  file.className = "file";
-  file.textContent = fileName;
-  h2.append(title, file);
-  header.append(h2);
-  const status = document.createElement("p");
-  status.className = "muted";
-  status.textContent = m.panelLoading;
-  section.append(header, status);
-
-  void send<AnnotationsResponse>({ type: "harie:page-annotations", url })
-    .catch((): AnnotationsResponse => ({ ok: false, reason: "failed" }))
-    .then((res) => {
-      if (!res.ok) {
-        // ファイル名だけが規則どおりで、中身が Harie ファイルでないときは何も出さない
-        if (res.reason === "not-harie") host.remove();
-        else status.textContent = m.panelFailed;
-        return;
-      }
-      status.remove();
-      fill(m, section, header, res.doc, res.mismatch);
-    });
-  return host;
-}
-
-function fill(
-  m: ExtensionMessages,
-  section: HTMLElement,
-  header: HTMLElement,
-  doc: HarieDocument,
-  mismatch: boolean,
-): void {
-  const text = annotationText(doc);
-  const json = JSON.stringify(doc, null, 2);
-  const actions = document.createElement("div");
-  actions.className = "actions";
-  actions.append(copyButton(m, m.panelCopyText, text), copyButton(m, m.panelCopyJson, json));
-  header.append(actions);
-  if (mismatch) {
-    const note = document.createElement("p");
-    note.className = "note";
-    note.textContent = m.panelMismatch;
-    section.append(note);
+  for (const b of Object.values(buttons)) {
+    b.addEventListener("mousedown", (e) => e.preventDefault());
   }
-  const pre = document.createElement("pre");
-  pre.textContent = text === "" ? m.panelEmpty : text;
-  const details = document.createElement("details");
-  const summary = document.createElement("summary");
-  summary.textContent = m.panelJson;
-  const jsonPre = document.createElement("pre");
-  jsonPre.textContent = json;
-  details.append(summary, jsonPre);
-  section.append(pre, details);
-}
-
-function copyButton(m: ExtensionMessages, label: string, value: string): HTMLButtonElement {
-  const button = document.createElement("button");
-  button.type = "button";
-  button.textContent = label;
-  button.addEventListener("click", async () => {
-    try {
-      await navigator.clipboard.writeText(value);
-      button.textContent = m.panelCopied;
-      setTimeout(() => {
-        button.textContent = label;
-      }, 1500);
-    } catch {
-      // クリップボードを使えないときも、文字は選んでコピーできる
+  shadow.addEventListener("click", async (e) => {
+    const b = (e.target as Element).closest("button");
+    if (b === null || current === null) return;
+    e.preventDefault();
+    e.stopPropagation();
+    const info = infoOf(current.url);
+    if (b === buttons.one && target !== null) {
+      if (await copy(target.text)) done(b, COPY);
+    } else if (b === buttons.all && info !== null) {
+      if (await copy(info.all)) done(b, COPY_ALL);
+    } else if (b === buttons.edit && b.dataset.busy === undefined) {
+      b.dataset.busy = "";
+      try {
+        const { ok } = await send<{ ok: boolean }>({ type: "harie:page-edit", url: current.url });
+        if (!ok) label(b, m.editFailed);
+      } catch {
+        label(b, m.editFailed);
+      } finally {
+        delete b.dataset.busy;
+      }
     }
   });
-  return button;
-}
+});

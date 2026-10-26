@@ -1,4 +1,6 @@
 import { readFileSync } from "node:fs";
+import { readHarie } from "@harie/format";
+import { annotationBounds } from "@harie/render";
 import type { Worker } from "@playwright/test";
 import { expect, test } from "./fixtures";
 
@@ -48,7 +50,7 @@ test("FR-FILE-13: Harie 画像にカーソルを当てると編集ボタンが�
     }),
   );
   await target.goto("http://harie.test/gallery");
-  const button = target.locator('[data-harie-page="edit"] button');
+  const button = target.locator('[data-harie-page] button[data-action="edit"]');
 
   // ファイル名が規則どおりの画像
   await target.locator("#named").hover();
@@ -76,9 +78,7 @@ test("FR-FILE-13: Harie 画像にカーソルを当てると編集ボタンが�
   await expect(editor.locator(".harie-canvas-image svg text").first()).toBeAttached();
 });
 
-const rawUrl = "https://raw.githubusercontent.com/o/r/abc123/docs/guide.harie.png";
-
-test("FR-FILE-12: GitHub のファイル表示で、注釈データを文字で表示してコピーできる", async ({
+test("FR-FILE-12: 説明文の枠にカーソルを当てるとコピーボタンが出て、その説明文をコピーできる", async ({
   context,
   worker,
   target,
@@ -92,49 +92,38 @@ test("FR-FILE-12: GitHub のファイル表示で、注釈データを文字で�
     }
     return route.fulfill({
       contentType: "text/html; charset=utf-8",
-      body: `<!doctype html><html><body><div id="blob"><img alt="guide.harie.png" src="${url.pathname}?raw=true" style="max-width:100%"></div></body></html>`,
+      body: `<!doctype html><html><body style="margin:0"><img alt="guide.harie.png" src="${url.pathname}?raw=true" style="display:block;width:640px;height:360px"></body></html>`,
     });
   });
   await context.grantPermissions(["clipboard-read", "clipboard-write"], {
     origin: "https://github.com",
   });
   await target.goto("https://github.com/o/r/blob/main/docs/guide.harie.png");
-  const panel = target.locator('[data-harie-page="annotations"]');
-  await expect(panel).toHaveCount(1);
-  await expect(panel.locator("pre").first()).toContainText("1. ");
-  await expect(panel.locator("pre").first()).toHaveText(/^通知設定\n\n1\. .+\n2\. .+\n3\. .+$/);
-  await panel.getByRole("button", { name: "JSON をコピー" }).click();
-  await expect(panel.getByRole("button", { name: "コピーしました" })).toBeVisible();
-  const copied = await target.evaluate(() => navigator.clipboard.readText());
-  expect(JSON.parse(copied).docId).toBe("a8cbd35e-0a24-4f5d-98af-7b70abe7f96f");
-});
+  // 見た目は変えない（カーソルを当てるまで何も出さない）
+  const copyOne = target.locator('[data-harie-page] button[data-action="one"]');
+  const copyAll = target.locator('[data-harie-page] button[data-action="all"]');
+  await expect(copyAll).toBeHidden();
 
-test("FR-FILE-12: GitHub の差分（PR・コミット）の Harie 画像にも注釈データを出す", async ({
-  context,
-  worker,
-  target,
-}) => {
-  await waitPageScript(worker);
-  const enc = Buffer.from(rawUrl, "utf8").toString("hex");
-  const other = Buffer.from("https://raw.githubusercontent.com/o/r/abc123/a.png").toString("hex");
-  await context.route("https://github.com/o/r/**", (route) =>
-    route.fulfill({
-      contentType: "text/html; charset=utf-8",
-      body: `<!doctype html><html><body>
-<div class="file"><iframe src="https://viewscreen.githubusercontent.com/added/img?enc_url=${enc}&path=docs%2Fguide.harie.png" title="File display"></iframe></div>
-<div class="file"><iframe src="https://viewscreen.githubusercontent.com/added/img?enc_url=${other}&path=a.png" title="File display"></iframe></div>
-</body></html>`,
-    }),
+  const read = readHarie(new Uint8Array(guide));
+  if (read.kind !== "harie") throw new Error(read.kind);
+  const callout = read.doc.annotations.find((a) => a.type === "callout");
+  if (callout?.type !== "callout") throw new Error("no callout");
+  const b = annotationBounds(callout);
+  const scale = 640 / read.doc.canvas.width;
+
+  // 枠の外（画像の左上の隅）ではコピーボタンは出ない
+  await target.mouse.move(20, 340);
+  await expect(copyAll).toBeVisible();
+  await expect(copyOne).toBeHidden();
+
+  await target.mouse.move((b.x + b.w / 2) * scale, (b.y + b.h / 2) * scale);
+  await expect(copyOne).toBeVisible();
+  await copyOne.click();
+  await expect(copyOne).toHaveAttribute("aria-label", "コピーしました");
+  expect(await target.evaluate(() => navigator.clipboard.readText())).toBe(callout.text.trim());
+
+  await copyAll.click();
+  expect(await target.evaluate(() => navigator.clipboard.readText())).toMatch(
+    /^通知設定\n\n1\. .+\n2\. .+\n3\. .+$/,
   );
-  await context.route("https://viewscreen.githubusercontent.com/**", (route) =>
-    route.fulfill({ contentType: "text/html", body: "<!doctype html><p>image</p>" }),
-  );
-  await context.route("https://raw.githubusercontent.com/**", (route) =>
-    route.fulfill({ contentType: "image/png", body: guide }),
-  );
-  await target.goto("https://github.com/o/r/pull/1/files");
-  const panel = target.locator('[data-harie-page="annotations"]');
-  await expect(panel).toHaveCount(1);
-  await expect(panel).toContainText("guide.harie.png");
-  await expect(panel.locator("pre").first()).toContainText("3. ");
 });

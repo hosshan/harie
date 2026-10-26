@@ -18,6 +18,7 @@
     "@harie/editor": "workspace:*",
     "@harie/format": "workspace:*",
     "@harie/model": "workspace:*",
+    "@harie/render": "workspace:*",
     "@harie/web": "workspace:*",
     "react": "^19.3.0",
     "react-dom": "^19.3.0",

@@ -28,7 +28,7 @@ Chrome ウェブストアに**公開**（検索に出る）で出すときに、
 ・キャプチャは「見えている範囲」「範囲を選ぶ」「要素を選ぶ」の 3 通り。Alt+Shift+S でも撮れます
 ・枠、矢印、番号、吹き出し、モザイクやダミーへの置き換え
 ・保存した画像は Web 版（https://harie.studio/app/）やデスクトップ版でも開いて直せます
-・（任意）GitHub のファイルや差分の Harie 画像の下に、注釈の文字をコピーできる形で表示します。ほかのサイトでも、Harie 画像にカーソルを当てると出るボタンから、そのまま開いて直せます
+・（任意）GitHub やほかのサイトに載っている Harie 画像にカーソルを当てると、説明文をその場でコピーしたり、そのまま開いて直したりできます
 ・AI による補足の提案と個人情報の検出（任意。自分の Anthropic API キーを登録したときだけ動きます）
 
 ■ 権限とデータについて
@@ -51,7 +51,7 @@ Saved images are plain JPEG / PNG files, so you can paste them anywhere. The ann
 - Capture the visible area, a region you drag, or a single element. Alt+Shift+S captures the visible area
 - Boxes, arrows, numbered badges, callouts, and masking personal data with blur or dummy text
 - Open and edit saved images in the web editor (https://harie.studio/app/) or the desktop app
-- (Optional) Show the annotation text of Harie images on GitHub file and diff views, ready to copy. On other sites, hover a Harie image and press the button that appears to open and edit it
+- (Optional) Hover a Harie image on GitHub or other sites to copy its notes right where they are, or open it and edit it
 - AI annotation suggestions and personal-data detection (optional; works only with your own Anthropic API key)
 
 ■ Permissions and data
@@ -84,7 +84,7 @@ Capture a screenshot of the current web page and turn it into an annotated image
 | `activeTab` | 利用者がツールバーのボタンかショートカットを押したタブだけを、そのときに限ってキャプチャするため。常時のサイト権限は求めない。 |
 | `scripting` | 押したタブに、範囲・要素を選ぶためのオーバーレイと、画面上の要素の位置と文字を読み取る処理を、その都度注入するため。読み取った情報は注釈の位置合わせと個人情報の候補探しにだけ使い、保存ファイルには含めない。 |
 | `downloads` | 注釈を付けた画像を、利用者のダウンロードフォルダに保存するため。 |
-| 任意のホスト権限（`optional_host_permissions`: `https://github.com/*`, `https://*.githubusercontent.com/*`, `<all_urls>`） | インストール時には求めない。利用者がポップアップで「GitHub で注釈データを文字で表示する」「ほかのサイトでも画像から編集を開く」をオンにしたときだけ求める。許可されたサイトでだけ、ページ上の Harie 画像（注釈を埋め込んだ JPEG / PNG）を見つけ、画像を読んで注釈の文字を表示したり、拡張のエディタで開いたりするため。読んだ画像は端末の外に送らない。 |
+| 任意のホスト権限（`optional_host_permissions`: `https://github.com/*`, `https://*.githubusercontent.com/*`, `<all_urls>`） | インストール時には求めない。利用者がポップアップで「GitHub で使う」「ほかのサイトでも使う」をオンにしたときだけ求める。許可されたサイトでだけ、ページ上の Harie 画像（注釈を埋め込んだ JPEG / PNG）を見つけ、画像を読んで説明文をコピーできるようにしたり、拡張のエディタで開いたりするため。読んだ画像は端末の外に送らない。 |
 
 英語で書く場合:
 
@@ -93,7 +93,7 @@ Capture a screenshot of the current web page and turn it into an annotated image
 | `activeTab` | To capture only the tab where the user pressed the toolbar button or keyboard shortcut, and only at that moment. No persistent host permissions are requested. |
 | `scripting` | To inject, on demand into that tab, the overlay for choosing a region or element and a function that reads element positions and text. This information is used only to align annotations and to find personal-data candidates, and is never written into saved files. |
 | `downloads` | To save the annotated image to the user's downloads folder. |
-| Optional host permissions (`optional_host_permissions`: `https://github.com/*`, `https://*.githubusercontent.com/*`, `<all_urls>`) | Not requested at install. Requested only when the user turns on "Show annotation data as text on GitHub" or "Open images for editing on other sites too" in the popup. On the granted sites only, the extension finds Harie images (JPEG / PNG files with embedded annotations), reads them to show their annotation text or to open them in the extension's editor. Images read this way never leave the device. |
+| Optional host permissions (`optional_host_permissions`: `https://github.com/*`, `https://*.githubusercontent.com/*`, `<all_urls>`) | Not requested at install. Requested only when the user turns on "Use on GitHub" or "Use on other sites too" in the popup. On the granted sites only, the extension finds Harie images (JPEG / PNG files with embedded annotations) and reads them so the user can copy their notes or open them in the extension's editor. Images read this way never leave the device. |
 
 ### リモートコード
 
@@ -115,4 +115,4 @@ Capture a screenshot of the current web page and turn it into an annotated image
 - AI 機能（任意）を使うときだけ、利用者が登録した Anthropic の API キーで、画像とページの要素の一覧を Anthropic の Claude API に送る。送る前に送信先を表示し、利用者の同意を求める。
 - API キーは拡張の中の localStorage にだけ保存し、ほかに送らない。
 - 開発者のサーバーには何も送らない。解析・広告のための収集はしない。
-- （任意の機能）利用者がオンにしたサイトでは、ページ上の Harie 画像を読み、注釈の文字の表示とエディタで開くことにだけ使う。読んだ画像は端末の外に送らない。
+- （任意の機能）利用者がオンにしたサイトでは、ページ上の Harie 画像を読み、説明文のコピーとエディタで開くことにだけ使う。読んだ画像は端末の外に送らない。
