@@ -150,11 +150,11 @@ test("FR-FILE-12, 13: ポップアップで出すボタンを選べる。オフ�
 }) => {
   const popup = await context.newPage();
   await popup.goto(`chrome-extension://${extensionId}/popup.html`);
-  const edit = popup.getByLabel("画像に編集ボタンを出す");
-  const copy = popup.getByLabel("画像に説明文のコピーボタンを出す");
+  const edit = popup.getByLabel("画像に編集ボタンを表示");
+  const copy = popup.getByLabel("画像に文章のコピーボタンを表示");
   await expect(edit).not.toBeChecked();
   await expect(copy).not.toBeChecked();
-  await expect(popup.getByText("指定がなければ、すべてのサイトで出します。")).toBeVisible();
+  await expect(popup.getByText("指定がなければ、すべてのサイトを対象にします。")).toBeVisible();
   // コピーボタンだけを出す（テスト用のビルドは全サイトの権限を持つので、確認は出ない）
   await copy.check();
   await expect(copy).toBeChecked();
@@ -165,6 +165,10 @@ test("FR-FILE-12, 13: ポップアップで出すボタンを選べる。オフ�
       ),
     )
     .toEqual([["<all_urls>"]]);
+  // 開き直してもチェックは残る
+  await popup.reload();
+  await expect(copy).toBeChecked();
+  await expect(edit).not.toBeChecked();
 
   // サイトを指定すると、そのサイト（とサブドメイン）だけに入れる
   const matches = () =>

@@ -35,13 +35,13 @@
     <button type="button" data-mode="element" data-message="element">要素を選ぶ</button>
     <p class="muted" data-message="popupNote">撮った画像は Harie のエディタで開きます。画像とページの情報は、AI を使うまでこの端末から出ません。</p>
     <p role="alert" hidden></p>
-    <h2 data-message="pageTitle">ページ上の Harie 画像</h2>
-    <label><input type="checkbox" data-feature="edit" /><span data-message="pageEdit">画像に編集ボタンを出す</span></label>
-    <label><input type="checkbox" data-feature="copy" /><span data-message="pageCopy">画像に説明文のコピーボタンを出す</span></label>
+    <h2 data-message="pageTitle">サイト上の画像ガイド</h2>
+    <label><input type="checkbox" data-feature="edit" /><span data-message="pageEdit">画像に編集ボタンを表示</span></label>
+    <label><input type="checkbox" data-feature="copy" /><span data-message="pageCopy">画像に文章のコピーボタンを表示</span></label>
     <fieldset>
-      <legend data-message="pageSites">ボタンを出すサイト</legend>
+      <legend data-message="pageSites">対象サイト</legend>
       <ul class="sites"></ul>
-      <p class="muted sites-all" data-message="pageSitesAll">指定がなければ、すべてのサイトで出します。</p>
+      <p class="muted sites-all" data-message="pageSitesAll">指定がなければ、すべてのサイトを対象にします。</p>
       <form class="add-site">
         <input type="text" name="site" autocomplete="off" spellcheck="false" />
         <button type="submit" data-message="pageSiteAdd">追加</button>

@@ -101,9 +101,11 @@ for (const box of featureBoxes) {
     const feature = box.dataset.feature as "edit" | "copy";
     try {
       if (box.checked) {
-        // 権限の確認はクリックの直後に呼ぶ（ユーザー操作の中でしか求められない）。確認の間にポップアップが閉じてもよいよう、先に設定を保存する
+        // 権限の確認を出すとポップアップが閉じ、この後の処理は動かないことがある。
+        // 設定の保存は確認より先に（待たずに）始め、権限の確認はクリックと同じ流れの中で呼ぶ（ユーザー操作の中でしか求められない）
+        const saving = update({ ...settings, [feature]: true });
         const asked = browser.permissions.request({ origins: PAGE_ORIGINS });
-        await update({ ...settings, [feature]: true });
+        await saving;
         if (!(await asked)) await update({ ...settings, [feature]: false });
       } else {
         await update({ ...settings, [feature]: false });

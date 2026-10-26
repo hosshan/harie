@@ -58,13 +58,13 @@ type DomSnapshot = {
 
 ### 1.5 ページ上の Harie 画像（FR-FILE-12, FR-FILE-13）
 
-ページの見た目は変えず、Harie 画像にカーソルを当てたときだけボタンを出す。ポップアップの「ページ上の Harie 画像」で、出すボタンとボタンを出すサイトを選ぶ（`lib/page-settings.ts`、`chrome.storage.local` に保存）。
+ページの見た目は変えず、Harie 画像にカーソルを当てたときだけボタンを出す。ポップアップの「サイト上の画像ガイド」で、出すボタンとボタンを出すサイトを選ぶ（`lib/page-settings.ts`、`chrome.storage.local` に保存）。
 
 | 項目 | 既定 | 内容 |
 |---|---|---|
-| 画像に編集ボタンを出す | オフ | FR-FILE-13 |
-| 画像に説明文のコピーボタンを出す | オフ | FR-FILE-12 |
-| ボタンを出すサイト | 空（すべてのサイト） | ドメインのホワイトリスト。空ならすべてのサイト、指定があればそのドメインとサブドメインだけ。入力は `https://github.com/o/r` や `*.example.com` もドメインにそろえる（最大 50 件）。`github.com` を入れると、差分の画像を出す `*.githubusercontent.com` の iframe も対象にする |
+| 画像に編集ボタンを表示 | オフ | FR-FILE-13 |
+| 画像に文章のコピーボタンを表示 | オフ | FR-FILE-12 |
+| 対象サイト | 空（すべてのサイト） | ドメインのホワイトリスト。空ならすべてのサイト、指定があればそのドメインとサブドメインだけ。入力は `https://github.com/o/r` や `*.example.com` もドメインにそろえる（最大 50 件）。`github.com` を入れると、差分の画像を出す `*.githubusercontent.com` の iframe も対象にする |
 
 - ページ上のボタンはアイコンなので、カーソルを当てる（キーボードでフォーカスする）と、何をするかをツールチップで出す。
 - 設定か権限が変わる（`storage.onChanged`・`permissions.onAdded` / `onRemoved`）か、拡張が起動・更新されると、service worker が、全サイトの権限があるときだけ、ボタンを出すサイト（空ならすべて）に `entrypoints/page.ts` を `scripting.registerContentScripts` で登録し直す（`allFrames: true`。GitHub の差分の画像は `viewscreen.githubusercontent.com` の iframe に出るため）。manifest の `content_scripts` には書かない。
