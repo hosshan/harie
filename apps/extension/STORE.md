@@ -84,7 +84,8 @@ Capture a screenshot of the current web page and turn it into an annotated image
 | `activeTab` | 利用者がツールバーのボタンかショートカットを押したタブだけを、そのときに限ってキャプチャするため。常時のサイト権限は求めない。 |
 | `scripting` | 押したタブに、範囲・要素を選ぶためのオーバーレイと、画面上の要素の位置と文字を読み取る処理を、その都度注入するため。読み取った情報は注釈の位置合わせと個人情報の候補探しにだけ使い、保存ファイルには含めない。 |
 | `downloads` | 注釈を付けた画像を、利用者のダウンロードフォルダに保存するため。 |
-| 任意のホスト権限（`optional_host_permissions`: `https://github.com/*`, `https://*.githubusercontent.com/*`, `<all_urls>`） | インストール時には求めない。利用者がポップアップで「GitHub で使う」「ほかのサイトでも使う」をオンにしたときだけ求める。許可されたサイトでだけ、ページ上の Harie 画像（注釈を埋め込んだ JPEG / PNG）を見つけ、画像を読んで説明文をコピーできるようにしたり、拡張のエディタで開いたりするため。読んだ画像は端末の外に送らない。 |
+| `storage` | ポップアップで選んだ「ページ上の Harie 画像」のボタンの設定（出すボタンと使うサイト）を、拡張の中に保存して読むため。 |
+| 任意のホスト権限（`optional_host_permissions`: `https://github.com/*`, `https://*.githubusercontent.com/*`, `<all_urls>`） | インストール時には求めない。利用者がポップアップで「画像に編集ボタンを出す」「画像に説明文のコピーボタンを出す」をオンにしたときだけ、選んだ使うサイト（すべてのサイト、または GitHub だけ）の分を求める。許可されたサイトでだけ、ページ上の Harie 画像（注釈を埋め込んだ JPEG / PNG）を見つけ、画像を読んで説明文をコピーできるようにしたり、拡張のエディタで開いたりするため。読んだ画像は端末の外に送らない。 |
 
 英語で書く場合:
 
@@ -93,7 +94,8 @@ Capture a screenshot of the current web page and turn it into an annotated image
 | `activeTab` | To capture only the tab where the user pressed the toolbar button or keyboard shortcut, and only at that moment. No persistent host permissions are requested. |
 | `scripting` | To inject, on demand into that tab, the overlay for choosing a region or element and a function that reads element positions and text. This information is used only to align annotations and to find personal-data candidates, and is never written into saved files. |
 | `downloads` | To save the annotated image to the user's downloads folder. |
-| Optional host permissions (`optional_host_permissions`: `https://github.com/*`, `https://*.githubusercontent.com/*`, `<all_urls>`) | Not requested at install. Requested only when the user turns on "Use on GitHub" or "Use on other sites too" in the popup. On the granted sites only, the extension finds Harie images (JPEG / PNG files with embedded annotations) and reads them so the user can copy their notes or open them in the extension's editor. Images read this way never leave the device. |
+| `storage` | To store, inside the extension, the popup settings for buttons on Harie images (which buttons to show and on which sites). |
+| Optional host permissions (`optional_host_permissions`: `https://github.com/*`, `https://*.githubusercontent.com/*`, `<all_urls>`) | Not requested at install. Requested only when the user turns on "Show an edit button on images" or "Show copy buttons for notes on images" in the popup, and only for the sites they choose (all sites, or GitHub only). On the granted sites only, the extension finds Harie images (JPEG / PNG files with embedded annotations) and reads them so the user can copy their notes or open them in the extension's editor. Images read this way never leave the device. |
 
 ### リモートコード
 

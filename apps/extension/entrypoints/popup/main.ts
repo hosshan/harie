@@ -3,6 +3,13 @@ import { applyDocumentLang, getLocale } from "@harie/editor/locale";
 import { browser } from "wxt/browser";
 import { extensionMessages } from "@/lib/messages";
 import { ALL_SITES_ORIGINS, GITHUB_ORIGINS } from "@/lib/page-image";
+import {
+  loadPageSettings,
+  originsFor,
+  type PageScope,
+  type PageSettings,
+  savePageSettings,
+} from "@/lib/page-settings";
 
 // 言語はエディタの設定と同じ（拡張のページどうしは localStorage を共有する）
 const locale = getLocale();
@@ -17,8 +24,11 @@ for (const el of document.querySelectorAll<HTMLElement>("[data-message]")) {
     | "element"
     | "popupNote"
     | "pageTitle"
-    | "pageGithub"
-    | "pageAllSites"
+    | "pageEdit"
+    | "pageCopy"
+    | "pageScope"
+    | "pageScopeAll"
+    | "pageScopeGithub"
     | "pageNote";
   el.textContent = m[key];
 }
@@ -44,27 +54,62 @@ for (const button of document.querySelectorAll<HTMLButtonElement>("button[data-m
   });
 }
 
-// ページ上の Harie 画像（FR-FILE-12, FR-FILE-13）。オンにしたときだけサイトの権限を求める。
-// 権限が変わると background がページ用のスクリプトを登録し直す
-const PAGE_ORIGINS = { github: GITHUB_ORIGINS, all: ALL_SITES_ORIGINS };
-const pageBoxes = [...document.querySelectorAll<HTMLInputElement>("input[data-page]")];
+// ページ上の Harie 画像（FR-FILE-12, FR-FILE-13）。出すボタンと使うサイトを選ぶ。
+// ボタンをオンにしたときだけ、使うサイトの権限を求める。設定か権限が変わると background がページ用のスクリプトを登録し直す
+const featureBoxes = [...document.querySelectorAll<HTMLInputElement>("input[data-feature]")];
+const scopeRadios = [...document.querySelectorAll<HTMLInputElement>('input[name="scope"]')];
+let settings: PageSettings = await loadPageSettings();
 
-async function refreshPageBoxes(): Promise<void> {
-  for (const box of pageBoxes) {
-    const origins = PAGE_ORIGINS[box.dataset.page as keyof typeof PAGE_ORIGINS];
-    box.checked = await browser.permissions.contains({ origins });
+async function render(): Promise<void> {
+  const granted = await browser.permissions.contains({ origins: originsFor(settings.scope) });
+  for (const box of featureBoxes) {
+    box.checked = granted && settings[box.dataset.feature as "edit" | "copy"];
   }
+  for (const radio of scopeRadios) radio.checked = radio.value === settings.scope;
 }
 
-for (const box of pageBoxes) {
+async function update(next: PageSettings): Promise<void> {
+  settings = next;
+  await savePageSettings(next);
+}
+
+for (const box of featureBoxes) {
   box.addEventListener("change", async () => {
-    const origins = PAGE_ORIGINS[box.dataset.page as keyof typeof PAGE_ORIGINS];
+    const feature = box.dataset.feature as "edit" | "copy";
     try {
-      if (box.checked) await browser.permissions.request({ origins });
-      else await browser.permissions.remove({ origins });
+      if (box.checked) {
+        // 権限の確認はクリックの直後に呼ぶ（ユーザー操作の中でしか求められない）。確認の間にポップアップが閉じてもよいよう、先に設定を保存する
+        const asked = browser.permissions.request({ origins: originsFor(settings.scope) });
+        await update({ ...settings, [feature]: true });
+        if (!(await asked)) await update({ ...settings, [feature]: false });
+      } else {
+        await update({ ...settings, [feature]: false });
+        // どのボタンも出さないなら、サイトの権限を返す
+        if (!settings.edit && !settings.copy) {
+          await browser.permissions.remove({ origins: [...GITHUB_ORIGINS, ...ALL_SITES_ORIGINS] });
+        }
+      }
     } finally {
-      await refreshPageBoxes();
+      await render();
     }
   });
 }
-void refreshPageBoxes();
+
+for (const radio of scopeRadios) {
+  radio.addEventListener("change", async () => {
+    const scope = radio.value as PageScope;
+    const previous = settings.scope;
+    try {
+      const asked =
+        settings.edit || settings.copy
+          ? browser.permissions.request({ origins: originsFor(scope) })
+          : Promise.resolve(true);
+      await update({ ...settings, scope });
+      if (!(await asked)) await update({ ...settings, scope: previous });
+      else if (scope === "github") await browser.permissions.remove({ origins: ALL_SITES_ORIGINS });
+    } finally {
+      await render();
+    }
+  });
+}
+void render();

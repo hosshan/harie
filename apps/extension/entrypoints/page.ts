@@ -8,6 +8,12 @@ import { browser } from "wxt/browser";
 import { extensionMessages } from "@/lib/messages";
 import type { CopyTarget, PageImageInfo } from "@/lib/page-copy";
 import { isHarieImageUrl, isHttpUrl } from "@/lib/page-image";
+import {
+  DEFAULT_PAGE_SETTINGS,
+  loadPageSettings,
+  onPageSettingsChanged,
+  type PageSettings,
+} from "@/lib/page-settings";
 
 /** これより小さい画像（アイコン・アバターなど）は調べない */
 const MIN_SIZE = 96;
@@ -38,15 +44,19 @@ export default defineUnlistedScript(() => {
   const shadow = host.attachShadow({ mode: "open" });
   shadow.innerHTML = `<style>
 .bar,.copy{position:fixed;z-index:2147483647;display:none;gap:4px}
-button{display:flex;align-items:center;justify-content:center;width:30px;height:30px;padding:0;margin:0;
+button{position:relative;display:flex;align-items:center;justify-content:center;width:30px;height:30px;padding:0;margin:0;
 border:1px solid rgba(43,38,32,.18);border-radius:8px;background:rgba(255,255,255,.88);color:#2B2620;
 box-shadow:0 1px 4px rgba(43,38,32,.2);cursor:pointer;opacity:.55;transition:opacity .15s}
 button:hover,button:focus-visible{opacity:1}
 button[data-done]{color:#1F7A3D;opacity:1}
+.icon{display:flex}
 .copy button{width:26px;height:26px;border-radius:6px}
+.tip{position:absolute;top:calc(100% + 6px);right:0;display:none;padding:4px 8px;border-radius:6px;background:#2B2620;color:#fff;
+font:12px/1.4 -apple-system,BlinkMacSystemFont,"Hiragino Sans","Noto Sans JP",system-ui,sans-serif;white-space:nowrap;pointer-events:none}
+button:hover .tip,button:focus-visible .tip{display:block}
 </style>
-<div class="bar"><button type="button" data-action="all">${COPY_ALL}</button><button type="button" data-action="edit">${SYMBOL}</button></div>
-<div class="copy"><button type="button" data-action="one">${COPY}</button></div>`;
+<div class="bar"><button type="button" data-action="all"><span class="icon">${COPY_ALL}</span><span class="tip" aria-hidden="true"></span></button><button type="button" data-action="edit"><span class="icon">${SYMBOL}</span><span class="tip" aria-hidden="true"></span></button></div>
+<div class="copy"><button type="button" data-action="one"><span class="icon">${COPY}</span><span class="tip" aria-hidden="true"></span></button></div>`;
   const bar = shadow.querySelector(".bar") as HTMLElement;
   const copyBox = shadow.querySelector(".copy") as HTMLElement;
   const buttons = {
@@ -54,14 +64,25 @@ button[data-done]{color:#1F7A3D;opacity:1}
     edit: shadow.querySelector('[data-action="edit"]') as HTMLButtonElement,
     one: shadow.querySelector('[data-action="one"]') as HTMLButtonElement,
   };
+  /** ボタンの名前。アイコンだけでは何をするか分かりにくいので、カーソルを当てると同じ文をツールチップに出す */
   const label = (b: HTMLButtonElement, text: string) => {
-    b.title = text;
     b.setAttribute("aria-label", text);
+    (b.querySelector(".tip") as HTMLElement).textContent = text;
   };
   label(buttons.all, m.copyAll);
   label(buttons.edit, m.editOnImage);
   label(buttons.one, m.copyText);
   document.documentElement.append(host);
+
+  // 出すボタン（ポップアップの設定）。変わったら、開いているページにもすぐ反映する
+  let options: PageSettings = DEFAULT_PAGE_SETTINGS;
+  void loadPageSettings().then((next) => {
+    options = next;
+  });
+  onPageSettingsChanged((next) => {
+    options = next;
+    hide();
+  });
 
   const known = new Map<string, PageImageInfo>();
   const pending = new Set<string>();
@@ -92,12 +113,20 @@ button[data-done]{color:#1F7A3D;opacity:1}
       return;
     }
     const r = current.img.getBoundingClientRect();
-    buttons.all.style.display = info.all === "" ? "none" : "flex";
+    const showAll = options.copy && info.all !== "";
+    const count = Number(showAll) + Number(options.edit);
+    buttons.all.style.display = showAll ? "flex" : "none";
+    buttons.edit.style.display = options.edit ? "flex" : "none";
     Object.assign(bar.style, {
-      display: "flex",
-      left: `${Math.round(r.right - (info.all === "" ? 38 : 72))}px`,
+      display: count === 0 ? "none" : "flex",
+      left: `${Math.round(r.right - 4 - count * 34)}px`,
       top: `${Math.round(Math.max(r.top, 0) + 8)}px`,
     });
+    if (!options.copy) {
+      copyBox.style.display = "none";
+      target = null;
+      return;
+    }
     const hit = info.targets.find((t) => {
       const left = r.left + t.x * r.width;
       const top = r.top + t.y * r.height;
@@ -179,12 +208,13 @@ button[data-done]{color:#1F7A3D;opacity:1}
   window.addEventListener("resize", hide, { passive: true });
 
   const done = (b: HTMLButtonElement, original: string) => {
+    const icon = b.querySelector(".icon") as HTMLElement;
     b.dataset.done = "";
-    b.innerHTML = CHECK;
+    icon.innerHTML = CHECK;
     label(b, m.copied);
     setTimeout(() => {
       delete b.dataset.done;
-      b.innerHTML = original;
+      icon.innerHTML = original;
       label(b, b === buttons.one ? m.copyText : m.copyAll);
     }, 1200);
   };

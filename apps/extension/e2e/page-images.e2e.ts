@@ -10,7 +10,12 @@ const guide = readFileSync(
 );
 const plain = readFileSync(new URL("../public/icon/128.png", import.meta.url));
 
-async function waitPageScript(worker: Worker): Promise<void> {
+/** ポップアップと同じ設定を保存し、ページ用のスクリプトが登録されるのを待つ */
+async function enablePageButtons(
+  worker: Worker,
+  settings = { edit: true, copy: true, scope: "all" },
+): Promise<void> {
+  await worker.evaluate((v) => chrome.storage.local.set({ "harie.pageButtons": v }), settings);
   await expect
     .poll(() =>
       worker.evaluate(async () => {
@@ -32,7 +37,7 @@ test("FR-FILE-13: Harie 画像にカーソルを当てると編集ボタンが�
   extensionId,
   target,
 }) => {
-  await waitPageScript(worker);
+  await enablePageButtons(worker);
   await context.route("http://harie.test/files/**", (route) =>
     route.fulfill({
       contentType: "image/png",
@@ -56,6 +61,11 @@ test("FR-FILE-13: Harie 画像にカーソルを当てると編集ボタンが�
   await target.locator("#named").hover();
   await expect(button).toBeVisible();
   await expect(button).toHaveAttribute("aria-label", "Harie で編集");
+  // アイコンだけでは分かりにくいので、カーソルを当てるとツールチップを出す
+  await expect(button.locator(".tip")).toBeHidden();
+  await button.hover();
+  await expect(button.locator(".tip")).toBeVisible();
+  await expect(button.locator(".tip")).toHaveText("Harie で編集");
 
   // 規則どおりでないファイル名でも、埋め込みデータがあれば出す
   await target.locator("#plain").hover();
@@ -83,7 +93,7 @@ test("FR-FILE-12: 説明文の枠にカーソルを当てるとコピーボタ�
   worker,
   target,
 }) => {
-  await waitPageScript(worker);
+  await enablePageButtons(worker);
   await context.route("https://github.com/o/r/**", (route) => {
     const url = new URL(route.request().url());
     if (url.searchParams.get("raw") === "true") {
@@ -126,4 +136,44 @@ test("FR-FILE-12: 説明文の枠にカーソルを当てるとコピーボタ�
   expect(await target.evaluate(() => navigator.clipboard.readText())).toMatch(
     /^通知設定\n\n1\. .+\n2\. .+\n3\. .+$/,
   );
+});
+
+test("FR-FILE-12, 13: ポップアップで出すボタンを選べる。オフにしたボタンは出さない", async ({
+  context,
+  worker,
+  extensionId,
+  target,
+}) => {
+  const popup = await context.newPage();
+  await popup.goto(`chrome-extension://${extensionId}/popup.html`);
+  const edit = popup.getByLabel("画像に編集ボタンを出す");
+  const copy = popup.getByLabel("画像に説明文のコピーボタンを出す");
+  await expect(edit).not.toBeChecked();
+  await expect(copy).not.toBeChecked();
+  await expect(popup.getByLabel("すべてのサイト")).toBeChecked();
+  // コピーボタンだけを出す（テスト用のビルドは全サイトの権限を持つので、確認は出ない）
+  await copy.check();
+  await expect(copy).toBeChecked();
+  await expect
+    .poll(() =>
+      worker.evaluate(async () =>
+        (await chrome.scripting.getRegisteredContentScripts()).map((s) => s.matches),
+      ),
+    )
+    .toEqual([["<all_urls>"]]);
+  await popup.close();
+
+  await context.route("http://harie.test/files/**", (route) =>
+    route.fulfill({ contentType: "image/png", body: guide }),
+  );
+  await context.route("http://harie.test/one", (route) =>
+    route.fulfill({
+      contentType: "text/html; charset=utf-8",
+      body: `<!doctype html><html><body style="margin:0"><img id="named" src="/files/guide.harie.png" style="display:block;width:640px;height:360px"></body></html>`,
+    }),
+  );
+  await target.goto("http://harie.test/one");
+  await target.locator("#named").hover();
+  await expect(target.locator('[data-harie-page] button[data-action="all"]')).toBeVisible();
+  await expect(target.locator('[data-harie-page] button[data-action="edit"]')).toBeHidden();
 });

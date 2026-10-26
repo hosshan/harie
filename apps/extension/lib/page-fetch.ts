@@ -6,6 +6,7 @@ import { z } from "zod";
 import { putCapture } from "./capture-store";
 import { type PageImageInfo, pageImageInfo } from "./page-copy";
 import { fileNameFromUrl, isHttpUrl, pageScriptMatches } from "./page-image";
+import { loadPageSettings } from "./page-settings";
 
 /** これより大きい画像は読まない */
 const MAX_BYTES = 40 * 1024 * 1024;
@@ -88,13 +89,13 @@ export async function handlePageMessage(
   }
 }
 
-/** 許可されているサイトに合わせて、ページ用のスクリプトを登録し直す。権限が変わったとき・起動したときに呼ぶ */
+/** 設定と許可されているサイトに合わせて、ページ用のスクリプトを登録し直す。設定・権限が変わったとき・起動したときに呼ぶ */
 let syncing: Promise<void> = Promise.resolve();
 export function syncPageScripts(): Promise<void> {
   syncing = syncing.then(async () => {
     try {
       const { origins = [] } = await browser.permissions.getAll();
-      const matches = pageScriptMatches(origins);
+      const matches = pageScriptMatches(origins, await loadPageSettings());
       const registered = await browser.scripting.getRegisteredContentScripts({
         ids: [PAGE_SCRIPT_ID],
       });

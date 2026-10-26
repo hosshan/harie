@@ -23,8 +23,8 @@
 
 ### 1.2 権限
 
-- `activeTab`, `scripting`, `downloads` のみ。ユーザーがボタン・ショートカットを押したタブにだけ一時的にアクセスする（NFR-SEC-03）。常時のサイト権限（`host_permissions`）は取らない。
-- 例外として、ページ上の Harie 画像（1.5）のために `optional_host_permissions`（`https://github.com/*`・`https://*.githubusercontent.com/*`・`<all_urls>`）を宣言する。インストール時には求めず、利用者がポップアップでオンにしたときだけ `permissions.request` で求める。オフにすると権限を返す。API キーは拡張ページの localStorage に置くので `storage` も要らない。
+- `activeTab`, `scripting`, `downloads`, `storage` のみ。ユーザーがボタン・ショートカットを押したタブにだけ一時的にアクセスする（NFR-SEC-03）。常時のサイト権限（`host_permissions`）は取らない。
+- 例外として、ページ上の Harie 画像（1.5）のために `optional_host_permissions`（`https://github.com/*`・`https://*.githubusercontent.com/*`・`<all_urls>`）を宣言する。インストール時には求めず、利用者がポップアップでオンにしたときだけ `permissions.request` で求める。どのボタンもオフにすると権限を返す。`storage` は、そのボタンの設定をページ用スクリプトと service worker から読むためだけに使う（API キーは拡張ページの localStorage に置く）。
 - 各権限の説明（ストア申請用）は `apps/extension/STORE.md`。
 - E2E 用のビルド（`HARIE_E2E=1`）にだけ `<all_urls>` を付ける。テストではツールバーのボタンを押せず、activeTab が付かないため。配布用のビルドに含まれないことを E2E で確かめている。
 - 全体キャプチャ（FR-CAP-04, Next）はスクロール撮影の合成で実装する。`debugger` 権限（CDP の `captureBeyondViewport`）は警告バーが出るため、使うならオプトインにする。
@@ -58,14 +58,16 @@ type DomSnapshot = {
 
 ### 1.5 ページ上の Harie 画像（FR-FILE-12, FR-FILE-13）
 
-ページの見た目は変えず、Harie 画像にカーソルを当てたときだけボタンを出す。ポップアップの「ページ上の Harie 画像」に 2 つのスイッチを置き、どちらも既定はオフにする。
+ページの見た目は変えず、Harie 画像にカーソルを当てたときだけボタンを出す。ポップアップの「ページ上の Harie 画像」で、出すボタンと使うサイトを選ぶ（`lib/page-settings.ts`、`chrome.storage.local` に保存）。
 
-| スイッチ | 求める権限 | 動く場所 |
+| 項目 | 既定 | 内容 |
 |---|---|---|
-| GitHub で使う | `https://github.com/*`, `https://*.githubusercontent.com/*` | GitHub（差分の画像を出す iframe を含む） |
-| ほかのサイトでも使う | `<all_urls>` | すべてのサイト |
+| 画像に編集ボタンを出す | オフ | FR-FILE-13 |
+| 画像に説明文のコピーボタンを出す | オフ | FR-FILE-12 |
+| 使うサイト | すべてのサイト | 「すべてのサイト」は `<all_urls>`、「GitHub だけ」は `https://github.com/*`, `https://*.githubusercontent.com/*`（差分の画像を出す iframe を含む）の権限を、ボタンをオンにしたときに求める |
 
-- 権限が変わる（`permissions.onAdded` / `onRemoved`）か、拡張が起動・更新されると、service worker が許可されたサイトだけに `entrypoints/page.ts` を `scripting.registerContentScripts` で登録し直す（`allFrames: true`。GitHub の差分の画像は `viewscreen.githubusercontent.com` の iframe に出るため）。manifest の `content_scripts` には書かない。
+- ページ上のボタンはアイコンなので、カーソルを当てる（キーボードでフォーカスする）と、何をするかをツールチップで出す。
+- 設定か権限が変わる（`storage.onChanged`・`permissions.onAdded` / `onRemoved`）か、拡張が起動・更新されると、service worker が「使うサイト」と許可されたサイトの両方を満たす先だけに `entrypoints/page.ts` を `scripting.registerContentScripts` で登録し直す（`allFrames: true`。GitHub の差分の画像は `viewscreen.githubusercontent.com` の iframe に出るため）。manifest の `content_scripts` には書かない。
 - **Harie 画像の見分け方**: 96 CSS px 以上の画像にカーソルが乗ったら service worker に読ませ、注釈データが埋め込まれていれば Harie 画像とする（ADR-0004）。ファイル名が規則どおり（ADR-0006）ならすぐに、そうでなければ少し止まってから読む。結果は URL ごとに覚える。
 - **編集ボタン（FR-FILE-13）**: 画像の右上に薄く（不透明度 0.55）出す。押すと service worker が画像を読み、キャプチャと同じく IndexedDB に置いて拡張のエディタを開く。ページに戻せないので、保存はダウンロードになる。
 - **説明文のコピー（FR-FILE-12）**: service worker が吹き出し・文字の注釈の範囲（`@harie/render` の `annotationBounds`。切り抜きを考慮）を画像に対する割合にして返す。カーソルがその範囲に入ると、枠の右上の角にコピーボタンを出す。編集ボタンの隣の「まとめてコピー」は「番号. 吹き出しの文」を番号順に並べたテキストをコピーする。AI の提案中（未採用）の注釈は含めない。

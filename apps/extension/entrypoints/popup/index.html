@@ -14,6 +14,9 @@
       h2 { font-size: 12px; margin: 12px 0 4px; padding-top: 10px; border-top: 1px solid #e6dcc6; }
       label { display: flex; align-items: flex-start; gap: 6px; margin: 0 0 4px; cursor: pointer; }
       label input { margin: 3px 0 0; accent-color: #b0861a; }
+      fieldset { display: flex; flex-wrap: wrap; gap: 0 12px; margin: 4px 0 0; padding: 0; border: 0; }
+      legend { margin: 0 0 2px; padding: 0; color: #7a7064; }
+      fieldset label { margin: 0; }
     </style>
   </head>
   <body>
@@ -24,8 +27,13 @@
     <p class="muted" data-message="popupNote">撮った画像は Harie のエディタで開きます。画像とページの情報は、AI を使うまでこの端末から出ません。</p>
     <p role="alert" hidden></p>
     <h2 data-message="pageTitle">ページ上の Harie 画像</h2>
-    <label><input type="checkbox" data-page="github" /><span data-message="pageGithub">GitHub で使う</span></label>
-    <label><input type="checkbox" data-page="all" /><span data-message="pageAllSites">ほかのサイトでも使う</span></label>
+    <label><input type="checkbox" data-feature="edit" /><span data-message="pageEdit">画像に編集ボタンを出す</span></label>
+    <label><input type="checkbox" data-feature="copy" /><span data-message="pageCopy">画像に説明文のコピーボタンを出す</span></label>
+    <fieldset>
+      <legend data-message="pageScope">使うサイト</legend>
+      <label><input type="radio" name="scope" value="all" /><span data-message="pageScopeAll">すべてのサイト</span></label>
+      <label><input type="radio" name="scope" value="github" /><span data-message="pageScopeGithub">GitHub だけ</span></label>
+    </fieldset>
     <p class="muted" data-message="pageNote"></p>
     <script type="module" src="./main.ts"></script>
   </body>

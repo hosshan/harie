@@ -24,15 +24,27 @@ describe("ページ上の Harie 画像の見分け方（FR-FILE-13）", () => {
 });
 
 describe("ページ用スクリプトを入れる先（FR-FILE-12, FR-FILE-13）", () => {
-  it("許可されたサイトだけに入れる。全サイトが許可されていれば全サイト", () => {
-    expect(pageScriptMatches([])).toEqual([]);
-    expect(
-      pageScriptMatches(["https://github.com/*", "https://*.githubusercontent.com/*"]),
-    ).toEqual(["https://github.com/*", "https://*.githubusercontent.com/*"]);
-    expect(pageScriptMatches(["https://github.com/*", "<all_urls>"])).toEqual(["<all_urls>"]);
-    expect(pageScriptMatches(["*://*/*"])).toEqual(["<all_urls>"]);
+  const gh = ["https://github.com/*", "https://*.githubusercontent.com/*"];
+  const all = { edit: true, copy: false, scope: "all" as const };
+  const github = { edit: false, copy: true, scope: "github" as const };
+
+  it("使うサイトの設定と、許可されたサイトの両方を満たす先だけに入れる", () => {
+    expect(pageScriptMatches([], all)).toEqual([]);
+    expect(pageScriptMatches(["<all_urls>"], all)).toEqual(["<all_urls>"]);
+    expect(pageScriptMatches(["*://*/*"], all)).toEqual(["<all_urls>"]);
+    // 全サイトを選んでいても、許可が GitHub だけなら GitHub だけ
+    expect(pageScriptMatches(gh, all)).toEqual(gh);
+    // GitHub だけを選んでいれば、全サイトが許可されていても GitHub だけ
+    expect(pageScriptMatches(["<all_urls>"], github)).toEqual(gh);
+    expect(pageScriptMatches(gh, github)).toEqual(gh);
     // 関係のないサイトの権限では入れない
-    expect(pageScriptMatches(["https://example.com/*"])).toEqual([]);
+    expect(pageScriptMatches(["https://example.com/*"], all)).toEqual([]);
+  });
+
+  it("ボタンを 1 つも出さないなら入れない", () => {
+    expect(pageScriptMatches(["<all_urls>"], { edit: false, copy: false, scope: "all" })).toEqual(
+      [],
+    );
   });
 });
 

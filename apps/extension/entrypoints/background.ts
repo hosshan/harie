@@ -11,6 +11,7 @@ import {
   startSelection,
 } from "@/lib/capture";
 import { handlePageMessage, PageMessageSchema, syncPageScripts } from "@/lib/page-fetch";
+import { onPageSettingsChanged } from "@/lib/page-settings";
 import type { CssRect } from "@/lib/snapshot";
 
 type Message =
@@ -65,6 +66,7 @@ export default defineBackground(() => {
   // ページ用のスクリプトは、利用者がポップアップで許可したサイトにだけ入れる（FR-FILE-12, FR-FILE-13）
   browser.permissions.onAdded.addListener(() => void syncPageScripts());
   browser.permissions.onRemoved.addListener(() => void syncPageScripts());
+  onPageSettingsChanged(() => void syncPageScripts());
   browser.runtime.onInstalled.addListener(() => void syncPageScripts());
   browser.runtime.onStartup.addListener(() => void syncPageScripts());
 

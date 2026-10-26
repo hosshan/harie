@@ -10,10 +10,22 @@ export const ALL_SITES_ORIGINS = ["<all_urls>"];
 /** permissions.getAll() が「全サイト」を返すときの書き方（Chrome の版によって違う） */
 const ALL_SITES_ALIASES = ["<all_urls>", "*://*/*", "http://*/*", "https://*/*"];
 
-/** 許可されているサイトのうち、ページ用のスクリプトを入れる先 */
-export function pageScriptMatches(granted: readonly string[]): string[] {
-  if (granted.some((o) => ALL_SITES_ALIASES.includes(o))) return [...ALL_SITES_ORIGINS];
-  return GITHUB_ORIGINS.filter((o) => granted.includes(o));
+/**
+ * ページ用のスクリプトを入れる先。ボタンを 1 つも出さないなら入れない。
+ * 使うサイトの設定と、実際に許可されているサイトの両方を満たす先だけにする
+ */
+export function pageScriptMatches(
+  granted: readonly string[],
+  settings: { edit: boolean; copy: boolean; scope: "all" | "github" },
+): string[] {
+  if (!settings.edit && !settings.copy) return [];
+  if (settings.scope === "all" && granted.some((o) => ALL_SITES_ALIASES.includes(o))) {
+    return [...ALL_SITES_ORIGINS];
+  }
+  const github =
+    GITHUB_ORIGINS.every((o) => granted.includes(o)) ||
+    granted.some((o) => ALL_SITES_ALIASES.includes(o));
+  return github ? [...GITHUB_ORIGINS] : [];
 }
 
 function lastSegment(url: string): string | null {
