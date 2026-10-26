@@ -248,11 +248,7 @@ test("NFR-SEC-03: 常時のサイト権限を持たない（テスト用のビ�
   expect(manifest.permissions.sort()).toEqual(["activeTab", "downloads", "scripting", "storage"]);
   expect(manifest.host_permissions).toBeUndefined();
   // ページ上の Harie 画像（FR-FILE-12, FR-FILE-13）の権限は、利用者がオンにしたときだけ求める
-  expect(manifest.optional_host_permissions).toEqual([
-    "https://github.com/*",
-    "https://*.githubusercontent.com/*",
-    "<all_urls>",
-  ]);
+  expect(manifest.optional_host_permissions).toEqual(["<all_urls>"]);
 });
 
 test("FR-FILE-11: 撮った画像を保存せずにクリップボードへコピーできる", async ({

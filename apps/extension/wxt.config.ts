@@ -17,11 +17,7 @@ export default defineConfig({
     permissions: ["activeTab", "scripting", "downloads", "storage"],
     ...(e2e ? { host_permissions: ["<all_urls>"] } : {}),
     // ページ上の Harie 画像（FR-FILE-12, FR-FILE-13）はオプトイン。ポップアップでオンにしたときだけ求める（lib/page-image.ts）
-    optional_host_permissions: [
-      "https://github.com/*",
-      "https://*.githubusercontent.com/*",
-      "<all_urls>",
-    ],
+    optional_host_permissions: ["<all_urls>"],
     // 描画エンジン（resvg・mozjpeg）は WASM なので、拡張ページで WASM のコンパイルだけを許可する
     content_security_policy: {
       extension_pages: "script-src 'self' 'wasm-unsafe-eval'; object-src 'self'",

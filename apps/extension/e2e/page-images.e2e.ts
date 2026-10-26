@@ -13,7 +13,11 @@ const plain = readFileSync(new URL("../public/icon/128.png", import.meta.url));
 /** ポップアップと同じ設定を保存し、ページ用のスクリプトが登録されるのを待つ */
 async function enablePageButtons(
   worker: Worker,
-  settings = { edit: true, copy: true, scope: "all" },
+  settings: { edit: boolean; copy: boolean; sites: string[] } = {
+    edit: true,
+    copy: true,
+    sites: [],
+  },
 ): Promise<void> {
   await worker.evaluate((v) => chrome.storage.local.set({ "harie.pageButtons": v }), settings);
   await expect
@@ -150,7 +154,7 @@ test("FR-FILE-12, 13: ポップアップで出すボタンを選べる。オフ�
   const copy = popup.getByLabel("画像に説明文のコピーボタンを出す");
   await expect(edit).not.toBeChecked();
   await expect(copy).not.toBeChecked();
-  await expect(popup.getByLabel("すべてのサイト")).toBeChecked();
+  await expect(popup.getByText("指定がなければ、すべてのサイトで出します。")).toBeVisible();
   // コピーボタンだけを出す（テスト用のビルドは全サイトの権限を持つので、確認は出ない）
   await copy.check();
   await expect(copy).toBeChecked();
@@ -161,6 +165,31 @@ test("FR-FILE-12, 13: ポップアップで出すボタンを選べる。オフ�
       ),
     )
     .toEqual([["<all_urls>"]]);
+
+  // サイトを指定すると、そのサイト（とサブドメイン）だけに入れる
+  const matches = () =>
+    worker.evaluate(async () =>
+      (await chrome.scripting.getRegisteredContentScripts()).map((s) =>
+        [...(s.matches ?? [])].sort(),
+      ),
+    );
+  await popup.getByLabel("追加するサイト").fill("not a domain");
+  await popup.getByRole("button", { name: "追加" }).click();
+  await expect(popup.getByRole("status")).toHaveText(
+    "ドメインの形で入れてください（例: github.com）",
+  );
+  await popup.getByLabel("追加するサイト").fill("https://GitHub.com/o/r/pull/1");
+  await popup.getByRole("button", { name: "追加" }).click();
+  await expect(popup.getByRole("listitem")).toHaveText(["github.com×"]);
+  await expect
+    .poll(matches)
+    .toEqual([["*://*.github.com/*", "*://github.com/*", "https://*.githubusercontent.com/*"]]);
+  await popup.getByLabel("追加するサイト").fill("harie.test");
+  await popup.getByLabel("追加するサイト").press("Enter");
+  await expect(popup.getByRole("listitem")).toHaveCount(2);
+  // 外すと、そのサイトでは出さない。全部外せばすべてのサイト
+  await popup.getByRole("button", { name: "github.com を外す" }).click();
+  await expect.poll(matches).toEqual([["*://*.harie.test/*", "*://harie.test/*"]]);
   await popup.close();
 
   await context.route("http://harie.test/files/**", (route) =>

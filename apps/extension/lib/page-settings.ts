@@ -1,32 +1,32 @@
 // ページ上の Harie 画像のボタンの設定（FR-FILE-12, FR-FILE-13）。ポップアップで変え、
 // background（スクリプトを入れるサイト）とページ用スクリプト（出すボタン）が読む。chrome.storage.local に置く
 import { browser } from "wxt/browser";
-import { ALL_SITES_ORIGINS, GITHUB_ORIGINS } from "./page-image";
+import { normalizeSite } from "./page-image";
 
-export type PageScope = "all" | "github";
 export type PageSettings = {
   /** 画像に編集ボタンを出す（FR-FILE-13） */
   edit: boolean;
   /** 画像に説明文のコピーボタンを出す（FR-FILE-12） */
   copy: boolean;
-  /** 使うサイト */
-  scope: PageScope;
+  /** ボタンを出すサイト（ドメイン）。空ならすべてのサイト */
+  sites: string[];
 };
 
 const KEY = "harie.pageButtons";
-export const DEFAULT_PAGE_SETTINGS: PageSettings = { edit: false, copy: false, scope: "all" };
-
-export function originsFor(scope: PageScope): string[] {
-  return scope === "github" ? GITHUB_ORIGINS : ALL_SITES_ORIGINS;
-}
+export const DEFAULT_PAGE_SETTINGS: PageSettings = { edit: false, copy: false, sites: [] };
+/** 登録できるサイトの数の上限 */
+export const MAX_SITES = 50;
 
 /** 保存された値は形を確かめ、足りない項目は既定にする */
 export function parsePageSettings(raw: unknown): PageSettings {
   const v = (typeof raw === "object" && raw !== null ? raw : {}) as Record<string, unknown>;
+  const sites = Array.isArray(v.sites)
+    ? v.sites.flatMap((x) => (typeof x === "string" ? (normalizeSite(x) ?? []) : []))
+    : [];
   return {
     edit: v.edit === true,
     copy: v.copy === true,
-    scope: v.scope === "github" ? "github" : "all",
+    sites: [...new Set(sites)].slice(0, MAX_SITES),
   };
 }
 

@@ -3,7 +3,14 @@ import { readHarie } from "@harie/format";
 import { createDocument, type HarieDocument } from "@harie/model";
 import { describe, expect, it } from "vitest";
 import { pageImageInfo } from "./page-copy";
-import { annotationText, fileNameFromUrl, isHarieImageUrl, pageScriptMatches } from "./page-image";
+import {
+  annotationText,
+  fileNameFromUrl,
+  isHarieImageUrl,
+  normalizeSite,
+  pageScriptMatches,
+} from "./page-image";
+import { parsePageSettings } from "./page-settings";
 
 describe("ページ上の Harie 画像の見分け方（FR-FILE-13）", () => {
   it("ファイル名が <名前>.harie.<拡張子> の画像の URL を Harie 画像とみなす", () => {
@@ -24,27 +31,46 @@ describe("ページ上の Harie 画像の見分け方（FR-FILE-13）", () => {
 });
 
 describe("ページ用スクリプトを入れる先（FR-FILE-12, FR-FILE-13）", () => {
-  const gh = ["https://github.com/*", "https://*.githubusercontent.com/*"];
-  const all = { edit: true, copy: false, scope: "all" as const };
-  const github = { edit: false, copy: true, scope: "github" as const };
+  const on = { edit: true, copy: false, sites: [] as string[] };
 
-  it("使うサイトの設定と、許可されたサイトの両方を満たす先だけに入れる", () => {
-    expect(pageScriptMatches([], all)).toEqual([]);
-    expect(pageScriptMatches(["<all_urls>"], all)).toEqual(["<all_urls>"]);
-    expect(pageScriptMatches(["*://*/*"], all)).toEqual(["<all_urls>"]);
-    // 全サイトを選んでいても、許可が GitHub だけなら GitHub だけ
-    expect(pageScriptMatches(gh, all)).toEqual(gh);
-    // GitHub だけを選んでいれば、全サイトが許可されていても GitHub だけ
-    expect(pageScriptMatches(["<all_urls>"], github)).toEqual(gh);
-    expect(pageScriptMatches(gh, github)).toEqual(gh);
-    // 関係のないサイトの権限では入れない
-    expect(pageScriptMatches(["https://example.com/*"], all)).toEqual([]);
+  it("サイトの指定が空ならすべてのサイト、あればそのサイトとサブドメインだけに入れる", () => {
+    expect(pageScriptMatches(["<all_urls>"], on)).toEqual(["<all_urls>"]);
+    expect(pageScriptMatches(["*://*/*"], on)).toEqual(["<all_urls>"]);
+    expect(pageScriptMatches(["<all_urls>"], { ...on, sites: ["example.com"] })).toEqual([
+      "*://example.com/*",
+      "*://*.example.com/*",
+    ]);
+    // GitHub の差分の画像は githubusercontent.com の iframe に出る
+    expect(pageScriptMatches(["<all_urls>"], { ...on, sites: ["github.com"] })).toContain(
+      "https://*.githubusercontent.com/*",
+    );
   });
 
-  it("ボタンを 1 つも出さないなら入れない", () => {
-    expect(pageScriptMatches(["<all_urls>"], { edit: false, copy: false, scope: "all" })).toEqual(
+  it("ボタンを 1 つも出さないか、権限がなければ入れない", () => {
+    expect(pageScriptMatches(["<all_urls>"], { ...on, edit: false })).toEqual([]);
+    expect(pageScriptMatches([], on)).toEqual([]);
+    expect(pageScriptMatches(["https://example.com/*"], { ...on, sites: ["example.com"] })).toEqual(
       [],
     );
+  });
+
+  it("入力されたサイトをドメインにそろえる", () => {
+    expect(normalizeSite(" GitHub.com ")).toBe("github.com");
+    expect(normalizeSite("https://github.com/o/r/pull/1")).toBe("github.com");
+    expect(normalizeSite("*.example.co.jp")).toBe("example.co.jp");
+    expect(normalizeSite("localhost:5173")).toBe("localhost");
+    expect(normalizeSite("not a domain")).toBeNull();
+    expect(normalizeSite("")).toBeNull();
+    expect(normalizeSite("javascript:alert(1)")).toBeNull();
+  });
+
+  it("保存された設定は形を確かめ、サイトをそろえて重複を除く", () => {
+    expect(parsePageSettings({ edit: true, sites: ["A.com", "a.com", 1, "bad host"] })).toEqual({
+      edit: true,
+      copy: false,
+      sites: ["a.com"],
+    });
+    expect(parsePageSettings(null)).toEqual({ edit: false, copy: false, sites: [] });
   });
 });
 

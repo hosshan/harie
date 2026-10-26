@@ -3,29 +3,59 @@ import type { HarieDocument } from "@harie/model";
 // ページに入れるスクリプトを小さく保つため、zod を含まないファイル名の規則だけを読む
 import { parseFileName } from "@harie/model/file-name";
 
-/** GitHub で使うための権限（利用者がポップアップで有効にしたときだけ求める） */
-export const GITHUB_ORIGINS = ["https://github.com/*", "https://*.githubusercontent.com/*"];
-/** ほかのサイトでも使うための権限 */
-export const ALL_SITES_ORIGINS = ["<all_urls>"];
+/**
+ * ボタンを出すのに求める権限。画像は別のドメイン（CDN など）から来ることが多く、
+ * service worker がそれを読むには全サイトの権限が要るので、ボタンを出すサイトを絞っても権限は全サイトで求める
+ */
+export const PAGE_ORIGINS = ["<all_urls>"];
 /** permissions.getAll() が「全サイト」を返すときの書き方（Chrome の版によって違う） */
 const ALL_SITES_ALIASES = ["<all_urls>", "*://*/*", "http://*/*", "https://*/*"];
 
 /**
- * ページ用のスクリプトを入れる先。ボタンを 1 つも出さないなら入れない。
- * 使うサイトの設定と、実際に許可されているサイトの両方を満たす先だけにする
+ * 入力されたサイトをドメインにそろえる（`https://github.com/foo` → `github.com`、`*.example.com` → `example.com`）。
+ * ドメインとして使えなければ null
+ */
+export function normalizeSite(input: string): string | null {
+  let host = input.trim().toLowerCase();
+  if (host === "") return null;
+  // http(s) の URL ならドメインを取り出す。それ以外のスキーム（javascript: など）は受け付けない
+  if (/^[a-z][a-z0-9+.-]*:(?!\d)/.test(host) && !/^https?:\/\//.test(host)) return null;
+  try {
+    if (/^https?:\/\//.test(host)) host = new URL(host).hostname;
+  } catch {
+    return null;
+  }
+  host = host
+    .replace(/^\*\./, "")
+    .replace(/[/:?#].*$/, "")
+    .replace(/\.$/, "");
+  return /^(?=.{1,253}$)([a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?)(\.[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?)*$/.test(
+    host,
+  )
+    ? host
+    : null;
+}
+
+/** ドメインと、そのサブドメインのページ */
+function sitePatterns(site: string): string[] {
+  const patterns = [`*://${site}/*`, `*://*.${site}/*`];
+  // GitHub の差分の画像は、別ドメイン（viewscreen.githubusercontent.com）の iframe に出る
+  if (site === "github.com") patterns.push("https://*.githubusercontent.com/*");
+  return patterns;
+}
+
+/**
+ * ページ用のスクリプトを入れる先。ボタンを 1 つも出さないか、権限がなければ入れない。
+ * サイトの指定が空ならすべてのサイト、あればそのサイト（とサブドメイン）だけ
  */
 export function pageScriptMatches(
   granted: readonly string[],
-  settings: { edit: boolean; copy: boolean; scope: "all" | "github" },
+  settings: { edit: boolean; copy: boolean; sites: readonly string[] },
 ): string[] {
   if (!settings.edit && !settings.copy) return [];
-  if (settings.scope === "all" && granted.some((o) => ALL_SITES_ALIASES.includes(o))) {
-    return [...ALL_SITES_ORIGINS];
-  }
-  const github =
-    GITHUB_ORIGINS.every((o) => granted.includes(o)) ||
-    granted.some((o) => ALL_SITES_ALIASES.includes(o));
-  return github ? [...GITHUB_ORIGINS] : [];
+  if (!granted.some((o) => ALL_SITES_ALIASES.includes(o))) return [];
+  if (settings.sites.length === 0) return [...PAGE_ORIGINS];
+  return [...new Set(settings.sites.flatMap(sitePatterns))];
 }
 
 function lastSegment(url: string): string | null {
