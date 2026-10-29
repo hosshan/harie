@@ -17,7 +17,7 @@
 
 An app for adding boxes, arrows and captions to screenshots, for example when writing user guides for web services. Saved files display as ordinary JPEG / PNG images, and opening one in Harie lets you edit the annotations again and again.
 
-![The Harie web editor. A screenshot of a settings page has numbers, boxes and callouts, and a callout is selected to edit its text](docs/images/editor.en.png)
+![Harie demo. A saved PNG is opened in the web editor, its annotations come back, and only a callout's text is changed before saving again](docs/images/demo.en.gif)
 
 A saved file works as a normal image as is. The image below was saved with Harie too: download it and open it in the [web editor](https://harie.studio/app/) to select and edit its annotations.
 

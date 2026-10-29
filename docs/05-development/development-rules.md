@@ -79,7 +79,7 @@ Refs: FR-FILE-03, ADR-0004
 
 | 対象 | タグ | 公開のワークフロー | 行うこと |
 |---|---|---|---|
-| `@harie/mcp` | `mcp-v<version>` | `.github/workflows/release-mcp.yml` | タグと `apps/mcp/package.json` の版の一致を確認 → `pnpm check` → npm に公開（Trusted Publishing、provenance 付き。公開済みの版なら飛ばす）→ GitHub Release に tarball を添付 |
+| `@harie/mcp` | `mcp-v<version>` | `.github/workflows/release-mcp.yml` | タグと `apps/mcp/package.json` の版の一致を確認 → `pnpm check` → npm に公開（Trusted Publishing、provenance 付き。公開済みの版なら飛ばす）→ 公式の MCP Registry に `io.github.hosshan/harie` として登録（`apps/mcp/server.json`、登録済みの版なら飛ばす）→ GitHub Release に tarball を添付 |
 | Chrome 拡張 | `extension-v<version>` | `.github/workflows/release-extension.yml` | 版の一致を確認 → `pnpm check` と拡張の E2E → ストア提出用 zip を GitHub Release に添付。ストアへのアップロードは手動（[apps/extension/README.md](../../apps/extension/README.md#リリース)） |
 
 手順:
@@ -87,7 +87,7 @@ Refs: FR-FILE-03, ADR-0004
 1. GitHub の Actions → 「Release (prepare)」→ Run workflow で、対象（`mcp` / `extension`）と上げ方（`patch` / `minor` / `major`、または版を直接指定）を選んで実行する。`release-prepare.yml` が `package.json` の版を上げた PR（ブランチ `release/<タグ>`）を作り、その PR で CI を起動する。
 2. CI が緑になったら PR をマージする。
 3. `release-tag.yml` が、版が変わった対象にタグ（`mcp-v<version>` など）を付け、公開のワークフローをそのタグで起動する。
-4. Actions の公開のワークフローが緑になり、npm と GitHub Release に出たことを確かめる。
+4. Actions の公開のワークフローが緑になり、npm と GitHub Release（`@harie/mcp` は MCP Registry も）に出たことを確かめる。
 
 - 版上げを手で PR にしてもよい。マージ後の動きは同じ。
 - タグを手で push しても公開のワークフローは動く（タグの push で起動する）。
@@ -95,3 +95,5 @@ Refs: FR-FILE-03, ADR-0004
 - `main` はブランチ保護で直接 push できないため、Actions も版上げを PR 経由で行う。GITHUB_TOKEN で作った PR やタグは他のワークフローを起動しないので、CI と公開は `workflow_dispatch` で明示的に起動している。
 
 npm への認証は Trusted Publishing（OIDC）で、リポジトリのシークレットに npm トークンを置かない。npmjs.com の `@harie/mcp` → Settings → Trusted Publisher に、GitHub Actions・`hosshan`・`harie`・`release-mcp.yml`・環境 `npm` を登録しておく。
+
+MCP Registry への認証は GitHub OIDC（`mcp-publisher login github-oidc`）で、これもシークレットは要らない。Registry は npm の `package.json` の `mcpName` と `server.json` の `name` が一致するかで所有を確かめるので、両方を変えずに保つ（`apps/mcp/src/server-json.test.ts` で確かめている）。`server.json` の版は公開のときに `package.json` の版へ書き換えるので、版上げの PR で直さなくてよい。

@@ -2,6 +2,7 @@ name: Release @harie/mcp
 
 # `mcp-v<version>` のタグを push すると、検証してから npm に公開し、GitHub Release を作る。
 # npm への認証は Trusted Publishing（OIDC）。長期トークンはシークレットに置かない。
+# 続けて公式の MCP Registry にも登録する（GitHub OIDC。シークレット不要）。
 # npm 側の設定: @harie/mcp → Settings → Trusted Publisher に
 #   GitHub Actions / hosshan / harie / release-mcp.yml / 環境 npm を登録する。
 on:
@@ -22,9 +23,12 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     environment: npm
+    env:
+      # MCP Registry への登録に使う公式 CLI。上げるときはリリースのタグを確かめてから書き換える
+      MCP_PUBLISHER_VERSION: v1.8.1
     permissions:
       contents: write # GitHub Release の作成
-      id-token: write # npm Trusted Publishing（OIDC）と provenance
+      id-token: write # npm Trusted Publishing（OIDC）と provenance、MCP Registry の GitHub OIDC 認証
     steps:
       - uses: actions/checkout@v7
       - uses: pnpm/action-setup@v6
@@ -71,6 +75,49 @@ jobs:
       - name: npm に公開する
         if: steps.version.outputs.published == 'false'
         run: npm publish "$RUNNER_TEMP"/pack/*.tgz --access public --provenance
+
+      # 公式の MCP Registry（registry.modelcontextprotocol.io）に io.github.hosshan/harie として登録する。
+      # npm の package.json の mcpName で所有を確かめるので、npm への公開の後に行う。
+      - name: MCP Registry に登録済みか確かめる
+        id: registry
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          name=$(jq -r .name apps/mcp/server.json)
+          url="https://registry.modelcontextprotocol.io/v0/servers/${name/\//%2F}/versions/$VERSION"
+          if curl -fsS -o /dev/null "$url"; then
+            echo "registered=true" >> "$GITHUB_OUTPUT"
+            echo "::notice::$name@$VERSION は MCP Registry に登録済みなので飛ばします"
+          else
+            echo "registered=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: cosign を入れる（mcp-publisher の署名確認に使う）
+        if: steps.registry.outputs.registered == 'false'
+        uses: sigstore/cosign-installer@6f9f17788090df1f26f669e9d70d6ae9567deba6 # v4.1.2
+
+      - name: MCP Registry に登録する
+        if: steps.registry.outputs.registered == 'false'
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+        working-directory: apps/mcp
+        run: |
+          set -euo pipefail
+          archive="mcp-publisher_linux_amd64.tar.gz"
+          base_url="https://github.com/modelcontextprotocol/registry/releases/download/${MCP_PUBLISHER_VERSION}"
+          curl -fsSL -o "$RUNNER_TEMP/$archive" "$base_url/$archive"
+          curl -fsSL -o "$RUNNER_TEMP/$archive.sigstore.json" "$base_url/$archive.sigstore.json"
+          cosign verify-blob \
+            --bundle "$RUNNER_TEMP/$archive.sigstore.json" \
+            --certificate-identity "https://github.com/modelcontextprotocol/registry/.github/workflows/release.yml@refs/tags/${MCP_PUBLISHER_VERSION}" \
+            --certificate-oidc-issuer "https://token.actions.githubusercontent.com" \
+            "$RUNNER_TEMP/$archive"
+          tar xzf "$RUNNER_TEMP/$archive" -C "$RUNNER_TEMP" mcp-publisher
+          # server.json の版は公開する package.json の版に合わせる
+          jq --arg v "$VERSION" '.version = $v | .packages[0].version = $v' server.json > "$RUNNER_TEMP/server.json"
+          mv "$RUNNER_TEMP/server.json" server.json
+          "$RUNNER_TEMP/mcp-publisher" login github-oidc
+          "$RUNNER_TEMP/mcp-publisher" publish
 
       - name: GitHub Release を作る
         env:
