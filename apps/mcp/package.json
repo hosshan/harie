@@ -1,6 +1,7 @@
 {
   "name": "@harie/mcp",
   "version": "0.4.0",
+  "mcpName": "io.github.hosshan/harie",
   "description": "Local MCP server for Harie: annotate screenshots for user guides with boxes, arrows and callouts, saved as plain JPEG/PNG that stay re-editable",
   "license": "MIT",
   "keywords": [
