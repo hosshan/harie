@@ -43,7 +43,7 @@ import { Icon, Palette, type PaletteAction, type PaletteTool, TOOL_ICONS } from 
 import { moveOps, pasteOps, type Reorder, removeOps, reorderOps, resizeOps } from "./selection";
 import { formatShortcut, isMacPlatform, matchesShortcut, type ShortcutId } from "./shortcuts";
 import { adoptSuggestionOps, rejectSuggestionOps } from "./suggestions";
-import { TOOL_SHORTCUTS } from "./tools";
+import { initialTool, TOOL_SHORTCUTS } from "./tools";
 
 /** コピーした注釈をクリップボードに入れる形式。貼り付けるときは外部入力として検証する */
 export const ANNOTATIONS_MIME = "application/x-harie-annotations+json";
@@ -147,7 +147,8 @@ export function Editor({
 }: EditorProps) {
   const m = useMessages(EDITOR_MESSAGES);
   const mac = useMemo(() => isMacPlatform(), []);
-  const [tool, setTool] = useState<Tool>("select");
+  // 開いた画像ごとに作り直される（呼び出し側が key を変える）ので、初期値は開いた時点のドキュメントで決める
+  const [tool, setTool] = useState<Tool>(() => initialTool(state.doc));
   /** その場で文字を編集している注釈（ダブルクリック・Enter、またはテキスト・吹き出しを置いた直後） */
   const [editingId, setEditingId] = useState<string | null>(null);
   const [dragging, setDragging] = useState(false);

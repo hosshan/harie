@@ -14,3 +14,11 @@ export const TOOL_SHORTCUTS: readonly { tool: Tool; key: string }[] = [
   // Chrome 拡張で撮った画像（ページの要素がわかるとき）だけ出す（FR-EDIT-15）
   { tool: "element", key: "e" },
 ];
+
+/**
+ * 画像を開いたときに選んでおく道具（FR-EDIT-18）。
+ * 注釈のない画像ならすぐ枠を描けるよう四角、注釈のある画像なら直しに来たので選択にする
+ */
+export function initialTool(doc: { annotations: readonly unknown[] }): Tool {
+  return doc.annotations.length > 0 ? "select" : "rect";
+}
