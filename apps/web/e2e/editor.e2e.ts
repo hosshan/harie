@@ -52,13 +52,14 @@ async function expectBaseImageLoadable(page: Page) {
   expect(ok).toBe(true);
 }
 
-test("FR-FILE-08, FR-EDIT-01〜04, 07: 画像を開いて注釈を付け、元に戻す・やり直す", async ({
+test("FR-FILE-08, FR-EDIT-01〜04, 07, 18: 画像を開いて注釈を付け、元に戻す・やり直す", async ({
   page,
 }) => {
   await openFixture(page, "large-base.jpg");
   // DOM 情報のない画像では「要素で囲む」は出さない（FR-EDIT-15）
   await expect(page.getByRole("button", { name: "要素で囲む" })).toHaveCount(0);
-  await page.getByRole("button", { name: "四角" }).click();
+  // 注釈のない画像を開いたら、道具は四角のまま、すぐ枠を描ける（FR-EDIT-18）
+  await expect(page.getByRole("button", { name: "四角" })).toHaveAttribute("aria-pressed", "true");
   await drag(page, [40, 40], [240, 120]);
   await expect(annotationRects(page)).toHaveCount(1);
   await expect(page.locator("[data-selected]")).toHaveCount(1);
@@ -78,7 +79,7 @@ test("FR-FILE-08, FR-EDIT-01〜04, 07: 画像を開いて注釈を付け、元�
   await expect(annotationRects(page)).toHaveCount(1);
 });
 
-test("FR-FILE-06: 保存したファイルは普通の JPEG で、開き直すと同じ注釈を編集できる", async ({
+test("FR-FILE-06, FR-EDIT-18: 保存したファイルは普通の JPEG で、開き直すと同じ注釈を編集できる", async ({
   page,
 }) => {
   await openFixture(page, "large-base.jpg");
@@ -127,6 +128,8 @@ test("FR-FILE-06: 保存したファイルは普通の JPEG で、開き直す�
   });
   await expect(page.locator(".harie-canvas-image svg")).toContainText("ここで通知を設定");
   await expect(page.locator(".app-file-name")).toHaveText("large-base.harie.jpg");
+  // 注釈のある画像を開いたら、道具は選択にする（FR-EDIT-18）
+  await expect(page.getByRole("button", { name: "選択" })).toHaveAttribute("aria-pressed", "true");
 });
 
 test("FR-FILE-01, 02: 保存形式を選べ、JPEG を PNG で保存してもベース画像はそのまま残る", async ({
