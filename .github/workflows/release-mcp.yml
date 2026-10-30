@@ -35,6 +35,7 @@ jobs:
       - uses: actions/setup-node@v7
         with:
           node-version-file: .nvmrc
+          check-latest: true
           cache: pnpm
           registry-url: https://registry.npmjs.org
       # Trusted Publishing には npm 11.5.1 以上が要る（Node 22 同梱の npm は 10 系）
