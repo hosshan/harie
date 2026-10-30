@@ -116,6 +116,18 @@ jobs:
           # server.json の版は公開する package.json の版に合わせる
           jq --arg v "$VERSION" '.version = $v | .packages[0].version = $v' server.json > "$RUNNER_TEMP/server.json"
           mv "$RUNNER_TEMP/server.json" server.json
+          # 公開した直後の版は npm の API にすぐ出ず、Registry の検証が 404 で落ちるので、出るまで待つ（最大 5 分）
+          for i in $(seq 1 20); do
+            if curl -fsS -o /dev/null "https://registry.npmjs.org/@harie%2fmcp/$VERSION"; then
+              break
+            fi
+            if [ "$i" = 20 ]; then
+              echo "::error::@harie/mcp@$VERSION が npm に出てこないため Registry に登録できません"
+              exit 1
+            fi
+            echo "@harie/mcp@$VERSION が npm に出るのを待っています（$i/20）"
+            sleep 15
+          done
           "$RUNNER_TEMP/mcp-publisher" login github-oidc
           "$RUNNER_TEMP/mcp-publisher" publish
 
