@@ -292,6 +292,31 @@
               </p>
             </li>
           </ol>
+          <div class="demo-videos">
+            <div class="tabs" role="tablist" aria-label="操作の動画">
+              <button type="button" role="tab" id="tab-video-annotate" aria-controls="video-annotate" aria-selected="true">枠と説明を付ける</button>
+              <button type="button" role="tab" id="tab-video-edit" aria-controls="video-edit" aria-selected="false" tabindex="-1">文字だけ直す</button>
+              <button type="button" role="tab" id="tab-video-mask" aria-controls="video-mask" aria-selected="false" tabindex="-1">個人情報を消す</button>
+            </div>
+            <div class="tab-panel video-panel" role="tabpanel" id="video-annotate" aria-labelledby="tab-video-annotate">
+              <div class="video-frame">
+                <video src="assets/demo-annotate.mp4" poster="assets/demo-annotate.webp" width="1012" height="800" muted loop playsinline preload="metadata" aria-label="架空の SaaS「Tasklane」の通知設定画面に四角を 2 つ描き、番号と吹き出しを付けて説明文を入力している動画"></video>
+              </div>
+              <p>撮った画面を開いて枠を描き、「番号と吹き出しを付ける」を押すと、番号と説明の吹き出しがまとめて付きます。あとは吹き出しの文字を書き換えるだけです。</p>
+            </div>
+            <div class="tab-panel video-panel" role="tabpanel" id="video-edit" aria-labelledby="tab-video-edit" hidden>
+              <div class="video-frame">
+                <video src="assets/demo-edit.mp4" poster="assets/demo-edit.webp" width="1012" height="800" muted loop playsinline preload="none" aria-label="保存済みの画像を開き、3 番の吹き出しの文字だけを書き換えている動画"></video>
+              </div>
+              <p>Harie で保存した画像を開くと、枠や吹き出しがそのまま戻ってきます。UI の文言が変わったときは、吹き出しをダブルクリックして直し、保存し直すだけで済みます。</p>
+            </div>
+            <div class="tab-panel video-panel" role="tabpanel" id="video-mask" aria-labelledby="tab-video-mask" hidden>
+              <div class="video-frame">
+                <video src="assets/demo-mask.mp4" poster="assets/demo-mask.webp" width="1012" height="800" muted loop playsinline preload="none" aria-label="メンバー一覧の 1 行目の名前とメールアドレスを、ダミーの文字に置き換えている動画"></video>
+              </div>
+              <p>名前やメールアドレスの範囲を選んで、ダミーの文字に置き換えます。画面の見た目はそのままなので何の画面かは伝わり、元の値は画像に残りません。</p>
+            </div>
+          </div>
         </div>
       </section>
 

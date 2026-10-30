@@ -292,6 +292,31 @@
               </p>
             </li>
           </ol>
+          <div class="demo-videos">
+            <div class="tabs" role="tablist" aria-label="Demo videos">
+              <button type="button" role="tab" id="tab-video-annotate" aria-controls="video-annotate" aria-selected="true">Add boxes and notes</button>
+              <button type="button" role="tab" id="tab-video-edit" aria-controls="video-edit" aria-selected="false" tabindex="-1">Fix just the text</button>
+              <button type="button" role="tab" id="tab-video-mask" aria-controls="video-mask" aria-selected="false" tabindex="-1">Remove personal data</button>
+            </div>
+            <div class="tab-panel video-panel" role="tabpanel" id="video-annotate" aria-labelledby="tab-video-annotate">
+              <div class="video-frame">
+                <video src="../assets/demo-annotate.en.mp4" poster="../assets/demo-annotate.en.webp" width="1012" height="800" muted loop playsinline preload="metadata" aria-label="Video: two boxes are drawn on a settings page of the fictional SaaS Tasklane, then numbers and callouts are added and their text is typed in"></video>
+              </div>
+              <p>Open a screenshot, draw boxes, and press “Add numbers and callouts” to add numbered badges and callouts in one go. Then just type over the callout text.</p>
+            </div>
+            <div class="tab-panel video-panel" role="tabpanel" id="video-edit" aria-labelledby="tab-video-edit" hidden>
+              <div class="video-frame">
+                <video src="../assets/demo-edit.en.mp4" poster="../assets/demo-edit.en.webp" width="1012" height="800" muted loop playsinline preload="none" aria-label="Video: a saved image is opened and only the text of callout 3 is rewritten"></video>
+              </div>
+              <p>Open an image saved with Harie and its boxes and callouts come right back. When the UI wording changes, double-click the callout, fix it, and save again.</p>
+            </div>
+            <div class="tab-panel video-panel" role="tabpanel" id="video-mask" aria-labelledby="tab-video-mask" hidden>
+              <div class="video-frame">
+                <video src="../assets/demo-mask.en.mp4" poster="../assets/demo-mask.en.webp" width="1012" height="800" muted loop playsinline preload="none" aria-label="Video: the name and email in the first row of a member list are replaced with dummy text"></video>
+              </div>
+              <p>Select names and email addresses and replace them with dummy text. The screen keeps its look, so readers still know what it is, and the original values don't stay in the image.</p>
+            </div>
+          </div>
         </div>
       </section>
 

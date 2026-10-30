@@ -987,6 +987,33 @@ code,
   display: none;
 }
 
+/* 撮って、書き込んで、残す の下の操作動画 */
+.demo-videos {
+  display: grid;
+  gap: 16px;
+  max-width: 880px;
+  margin: 48px auto 0;
+}
+
+.video-frame {
+  background: var(--paper);
+  padding: 8px;
+  border-radius: 6px;
+  box-shadow: var(--shadow);
+}
+
+.video-frame video {
+  display: block;
+  width: 100%;
+  height: auto;
+  border-radius: 4px;
+}
+
+.video-panel p {
+  margin: 0;
+  max-width: 44em;
+}
+
 .tab-panel p,
 .setup-card > p {
   margin: 0;
