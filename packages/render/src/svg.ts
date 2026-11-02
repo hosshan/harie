@@ -1,10 +1,40 @@
 // 注釈ドキュメント → SVG（ADR-0005）
 // 純粋関数。エディタの表示と保存時のラスタライズの両方がこの SVG を使い、見た目を一致させる。
 import type { Annotation, HarieDocument, LineDash, Style } from "@harie/model";
+import { EXTRA_FONT_FAMILIES, type ExtraFont, extraFontOf } from "./extra-fonts";
 import { THEMES, type Theme } from "./theme";
 import { attrs, esc, n } from "./xml";
 
 export const FONT_FAMILY = "Noto Sans JP";
+
+/**
+ * `<text>` の中身。Noto Sans JP にない文字（ハングル・簡体字）の範囲は補助フォントの
+ * `<tspan font-family>` で囲む（ADR-0013）。日本語・英語だけなら esc と同じ
+ */
+export function textContent(text: string): string {
+  let out = "";
+  let run = "";
+  let runFont: ExtraFont | null = null;
+  const flush = () => {
+    if (run === "") return;
+    out += runFont
+      ? `<tspan font-family="${EXTRA_FONT_FAMILIES[runFont]}">${esc(run)}</tspan>`
+      : esc(run);
+    run = "";
+  };
+  for (let i = 0; i < text.length; i++) {
+    const ch = text[i] as string;
+    const f = extraFontOf(ch.charCodeAt(0));
+    // 空白・記号は前の範囲に含め、tspan を細切れにしない
+    if (f !== runFont && !(f === null && ch === " " && runFont !== null)) {
+      flush();
+      runFont = f;
+    }
+    run += ch;
+  }
+  flush();
+  return out;
+}
 
 export type BuildSvgOptions = {
   /** ベース画像の data URI。省略すると注釈だけの透明な SVG になる（エディタのオーバーレイ用）。 */
@@ -105,7 +135,7 @@ function textLines(
           "font-weight": s.fontWeight === "bold" ? 700 : 400,
           fill: s.color,
           ...extra,
-        })}>${esc(line)}</text>`,
+        })}>${textContent(line)}</text>`,
     )
     .join("");
 }

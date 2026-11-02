@@ -7,3 +7,4 @@ declare class TextDecoder {
   constructor(label?: string, options?: { fatal?: boolean });
   decode(input?: Uint8Array): string;
 }
+declare function atob(data: string): string;

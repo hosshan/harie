@@ -65,14 +65,14 @@ The server ships a prompt, `harie_guide` (arguments: `path`, optional `intent`),
 - "Turn `settings.png` into a Harie file, draw a red box around the save button, and add a callout saying 'Click here to save'."
 - "List the Harie files in `guides/` and add a title to any that don't have one."
 
-Tool descriptions and the bundled font (Noto Sans JP) are currently Japanese-first, but annotation text can be written in any language the font covers, including English.
+Tool descriptions are currently Japanese-first. Annotation text can be written in Japanese, English, Korean, Chinese (Simplified and Traditional) and other languages the bundled fonts cover.
 
 ## Development
 
 - `src/tools.ts`: tool implementations. `src/server.ts`: MCP registration and input validation. `src/paths.ts`: prevents access outside the root.
 - Tests (`pnpm test`) connect a client through the SDK's InMemoryTransport and call the tools for real.
-- The package bundles only the Regular / Bold weights of Noto Sans JP (`scripts/copy-assets.mjs`; license in `dist/fonts/OFL.txt`).
+- The package bundles the Regular / Bold weights of Noto Sans JP, plus subsets of Noto Sans KR (Hangul) and Noto Sans SC (characters missing from Noto Sans JP) that are loaded only when an annotation uses them (`scripts/copy-assets.mjs`; license in `dist/fonts/OFL.txt`).
 
 ## License
 
-MIT. The bundled font (Noto Sans JP Regular / Bold) is licensed under the SIL Open Font License 1.1 (`dist/fonts/OFL.txt`).
+MIT. The bundled fonts (Noto Sans JP / KR / SC, Regular / Bold) are licensed under the SIL Open Font License 1.1 (`dist/fonts/OFL.txt`).

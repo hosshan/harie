@@ -1,7 +1,12 @@
 import { readHarie, writeHarie } from "@harie/format";
 import { applyOps, createDocument } from "@harie/model";
 import { describe, expect, it } from "vitest";
-import { fixture, nodeRenderer, syntheticJpeg } from "./test-utils/node-renderer";
+import {
+  createNodeRenderer,
+  fixture,
+  nodeRenderer,
+  syntheticJpeg,
+} from "./test-utils/node-renderer";
 
 function doc(width: number, height: number, annotations: unknown[]) {
   const d = createDocument({
@@ -84,6 +89,35 @@ describe("Renderer", () => {
     let changed = 0;
     for (let i = 0; i < p.data.length; i += 4) if (p.data[i] !== plain.data[i]) changed++;
     expect(changed).toBeGreaterThan(100);
+  });
+
+  // 補助フォントがないと、欠けた文字はどれも同じ □ になる。別の文字が別の形に描かれることで確かめる
+  it.each([
+    ["ハングル", "한", "가"],
+    ["簡体字", "简", "谢"],
+  ])("NFR-I18N-01: %s は補助フォントを読み込んで描く（ADR-0013）", async (_, a, b) => {
+    const text = (t: string) => ({
+      id: "t",
+      type: "text",
+      x: 2,
+      y: 2,
+      text: t,
+      style: { fontSize: 30, color: "#000000" },
+    });
+    const differs = (r: Awaited<ReturnType<typeof nodeRenderer>>) => {
+      const pa = r.renderPixels({ doc: doc(64, 40, [text(a)]), base });
+      const pb = r.renderPixels({ doc: doc(64, 40, [text(b)]), base });
+      return pa.data.some((v, i) => v !== pb.data[i]);
+    };
+
+    const without = await createNodeRenderer({ extraFonts: false });
+    await without.render({ doc: doc(64, 40, [text(a)]), base, output: "png" });
+    expect(differs(without)).toBe(false);
+
+    const withFonts = await createNodeRenderer({ extraFonts: true });
+    // render は描く前に補助フォントを読み込む。renderPixels は読み込み済みのものを使う
+    await withFonts.render({ doc: doc(64, 40, [text(a)]), base, output: "png" });
+    expect(differs(withFonts)).toBe(true);
   });
 
   it.each(["jpeg", "png"] as const)(
