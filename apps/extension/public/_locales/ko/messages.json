@@ -1,0 +1,14 @@
+{
+  "extName": {
+    "message": "Harie"
+  },
+  "extDescription": {
+    "message": "보고 있는 페이지를 캡처해 박스·화살표·설명을 붙이고, 언제든 다시 고칠 수 있는 이미지로 저장합니다"
+  },
+  "actionTitle": {
+    "message": "Harie로 캡처"
+  },
+  "captureVisible": {
+    "message": "보이는 영역 캡처"
+  }
+}

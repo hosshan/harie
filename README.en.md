@@ -37,7 +37,7 @@ pnpm --filter @harie/web dev    # web editor (http://localhost:5173/)
 
 The MVP (M0–M5: web editor, Chrome extension, MCP server, AI suggestions and personal-data masking) is implemented. See [local setup](docs/05-development/local-setup.md) for running it locally and the [implementation plan](docs/04-plan/implementation-plan.md) for what comes next (both in Japanese).
 
-The editor UI is available in English and Japanese.
+The editor UI is available in English, Japanese, Korean, Traditional Chinese, Simplified Chinese, Spanish and Brazilian Portuguese.
 
 ## Apps
 

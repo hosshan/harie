@@ -156,6 +156,22 @@ describe("補足の提案（FR-AI-01〜03）", () => {
     expect(en?.text.length).toBeGreaterThan(ja?.text.length ?? 0);
   });
 
+  it("NFR-I18N-01: 韓国語・中国語・スペイン語・ポルトガル語でも、その言語で書くよう頼む", () => {
+    expect(buildSuggestPrompt({ image, doc, intent: "", language: "ko" })).toContain(
+      "韓国語で書く",
+    );
+    expect(buildSuggestPrompt({ image, doc, intent: "", language: "zh-CN" })).toContain(
+      "簡体字の中国語で書く",
+    );
+    expect(buildSuggestPrompt({ image, doc, intent: "", language: "pt-BR" })).toContain(
+      "ブラジルのポルトガル語で書く",
+    );
+    // 知らない言語タグは日本語のまま
+    expect(buildSuggestPrompt({ image, doc, intent: "", language: "fr" })).not.toContain(
+      "日本語ではなく",
+    );
+  });
+
   it("LLM の出力がスキーマに合わなければ使わない", async () => {
     const client = mockClient({ suggestions: [{ target: "左上", text: 1 }] });
     await expect(suggestAnnotations({ client, image, doc, intent: "" })).rejects.toThrow();

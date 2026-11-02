@@ -1,20 +1,13 @@
-// エディタ（packages/editor）の文言。日本語を元にし、英語は同じ形（Messages 型）で用意する（NFR-I18N-01）
+// エディタ（packages/editor）の文言。日本語を元にし、ほかの言語は同じ形（Messages 型）で用意する（NFR-I18N-01）。
+// 英語以外の言語は ./editor/ に置く
 import type { PiiKind, PiiMethod } from "@harie/model";
+import { es } from "./editor/es";
+import { ko } from "./editor/ko";
+import { ptBR } from "./editor/pt-BR";
+import { zhCN } from "./editor/zh-CN";
+import { zhTW } from "./editor/zh-TW";
 import type { Locale, Messages } from "./locale";
-
-/** 要素で囲む道具の文の言い方を決める、要素の種類（ARIA のロール） */
-const TYPING_ROLES = new Set(["textbox", "searchbox"]);
-const CLICK_ROLES = new Set([
-  "button",
-  "link",
-  "tab",
-  "menuitem",
-  "checkbox",
-  "radio",
-  "switch",
-  "combobox",
-  "option",
-]);
+import { CLICK_ROLES, TYPING_ROLES } from "./roles";
 
 const ja = {
   /** 操作の名前に、ショートカットのキーを添える（ボタンの title） */
@@ -400,4 +393,12 @@ const en: EditorMessages = {
   },
 };
 
-export const EDITOR_MESSAGES: Record<Locale, EditorMessages> = { ja, en };
+export const EDITOR_MESSAGES: Record<Locale, EditorMessages> = {
+  ja,
+  en,
+  ko,
+  "zh-TW": zhTW,
+  "zh-CN": zhCN,
+  es,
+  "pt-BR": ptBR,
+};

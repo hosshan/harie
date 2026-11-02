@@ -1,0 +1,14 @@
+{
+  "extName": {
+    "message": "Harie"
+  },
+  "extDescription": {
+    "message": "截取正在浏览的页面，添加方框、箭头和说明，保存为随时都能再修改的图片"
+  },
+  "actionTitle": {
+    "message": "用 Harie 截图"
+  },
+  "captureVisible": {
+    "message": "截取可见区域"
+  }
+}

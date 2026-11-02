@@ -48,10 +48,10 @@ export type SuggestInput = {
   /** 何を説明したいか（利用者の入力） */
   intent: string;
   /**
-   * 説明文を書く言語（エディタの表示言語）。省略すると日本語（システムプロンプトの決まりのまま）。
-   * 英語は同じ文字数だと短すぎるので、上限を 2 倍にする
+   * 説明文を書く言語（エディタの表示言語。BCP 47 の言語タグ）。省略すると日本語（システムプロンプトの決まりのまま）。
+   * 知らない言語タグも日本語として扱う。日本語・中国語より同じ内容で文字数が多くなる言語は上限を広げる
    */
-  language?: "ja" | "en";
+  language?: string;
   /**
    * 説明したいこと以外に一緒に伝える情報（読者・画面の名前など）。利用者の入力なので、項目名と中身をそのまま伝える。
    * 空の項目は送らない
@@ -65,9 +65,23 @@ export type SuggestInput = {
   scale?: number;
 };
 
+/** 日本語以外で書かせる言語の、プロンプトでの呼び名と文字数の上限の倍率（NFR-I18N-01） */
+const LANGUAGES: Record<string, { name: string; lengthRatio: number }> = {
+  en: { name: "英語", lengthRatio: 2 },
+  ko: { name: "韓国語", lengthRatio: 1.5 },
+  "zh-TW": { name: "繁体字の中国語（台湾）", lengthRatio: 1 },
+  "zh-CN": { name: "簡体字の中国語", lengthRatio: 1 },
+  es: { name: "スペイン語", lengthRatio: 2 },
+  "pt-BR": { name: "ブラジルのポルトガル語", lengthRatio: 2 },
+};
+
+function languageOf(language: SuggestInput["language"]) {
+  return language === undefined ? undefined : LANGUAGES[language];
+}
+
 /** 説明文の文字数の上限（言語ごと） */
 function maxTextLength(language: SuggestInput["language"]): number {
-  return language === "en" ? MAX_TEXT_LENGTH * 2 : MAX_TEXT_LENGTH;
+  return Math.round(MAX_TEXT_LENGTH * (languageOf(language)?.lengthRatio ?? 1));
 }
 
 export type Suggestion = {
@@ -95,7 +109,11 @@ export function buildSuggestPrompt(input: Omit<SuggestInput, "client">): string 
       ? [
           `説明文（text）は日本語ではなく英語で書く（1〜2 文、${maxTextLength(language)} 文字以内）。「Click Save.」のように、読者がすることを具体的に書く。`,
         ]
-      : []),
+      : languageOf(language) !== undefined
+        ? [
+            `説明文（text）は日本語ではなく${languageOf(language)?.name}で書く（1〜2 文、${maxTextLength(language)} 文字以内）。読者がすることを具体的に書く。`,
+          ]
+        : []),
     `画像の大きさ: ${image.width}x${image.height} ピクセル`,
     `説明したいこと: ${intent.trim() === "" ? "（指定なし。この画面の主な操作）" : intent.trim()}`,
     ...(input.context ?? []).flatMap((c) =>

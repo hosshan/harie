@@ -1,8 +1,13 @@
 // Web エディタの画面（ヘッダー・保存・設定・連携・AI）の文言。拡張のエディタページとデスクトップ版も使う。
-// 日本語を元にし、英語は同じ形（Messages 型）で用意する（NFR-I18N-01）
+// 日本語を元にし、ほかの言語は同じ形（Messages 型）で用意する（NFR-I18N-01）。英語以外は ./i18n/ に置く
 
 import { getLocale, type Locale, type Messages, useMessages } from "@harie/editor";
 import type { MismatchReason } from "@harie/format";
+import { es } from "./i18n/es";
+import { ko } from "./i18n/ko";
+import { ptBR } from "./i18n/pt-BR";
+import { zhCN } from "./i18n/zh-CN";
+import { zhTW } from "./i18n/zh-TW";
 
 const ja = {
   header: {
@@ -388,7 +393,15 @@ const en: WebMessages = {
   },
 };
 
-export const WEB_MESSAGES: Record<Locale, WebMessages> = { ja, en };
+export const WEB_MESSAGES: Record<Locale, WebMessages> = {
+  ja,
+  en,
+  ko,
+  "zh-TW": zhTW,
+  "zh-CN": zhCN,
+  es,
+  "pt-BR": ptBR,
+};
 
 /** 今の表示言語の文言（React の外から使う。言語を変えても描き直されないので、表示は useWebMessages で行う） */
 export function webMessages(): WebMessages {
