@@ -1,0 +1,631 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Harie — 평범한 이미지인데, 언제든 다시 고칠 수 있다.</title>
+    <meta
+      name="description"
+      content="도움말 문서의 스크린샷에 박스, 번호, 설명을 붙이세요. Harie는 언제든 다시 열어 고칠 수 있는 일반 JPEG 또는 PNG로 저장합니다. 오픈 소스이며 AI 제안, 개인정보 마스킹, Chrome 확장 프로그램, MCP 서버를 제공합니다."
+    />
+    <meta name="theme-color" content="#D4A72C" />
+    <link rel="canonical" href="https://harie.studio/ko/" />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Harie" />
+    <meta property="og:locale" content="ko_KR" />
+    <meta property="og:locale:alternate" content="ja_JP" />
+    <meta property="og:title" content="Harie — 평범한 이미지인데, 언제든 다시 고칠 수 있다." />
+    <meta
+      property="og:description"
+      content="Harie는 일반 JPEG 또는 PNG로 저장합니다. Harie에서 다시 열면 박스, 번호, 설명을 모두 그대로 고칠 수 있습니다."
+    />
+    <meta property="og:url" content="https://harie.studio/ko/" />
+    <meta property="og:image" content="https://harie.studio/assets/og.en.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="Harie 로고, Just an image. Editable anytime. 문구, 주석을 붙인 예시 화면" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <link rel="alternate" hreflang="ja" href="https://harie.studio/" />
+    <link rel="alternate" hreflang="en" href="https://harie.studio/en/" />
+    <link rel="alternate" hreflang="ko" href="https://harie.studio/ko/" />
+    <link rel="alternate" hreflang="zh-TW" href="https://harie.studio/zh-tw/" />
+    <link rel="alternate" hreflang="zh-CN" href="https://harie.studio/zh-cn/" />
+    <link rel="alternate" hreflang="es" href="https://harie.studio/es/" />
+    <link rel="alternate" hreflang="pt-BR" href="https://harie.studio/pt-br/" />
+    <link rel="alternate" hreflang="x-default" href="https://harie.studio/" />
+    <link rel="icon" href="../assets/harie-symbol.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="../assets/apple-touch-icon.png" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@700;900&family=Zen+Kaku+Gothic+New:wght@400;700&family=IBM+Plex+Mono:wght@400;500&display=swap"
+    />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700;900&display=swap" />
+    <link rel="stylesheet" href="../styles.css" />
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@graph": [
+          {
+            "@type": "WebSite",
+            "@id": "https://harie.studio/#website",
+            "url": "https://harie.studio/",
+            "name": "Harie",
+            "alternateName": "はりえ",
+            "inLanguage": [
+              "ja",
+              "en",
+              "ko",
+              "zh-TW",
+              "zh-CN",
+              "es",
+              "pt-BR"
+            ]
+          },
+          {
+            "@type": "SoftwareApplication",
+            "@id": "https://harie.studio/#app",
+            "name": "Harie",
+            "alternateName": "はりえ",
+            "url": "https://harie.studio/ko/",
+            "description": "도움말 문서의 스크린샷에 박스, 번호, 설명을 붙이세요. Harie는 언제든 다시 열어 고칠 수 있는 일반 JPEG 또는 PNG로 저장합니다. 오픈 소스이며 AI 제안, 개인정보 마스킹, Chrome 확장 프로그램, MCP 서버를 제공합니다.",
+            "applicationCategory": "DesignApplication",
+            "operatingSystem": "Web, Chrome, macOS, Windows",
+            "inLanguage": [
+              "ja",
+              "en",
+              "ko",
+              "zh-TW",
+              "zh-CN",
+              "es",
+              "pt-BR"
+            ],
+            "image": "https://harie.studio/assets/og.en.png",
+            "offers": {
+              "@type": "Offer",
+              "price": "0",
+              "priceCurrency": "USD"
+            },
+            "license": "https://opensource.org/licenses/MIT",
+            "isAccessibleForFree": true,
+            "author": {
+              "@type": "Person",
+              "name": "hosshan",
+              "url": "https://github.com/hosshan"
+            },
+            "sameAs": [
+              "https://github.com/hosshan/harie",
+              "https://chromewebstore.google.com/detail/harie/dgbghdgnmjcgjdmhfnmcdphkafkbefll",
+              "https://www.npmjs.com/package/@harie/mcp"
+            ]
+          },
+          {
+            "@type": "FAQPage",
+            "@id": "https://harie.studio/ko/#faq",
+            "url": "https://harie.studio/ko/",
+            "inLanguage": "ko",
+            "mainEntity": [
+              {
+                "@type": "Question",
+                "name": "Harie는 무엇인가요?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "Harie는 SaaS 도움말 문서와 사용 가이드의 스크린샷에 박스, 번호, 말풍선, 화살표를 붙이는 도구입니다. 일반 JPEG 또는 PNG로 저장하며, 그 이미지를 Harie에서 다시 열면 모든 주석을 그대로 고칠 수 있습니다."
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "저장한 이미지를 다른 앱이나 웹사이트에서도 표시할 수 있나요?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "네. Harie는 일반 JPEG 또는 PNG로 저장하므로 도움말 페이지, 채팅, 문서에 그대로 붙여넣을 수 있습니다. 원본 스크린샷과 주석 데이터는 이미지의 메타데이터에 들어 있고, 이를 쓰는 것은 Harie뿐입니다."
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "다른 사람이 만든 가이드 이미지도 고칠 수 있나요?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "네, Harie로 저장한 이미지라면 가능합니다. 받은 이미지를 Harie에서 열면 박스와 설명을 하나씩 옮기거나 다시 쓸 수 있습니다. 프로젝트 파일이나 계정은 필요 없습니다."
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "Snagit이나 Scribe 같은 도구와 무엇이 다른가요?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "내보낸 이미지 자체를 계속 고칠 수 있다는 점입니다. 스크린샷 앱은 고칠 수 있는 주석을 자체 프로젝트 파일에 두기 때문에 만든 사람에게만 남습니다. 가이드 제작 서비스는 해당 서비스의 계정 안에서만 고칠 수 있습니다. Harie는 원본 스크린샷과 주석을 JPEG 또는 PNG 안에 담으므로, 도움말 페이지의 이미지를 가진 사람이라면 누구나 열어서 고칠 수 있습니다. 녹화한 조작에서 단계별 가이드를 자동으로 만드는 기능은 없습니다."
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "Harie는 유료인가요?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "아니요. Harie는 무료이고 MIT 라이선스의 오픈 소스이며, 가입도 필요 없습니다. AI 제안을 쓸 때만 본인의 Anthropic API 키나 OpenRouter 계정이 필요하고, 사용한 만큼 해당 서비스에 비용을 냅니다."
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "이미지가 서버로 전송되나요?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "아니요. 이미지는 브라우저나 기기 안에서 처리되며 개발자에게 전달되지 않습니다. AI 기능을 쓸 때만 확인을 받은 뒤 이미지를 Anthropic의 Claude API로 직접 보냅니다(OpenRouter로 연결했다면 OpenRouter를 거칩니다)."
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "스크린샷 속 개인정보를 가릴 수 있나요?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "네. 이름, 이메일 주소, 전화번호를 더미 값으로 바꾸거나 채우기, 모자이크, 흐림으로 가릴 수 있습니다. 원본 이미지 자체에 적용하므로 되돌릴 수 없고, 공유하는 파일에 원래 값이 남지 않습니다."
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "Harie는 어디에서 쓸 수 있나요?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "브라우저에서 동작하는 웹 편집기, 보고 있는 페이지를 캡처하는 Chrome 확장 프로그램, AI 에이전트용 MCP 서버가 있습니다. macOS와 Windows용 데스크톱 앱은 아직 배포하지 않지만 소스에서 빌드할 수 있습니다."
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "Claude 같은 AI 에이전트가 주석을 붙일 수 있나요?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "네. MCP 서버 @harie/mcp를 Claude Code나 Claude Desktop에 등록하면, 지정한 폴더의 이미지를 열어 주석을 붙이고 글자를 고칠 수 있습니다."
+                }
+              }
+            ]
+          }
+        ]
+      }
+    </script>
+  </head>
+  <body>
+    <header class="nav">
+      <div class="container nav-in">
+        <a class="logo" href="./" aria-label="Harie 홈">
+          <img src="../assets/harie-symbol.svg" alt="" width="30" height="30" />Harie
+        </a>
+        <nav class="nav-links" aria-label="이 페이지">
+          <a href="#how">작동 방식</a>
+          <a href="#ai">AI</a>
+          <a href="#privacy">개인정보</a>
+          <a href="#platforms">사용 환경</a>
+          <a href="#mcp">MCP</a>
+          <a href="https://github.com/hosshan/harie">GitHub</a>
+        </nav>
+        <details class="lang">
+          <summary aria-label="언어"><span class="lang-full">한국어</span><span class="lang-short">KO</span></summary>
+          <ul class="lang-menu">
+            <li><a href="../" hreflang="ja" lang="ja">日本語</a></li>
+            <li><a href="../en/" hreflang="en" lang="en">English</a></li>
+            <li><a href="../ko/" hreflang="ko" lang="ko" aria-current="page">한국어</a></li>
+            <li><a href="../zh-tw/" hreflang="zh-TW" lang="zh-TW">繁體中文</a></li>
+            <li><a href="../zh-cn/" hreflang="zh-CN" lang="zh-CN">简体中文</a></li>
+            <li><a href="../es/" hreflang="es" lang="es">Español</a></li>
+            <li><a href="../pt-br/" hreflang="pt-BR" lang="pt-BR">Português (Brasil)</a></li>
+          </ul>
+        </details>
+        <a class="btn btn-primary btn-sm" href="../app/">브라우저에서 쓰기</a>
+      </div>
+    </header>
+
+    <main>
+      <section class="hero">
+        <div class="paper paper-sq" aria-hidden="true"></div>
+        <div class="paper paper-dot" aria-hidden="true"></div>
+        <div class="container hero-in">
+          <div class="hero-copy">
+            <p class="eyebrow">SaaS 도움말 가이드를 쓰는 분들께</p>
+            <h1>평범한 이미지인데,<br /><em>언제든 다시 고칠 수 있다.</em></h1>
+            <p class="lead">
+              가이드에 쓰는 스크린샷에 박스, 번호, 설명을 붙이세요. Harie는 어디에나 붙여넣을 수 있는 일반 JPEG 또는 PNG로 저장합니다. 나중에 Harie에서 열어도 박스와 설명을 모두 그대로 고칠 수 있습니다.
+            </p>
+            <div class="cta">
+              <a class="btn btn-primary" href="../app/">브라우저에서 쓰기</a>
+              <a class="btn btn-ghost" href="https://chromewebstore.google.com/detail/harie/dgbghdgnmjcgjdmhfnmcdphkafkbefll?hl=ko">Chrome에 추가</a>
+            </div>
+            <p class="note">
+              무료 오픈 소스(MIT)이며 소스는 <a href="https://github.com/hosshan/harie">GitHub</a>에 공개되어 있습니다. 브라우저 버전은 설치나 계정 없이 쓸 수 있고, 편집기는 한국어, 영어, 일본어, 중국어, 스페인어, 포르투갈어 등 7개 언어를 지원합니다.
+            </p>
+          </div>
+          <figure class="hero-demo">
+            <div class="sheet">
+              <div class="demo" id="demo">
+                <img
+                  src="../assets/demo-base.en.webp"
+                  width="1280"
+                  height="720"
+                  alt="가상의 SaaS인 Tasklane의 알림 설정 화면 스크린샷"
+                />
+                <img
+                  class="demo-ann"
+                  src="../assets/demo-annotated.en.webp"
+                  width="1280"
+                  height="720"
+                  alt="같은 화면에 번호가 붙은 빨간 박스 3개와 말풍선을 더한 모습"
+                />
+              </div>
+            </div>
+            <figcaption class="demo-bar">
+              <span>원본과 주석이 파일 하나에 들어 있습니다</span>
+              <button class="switch" type="button" aria-pressed="true" aria-controls="demo">
+                <span class="switch-track" aria-hidden="true"></span>주석
+              </button>
+            </figcaption>
+          </figure>
+        </div>
+      </section>
+
+      <section class="section" aria-labelledby="pain-title">
+        <div class="container">
+          <h2 id="pain-title" class="h2">가이드용 스크린샷은 생각보다 손이 많이 갑니다.</h2>
+          <ul class="pains">
+            <li class="pain">
+              <h3>어디를 강조할지 매번 고민합니다</h3>
+              <p>게다가 팀원마다 조금씩 다르게 만듭니다.</p>
+              <a class="pain-fix" href="#ai">어디를 감싸고 뭐라고 쓸지 AI가 초안을 만듭니다</a>
+            </li>
+            <li class="pain">
+              <h3>이미지마다 같은 작업을 반복합니다</h3>
+              <p>캡처하고, 열고, 주석을 달고, 내보내고, 다음 이미지에서 또 처음부터 반복합니다.</p>
+              <a class="pain-fix" href="#flow">캡처한 페이지에 바로 주석을 답니다</a>
+            </li>
+            <li class="pain">
+              <h3>문구 하나가 바뀌면 이미지를 다시 만들어야 합니다</h3>
+              <p>버튼 이름이 바뀌면 스크린샷을 처음부터 다시 만들어야 합니다. 팀원이 만든 이미지라면 원본 파일이 남아 있지 않을 수도 있습니다.</p>
+              <a class="pain-fix" href="#how">이미지를 열면 누구나 그 자리에서 고칠 수 있습니다</a>
+            </li>
+            <li class="pain">
+              <h3>고객 데이터가 화면에 찍힙니다</h3>
+              <p>실제 서비스 화면에는 실명과 이메일 주소가 가득합니다.</p>
+              <a class="pain-fix" href="#privacy">되돌릴 수 없는 더미 값으로 바꿉니다</a>
+            </li>
+          </ul>
+        </div>
+      </section>
+
+      <section class="section section-tint" id="flow" aria-labelledby="flow-title">
+        <div class="container">
+          <h2 id="flow-title" class="h2">캡처하고, 주석을 달고, 남겨 둡니다.</h2>
+          <p class="sub">처음 캡처부터 저장한 파일까지 Harie 하나로 해결합니다.</p>
+          <ol class="steps">
+            <li class="step">
+              <span class="badge" aria-hidden="true">1</span>
+              <h3>캡처</h3>
+              <p>
+                Chrome 확장 프로그램으로 보고 있는 페이지를 캡처해 바로 편집기에서 열 수 있습니다. 보이는 영역, 드래그한 영역, 버튼 같은 요소 하나를 골라 찍을 수 있습니다.
+              </p>
+            </li>
+            <li class="step">
+              <span class="badge" aria-hidden="true">2</span>
+              <h3>주석 달기</h3>
+              <p>
+                박스, 화살표, 번호, 말풍선, 스포트라이트로 설명합니다. 설명하고 싶은 내용을 알려 주면 AI가 번호가 붙은 박스와 설명의 초안을 만들어 줍니다.
+              </p>
+            </li>
+            <li class="step">
+              <span class="badge" aria-hidden="true">3</span>
+              <h3>보관</h3>
+              <p>
+                Harie는 일반 JPEG 또는 PNG로 저장합니다. 도움말 센터에 그대로 붙여넣을 수 있고, 나중에 연 사람도 주석을 고칠 수 있습니다.
+              </p>
+            </li>
+          </ol>
+        </div>
+      </section>
+
+      <section class="section" id="how" aria-labelledby="how-title">
+        <div class="container split">
+          <div class="split-copy">
+            <p class="eyebrow">계속 고칠 수 있는 이유</p>
+            <h2 id="how-title" class="h2">이미지 한 장에 원래 화면과 주석이 함께 들어 있습니다.</h2>
+            <p>
+              Harie로 저장한 이미지에는 눈에 보이는 그림과 함께 원본 스크린샷과 주석 데이터가 들어 있습니다. 다른 앱이나 브라우저에서는 평범한 이미지로 보입니다.
+            </p>
+            <p>
+              Harie에서 열면 박스와 설명을 하나씩 옮기거나 다시 쓸 수 있습니다. 프로젝트 파일을 따로 보관할 필요가 없고, 이미지를 받은 사람도 열어서 고칠 수 있습니다.
+            </p>
+            <p class="small">
+              다시 저장해도 원본 스크린샷은 재압축하지 않으므로 몇 번을 고쳐도 화질이 떨어지지 않습니다.
+              <a href="https://github.com/hosshan/harie/blob/main/docs/03-design/harie-format-spec.md"
+                >파일 형식 사양</a
+              >
+              은 공개되어 있습니다(일본어).
+            </p>
+          </div>
+          <figure class="anatomy">
+            <div class="file-card">
+              <div class="file-head">
+                <span class="mono">tasklane-notifications.en.harie.png</span>
+                <span class="mono muted">147 KB</span>
+              </div>
+              <div class="layer layer-view">
+                <span>보기용 이미지</span><span class="muted">어떤 앱에서나 표시</span>
+              </div>
+              <div class="layer layer-base">
+                <span>원본 스크린샷</span><span class="muted">재압축하지 않음</span>
+              </div>
+              <div class="layer layer-doc">
+                <span>주석 데이터</span><span class="muted mono">박스 3 · 번호 3 · 말풍선 3</span>
+              </div>
+            </div>
+            <figcaption>
+              <a class="dl" href="../assets/tasklane-notifications.en.harie.png" download
+                >이 예시 파일을 내려받아</a
+              >
+               <a href="../app/">편집기</a> 에서 열면 주석을 고칠 수 있습니다.
+            </figcaption>
+          </figure>
+        </div>
+        <div class="container">
+          <div class="table-wrap">
+            <table class="compare">
+              <caption>
+                가이드용 스크린샷을 만드는 방법
+              </caption>
+              <thead>
+                <tr>
+                  <th scope="col"></th>
+                  <th scope="col">이미지 편집기에서 내보내기</th>
+                  <th scope="col">가이드 제작 서비스</th>
+                  <th scope="col" class="us">Harie</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <th scope="row">도움말 센터에 그대로 붙여넣기</th>
+                  <td>가능</td>
+                  <td>서비스에서 내보내기</td>
+                  <td class="us">가능</td>
+                </tr>
+                <tr>
+                  <th scope="row">공개한 뒤에 글자 고치기</th>
+                  <td>프로젝트 파일이 남아 있다면</td>
+                  <td>서비스 안에서</td>
+                  <td class="us">가능, 이미지를 열기만 하면 됨</td>
+                </tr>
+                <tr>
+                  <th scope="row">만든 사람이 아니어도 고치기</th>
+                  <td>프로젝트 파일을 넘겨준다면</td>
+                  <td>같은 요금제의 멤버</td>
+                  <td class="us">가능, 이미지를 보내기만 하면 됨</td>
+                </tr>
+                <tr>
+                  <th scope="row">계정이나 구독 없이 사용</th>
+                  <td>도구에 따라 다름</td>
+                  <td>필요</td>
+                  <td class="us">가능</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <section class="section section-tint" id="ai" aria-labelledby="ai-title">
+        <div class="container">
+          <p class="eyebrow">AI</p>
+          <h2 id="ai-title" class="h2">어디를 짚을지, AI와 함께 정하세요.</h2>
+          <div class="cards">
+            <article class="card">
+              <h3>주석 제안</h3>
+              <p>
+                ‘Slack 알림 설정 방법을 설명하고 싶다’처럼 쓰면, 어디를 감싸고 뭐라고 쓸지 AI가 초안을 만듭니다. 제안은 하나씩 채택하거나 거절하거나 고칠 수 있습니다. Chrome 확장 프로그램으로 찍은 이미지라면 박스가 페이지의 실제 요소 위치에 맞춰집니다.
+              </p>
+              <p class="small muted">
+                OpenRouter로 연결하거나 본인의 Anthropic API 키를 사용합니다. 이미지를 보내기 전에는 항상 확인을 받으며, 키는 이 브라우저 밖으로 나가지 않습니다.
+              </p>
+            </article>
+            <article class="card">
+              <h3>Claude에서 편집하기(MCP)</h3>
+              <p>
+                 <code>@harie/mcp</code> 서버를 등록하면 Claude Code나 Claude Desktop에 주석을 붙이거나 고쳐 달라고 부탁할 수 있습니다. 화면 문구가 바뀌었을 때 관련된 이미지를 한 번에 고칠 수도 있습니다.
+              </p>
+              <figure class="chat" aria-label="Claude에게 보내는 요청 예시">
+                <p class="chat-user">guides 폴더의 알림 이미지에서 ‘저장하여 적용’을 ‘업데이트하여 적용’으로 바꿔 줘</p>
+                <p class="chat-tool mono">harie_open → harie_edit</p>
+                <p class="chat-ai">말풍선 3을 고치고 파일을 저장했습니다.</p>
+              </figure>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section class="section" id="privacy" aria-labelledby="privacy-title">
+        <div class="container split split-rev">
+          <div class="split-copy">
+            <p class="eyebrow">개인정보</p>
+            <h2 id="privacy-title" class="h2">개인정보는 지우고, 의미는 남깁니다.</h2>
+            <p>
+              이름, 이메일 주소, 전화번호를 더미 값으로 바꿉니다. 흐림과 달리 어떤 화면인지는 그대로 알 수 있습니다. 원한다면 채우기, 모자이크, 흐림도 쓸 수 있습니다.
+            </p>
+            <p>
+              마스킹은 원본 이미지 자체에 적용하므로 되돌릴 수 없습니다. 그래서 파일을 공유해도 원래 값이 함께 전달되지 않습니다.
+            </p>
+          </div>
+          <figure class="pii">
+            <div class="pii-row">
+              <span class="pii-label">적용 전</span>
+              <img
+                src="../assets/pii-before.en.webp"
+                width="760"
+                height="92"
+                alt="담당자 칸에 가상의 이름과 이메일 주소가 보이는 모습"
+              />
+            </div>
+            <div class="pii-row">
+              <span class="pii-label pii-label-after">적용 후</span>
+              <img
+                src="../assets/pii-after.en.webp"
+                width="760"
+                height="92"
+                alt="담당자 칸이 더미 값 Teammate A로 바뀐 모습"
+              />
+            </div>
+            <figcaption class="small muted">예시 화면, 이름, 주소는 모두 가상입니다.</figcaption>
+          </figure>
+        </div>
+      </section>
+
+      <section class="section section-tint" id="platforms" aria-labelledby="platforms-title">
+        <div class="container">
+          <h2 id="platforms-title" class="h2">일하는 곳 어디에서나.</h2>
+          <p class="sub">어디에서 저장하든 같은 파일, 같은 모습입니다.</p>
+          <div class="platforms">
+            <article class="platform">
+              <div class="platform-head"><h3>Web</h3></div>
+              <p>
+                설치 없이 브라우저에서 바로 쓸 수 있습니다. 이미지는 브라우저 안에서 처리하고 서버로 보내지 않으며, 오프라인에서도 동작합니다. 화면 언어는 설정에서 바꿀 수 있습니다.
+              </p>
+              <a class="link" href="../app/">편집기 열기</a>
+            </article>
+            <article class="platform">
+              <div class="platform-head"><h3>Chrome 확장 프로그램</h3></div>
+              <p>보고 있는 페이지를 캡처해 바로 주석을 답니다. Chrome 웹 스토어에서 설치할 수 있습니다.</p>
+              <a class="link" href="https://chromewebstore.google.com/detail/harie/dgbghdgnmjcgjdmhfnmcdphkafkbefll?hl=ko">Chrome 웹 스토어에서 보기</a>
+            </article>
+            <article class="platform">
+              <div class="platform-head"><h3>데스크톱</h3><span class="tag">배포 준비 중</span></div>
+              <p>macOS와 Windows용입니다. 시스템 대화상자로 파일을 열고, 그 자리에 다시 저장합니다.</p>
+              <a class="link" href="https://github.com/hosshan/harie/tree/main/apps/desktop">데스크톱 앱 안내</a>
+            </article>
+            <article class="platform">
+              <div class="platform-head"><h3>MCP</h3></div>
+              <p>Claude 같은 AI 에이전트가 지정한 폴더의 이미지를 읽고 쓸 수 있습니다.</p>
+              <a class="link" href="#mcp">설정 방법</a>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section class="section" id="mcp" aria-labelledby="mcp-title">
+        <div class="container split">
+          <div class="split-copy">
+            <p class="eyebrow">MCP 시작하기</p>
+            <h2 id="mcp-title" class="h2">Claude에게 주석을 맡기세요.</h2>
+            <p> <code>@harie/mcp</code> 서버를 등록하면 Claude Code, Claude Desktop, ChatGPT 데스크톱 앱이 Harie 이미지를 열어 주석을 붙이거나 고칠 수 있습니다.</p>
+          </div>
+          <div class="setup-card">
+            <div class="tabs" role="tablist" aria-label="등록할 앱">
+              <button type="button" role="tab" id="tab-code" aria-controls="setup-code" aria-selected="true">Claude Code</button>
+              <button type="button" role="tab" id="tab-desktop" aria-controls="setup-desktop" aria-selected="false" tabindex="-1">Claude Desktop</button>
+              <button type="button" role="tab" id="tab-chatgpt" aria-controls="setup-chatgpt" aria-selected="false" tabindex="-1">ChatGPT</button>
+            </div>
+            <div class="tab-panel" role="tabpanel" id="setup-code" aria-labelledby="tab-code">
+              <p class="small muted">터미널에서 이 명령을 실행하세요.</p>
+              <div class="cmd">
+                <code id="mcp-cmd">claude mcp add harie -- npx -y @harie/mcp --root ~/Pictures/guides</code>
+                <button class="copy" type="button" data-copy="mcp-cmd" data-copied="복사했습니다">복사</button>
+              </div>
+            </div>
+            <div class="tab-panel" role="tabpanel" id="setup-desktop" aria-labelledby="tab-desktop" hidden>
+              <p class="small muted"> <code>claude_desktop_config.json</code> 에 이 설정을 추가하고 Claude Desktop을 다시 시작하세요. 폴더는 자신의 경로로 바꿔 주세요.</p>
+              <div class="cmd cmd-block">
+                <pre id="mcp-json">{
+  "mcpServers": {
+    "harie": {
+      "command": "npx",
+      "args": ["-y", "@harie/mcp", "--root", "/Users/you/Pictures/guides"]
+    }
+  }
+}</pre>
+                <button class="copy" type="button" data-copy="mcp-json" data-copied="복사했습니다">복사</button>
+              </div>
+            </div>
+            <div class="tab-panel" role="tabpanel" id="setup-chatgpt" aria-labelledby="tab-chatgpt" hidden>
+              <p class="small muted">ChatGPT 데스크톱 앱에서 쓸 수 있습니다. <code>~/.codex/config.toml</code> 에 이 설정을 추가하고 앱을 다시 시작하세요. 이 설정은 Codex CLI와 IDE 확장 프로그램에서도 함께 씁니다. 앱 설정의 MCP 서버 화면에서 같은 명령을 STDIO 서버로 추가할 수도 있습니다.</p>
+              <div class="cmd cmd-block">
+                <pre id="mcp-toml">[mcp_servers.harie]
+command = "npx"
+args = ["-y", "@harie/mcp", "--root", "/Users/you/Pictures/guides"]</pre>
+                <button class="copy" type="button" data-copy="mcp-toml" data-copied="복사했습니다">복사</button>
+              </div>
+              <p class="small muted">웹의 ChatGPT는 내 컴퓨터에서 실행 중인 MCP 서버에 연결할 수 없습니다.</p>
+            </div>
+            <ul class="setup-notes">
+              <li>Node.js 22 이상이 필요합니다. 서버는 npm에서 <code>npx</code>로 실행되므로 따로 설치할 것은 없습니다.</li>
+              <li> <code>--root</code> 에 이미지가 있는 폴더를 지정하세요. 서버는 그 폴더 안에서만 읽고 쓸 수 있습니다.</li>
+            </ul>
+            <a class="link" href="https://github.com/hosshan/harie/blob/main/apps/mcp/README.md">전체 도구 목록과 사용법(GitHub)</a>
+            <figure class="chat chat-examples" aria-label="요청 예시">
+              <figcaption class="small muted">요청 예시</figcaption>
+              <p class="chat-user">settings.png를 Harie 파일로 만들고, 저장 버튼을 빨간 박스로 감싼 다음 ‘여기서 저장’이라는 말풍선을 붙여 줘</p>
+              <p class="chat-user">guides 폴더의 이미지에서 보이는 이메일 주소를 모두 더미 값으로 바꿔 줘</p>
+            </figure>
+            <p class="small muted">개인정보 마스킹은 되돌릴 수 없으므로, 서버는 확인을 받은 뒤에만 저장합니다.</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="section section-tint" id="faq" aria-labelledby="faq-title">
+        <div class="container">
+          <h2 id="faq-title" class="h2">자주 묻는 질문</h2>
+          <div class="faq">
+            <article class="faq-item">
+              <h3>Harie는 무엇인가요?</h3>
+              <p>Harie는 SaaS 도움말 문서와 사용 가이드의 스크린샷에 박스, 번호, 말풍선, 화살표를 붙이는 도구입니다. 일반 JPEG 또는 PNG로 저장하며, 그 이미지를 Harie에서 다시 열면 모든 주석을 그대로 고칠 수 있습니다.</p>
+            </article>
+            <article class="faq-item">
+              <h3>저장한 이미지를 다른 앱이나 웹사이트에서도 표시할 수 있나요?</h3>
+              <p>네. Harie는 일반 JPEG 또는 PNG로 저장하므로 도움말 페이지, 채팅, 문서에 그대로 붙여넣을 수 있습니다. 원본 스크린샷과 주석 데이터는 이미지의 메타데이터에 들어 있고, 이를 쓰는 것은 Harie뿐입니다.</p>
+            </article>
+            <article class="faq-item">
+              <h3>다른 사람이 만든 가이드 이미지도 고칠 수 있나요?</h3>
+              <p>네, Harie로 저장한 이미지라면 가능합니다. 받은 이미지를 Harie에서 열면 박스와 설명을 하나씩 옮기거나 다시 쓸 수 있습니다. 프로젝트 파일이나 계정은 필요 없습니다.</p>
+            </article>
+            <article class="faq-item">
+              <h3>Snagit이나 Scribe 같은 도구와 무엇이 다른가요?</h3>
+              <p>내보낸 이미지 자체를 계속 고칠 수 있다는 점입니다. 스크린샷 앱은 고칠 수 있는 주석을 자체 프로젝트 파일에 두기 때문에 만든 사람에게만 남습니다. 가이드 제작 서비스는 해당 서비스의 계정 안에서만 고칠 수 있습니다. Harie는 원본 스크린샷과 주석을 JPEG 또는 PNG 안에 담으므로, 도움말 페이지의 이미지를 가진 사람이라면 누구나 열어서 고칠 수 있습니다. 녹화한 조작에서 단계별 가이드를 자동으로 만드는 기능은 없습니다.</p>
+            </article>
+            <article class="faq-item">
+              <h3>Harie는 유료인가요?</h3>
+              <p>아니요. Harie는 무료이고 MIT 라이선스의 오픈 소스이며, 가입도 필요 없습니다. AI 제안을 쓸 때만 본인의 Anthropic API 키나 OpenRouter 계정이 필요하고, 사용한 만큼 해당 서비스에 비용을 냅니다.</p>
+            </article>
+            <article class="faq-item">
+              <h3>이미지가 서버로 전송되나요?</h3>
+              <p>아니요. 이미지는 브라우저나 기기 안에서 처리되며 개발자에게 전달되지 않습니다. AI 기능을 쓸 때만 확인을 받은 뒤 이미지를 Anthropic의 Claude API로 직접 보냅니다(OpenRouter로 연결했다면 OpenRouter를 거칩니다).</p>
+            </article>
+            <article class="faq-item">
+              <h3>스크린샷 속 개인정보를 가릴 수 있나요?</h3>
+              <p>네. 이름, 이메일 주소, 전화번호를 더미 값으로 바꾸거나 채우기, 모자이크, 흐림으로 가릴 수 있습니다. 원본 이미지 자체에 적용하므로 되돌릴 수 없고, 공유하는 파일에 원래 값이 남지 않습니다.</p>
+            </article>
+            <article class="faq-item">
+              <h3>Harie는 어디에서 쓸 수 있나요?</h3>
+              <p>브라우저에서 동작하는 웹 편집기, 보고 있는 페이지를 캡처하는 Chrome 확장 프로그램, AI 에이전트용 MCP 서버가 있습니다. macOS와 Windows용 데스크톱 앱은 아직 배포하지 않지만 소스에서 빌드할 수 있습니다.</p>
+            </article>
+            <article class="faq-item">
+              <h3>Claude 같은 AI 에이전트가 주석을 붙일 수 있나요?</h3>
+              <p>네. MCP 서버 @harie/mcp를 Claude Code나 Claude Desktop에 등록하면, 지정한 폴더의 이미지를 열어 주석을 붙이고 글자를 고칠 수 있습니다.</p>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section class="closing">
+        <div class="container closing-in">
+          <img src="../assets/harie-symbol.svg" alt="" width="72" height="72" />
+          <h2 class="h2">다음 가이드는 언제든 고칠 수 있게.</h2>
+          <div class="cta">
+            <a class="btn btn-primary" href="../app/">브라우저에서 쓰기</a>
+            <a class="btn btn-ghost" href="https://chromewebstore.google.com/detail/harie/dgbghdgnmjcgjdmhfnmcdphkafkbefll?hl=ko">Chrome에 추가</a>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <div class="container footer-in">
+        <span class="logo logo-sm"><img src="../assets/harie-symbol.svg" alt="" width="22" height="22" />Harie</span>
+        <span class="muted">MIT License · 함께 제공하는 글꼴 Noto Sans JP, KR, SC는 SIL Open Font License 1.1을 따릅니다</span>
+        <span class="footer-links"><a href="../en/privacy/">개인정보 처리방침</a><a href="https://github.com/hosshan/harie">GitHub</a></span>
+      </div>
+    </footer>
+
+    <script src="../main.js" type="module"></script>
+  </body>
+</html>

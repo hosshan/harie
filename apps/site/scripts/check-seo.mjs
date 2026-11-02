@@ -3,8 +3,10 @@
 // - FAQPage の質問と答えが、ページに見えている「よくある質問」と同じ文であること
 // - canonical があり、og:url と同じであること
 // - sitemap.xml の URL が src/ のページを指していること（/app/ はエディタなので除く）
+// - 英語版から作る各言語の LP（scripts/translate.mjs）が最新であること
 import { access, readFile } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
+import { GENERATED, generate } from "./translate.mjs";
 
 const src = fileURLToPath(new URL("../src/", import.meta.url));
 const origin = "https://harie.studio/";
@@ -20,9 +22,13 @@ const decode = (s) =>
     .replace(/\s+/g, " ")
     .trim();
 
-const errors = [];
+const errors = await generate({ check: true });
 
-for (const page of ["index.html", "en/index.html"]) {
+for (const page of [
+  "index.html",
+  "en/index.html",
+  ...GENERATED.map((l) => `${l.dir}/index.html`),
+]) {
   const html = await readFile(`${src}${page}`, "utf8");
   const blocks = [...html.matchAll(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/g)];
   let faq;

@@ -1,0 +1,630 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Harie: só uma imagem, editável quando quiser.</title>
+    <meta
+      name="description"
+      content="Adicione caixas, números e notas às capturas de tela dos seus guias de ajuda. O Harie salva um JPEG ou PNG comum, que você pode reabrir e editar quando quiser. Código aberto, com sugestões de IA, ocultação de dados pessoais, extensão para Chrome e servidor MCP."
+    />
+    <meta name="theme-color" content="#D4A72C" />
+    <link rel="canonical" href="https://harie.studio/pt-br/" />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Harie" />
+    <meta property="og:locale" content="pt_BR" />
+    <meta property="og:locale:alternate" content="ja_JP" />
+    <meta property="og:title" content="Harie: só uma imagem, editável quando quiser." />
+    <meta
+      property="og:description"
+      content="O Harie salva um JPEG ou PNG comum. Abra de novo no Harie e cada caixa, número e nota continua editável."
+    />
+    <meta property="og:url" content="https://harie.studio/pt-br/" />
+    <meta property="og:image" content="https://harie.studio/assets/og.en.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="O logotipo do Harie, a frase “Só uma imagem, editável quando quiser.” e uma tela de exemplo com anotações" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <link rel="alternate" hreflang="ja" href="https://harie.studio/" />
+    <link rel="alternate" hreflang="en" href="https://harie.studio/en/" />
+    <link rel="alternate" hreflang="ko" href="https://harie.studio/ko/" />
+    <link rel="alternate" hreflang="zh-TW" href="https://harie.studio/zh-tw/" />
+    <link rel="alternate" hreflang="zh-CN" href="https://harie.studio/zh-cn/" />
+    <link rel="alternate" hreflang="es" href="https://harie.studio/es/" />
+    <link rel="alternate" hreflang="pt-BR" href="https://harie.studio/pt-br/" />
+    <link rel="alternate" hreflang="x-default" href="https://harie.studio/" />
+    <link rel="icon" href="../assets/harie-symbol.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="../assets/apple-touch-icon.png" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@700;900&family=Zen+Kaku+Gothic+New:wght@400;700&family=IBM+Plex+Mono:wght@400;500&display=swap"
+    />
+    <link rel="stylesheet" href="../styles.css" />
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@graph": [
+          {
+            "@type": "WebSite",
+            "@id": "https://harie.studio/#website",
+            "url": "https://harie.studio/",
+            "name": "Harie",
+            "alternateName": "はりえ",
+            "inLanguage": [
+              "ja",
+              "en",
+              "ko",
+              "zh-TW",
+              "zh-CN",
+              "es",
+              "pt-BR"
+            ]
+          },
+          {
+            "@type": "SoftwareApplication",
+            "@id": "https://harie.studio/#app",
+            "name": "Harie",
+            "alternateName": "はりえ",
+            "url": "https://harie.studio/pt-br/",
+            "description": "Adicione caixas, números e notas às capturas de tela dos seus guias de ajuda. O Harie salva um JPEG ou PNG comum, que você pode reabrir e editar quando quiser. Código aberto, com sugestões de IA, ocultação de dados pessoais, extensão para Chrome e servidor MCP.",
+            "applicationCategory": "DesignApplication",
+            "operatingSystem": "Web, Chrome, macOS, Windows",
+            "inLanguage": [
+              "ja",
+              "en",
+              "ko",
+              "zh-TW",
+              "zh-CN",
+              "es",
+              "pt-BR"
+            ],
+            "image": "https://harie.studio/assets/og.en.png",
+            "offers": {
+              "@type": "Offer",
+              "price": "0",
+              "priceCurrency": "USD"
+            },
+            "license": "https://opensource.org/licenses/MIT",
+            "isAccessibleForFree": true,
+            "author": {
+              "@type": "Person",
+              "name": "hosshan",
+              "url": "https://github.com/hosshan"
+            },
+            "sameAs": [
+              "https://github.com/hosshan/harie",
+              "https://chromewebstore.google.com/detail/harie/dgbghdgnmjcgjdmhfnmcdphkafkbefll",
+              "https://www.npmjs.com/package/@harie/mcp"
+            ]
+          },
+          {
+            "@type": "FAQPage",
+            "@id": "https://harie.studio/pt-br/#faq",
+            "url": "https://harie.studio/pt-br/",
+            "inLanguage": "pt-BR",
+            "mainEntity": [
+              {
+                "@type": "Question",
+                "name": "O que é o Harie?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "O Harie é uma ferramenta para adicionar caixas, números, balões e setas às capturas de tela da documentação de ajuda e dos guias de uso de um SaaS. Ele salva um JPEG ou PNG comum e, quando você abre essa imagem no Harie de novo, todas as anotações continuam editáveis."
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "Outros apps e sites conseguem exibir as imagens salvas?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "Sim. O Harie salva um JPEG ou PNG comum, então você pode colá-lo como está em páginas de ajuda, chats ou documentos. A captura original e os dados das anotações ficam nos metadados da imagem, e só o Harie os usa."
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "Posso editar imagens de guia feitas por outra pessoa?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "Sim, desde que tenham sido salvas com o Harie. Abra no Harie a imagem que você recebeu e você poderá mover ou reescrever cada caixa e nota. Não é preciso arquivo de projeto nem conta."
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "Qual a diferença entre o Harie e ferramentas como Snagit ou Scribe?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "A própria imagem exportada continua editável. Apps de captura de tela guardam as anotações editáveis em arquivos de projeto próprios, que ficam com quem os criou. Serviços de criação de guias só permitem editar dentro das próprias contas. O Harie guarda a captura original e as anotações dentro do JPEG ou PNG, então qualquer pessoa que tenha a imagem da sua página de ajuda pode abri-la e editá-la. O Harie não gera guias passo a passo a partir de ações gravadas."
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "O Harie é pago?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "Não. O Harie é gratuito, de código aberto sob a Licença MIT e não exige cadastro. Só as sugestões de IA precisam da sua própria chave de API da Anthropic ou de uma conta no OpenRouter, e você paga a esses serviços pelo que usar."
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "Minhas imagens são enviadas para um servidor?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "Não. As imagens são processadas no seu navegador ou dispositivo, e o desenvolvedor nunca as recebe. Só quando você usa os recursos de IA o Harie envia a imagem, depois de perguntar, diretamente para a API do Claude da Anthropic (pelo OpenRouter, se você se conectou com o OpenRouter)."
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "Posso esconder dados pessoais em uma captura de tela?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "Sim. Você pode substituir nomes, endereços de e-mail e números de telefone por valores fictícios, ou usar preenchimento, mosaico ou desfoque. A alteração é aplicada à própria imagem original, então não pode ser desfeita, e os valores originais não ficam no arquivo que você compartilha."
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "Onde posso usar o Harie?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "Há um editor web que roda no navegador, uma extensão para Chrome que captura a página em que você está e um servidor MCP para agentes de IA. O app para desktop (macOS e Windows) ainda não é distribuído, mas você pode compilá-lo a partir do código-fonte."
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "Agentes de IA como o Claude podem adicionar anotações?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "Sim. Registre o servidor MCP @harie/mcp no Claude Code ou no Claude Desktop, e ele poderá abrir imagens de uma pasta que você escolher, adicionar anotações e atualizar o texto."
+                }
+              }
+            ]
+          }
+        ]
+      }
+    </script>
+  </head>
+  <body>
+    <header class="nav">
+      <div class="container nav-in">
+        <a class="logo" href="./" aria-label="Início do Harie">
+          <img src="../assets/harie-symbol.svg" alt="" width="30" height="30" />Harie
+        </a>
+        <nav class="nav-links" aria-label="Nesta página">
+          <a href="#how">Como funciona</a>
+          <a href="#ai">AI</a>
+          <a href="#privacy">Privacidade</a>
+          <a href="#platforms">Plataformas</a>
+          <a href="#mcp">MCP</a>
+          <a href="https://github.com/hosshan/harie">GitHub</a>
+        </nav>
+        <details class="lang">
+          <summary aria-label="Idioma"><span class="lang-full">Português (Brasil)</span><span class="lang-short">PT</span></summary>
+          <ul class="lang-menu">
+            <li><a href="../" hreflang="ja" lang="ja">日本語</a></li>
+            <li><a href="../en/" hreflang="en" lang="en">English</a></li>
+            <li><a href="../ko/" hreflang="ko" lang="ko">한국어</a></li>
+            <li><a href="../zh-tw/" hreflang="zh-TW" lang="zh-TW">繁體中文</a></li>
+            <li><a href="../zh-cn/" hreflang="zh-CN" lang="zh-CN">简体中文</a></li>
+            <li><a href="../es/" hreflang="es" lang="es">Español</a></li>
+            <li><a href="../pt-br/" hreflang="pt-BR" lang="pt-BR" aria-current="page">Português (Brasil)</a></li>
+          </ul>
+        </details>
+        <a class="btn btn-primary btn-sm" href="../app/">Abrir no navegador</a>
+      </div>
+    </header>
+
+    <main>
+      <section class="hero">
+        <div class="paper paper-sq" aria-hidden="true"></div>
+        <div class="paper paper-dot" aria-hidden="true"></div>
+        <div class="container hero-in">
+          <div class="hero-copy">
+            <p class="eyebrow">Para quem escreve guias de ajuda de SaaS</p>
+            <h1>Só uma imagem.<br /><em>Editável quando quiser.</em></h1>
+            <p class="lead">
+              Adicione caixas, números e notas às capturas de tela dos seus guias. O Harie salva um JPEG ou PNG comum que você pode colar em qualquer lugar. Abra no Harie depois, e cada caixa e legenda continua editável.
+            </p>
+            <div class="cta">
+              <a class="btn btn-primary" href="../app/">Abrir no navegador</a>
+              <a class="btn btn-ghost" href="https://chromewebstore.google.com/detail/harie/dgbghdgnmjcgjdmhfnmcdphkafkbefll?hl=pt-BR">Adicionar ao Chrome</a>
+            </div>
+            <p class="note">
+              Gratuito e de código aberto (MIT), com o código no <a href="https://github.com/hosshan/harie">GitHub</a>. A versão para navegador não exige instalação nem conta, e o editor está disponível em sete idiomas, incluindo português, inglês, espanhol, japonês, coreano e chinês.
+            </p>
+          </div>
+          <figure class="hero-demo">
+            <div class="sheet">
+              <div class="demo" id="demo">
+                <img
+                  src="../assets/demo-base.en.webp"
+                  width="1280"
+                  height="720"
+                  alt="Captura da página de configurações de notificação do Tasklane, um SaaS fictício"
+                />
+                <img
+                  class="demo-ann"
+                  src="../assets/demo-annotated.en.webp"
+                  width="1280"
+                  height="720"
+                  alt="A mesma tela com três caixas vermelhas numeradas e balões"
+                />
+              </div>
+            </div>
+            <figcaption class="demo-bar">
+              <span>O original e as anotações ficam em um só arquivo</span>
+              <button class="switch" type="button" aria-pressed="true" aria-controls="demo">
+                <span class="switch-track" aria-hidden="true"></span>Anotações
+              </button>
+            </figcaption>
+          </figure>
+        </div>
+      </section>
+
+      <section class="section" aria-labelledby="pain-title">
+        <div class="container">
+          <h2 id="pain-title" class="h2">Capturas para guias dão mais trabalho do que deveriam.</h2>
+          <ul class="pains">
+            <li class="pain">
+              <h3>Toda vez você decide o que destacar</h3>
+              <p>E cada pessoa da equipe faz de um jeito um pouco diferente.</p>
+              <a class="pain-fix" href="#ai">A IA sugere onde ficam as caixas e o que dizem</a>
+            </li>
+            <li class="pain">
+              <h3>Os mesmos passos em cada imagem</h3>
+              <p>Capturar, abrir, anotar, exportar, e fazer tudo de novo na próxima.</p>
+              <a class="pain-fix" href="#flow">Anote a página logo depois de capturá-la</a>
+            </li>
+            <li class="pain">
+              <h3>Um rótulo muda e a imagem precisa ser refeita</h3>
+              <p>Se um botão muda de nome, é preciso refazer a captura do zero. Se foi um colega que fez, o arquivo original pode nem existir mais.</p>
+              <a class="pain-fix" href="#how">Abra a imagem e qualquer pessoa corrige na hora</a>
+            </li>
+            <li class="pain">
+              <h3>Dados de clientes aparecem na tela</h3>
+              <p>As telas de produção estão cheias de nomes e e-mails reais.</p>
+              <a class="pain-fix" href="#privacy">Troque por valores fictícios que não podem ser revertidos</a>
+            </li>
+          </ul>
+        </div>
+      </section>
+
+      <section class="section section-tint" id="flow" aria-labelledby="flow-title">
+        <div class="container">
+          <h2 id="flow-title" class="h2">Capture, anote e guarde.</h2>
+          <p class="sub">O Harie cuida de tudo, da primeira captura ao arquivo salvo.</p>
+          <ol class="steps">
+            <li class="step">
+              <span class="badge" aria-hidden="true">1</span>
+              <h3>Capturar</h3>
+              <p>
+                Com a extensão para Chrome, você captura a página em que está e abre direto no editor. Escolha a área visível, uma região que você arrasta ou um único elemento, como um botão.
+              </p>
+            </li>
+            <li class="step">
+              <span class="badge" aria-hidden="true">2</span>
+              <h3>Anotar</h3>
+              <p>
+                Explique com caixas, setas, números, balões e destaques. Diga ao Harie o que você quer explicar, e a IA sugere caixas numeradas com as legendas.
+              </p>
+            </li>
+            <li class="step">
+              <span class="badge" aria-hidden="true">3</span>
+              <h3>Guardar</h3>
+              <p>
+                O Harie salva um JPEG ou PNG comum. Você pode colar como está na sua central de ajuda, e quem abrir depois ainda consegue editar as anotações.
+              </p>
+            </li>
+          </ol>
+        </div>
+      </section>
+
+      <section class="section" id="how" aria-labelledby="how-title">
+        <div class="container split">
+          <div class="split-copy">
+            <p class="eyebrow">Por que continua editável</p>
+            <h2 id="how-title" class="h2">Uma imagem guarda a tela original e as anotações.</h2>
+            <p>
+              Uma imagem salva pelo Harie leva a captura original e os dados das anotações junto com a imagem que você vê. Outros apps e navegadores simplesmente mostram uma imagem normal.
+            </p>
+            <p>
+              Abra no Harie e você pode mover ou reescrever cada caixa e legenda. Não é preciso guardar um arquivo de projeto separado, e quem recebe a imagem pode abri-la e corrigi-la.
+            </p>
+            <p class="small">
+              Salvar de novo nunca recomprime a captura original, então a qualidade se mantém não importa quantas vezes você edite. A
+              <a href="https://github.com/hosshan/harie/blob/main/docs/03-design/harie-format-spec.md"
+                >especificação do formato</a
+              >
+              é pública (em japonês).
+            </p>
+          </div>
+          <figure class="anatomy">
+            <div class="file-card">
+              <div class="file-head">
+                <span class="mono">tasklane-notifications.en.harie.png</span>
+                <span class="mono muted">147 KB</span>
+              </div>
+              <div class="layer layer-view">
+                <span>Imagem para visualização</span><span class="muted">Aparece em qualquer app</span>
+              </div>
+              <div class="layer layer-base">
+                <span>Captura original</span><span class="muted">Nunca recomprimida</span>
+              </div>
+              <div class="layer layer-doc">
+                <span>Dados das anotações</span><span class="muted mono">3 caixas · 3 números · 3 balões</span>
+              </div>
+            </div>
+            <figcaption>
+              <a class="dl" href="../assets/tasklane-notifications.en.harie.png" download
+                >Baixe este exemplo</a
+              >
+              e abra no <a href="../app/">editor</a> para editar as anotações.
+            </figcaption>
+          </figure>
+        </div>
+        <div class="container">
+          <div class="table-wrap">
+            <table class="compare">
+              <caption>
+                Formas de fazer capturas para guias
+              </caption>
+              <thead>
+                <tr>
+                  <th scope="col"></th>
+                  <th scope="col">Exportar de um editor de imagens</th>
+                  <th scope="col">Serviço de criação de guias</th>
+                  <th scope="col" class="us">Harie</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <th scope="row">Colar direto na central de ajuda</th>
+                  <td>Sim</td>
+                  <td>Exportando do serviço</td>
+                  <td class="us">Sim</td>
+                </tr>
+                <tr>
+                  <th scope="row">Editar o texto depois de publicado</th>
+                  <td>Se você ainda tiver o arquivo de projeto</td>
+                  <td>Dentro do serviço</td>
+                  <td class="us">Sim, é só abrir a imagem</td>
+                </tr>
+                <tr>
+                  <th scope="row">Editável por outra pessoa além do autor</th>
+                  <td>Se você entregar o arquivo de projeto</td>
+                  <td>Membros do mesmo plano</td>
+                  <td class="us">Sim, é só enviar a imagem</td>
+                </tr>
+                <tr>
+                  <th scope="row">Sem conta nem assinatura</th>
+                  <td>Depende da ferramenta</td>
+                  <td>Obrigatória</td>
+                  <td class="us">Sim</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <section class="section section-tint" id="ai" aria-labelledby="ai-title">
+        <div class="container">
+          <p class="eyebrow">AI</p>
+          <h2 id="ai-title" class="h2">Deixe a IA ajudar a decidir o que apontar.</h2>
+          <div class="cards">
+            <article class="card">
+              <h3>Anotações sugeridas</h3>
+              <p>
+                Escreva algo como “Explique como configurar as notificações do Slack”, e a IA sugere onde ficam as caixas e o que elas dizem. Você pode aceitar, rejeitar ou editar cada sugestão. Nas capturas da extensão para Chrome, as caixas se alinham aos elementos reais da página.
+              </p>
+              <p class="small muted">
+                Conecte-se com o OpenRouter ou use sua própria chave de API da Anthropic. O Harie sempre pergunta antes de enviar uma imagem, e sua chave nunca sai deste navegador.
+              </p>
+            </article>
+            <article class="card">
+              <h3>Editar pelo Claude (MCP)</h3>
+              <p>
+                Depois de registrar o servidor <code>@harie/mcp</code> , você pode pedir ao Claude Code ou ao Claude Desktop que adicione ou corrija anotações para você. Quando um texto da interface muda, dá para atualizar de uma vez todas as imagens afetadas.
+              </p>
+              <figure class="chat" aria-label="Exemplo de pedido ao Claude">
+                <p class="chat-user">Na imagem de notificações em guides, troque “Salve para aplicar” por “Atualize para aplicar”</p>
+                <p class="chat-tool mono">harie_open → harie_edit</p>
+                <p class="chat-ai">Atualizei o balão 3 e salvei o arquivo.</p>
+              </figure>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section class="section" id="privacy" aria-labelledby="privacy-title">
+        <div class="container split split-rev">
+          <div class="split-copy">
+            <p class="eyebrow">Dados pessoais</p>
+            <h2 id="privacy-title" class="h2">Tire os dados pessoais e mantenha o sentido.</h2>
+            <p>
+              Substitua nomes, endereços de e-mail e números de telefone por valores fictícios. Diferente de um desfoque, assim os leitores ainda entendem que tipo de tela estão vendo. Se preferir, também há preenchimento, mosaico e desfoque.
+            </p>
+            <p>
+              A ocultação é aplicada à própria imagem original, então não pode ser desfeita. Isso também significa que os valores originais não vão junto com o arquivo quando você o compartilha.
+            </p>
+          </div>
+          <figure class="pii">
+            <div class="pii-row">
+              <span class="pii-label">Antes</span>
+              <img
+                src="../assets/pii-before.en.webp"
+                width="760"
+                height="92"
+                alt="O campo de responsável mostra um nome e um e-mail fictícios"
+              />
+            </div>
+            <div class="pii-row">
+              <span class="pii-label pii-label-after">Depois</span>
+              <img
+                src="../assets/pii-after.en.webp"
+                width="760"
+                height="92"
+                alt="O campo de responsável foi substituído pelo valor fictício Colega A"
+              />
+            </div>
+            <figcaption class="small muted">A tela de exemplo, os nomes e os endereços são todos fictícios.</figcaption>
+          </figure>
+        </div>
+      </section>
+
+      <section class="section section-tint" id="platforms" aria-labelledby="platforms-title">
+        <div class="container">
+          <h2 id="platforms-title" class="h2">Funciona onde você trabalha.</h2>
+          <p class="sub">Onde quer que você salve, o arquivo e a aparência são os mesmos.</p>
+          <div class="platforms">
+            <article class="platform">
+              <div class="platform-head"><h3>Web</h3></div>
+              <p>
+                Use direto no navegador, sem instalar nada. As imagens são processadas no navegador e nunca enviadas a um servidor, e funciona offline também. Você pode trocar o idioma da interface nas Configurações.
+              </p>
+              <a class="link" href="../app/">Abrir o editor</a>
+            </article>
+            <article class="platform">
+              <div class="platform-head"><h3>Extensão para Chrome</h3></div>
+              <p>Capture a página em que você está e anote na hora. Instale pela Chrome Web Store.</p>
+              <a class="link" href="https://chromewebstore.google.com/detail/harie/dgbghdgnmjcgjdmhfnmcdphkafkbefll?hl=pt-BR">Ver na Chrome Web Store</a>
+            </article>
+            <article class="platform">
+              <div class="platform-head"><h3>Desktop</h3><span class="tag">Downloads em breve</span></div>
+              <p>Para macOS e Windows. Abra arquivos pela janela do sistema e salve de volta no mesmo lugar.</p>
+              <a class="link" href="https://github.com/hosshan/harie/tree/main/apps/desktop">Sobre o app para desktop</a>
+            </article>
+            <article class="platform">
+              <div class="platform-head"><h3>MCP</h3></div>
+              <p>Permita que agentes de IA como o Claude leiam e gravem as imagens de uma pasta que você escolher.</p>
+              <a class="link" href="#mcp">Como configurar</a>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section class="section" id="mcp" aria-labelledby="mcp-title">
+        <div class="container split">
+          <div class="split-copy">
+            <p class="eyebrow">Primeiros passos com MCP</p>
+            <h2 id="mcp-title" class="h2">Peça ao Claude para anotar por você.</h2>
+            <p>Depois de registrar o servidor <code>@harie/mcp</code> , o Claude Code, o Claude Desktop e o app de desktop do ChatGPT podem abrir imagens do Harie e adicionar ou corrigir anotações.</p>
+          </div>
+          <div class="setup-card">
+            <div class="tabs" role="tablist" aria-label="App onde registrar">
+              <button type="button" role="tab" id="tab-code" aria-controls="setup-code" aria-selected="true">Claude Code</button>
+              <button type="button" role="tab" id="tab-desktop" aria-controls="setup-desktop" aria-selected="false" tabindex="-1">Claude Desktop</button>
+              <button type="button" role="tab" id="tab-chatgpt" aria-controls="setup-chatgpt" aria-selected="false" tabindex="-1">ChatGPT</button>
+            </div>
+            <div class="tab-panel" role="tabpanel" id="setup-code" aria-labelledby="tab-code">
+              <p class="small muted">Execute este comando no terminal.</p>
+              <div class="cmd">
+                <code id="mcp-cmd">claude mcp add harie -- npx -y @harie/mcp --root ~/Pictures/guides</code>
+                <button class="copy" type="button" data-copy="mcp-cmd" data-copied="Copiado">Copiar</button>
+              </div>
+            </div>
+            <div class="tab-panel" role="tabpanel" id="setup-desktop" aria-labelledby="tab-desktop" hidden>
+              <p class="small muted">Adicione isto a <code>claude_desktop_config.json</code> e reinicie o Claude Desktop. Troque a pasta pelo seu próprio caminho.</p>
+              <div class="cmd cmd-block">
+                <pre id="mcp-json">{
+  "mcpServers": {
+    "harie": {
+      "command": "npx",
+      "args": ["-y", "@harie/mcp", "--root", "/Users/you/Pictures/guides"]
+    }
+  }
+}</pre>
+                <button class="copy" type="button" data-copy="mcp-json" data-copied="Copiado">Copiar</button>
+              </div>
+            </div>
+            <div class="tab-panel" role="tabpanel" id="setup-chatgpt" aria-labelledby="tab-chatgpt" hidden>
+              <p class="small muted">Funciona no app de desktop do ChatGPT. Adicione isto a <code>~/.codex/config.toml</code> e reinicie o app. A mesma configuração é compartilhada com o Codex CLI e a extensão para IDE. Você também pode adicionar o mesmo comando como servidor STDIO em servidores MCP, nas configurações do app.</p>
+              <div class="cmd cmd-block">
+                <pre id="mcp-toml">[mcp_servers.harie]
+command = "npx"
+args = ["-y", "@harie/mcp", "--root", "/Users/you/Pictures/guides"]</pre>
+                <button class="copy" type="button" data-copy="mcp-toml" data-copied="Copiado">Copiar</button>
+              </div>
+              <p class="small muted">O ChatGPT na web não consegue se conectar a servidores MCP que rodam no seu computador.</p>
+            </div>
+            <ul class="setup-notes">
+              <li>Requer Node.js 22 ou posterior. O servidor roda a partir do npm com <code>npx</code>, então não há mais nada para instalar.</li>
+              <li>Aponte <code>--root</code> para a pasta que guarda suas imagens. O servidor só pode ler e gravar dentro dessa pasta.</li>
+            </ul>
+            <a class="link" href="https://github.com/hosshan/harie/blob/main/apps/mcp/README.md">Lista completa de ferramentas e uso (GitHub)</a>
+            <figure class="chat chat-examples" aria-label="Exemplos de pedidos">
+              <figcaption class="small muted">Exemplos de pedidos</figcaption>
+              <p class="chat-user">Transforme settings.png em um arquivo do Harie, coloque uma caixa vermelha em volta do botão Salvar e adicione um balão escrito Salve aqui</p>
+              <p class="chat-user">Nas imagens em guides, substitua os endereços de e-mail visíveis por valores fictícios</p>
+            </figure>
+            <p class="small muted">A ocultação de dados pessoais não pode ser desfeita, então o servidor só salva depois que você confirma.</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="section section-tint" id="faq" aria-labelledby="faq-title">
+        <div class="container">
+          <h2 id="faq-title" class="h2">Perguntas frequentes</h2>
+          <div class="faq">
+            <article class="faq-item">
+              <h3>O que é o Harie?</h3>
+              <p>O Harie é uma ferramenta para adicionar caixas, números, balões e setas às capturas de tela da documentação de ajuda e dos guias de uso de um SaaS. Ele salva um JPEG ou PNG comum e, quando você abre essa imagem no Harie de novo, todas as anotações continuam editáveis.</p>
+            </article>
+            <article class="faq-item">
+              <h3>Outros apps e sites conseguem exibir as imagens salvas?</h3>
+              <p>Sim. O Harie salva um JPEG ou PNG comum, então você pode colá-lo como está em páginas de ajuda, chats ou documentos. A captura original e os dados das anotações ficam nos metadados da imagem, e só o Harie os usa.</p>
+            </article>
+            <article class="faq-item">
+              <h3>Posso editar imagens de guia feitas por outra pessoa?</h3>
+              <p>Sim, desde que tenham sido salvas com o Harie. Abra no Harie a imagem que você recebeu e você poderá mover ou reescrever cada caixa e nota. Não é preciso arquivo de projeto nem conta.</p>
+            </article>
+            <article class="faq-item">
+              <h3>Qual a diferença entre o Harie e ferramentas como Snagit ou Scribe?</h3>
+              <p>A própria imagem exportada continua editável. Apps de captura de tela guardam as anotações editáveis em arquivos de projeto próprios, que ficam com quem os criou. Serviços de criação de guias só permitem editar dentro das próprias contas. O Harie guarda a captura original e as anotações dentro do JPEG ou PNG, então qualquer pessoa que tenha a imagem da sua página de ajuda pode abri-la e editá-la. O Harie não gera guias passo a passo a partir de ações gravadas.</p>
+            </article>
+            <article class="faq-item">
+              <h3>O Harie é pago?</h3>
+              <p>Não. O Harie é gratuito, de código aberto sob a Licença MIT e não exige cadastro. Só as sugestões de IA precisam da sua própria chave de API da Anthropic ou de uma conta no OpenRouter, e você paga a esses serviços pelo que usar.</p>
+            </article>
+            <article class="faq-item">
+              <h3>Minhas imagens são enviadas para um servidor?</h3>
+              <p>Não. As imagens são processadas no seu navegador ou dispositivo, e o desenvolvedor nunca as recebe. Só quando você usa os recursos de IA o Harie envia a imagem, depois de perguntar, diretamente para a API do Claude da Anthropic (pelo OpenRouter, se você se conectou com o OpenRouter).</p>
+            </article>
+            <article class="faq-item">
+              <h3>Posso esconder dados pessoais em uma captura de tela?</h3>
+              <p>Sim. Você pode substituir nomes, endereços de e-mail e números de telefone por valores fictícios, ou usar preenchimento, mosaico ou desfoque. A alteração é aplicada à própria imagem original, então não pode ser desfeita, e os valores originais não ficam no arquivo que você compartilha.</p>
+            </article>
+            <article class="faq-item">
+              <h3>Onde posso usar o Harie?</h3>
+              <p>Há um editor web que roda no navegador, uma extensão para Chrome que captura a página em que você está e um servidor MCP para agentes de IA. O app para desktop (macOS e Windows) ainda não é distribuído, mas você pode compilá-lo a partir do código-fonte.</p>
+            </article>
+            <article class="faq-item">
+              <h3>Agentes de IA como o Claude podem adicionar anotações?</h3>
+              <p>Sim. Registre o servidor MCP @harie/mcp no Claude Code ou no Claude Desktop, e ele poderá abrir imagens de uma pasta que você escolher, adicionar anotações e atualizar o texto.</p>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section class="closing">
+        <div class="container closing-in">
+          <img src="../assets/harie-symbol.svg" alt="" width="72" height="72" />
+          <h2 class="h2">Faça seu próximo guia editável quando quiser.</h2>
+          <div class="cta">
+            <a class="btn btn-primary" href="../app/">Abrir no navegador</a>
+            <a class="btn btn-ghost" href="https://chromewebstore.google.com/detail/harie/dgbghdgnmjcgjdmhfnmcdphkafkbefll?hl=pt-BR">Adicionar ao Chrome</a>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <div class="container footer-in">
+        <span class="logo logo-sm"><img src="../assets/harie-symbol.svg" alt="" width="22" height="22" />Harie</span>
+        <span class="muted">Licença MIT · As fontes incluídas Noto Sans JP, KR e SC usam a SIL Open Font License 1.1</span>
+        <span class="footer-links"><a href="../en/privacy/">Política de Privacidade</a><a href="https://github.com/hosshan/harie">GitHub</a></span>
+      </div>
+    </footer>
+
+    <script src="../main.js" type="module"></script>
+  </body>
+</html>

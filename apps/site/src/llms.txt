@@ -10,7 +10,7 @@ Key facts:
 - Optional AI features (annotation suggestions and personal data detection) use the user's own Anthropic API key, or an OpenRouter account connected from the web editor. Images are sent to Anthropic's Claude API only after the user confirms.
 - Personal data such as names, email addresses and phone numbers can be replaced with dummy values (or filled, mosaicked or blurred). This is applied to the original image irreversibly, so the original values do not remain in the file.
 - Available as a web editor (https://harie.studio/app/), a Chrome extension (Chrome Web Store), and an MCP server (`npx -y @harie/mcp --root <folder>`) for AI agents such as Claude Code and Claude Desktop. A desktop app for macOS and Windows (Tauri 2) can be built from source; signed binaries are not distributed yet.
-- The editor UI is available in English and Japanese.
+- The editor UI is available in English, Japanese, Korean, Traditional Chinese, Simplified Chinese, Spanish and Brazilian Portuguese. Annotation text in Korean and Chinese renders with bundled Noto Sans KR and SC fonts.
 - Compared with screenshot tools such as Snagit or CleanShot X, which keep editable annotations in their own project files, and guide-making services such as Scribe or Tango, which keep guides in their own accounts, Harie keeps the annotations inside the exported image file itself.
 - Harie does not generate step-by-step guides automatically from recorded actions.
 
@@ -18,6 +18,7 @@ Key facts:
 
 - [Harie (English)](https://harie.studio/en/): overview, how the editable image works, AI, personal data masking, platforms, MCP setup, FAQ
 - [Harie (日本語)](https://harie.studio/): the same page in Japanese
+- The same page in [한국어](https://harie.studio/ko/), [繁體中文](https://harie.studio/zh-tw/), [简体中文](https://harie.studio/zh-cn/), [Español](https://harie.studio/es/) and [Português (Brasil)](https://harie.studio/pt-br/)
 - [Web editor](https://harie.studio/app/): runs in the browser, no install
 - [Privacy policy](https://harie.studio/en/privacy/): what data Harie handles
 

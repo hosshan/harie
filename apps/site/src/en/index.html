@@ -27,6 +27,11 @@
     <meta name="twitter:card" content="summary_large_image" />
     <link rel="alternate" hreflang="ja" href="https://harie.studio/" />
     <link rel="alternate" hreflang="en" href="https://harie.studio/en/" />
+    <link rel="alternate" hreflang="ko" href="https://harie.studio/ko/" />
+    <link rel="alternate" hreflang="zh-TW" href="https://harie.studio/zh-tw/" />
+    <link rel="alternate" hreflang="zh-CN" href="https://harie.studio/zh-cn/" />
+    <link rel="alternate" hreflang="es" href="https://harie.studio/es/" />
+    <link rel="alternate" hreflang="pt-BR" href="https://harie.studio/pt-br/" />
     <link rel="alternate" hreflang="x-default" href="https://harie.studio/" />
     <link rel="icon" href="../assets/harie-symbol.svg" type="image/svg+xml" />
     <link rel="apple-touch-icon" href="../assets/apple-touch-icon.png" />
@@ -49,7 +54,12 @@
             "alternateName": "はりえ",
             "inLanguage": [
               "ja",
-              "en"
+              "en",
+              "ko",
+              "zh-TW",
+              "zh-CN",
+              "es",
+              "pt-BR"
             ]
           },
           {
@@ -63,7 +73,12 @@
             "operatingSystem": "Web, Chrome, macOS, Windows",
             "inLanguage": [
               "ja",
-              "en"
+              "en",
+              "ko",
+              "zh-TW",
+              "zh-CN",
+              "es",
+              "pt-BR"
             ],
             "image": "https://harie.studio/assets/og.en.png",
             "offers": {
@@ -182,7 +197,18 @@
           <a href="#mcp">MCP</a>
           <a href="https://github.com/hosshan/harie">GitHub</a>
         </nav>
-        <a class="lang" href="../" hreflang="ja" lang="ja">日本語</a>
+        <details class="lang">
+          <summary aria-label="Language"><span class="lang-full">English</span><span class="lang-short">EN</span></summary>
+          <ul class="lang-menu">
+            <li><a href="../" hreflang="ja" lang="ja">日本語</a></li>
+            <li><a href="../en/" hreflang="en" lang="en" aria-current="page">English</a></li>
+            <li><a href="../ko/" hreflang="ko" lang="ko">한국어</a></li>
+            <li><a href="../zh-tw/" hreflang="zh-TW" lang="zh-TW">繁體中文</a></li>
+            <li><a href="../zh-cn/" hreflang="zh-CN" lang="zh-CN">简体中文</a></li>
+            <li><a href="../es/" hreflang="es" lang="es">Español</a></li>
+            <li><a href="../pt-br/" hreflang="pt-BR" lang="pt-BR">Português (Brasil)</a></li>
+          </ul>
+        </details>
         <a class="btn btn-primary btn-sm" href="../app/">Open in browser</a>
       </div>
     </header>
@@ -206,7 +232,7 @@
             </div>
             <p class="note">
               Free and open source (MIT), with the source on <a href="https://github.com/hosshan/harie">GitHub</a>.
-              The browser version needs no install or account, and the editor works in English and Japanese.
+              The browser version needs no install or account, and the editor works in seven languages, including English, Japanese, Korean, Chinese, Spanish and Portuguese.
             </p>
           </div>
           <figure class="hero-demo">
@@ -456,7 +482,7 @@
             <article class="platform">
               <div class="platform-head"><h3>Web</h3></div>
               <p>
-                Use it right in your browser, with nothing to install. Images are processed in the browser and never sent to a server, and it works offline too. You can switch the interface between English and Japanese in Settings.
+                Use it right in your browser, with nothing to install. Images are processed in the browser and never sent to a server, and it works offline too. You can switch the interface language in Settings.
               </p>
               <a class="link" href="../app/">Open the editor</a>
             </article>
@@ -597,7 +623,7 @@ args = ["-y", "@harie/mcp", "--root", "/Users/you/Pictures/guides"]</pre>
     <footer class="footer">
       <div class="container footer-in">
         <span class="logo logo-sm"><img src="../assets/harie-symbol.svg" alt="" width="22" height="22" />Harie</span>
-        <span class="muted">MIT License · Bundled font Noto Sans JP is under the SIL Open Font License 1.1</span>
+        <span class="muted">MIT License · Bundled fonts Noto Sans JP, KR and SC are under the SIL Open Font License 1.1</span>
         <span class="footer-links"><a href="privacy/">Privacy Policy</a><a href="https://github.com/hosshan/harie">GitHub</a></span>
       </div>
     </footer>
