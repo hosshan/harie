@@ -28,4 +28,4 @@
 | [0010](./0010-ui-components.md) | UI 部品に shadcn/ui（Tailwind CSS + Radix UI）を使う | 承認 |
 | [0011](./0011-badge-anchor.md) | 番号バッジを枠に紐付け、描画時に枠の左上へ置く | 承認 |
 | [0012](./0012-openrouter-oauth.md) | AI の接続先に OpenRouter（OAuth PKCE）を加え、API キーを貼らずに使えるようにする | 承認 |
-| [0013](./0013-script-fonts.md) | 日本語以外の文字のフォントを、注釈に現れたときだけ読み込んで描画に加える | 提案中 |
+| [0013](./0013-script-fonts.md) | 日本語以外の文字のフォントを、注釈に現れたときだけ読み込んで描画に加える | 承認 |

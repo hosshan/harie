@@ -3,7 +3,7 @@
 注釈の描画。注釈ドキュメント → SVG → ピクセル（resvg-wasm）→ JPEG / PNG を行う、Harie で唯一の描画系統（ADR-0005）。エディタの表示も保存する画像も、ここの `buildSvg` から作るので見た目がずれない。
 
 - 描画を環境ごとに分岐させない。WASM とフォントの読み込み方だけを呼び出し側（`createRenderer` の引数）で変える。
-- 出力は決定的（同じ入力 → 同じバイト列）。フォントは渡された Noto Sans JP だけを使う。
+- 出力は決定的（同じ入力 → 同じバイト列）。フォントは渡された Noto Sans JP と、注釈にハングル・Noto Sans JP にない簡体字が現れたときだけ読み込む補助フォント（`fonts/`、ADR-0013）を使う。補助フォントは `scripts/subset-fonts.py` で作る。
 - 個人情報の加工（`applyMasks`）はベース画像を不可逆に書き換える（ADR-0007）。`blur` 注釈は可逆なぼかしで、個人情報の加工には使わない。
 - DOM・Node 固有 API を使わない（テスト補助の `src/test-utils/` を除く）。
 
@@ -13,7 +13,8 @@
 |---|---|
 | `buildSvg(doc, options)` | 注釈を SVG 文字列にする純粋関数。エディタはこれをそのまま表示する |
 | `annotationBounds` | 注釈の描画範囲。エディタの選択枠・当たり判定に使う |
-| `createRenderer({ resvgWasm, jpegEncoderWasm, fonts })` | 描画エンジンを作る |
+| `createRenderer({ resvgWasm, jpegEncoderWasm, fonts, loadExtraFont? })` | 描画エンジンを作る。`loadExtraFont` は補助フォント（`EXTRA_FONT_FILES`）のバイト列を返す |
+| `requiredExtraFonts(text)` | テキストを描くのに要る補助フォント |
 | `renderer.render({ doc, base, output })` | 保存用の画像（`@harie/format` で埋め込む前のもの）を返す |
 | `renderer.renderPixels` | RGBA ピクセルを返す（テスト・プレビュー用） |
 | `renderer.applyMasks({ base, width, height, masks })` | 個人情報のマスク（塗りつぶし・モザイク・ぼかし・ダミー置換）をベース画像に焼き込む |

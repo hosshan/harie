@@ -3,8 +3,8 @@
 // 重ねる図形の色は、塗りつぶし色・ブロック平均・周囲の背景色だけから決める。
 // そのため加工後の範囲内のピクセルから、ブロック平均より細かい元の情報は復元できない。
 import type { PiiApplied, PiiMask, Rect } from "@harie/model";
-import { estimateTextWidth, FONT_FAMILY } from "./svg";
-import { attrs, esc, n } from "./xml";
+import { estimateTextWidth, FONT_FAMILY, textContent } from "./svg";
+import { attrs, n } from "./xml";
 
 export type RgbaPixels = { width: number; height: number; data: Uint8Array };
 
@@ -118,7 +118,7 @@ function overlay(px: RgbaPixels, mask: PiiMask, r: Rect, index: number): string 
         "font-family": FONT_FAMILY,
         "font-size": fontSize,
         fill: mask.color ?? contrastText(background),
-      })}>${esc(text)}</text>`;
+      })}>${textContent(text)}</text>`;
     }
   }
 }

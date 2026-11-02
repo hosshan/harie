@@ -6,6 +6,7 @@ import type { HarieDocument, PiiApplied, PiiMask } from "@harie/model";
 import encodeJpeg, { init as initJpegEncoder } from "@jsquash/jpeg/encode.js";
 import { initWasm, Resvg } from "@resvg/resvg-wasm";
 import { toDataUri } from "./base64";
+import { type ExtraFont, requiredExtraFonts } from "./extra-fonts";
 import { planMasks } from "./mask";
 import { buildSvg, FONT_FAMILY } from "./svg";
 
@@ -18,6 +19,11 @@ export type RendererInit = {
   jpegEncoderWasm: WebAssembly.Module;
   /** Noto Sans JP（TTF/OTF）。Regular と Bold を渡す */
   fonts: Uint8Array[];
+  /**
+   * 補助フォント（ハングル・簡体字。ADR-0013）を読み込む。注釈にその文字が現れたときだけ呼ばれる。
+   * 省略すると補助フォントは使わない（その文字は □ で描かれる）
+   */
+  loadExtraFont?: (font: ExtraFont) => Promise<Uint8Array[]>;
 };
 
 export type OutputFormat = "jpeg" | "png";
@@ -52,6 +58,7 @@ export type MaskOutput = {
 
 export type Renderer = {
   /** RGBA ピクセルを返す。テストとエディタのプレビュー用 */
+  /** 同期で描くため、補助フォントは読み込み済みのものだけを使う（render / applyMasks は読み込みを待つ） */
   renderPixels(input: Omit<RenderInput, "output" | "quality">): Pixels;
   /** 保存用のレンダリング画像（format パッケージで埋め込む前のもの）を返す */
   render(input: RenderInput): Promise<Uint8Array>;
@@ -70,7 +77,28 @@ function ensureResvg(source: WasmSource): Promise<void> {
 export async function createRenderer(init: RendererInit): Promise<Renderer> {
   await ensureResvg(init.resvgWasm);
   await initJpegEncoder(init.jpegEncoderWasm);
-  const fontBuffers = init.fonts;
+  const fontBuffers = [...init.fonts];
+  const extraFonts = new Map<ExtraFont, Promise<void>>();
+
+  /** SVG に含まれる文字に要る補助フォントを読み込み、以後の描画で使う */
+  const ensureFonts = async (svg: string) => {
+    const load = init.loadExtraFont;
+    if (!load) return;
+    await Promise.all(
+      requiredExtraFonts(svg).map((font) => {
+        let p = extraFonts.get(font);
+        if (!p) {
+          p = load(font).then((buffers) => {
+            fontBuffers.push(...buffers);
+          });
+          // 読み込みに失敗したら次の描画でやり直す
+          p.catch(() => extraFonts.delete(font));
+          extraFonts.set(font, p);
+        }
+        return p;
+      }),
+    );
+  };
 
   const rasterizeSvg = (svg: string) => {
     const resvg = new Resvg(svg, {
@@ -85,13 +113,11 @@ export async function createRenderer(init: RendererInit): Promise<Renderer> {
     }
   };
 
-  const rasterize = (input: Omit<RenderInput, "output" | "quality">) =>
-    rasterizeSvg(
-      buildSvg(input.doc, {
-        baseImageHref: toDataUri(input.base.bytes, input.base.mediaType),
-        includeSuggested: input.includeSuggested ?? false,
-      }),
-    );
+  const toSvg = (input: Omit<RenderInput, "output" | "quality">) =>
+    buildSvg(input.doc, {
+      baseImageHref: toDataUri(input.base.bytes, input.base.mediaType),
+      includeSuggested: input.includeSuggested ?? false,
+    });
 
   const encode = async (
     img: ReturnType<typeof rasterizeSvg>,
@@ -116,7 +142,7 @@ export async function createRenderer(init: RendererInit): Promise<Renderer> {
 
   return {
     renderPixels(input) {
-      const img = rasterize(input);
+      const img = rasterizeSvg(toSvg(input));
       try {
         return { width: img.width, height: img.height, data: img.pixels.slice() };
       } finally {
@@ -124,7 +150,9 @@ export async function createRenderer(init: RendererInit): Promise<Renderer> {
       }
     },
     async render(input) {
-      const img = rasterize(input);
+      const svg = toSvg(input);
+      await ensureFonts(svg);
+      const img = rasterizeSvg(svg);
       try {
         return await encode(img, input.output, input.quality ?? 90);
       } finally {
@@ -143,6 +171,7 @@ export async function createRenderer(init: RendererInit): Promise<Renderer> {
       } finally {
         before.free();
       }
+      await ensureFonts(plan.svg);
       const after = rasterizeSvg(plan.svg);
       try {
         const output = input.base.mediaType === "image/png" ? "png" : "jpeg";

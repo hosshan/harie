@@ -1,6 +1,7 @@
 import { readFileSync } from "node:fs";
 import { createRequire } from "node:module";
 import encodeJpeg from "@jsquash/jpeg/encode.js";
+import { EXTRA_FONT_FILES, type ExtraFont } from "../extra-fonts";
 import { createRenderer, type Renderer } from "../renderer";
 
 const require = createRequire(import.meta.url);
@@ -10,16 +11,26 @@ let renderer: Promise<Renderer> | undefined;
 
 /** Node で WASM とフォントを読み込んだレンダラ。ブラウザでは fetch で同じものを渡す。 */
 export function nodeRenderer(): Promise<Renderer> {
-  renderer ??= (async () =>
-    createRenderer({
-      resvgWasm: read("@resvg/resvg-wasm/index_bg.wasm"),
-      jpegEncoderWasm: await WebAssembly.compile(read("@jsquash/jpeg/codec/enc/mozjpeg_enc.wasm")),
-      fonts: [
-        read("@expo-google-fonts/noto-sans-jp/400Regular/NotoSansJP_400Regular.ttf"),
-        read("@expo-google-fonts/noto-sans-jp/700Bold/NotoSansJP_700Bold.ttf"),
-      ],
-    }))();
+  renderer ??= createNodeRenderer({ extraFonts: true });
   return renderer;
+}
+
+/** 補助フォント（ADR-0013）の有無を選んでレンダラを作る。テストで比べるために使う */
+export async function createNodeRenderer(opts: { extraFonts: boolean }): Promise<Renderer> {
+  return createRenderer({
+    resvgWasm: read("@resvg/resvg-wasm/index_bg.wasm"),
+    jpegEncoderWasm: await WebAssembly.compile(read("@jsquash/jpeg/codec/enc/mozjpeg_enc.wasm")),
+    fonts: [
+      read("@expo-google-fonts/noto-sans-jp/400Regular/NotoSansJP_400Regular.ttf"),
+      read("@expo-google-fonts/noto-sans-jp/700Bold/NotoSansJP_700Bold.ttf"),
+    ],
+    ...(opts.extraFonts && {
+      loadExtraFont: async (font: ExtraFont) =>
+        Object.values(EXTRA_FONT_FILES[font]).map(
+          (file) => new Uint8Array(readFileSync(new URL(`../../fonts/${file}`, import.meta.url))),
+        ),
+    }),
+  });
 }
 
 export function fixture(name: string): Uint8Array {

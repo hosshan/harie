@@ -37,6 +37,16 @@ export default defineConfig({
         globPatterns: ["**/*.{js,css,html,wasm,ttf,svg,png}"],
         // Noto Sans JP は 1 ウェイト約 5.5MB あるため、既定の上限（2MB）を上げる
         maximumFileSizeToCacheInBytes: 8 * 1024 * 1024,
+        // ハングル・簡体字の補助フォント（ADR-0013）は使う人だけが読み込む。
+        // 先回りしてキャッシュせず、初めて読み込んだときにキャッシュしてオフラインでも使えるようにする
+        globIgnores: ["**/NotoSansKR-*", "**/NotoSansSC-*"],
+        runtimeCaching: [
+          {
+            urlPattern: /\/NotoSans(KR|SC)-[^/]+\.ttf$/,
+            handler: "CacheFirst",
+            options: { cacheName: "harie-extra-fonts" },
+          },
+        ],
       },
     }),
   ],

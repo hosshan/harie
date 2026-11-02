@@ -10,6 +10,15 @@ for (const file of ["400Regular/NotoSansJP_400Regular.ttf", "700Bold/NotoSansJP_
   const src = require.resolve(`@expo-google-fonts/noto-sans-jp/${file}`);
   copyFileSync(src, new URL(file.split("/")[1], out));
 }
+// 補助フォント（ハングル・簡体字。ADR-0013）。packages/render/fonts から取る
+for (const file of [
+  "NotoSansKR-Hangul-400.ttf",
+  "NotoSansKR-Hangul-700.ttf",
+  "NotoSansSC-Supplement-400.ttf",
+  "NotoSansSC-Supplement-700.ttf",
+]) {
+  copyFileSync(require.resolve(`@harie/render/fonts/${file}`), new URL(file, out));
+}
 // フォントのライセンス（SIL Open Font License 1.1）を同梱する
 copyFileSync(
   require.resolve("@expo-google-fonts/noto-sans-jp/LICENSE_FONT"),

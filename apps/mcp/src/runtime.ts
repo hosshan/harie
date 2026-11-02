@@ -2,7 +2,7 @@
 import { existsSync, readFileSync } from "node:fs";
 import { createRequire } from "node:module";
 import { fileURLToPath } from "node:url";
-import { createRenderer, type Renderer } from "@harie/render";
+import { createRenderer, EXTRA_FONT_FILES, type Renderer } from "@harie/render";
 
 const require = createRequire(import.meta.url);
 const read = (path: string) => new Uint8Array(readFileSync(path));
@@ -11,6 +11,9 @@ const read = (path: string) => new Uint8Array(readFileSync(path));
 function font(file: string): Uint8Array {
   const bundled = fileURLToPath(new URL(`./fonts/${file}`, import.meta.url));
   if (existsSync(bundled)) return read(bundled);
+  if (file.startsWith("NotoSansKR") || file.startsWith("NotoSansSC")) {
+    return read(require.resolve(`@harie/render/fonts/${file}`));
+  }
   const weight = file.includes("Bold") ? "700Bold" : "400Regular";
   return read(require.resolve(`@expo-google-fonts/noto-sans-jp/${weight}/${file}`));
 }
@@ -25,6 +28,8 @@ export function nodeRenderer(): Promise<Renderer> {
         read(require.resolve("@jsquash/jpeg/codec/enc/mozjpeg_enc.wasm")),
       ),
       fonts: [font("NotoSansJP_400Regular.ttf"), font("NotoSansJP_700Bold.ttf")],
+      // 補助フォント（ADR-0013）は注釈にハングル・簡体字が現れたときだけ読む
+      loadExtraFont: async (f) => Object.values(EXTRA_FONT_FILES[f]).map(font),
     }))();
   return renderer;
 }
