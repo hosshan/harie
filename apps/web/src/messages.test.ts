@@ -15,4 +15,12 @@ describe("Web エディタの文言（NFR-I18N-01）", () => {
   it("英語の文言に日本語が残っていない", () => {
     expect(allStrings(WEB_MESSAGES.en).filter((s) => /[ぁ-んァ-ヶ一-龯]/.test(s))).toEqual([]);
   });
+
+  // 中国語は漢字を使うので、訳し漏れはかなで見つける
+  it.each(["ko", "zh-TW", "zh-CN", "es", "pt-BR"] as const)(
+    "%s の文言にかなが残っていない",
+    (l) => {
+      expect(allStrings(WEB_MESSAGES[l]).filter((s) => /[ぁ-んァ-ヶ]/.test(s))).toEqual([]);
+    },
+  );
 });

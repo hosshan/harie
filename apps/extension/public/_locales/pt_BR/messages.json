@@ -1,0 +1,14 @@
+{
+  "extName": {
+    "message": "Harie"
+  },
+  "extDescription": {
+    "message": "Capture a página que você está vendo, adicione caixas, setas e notas, e mantenha a imagem editável sempre"
+  },
+  "actionTitle": {
+    "message": "Capturar com o Harie"
+  },
+  "captureVisible": {
+    "message": "Capturar a área visível"
+  }
+}

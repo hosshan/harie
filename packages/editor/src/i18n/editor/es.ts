@@ -1,0 +1,198 @@
+// エディタの文言（スペイン語）。形は messages.ts の日本語と同じ（NFR-I18N-01）
+import type { EditorMessages } from "../messages";
+import { CLICK_ROLES, TYPING_ROLES } from "../roles";
+
+export const es: EditorMessages = {
+  withKey: (label, key) => `${label} (${key})`,
+  tools: {
+    select: "Seleccionar",
+    rect: "Recuadro",
+    ellipse: "Elipse",
+    arrow: "Flecha",
+    sketch: "Boceto",
+    text: "Texto",
+    callout: "Globo",
+    badge: "Número",
+    mask: "Ocultar datos personales",
+    element: "Enmarcar un elemento",
+  },
+  types: {
+    rect: "Recuadro",
+    ellipse: "Elipse",
+    arrow: "Flecha",
+    text: "Texto",
+    callout: "Globo",
+    badge: "Número",
+    spotlight: "Foco",
+    blur: "Desenfoque",
+  },
+  colors: { red: "Rojo", orange: "Naranja", green: "Verde", blue: "Azul", black: "Negro" },
+  fontSizes: { small: "Pequeño", medium: "Mediano", large: "Grande", xlarge: "Muy grande" },
+  strokeWidths: { thin: "Fino", medium: "Medio", thick: "Grueso", xthick: "Muy grueso" },
+  dashes: { solid: "Continua", dashed: "Discontinua", dotted: "Punteada" },
+  palette: {
+    label: "Herramientas",
+    show: "Mostrar herramientas",
+    collapse: "Ocultar herramientas",
+    undo: "Deshacer",
+    redo: "Rehacer",
+  },
+  canvas: {
+    label: "Lienzo de anotaciones",
+    newText: "Texto",
+    newCallout: "Escribe una descripción",
+    sketchMiss:
+      "No se reconoció ninguna forma. Traza un recuadro, un círculo, una línea o una flecha.",
+    elementCallout: (role, label) =>
+      label === ""
+        ? "Escribe una descripción"
+        : TYPING_ROLES.has(role)
+          ? `Escribe en «${label}»`
+          : CLICK_ROLES.has(role)
+            ? `Haz clic en «${label}»`
+            : `Revisa «${label}»`,
+  },
+  steps: {
+    label: "Números y globos",
+    note: (n) =>
+      n === 1
+        ? "Hay 1 recuadro sin número ni globo. Puedes numerarlos en el orden en que los dibujaste y añadirles globos."
+        : `Hay ${n} recuadros sin número ni globo. Puedes numerarlos en el orden en que los dibujaste y añadirles globos.`,
+    noteSelected: (n) =>
+      n === 1
+        ? "1 de los recuadros seleccionados no tiene número ni globo. Puedes numerarlos en el orden en que los dibujaste y añadirles globos."
+        : `${n} de los recuadros seleccionados no tienen número ni globo. Puedes numerarlos en el orden en que los dibujaste y añadirles globos.`,
+    add: "Añadir números y globos",
+  },
+  textEditor: {
+    label: "Editar texto",
+    hint: (commit) => `${commit} para aplicar, Esc para cancelar`,
+  },
+  inspector: {
+    label: "Anotación seleccionada",
+    empty: "Selecciona una anotación para cambiar aquí su texto y sus colores.",
+    delete: "Eliminar esta anotación",
+    deleteTitle: (key) => `Eliminar (${key})`,
+    suggestion: "Sugerencia de la IA. No se guarda hasta que la aceptes.",
+    adopt: "Aceptar",
+    reject: "Descartar",
+    text: "Texto",
+    number: "Número",
+    fontSize: "Tamaño del texto",
+    sample: "A",
+    strokeWidth: "Grosor de línea",
+    dash: "Tipo de línea",
+    summaryLine: (width, dash) =>
+      `Línea ${width === undefined ? "mixto" : `${width}px`} · ${dash ?? "mixto"}`,
+    summaryText: (size) => `Texto ${size === undefined ? "mixto" : `${size}px`}`,
+    multiple: (n) => `${n} anotaciones`,
+    deleteAll: "Eliminar todas las anotaciones seleccionadas",
+    mixed: "Mixto",
+    listSeparator: ", ",
+    colorText: "Color del texto",
+    colorLine: "Color de la línea",
+    colorBadge: "Color",
+    colorFrame: "Color del borde",
+    paletteColor: (hex) => `Color de la paleta ${hex}`,
+    addColor: "Crear un color y añadirlo a la paleta",
+    removeColor: "Quitar el color seleccionado de la paleta",
+    pickColor: "Elegir un color",
+    colorCode: "Código de color (#RRGGBB)",
+    addToPalette: "Añadir",
+    custom: "Indicar un valor",
+    decrease: (legend) => `Reducir ${legend.toLowerCase()} en 1`,
+    increase: (legend) => `Aumentar ${legend.toLowerCase()} en 1`,
+    valuePx: (legend) => `${legend} (px)`,
+    tileTitle: (label, value) => `${label} (${value}px)`,
+  },
+  shortcuts: {
+    title: "Atajos de teclado",
+    openList: "Atajos de teclado",
+    close: "Cerrar",
+    groups: {
+      file: "Archivo",
+      edit: "Edición",
+      selection: "Anotaciones seleccionadas",
+      tools: "Herramientas",
+      mouse: "Ratón",
+    },
+    save: "Guardar",
+    openImage: "Abrir imagen",
+    copyImage: "Copiar la imagen al portapapeles",
+    undo: "Deshacer",
+    redo: "Rehacer",
+    selectAll: "Seleccionar todo",
+    deselect: "Quitar la selección / volver a la herramienta de selección",
+    delete: "Eliminar",
+    duplicate: "Duplicar",
+    copy: "Copiar",
+    cut: "Cortar",
+    paste: "Pegar",
+    nudge: "Mover 1px",
+    nudgeLarge: "Mover 10px",
+    resize: "Cambiar el tamaño del recuadro 1px (→ ↓ para agrandar)",
+    resizeLarge: "Cambiar el tamaño del recuadro 10px",
+    editText: "Editar el texto (texto, globo)",
+    bringForward: "Traer adelante",
+    sendBackward: "Enviar atrás",
+    bringToFront: "Traer al frente",
+    sendToBack: "Enviar al fondo",
+    shortcuts: "Abrir esta lista",
+    shiftClick: "Añadir a la selección / quitar de ella",
+    shiftClickKeys: (shift) => `${shift} + clic`,
+    dragEmpty: "Seleccionar las anotaciones de un área",
+    dragEmptyKeys: "Arrastrar desde un espacio vacío",
+    doubleClick: "Editar el texto",
+    doubleClickKeys: "Doble clic",
+    or: "o",
+  },
+  appliedMask: {
+    label: "Área oculta",
+    title: (n) => `Área oculta ${n}`,
+    note: "Puedes volver a mostrarla hasta que guardes. Después de guardar, no se puede deshacer.",
+    unmask: "Volver a mostrar",
+    unmasking: "Restaurando…",
+    error: (detail) => `No se pudo volver a mostrar: ${detail}`,
+  },
+  mask: {
+    label: "Ocultar datos personales",
+    hint: "Arrastra sobre el área que quieres ocultar.",
+    method: (n, kind) => `Cómo ocultar el área ${n}${kind === undefined ? "" : ` (${kind})`}`,
+    replacement: "Texto de reemplazo",
+    replacementPlaceholder: "p. ej., María García",
+    remove: (n) => `Eliminar el área ${n}`,
+    note: "Al aplicarlo se modifica la propia imagen. Hasta que guardes, puedes seleccionar un área y volver a mostrarla. Después de guardar, no se puede deshacer y el contenido original no se conserva en el archivo.",
+    confirmLabel: "Confirmar la aplicación de las máscaras",
+    confirm: (n) =>
+      n === 1
+        ? "Se grabará 1 área en la imagen. Después de guardar, no se puede deshacer."
+        : `Se grabarán ${n} áreas en la imagen. Después de guardar, no se puede deshacer.`,
+    back: "Volver",
+    applyConfirm: "Aplicar",
+    cancel: "Cancelar",
+    apply: "Aplicar máscaras",
+    applying: "Aplicando…",
+    error: (detail) => `No se pudieron aplicar las máscaras: ${detail}`,
+    kinds: {
+      name: "Nombre",
+      email: "Correo",
+      phone: "Teléfono",
+      address: "Dirección",
+      id: "Número de ID",
+      face: "Rostro",
+      other: "Otro",
+    },
+    methods: {
+      fill: "Rellenar",
+      replace: "Reemplazar con texto ficticio",
+      mosaic: "Mosaico",
+      blur: "Desenfoque",
+    },
+    methodsShort: {
+      fill: "Relleno",
+      replace: "Ficticio",
+      mosaic: "Mosaico",
+      blur: "Desenfoque",
+    },
+  },
+};

@@ -212,7 +212,7 @@ Web エディタ（`apps/web`）の保存の決まり:
 
 表示言語（NFR-I18N-01）:
 
-- エディタの画面（Web・Chrome 拡張・デスクトップ）は日本語と英語。初めはブラウザ / OS の言語（`navigator.languages` の先頭が `ja` なら日本語、それ以外は英語）に合わせ、ヘッダーの「設定」の「表示言語」で切り替える。選んだ言語はこのブラウザの localStorage（`harie.locale`）に記録し、`<html lang>` も合わせる。
+- エディタの画面（Web・Chrome 拡張・デスクトップ）は日本語・英語・韓国語（`ko`）・繁體中文（`zh-TW`）・简体中文（`zh-CN`）・スペイン語（`es`）・ポルトガル語（ブラジル、`pt-BR`）。初めはブラウザ / OS の言語（`navigator.languages` の先頭）に合わせ、対応していない言語なら英語にする。中国語は `zh-Hant`・台湾・香港・マカオなら繁體中文、それ以外は简体中文、ポルトガル語は地域を問わずブラジルの文言を使う。ヘッダーの「設定」の「表示言語」で切り替える。選んだ言語はこのブラウザの localStorage（`harie.locale`）に記録し、`<html lang>` も合わせる。
 - 文言は `packages/editor/src/i18n/messages.ts`（エディタ）と `apps/web/src/messages.ts`（ヘッダー・保存・設定・連携・AI。拡張のエディタページとデスクトップも使う）に、日本語を元にして同じ形の英語を置く（`Messages` 型で項目の抜け・引数の違いを型検査で見つける）。画面の中の文字を直接書かない。
 - 言語の状態は `packages/editor/src/i18n/locale.ts`（React に依存しない。拡張のポップアップ・service worker も使う）。React の画面は `useLocale` / `useMessages` で読み、切り替えるとすぐ描き直す。
 - 拡張のポップアップはエディタと同じ記録を読む。localStorage を読めない service worker と、ページに注入する選択のオーバーレイには、ポップアップから言語を渡す。拡張の名前・説明（manifest）は `public/_locales` で、ブラウザの言語に合わせる。

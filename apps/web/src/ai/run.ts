@@ -26,7 +26,7 @@ export async function runSuggest(
   base: Base,
   doc: HarieDocument,
   request: { intent: string; context: readonly SuggestContext[] },
-  language: "ja" | "en",
+  language: string,
   dom?: DomSnapshot,
   scale = 1,
 ): Promise<Suggestion[]> {

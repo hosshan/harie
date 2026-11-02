@@ -2,6 +2,7 @@
 // エディタページの文言は @harie/web/messages を使う。言語はエディタの設定（拡張の localStorage）と同じものを使い、
 // localStorage を読めない service worker・ページに注入するスクリプトには、ポップアップから言語を渡す
 import type { Locale, Messages } from "@harie/editor/locale";
+import { es, ko, ptBR, zhCN, zhTW } from "./i18n/catalogs";
 
 const ja = {
   popupTitle: "Harie でキャプチャ",
@@ -76,7 +77,15 @@ const en: ExtensionMessages = {
   copied: "Copied",
 };
 
-const CATALOG: Record<Locale, ExtensionMessages> = { ja, en };
+const CATALOG: Record<Locale, ExtensionMessages> = {
+  ja,
+  en,
+  ko,
+  "zh-TW": zhTW,
+  "zh-CN": zhCN,
+  es,
+  "pt-BR": ptBR,
+};
 
 export function extensionMessages(locale: Locale): ExtensionMessages {
   return CATALOG[locale];

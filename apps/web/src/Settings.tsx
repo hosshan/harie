@@ -1,5 +1,5 @@
 // 設定（ヘッダー右端、狭い画面では三点メニュー）。表示言語と、AI に関する設定（OpenRouter の接続か API キー）を持つ
-import { type Locale, setLocale, useLocale } from "@harie/editor";
+import { LOCALE_NAMES, LOCALES, setLocale, useLocale } from "@harie/editor";
 import { type ReactNode, useState } from "react";
 import { storeCredential, useAiCredential } from "./ai/api-key";
 import { canConnectOpenRouter, connectOpenRouter } from "./ai/openrouter-auth";
@@ -10,10 +10,7 @@ import { useWebMessages } from "./messages";
 const KEYS_URL = "https://platform.claude.com/settings/keys";
 
 /** 言語の名前は、その言語自身で書く（今の表示言語が読めない人でも選べるように） */
-const LANGUAGES: readonly { locale: Locale; name: string }[] = [
-  { locale: "ja", name: "日本語" },
-  { locale: "en", name: "English" },
-];
+const LANGUAGES = LOCALES.map((locale) => ({ locale, name: LOCALE_NAMES[locale] }));
 
 /** 設定のダイアログ。開くボタンはヘッダーが画面の幅に合わせて出す（ボタンか、三点メニューの項目） */
 export function useSettingsDialog(): { open: () => void; dialog: ReactNode } {

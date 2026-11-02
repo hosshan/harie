@@ -1,7 +1,7 @@
 // service worker。ポップアップ・ショートカット・選択オーバーレイからの指示でキャプチャする（integrations.md 1.1）。
 // ページ上の Harie 画像の読み込み・エディタで開く処理も受け持つ（integrations.md 1.5）
 
-import type { Locale } from "@harie/editor/locale";
+import { isLocale, type Locale } from "@harie/editor/locale";
 import { browser } from "wxt/browser";
 import {
   type CaptureMode,
@@ -41,7 +41,7 @@ export default defineBackground(() => {
       return true;
     }
     if (message.type === "harie:start") {
-      if (message.locale === "ja" || message.locale === "en") setCaptureLocale(message.locale);
+      if (isLocale(message.locale)) setCaptureLocale(message.locale);
       void start(message.mode, message.tabId).then(sendResponse);
       return true;
     }
