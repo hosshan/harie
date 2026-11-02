@@ -8,13 +8,13 @@ Chrome ウェブストアに**公開**（検索に出る）で出すときに、
 
 | 欄 | 値 |
 |---|---|
-| 名前・概要 | manifest の `name`・`description`（`public/_locales/{ja,en}/messages.json`）がそのまま使われる |
+| 名前・概要 | manifest の `name`・`description`（`public/_locales/<言語>/messages.json`）がそのまま使われる |
 | カテゴリ | 仕事効率化（Productivity）の「ツール」 |
-| 言語 | 英語（既定）と日本語。言語ごとに説明とスクリーンショットを入れる |
+| 言語 | 英語（既定）、日本語、韓国語、中国語（繁体）、中国語（簡体）、スペイン語（ラテンアメリカとスペイン）、ポルトガル語（ブラジル）。言語ごとに下の説明を貼る。スクリーンショットとタイルは日本語と英語だけ作り、ほかの言語は英語のものを使う |
 | アイコン | zip の中の `icon/128.png` |
 | スクリーンショット | `store-assets/screenshot-{1-capture,2-region,3-editor}.png`（日本語）と `.en.png`（英語）。1280×800。番号の順に並べる |
 | プロモーション タイル（小） | `store-assets/promo-small.png`（日本語）と `promo-small.en.png`（英語）。440×280 |
-| 公式 URL（ホームページ） | `https://harie.studio/`（英語は `https://harie.studio/en/`） |
+| 公式 URL（ホームページ） | `https://harie.studio/`。言語ごとの欄がないので日本語版の URL のまま。LP はヘッダーの言語メニューで `/en/`・`/ko/`・`/zh-tw/`・`/zh-cn/`・`/es/`・`/pt-br/` に移れる |
 | サポート URL | `https://github.com/hosshan/harie/issues` |
 
 ### 説明（日本語）
@@ -61,6 +61,126 @@ Saved images are plain JPEG / PNG files, so you can paste them anywhere. The ann
 - Only when you use the AI features, and after you confirm, is the image sent directly to Anthropic's API
 
 Open source (MIT License). Source code: https://github.com/hosshan/harie
+```
+
+### 説明（韓国語）
+
+```text
+보고 있는 페이지를 캡처해 박스, 화살표, 번호, 설명을 붙인 이미지를 만들 수 있습니다. SaaS 사용 가이드나 사내 매뉴얼에 들어갈 이미지를 만들기 위한 도구입니다.
+
+저장한 이미지는 일반 JPEG / PNG라서 어디에나 붙여넣을 수 있습니다. 주석은 이미지 안에 함께 저장되므로 Harie에서 열면 나중에도 박스와 글자를 몇 번이든 고칠 수 있습니다. 다른 사람이 만든 이미지도 똑같이 고칠 수 있습니다.
+
+■ 할 수 있는 일
+- 보이는 영역, 드래그한 영역, 요소 하나를 골라 캡처할 수 있습니다. Alt+Shift+S로 보이는 영역을 캡처합니다
+- 박스, 화살표, 번호, 말풍선, 모자이크나 더미 값으로 개인정보 가리기
+- 저장한 이미지는 웹 버전(https://harie.studio/app/)이나 데스크톱 앱에서도 열어 고칠 수 있습니다
+- (선택) GitHub나 다른 사이트에 올라간 Harie 이미지에 마우스를 올리면 설명을 그 자리에서 복사하거나 바로 열어 고칠 수 있습니다
+- AI가 주석을 제안하고 개인정보를 찾아 줍니다(선택. 본인의 Anthropic API 키를 등록했을 때만 동작합니다)
+- 화면은 한국어로 표시되며, 한글 주석도 그대로 그려집니다
+
+■ 권한과 데이터
+- 버튼이나 단축키를 누른 탭에만, 그 순간에만 접근합니다. 설치할 때 상시 사이트 접근 권한을 요청하지 않습니다
+- GitHub나 다른 사이트의 Harie 이미지를 보고 고치는 기능은 선택 사항입니다. 팝업에서 켰을 때만 해당 사이트의 이미지를 읽는 권한을 요청합니다
+- 개발자 서버가 없으며, 개발자는 이미지나 사용 기록을 받지 않습니다
+- AI 기능을 쓸 때만, 동의를 확인한 뒤 이미지를 Anthropic API로 직접 보냅니다
+
+오픈 소스(MIT License)입니다. 소스 코드: https://github.com/hosshan/harie
+```
+
+### 説明（中国語・繁体）
+
+```text
+擷取正在瀏覽的頁面，加上方框、箭頭、編號和說明文字。Harie 是為 SaaS 使用指南和內部手冊的截圖而設計的工具。
+
+存好的圖片是一般的 JPEG / PNG，貼到哪裡都行。註解會一起存在圖片裡，用 Harie 開啟就能隨時再修改方框和文字，別人做的圖片也一樣能改。
+
+■ 可以做什麼
+- 可擷取可見範圍、拖曳選取的區域，或單一元素。按 Alt+Shift+S 可擷取可見範圍
+- 方框、箭頭、編號、說明框，以及用馬賽克或假資料遮蔽個人資料
+- 存好的圖片也能在網頁版（https://harie.studio/app/）或桌面版開啟並修改
+- （選用）把游標移到 GitHub 或其他網站上的 Harie 圖片，就能當場複製說明文字，或直接開啟修改
+- AI 註解建議與個人資料偵測（選用，只有在登錄你自己的 Anthropic API 金鑰時才會運作）
+- 介面以繁體中文顯示，中文註解也能正確繪製
+
+■ 權限與資料
+- 只會在你按下按鈕或快捷鍵的分頁、且只在那個當下存取。安裝時不要求常駐的網站存取權限
+- 在 GitHub 和其他網站上檢視、修改 Harie 圖片的功能是選用的。只有在彈出視窗中開啟時，才會要求讀取該網站圖片的權限
+- 沒有開發者的伺服器，開發者不會收到你的圖片或使用紀錄
+- 只有在使用 AI 功能時，才會在你確認後把圖片直接傳送到 Anthropic 的 API
+
+開放原始碼（MIT License）。原始碼：https://github.com/hosshan/harie
+```
+
+### 説明（中国語・簡体）
+
+```text
+截取正在浏览的页面，加上方框、箭头、编号和说明文字。Harie 是为 SaaS 使用指南和内部手册的截图而设计的工具。
+
+保存的图片是普通的 JPEG / PNG，粘贴到哪里都可以。标注会一起保存在图片里，用 Harie 打开就能随时再修改方框和文字，别人做的图片也一样能改。
+
+■ 功能
+- 可截取可见区域、拖动选取的范围，或单个元素。按 Alt+Shift+S 可截取可见区域
+- 方框、箭头、编号、标注框，以及用马赛克或虚拟数据遮盖个人信息
+- 保存的图片也能在网页版（https://harie.studio/app/）或桌面版中打开修改
+- （可选）把鼠标移到 GitHub 或其他网站上的 Harie 图片上，就能当场复制说明文字，或直接打开修改
+- AI 标注建议与个人信息检测（可选，仅在登记你自己的 Anthropic API 密钥后才会工作）
+- 界面以简体中文显示，中文标注也能正确绘制
+
+■ 权限与数据
+- 只访问你按下按钮或快捷键的标签页，且只在那一刻访问。安装时不申请常驻的网站访问权限
+- 在 GitHub 和其他网站上查看、修改 Harie 图片的功能是可选的。只有在弹出窗口中开启后，才会申请读取该网站图片的权限
+- 没有开发者服务器，开发者不会收到你的图片或使用记录
+- 只有在使用 AI 功能时，才会在你确认后把图片直接发送到 Anthropic 的 API
+
+开源（MIT License）。源代码：https://github.com/hosshan/harie
+```
+
+### 説明（スペイン語）
+
+```text
+Captura la página que estás viendo y añade recuadros, flechas, números y notas. Harie está pensado para las capturas de las guías de uso de un SaaS y los manuales internos.
+
+Las imágenes guardadas son JPEG / PNG normales, así que puedes pegarlas donde quieras. Las anotaciones se guardan dentro de la imagen, así que al abrirla en Harie puedes corregir recuadros y textos una y otra vez, incluso en imágenes que hizo otra persona.
+
+■ Qué puedes hacer
+- Captura el área visible, una zona que arrastres o un solo elemento. Alt+Shift+S captura el área visible
+- Recuadros, flechas, números, globos de texto y ocultación de datos personales con mosaico o valores ficticios
+- Abre y edita las imágenes guardadas en el editor web (https://harie.studio/app/) o en la aplicación de escritorio
+- (Opcional) Pasa el cursor sobre una imagen de Harie en GitHub u otros sitios para copiar sus notas ahí mismo, o ábrela y edítala
+- Sugerencias de anotaciones con IA y detección de datos personales (opcional; solo funciona con tu propia clave de API de Anthropic)
+- La interfaz está en español
+
+■ Permisos y datos
+- Harie solo accede a la pestaña en la que pulsaste el botón o el atajo, y solo en ese momento. No pide acceso permanente a los sitios al instalarse
+- Ver y editar imágenes de Harie en GitHub y otros sitios es opcional. Solo cuando lo activas en la ventana emergente, Harie pide permiso para leer las imágenes de esos sitios
+- No hay servidores del desarrollador; el desarrollador nunca recibe tus imágenes ni tu historial de uso
+- Solo cuando usas las funciones de IA, y después de que lo confirmes, la imagen se envía directamente a la API de Anthropic
+
+Código abierto (MIT License). Código fuente: https://github.com/hosshan/harie
+```
+
+### 説明（ポルトガル語・ブラジル）
+
+```text
+Capture a página que você está vendo e adicione caixas, setas, números e notas. O Harie foi feito para as capturas de tela de guias de uso de SaaS e manuais internos.
+
+As imagens salvas são JPEG / PNG comuns, então você pode colá-las em qualquer lugar. As anotações ficam guardadas dentro da imagem, então ao abri-la no Harie você corrige caixas e textos quantas vezes quiser, até em imagens feitas por outra pessoa.
+
+■ O que você pode fazer
+- Capture a área visível, uma região que você arrasta ou um único elemento. Alt+Shift+S captura a área visível
+- Caixas, setas, números, balões e ocultação de dados pessoais com mosaico ou valores fictícios
+- Abra e edite as imagens salvas no editor web (https://harie.studio/app/) ou no app para desktop
+- (Opcional) Passe o cursor sobre uma imagem do Harie no GitHub ou em outros sites para copiar as notas ali mesmo, ou abra e edite
+- Sugestões de anotações com IA e detecção de dados pessoais (opcional; só funciona com sua própria chave de API da Anthropic)
+- A interface está em português
+
+■ Permissões e dados
+- O Harie só acessa a aba em que você apertou o botão ou o atalho, e só naquele momento. Nenhum acesso permanente aos sites é pedido na instalação
+- Ver e editar imagens do Harie no GitHub e em outros sites é opcional. Só quando você ativa no pop-up o Harie pede permissão para ler as imagens desses sites
+- Não há servidores do desenvolvedor; o desenvolvedor nunca recebe suas imagens nem seu histórico de uso
+- Só quando você usa os recursos de IA, e depois de confirmar, a imagem é enviada diretamente para a API da Anthropic
+
+Código aberto (MIT License). Código-fonte: https://github.com/hosshan/harie
 ```
 
 ## プライバシーへの取り組み（Privacy practices）

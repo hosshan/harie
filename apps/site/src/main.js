@@ -48,3 +48,15 @@ for (const list of document.querySelectorAll('[role="tablist"]')) {
     });
   });
 }
+
+// 言語メニュー（<details>）は、外を押すか Esc で閉じる
+for (const menu of document.querySelectorAll("details.lang")) {
+  document.addEventListener("click", (event) => {
+    if (menu.open && !menu.contains(event.target)) menu.open = false;
+  });
+  menu.addEventListener("keydown", (event) => {
+    if (event.key !== "Escape" || !menu.open) return;
+    menu.open = false;
+    menu.querySelector("summary")?.focus();
+  });
+}

@@ -1,0 +1,631 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Harie：只是一张图片，却随时可以修改。</title>
+    <meta
+      name="description"
+      content="给帮助文档里的截图加上方框、编号和说明文字。Harie 保存为普通的 JPEG 或 PNG，之后随时可以重新打开修改。开源，提供 AI 建议、个人信息遮盖、Chrome 扩展和 MCP 服务器。"
+    />
+    <meta name="theme-color" content="#D4A72C" />
+    <link rel="canonical" href="https://harie.studio/zh-cn/" />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Harie" />
+    <meta property="og:locale" content="zh_CN" />
+    <meta property="og:locale:alternate" content="ja_JP" />
+    <meta property="og:title" content="Harie：只是一张图片，却随时可以修改。" />
+    <meta
+      property="og:description"
+      content="Harie 保存为普通的 JPEG 或 PNG。用 Harie 重新打开，每个方框、编号和说明都仍然可以编辑。"
+    />
+    <meta property="og:url" content="https://harie.studio/zh-cn/" />
+    <meta property="og:image" content="https://harie.studio/assets/og.en.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="Harie 标志、“只是一张图片，却随时可以修改。”的标语，以及添加了标注的示例画面" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <link rel="alternate" hreflang="ja" href="https://harie.studio/" />
+    <link rel="alternate" hreflang="en" href="https://harie.studio/en/" />
+    <link rel="alternate" hreflang="ko" href="https://harie.studio/ko/" />
+    <link rel="alternate" hreflang="zh-TW" href="https://harie.studio/zh-tw/" />
+    <link rel="alternate" hreflang="zh-CN" href="https://harie.studio/zh-cn/" />
+    <link rel="alternate" hreflang="es" href="https://harie.studio/es/" />
+    <link rel="alternate" hreflang="pt-BR" href="https://harie.studio/pt-br/" />
+    <link rel="alternate" hreflang="x-default" href="https://harie.studio/" />
+    <link rel="icon" href="../assets/harie-symbol.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="../assets/apple-touch-icon.png" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@700;900&family=Zen+Kaku+Gothic+New:wght@400;700&family=IBM+Plex+Mono:wght@400;500&display=swap"
+    />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;700;900&display=swap" />
+    <link rel="stylesheet" href="../styles.css" />
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@graph": [
+          {
+            "@type": "WebSite",
+            "@id": "https://harie.studio/#website",
+            "url": "https://harie.studio/",
+            "name": "Harie",
+            "alternateName": "はりえ",
+            "inLanguage": [
+              "ja",
+              "en",
+              "ko",
+              "zh-TW",
+              "zh-CN",
+              "es",
+              "pt-BR"
+            ]
+          },
+          {
+            "@type": "SoftwareApplication",
+            "@id": "https://harie.studio/#app",
+            "name": "Harie",
+            "alternateName": "はりえ",
+            "url": "https://harie.studio/zh-cn/",
+            "description": "给帮助文档里的截图加上方框、编号和说明文字。Harie 保存为普通的 JPEG 或 PNG，之后随时可以重新打开修改。开源，提供 AI 建议、个人信息遮盖、Chrome 扩展和 MCP 服务器。",
+            "applicationCategory": "DesignApplication",
+            "operatingSystem": "Web, Chrome, macOS, Windows",
+            "inLanguage": [
+              "ja",
+              "en",
+              "ko",
+              "zh-TW",
+              "zh-CN",
+              "es",
+              "pt-BR"
+            ],
+            "image": "https://harie.studio/assets/og.en.png",
+            "offers": {
+              "@type": "Offer",
+              "price": "0",
+              "priceCurrency": "USD"
+            },
+            "license": "https://opensource.org/licenses/MIT",
+            "isAccessibleForFree": true,
+            "author": {
+              "@type": "Person",
+              "name": "hosshan",
+              "url": "https://github.com/hosshan"
+            },
+            "sameAs": [
+              "https://github.com/hosshan/harie",
+              "https://chromewebstore.google.com/detail/harie/dgbghdgnmjcgjdmhfnmcdphkafkbefll",
+              "https://www.npmjs.com/package/@harie/mcp"
+            ]
+          },
+          {
+            "@type": "FAQPage",
+            "@id": "https://harie.studio/zh-cn/#faq",
+            "url": "https://harie.studio/zh-cn/",
+            "inLanguage": "zh-CN",
+            "mainEntity": [
+              {
+                "@type": "Question",
+                "name": "Harie 是什么？",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "Harie 是一款给 SaaS 帮助文档和使用指南的截图加上方框、编号、标注框和箭头的工具。它保存为普通的 JPEG 或 PNG，在 Harie 中重新打开这张图片时，所有标注仍然可以编辑。"
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "保存的图片能在其他应用或网站上显示吗？",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "可以。Harie 保存的是普通的 JPEG 或 PNG，可以直接粘贴到帮助页面、聊天或文档中。原始截图和标注数据保存在图片的元数据里，只有 Harie 会用到。"
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "别人做的指南图片，我也能修改吗？",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "可以，只要是用 Harie 保存的图片就行。在 Harie 中打开收到的图片，就能移动或改写每个方框和说明。不需要项目文件，也不需要账号。"
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "Harie 和 Snagit、Scribe 这类工具有什么区别？",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "导出的图片本身就能继续编辑。截图软件把可编辑的标注保存在自己的项目文件里，而项目文件只留在制作者手里。制作指南的服务只能在自己的账号里编辑。Harie 把原始截图和标注存进 JPEG 或 PNG 里，所以任何拿到帮助页面上那张图片的人，都能打开并修改。Harie 不会根据录制的操作自动生成步骤指南。"
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "Harie 收费吗？",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "不收费。Harie 免费、以 MIT 许可证开源，也不需要注册。只有 AI 建议需要你自己的 Anthropic API 密钥或 OpenRouter 账号，按用量向这些服务付费。"
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "我的图片会被上传到服务器吗？",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "不会。图片在你的浏览器或设备上处理，开发者不会收到。只有在使用 AI 功能时，Harie 才会先征得你的同意，再把图片直接发送到 Anthropic 的 Claude API（如果通过 OpenRouter 连接，则经由 OpenRouter）。"
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "可以隐藏截图中的个人信息吗？",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "可以。你可以把姓名、邮箱地址和电话号码替换成虚拟数据，也可以用填充、马赛克或模糊处理。这些处理会直接作用于原始图片，无法撤销，原来的信息也不会留在分享出去的文件里。"
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "在哪里可以使用 Harie？",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "有在浏览器中运行的网页版编辑器、截取当前页面的 Chrome 扩展，以及供 AI 智能体使用的 MCP 服务器。macOS 和 Windows 的桌面应用暂未发布，但可以从源码自行构建。"
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "Claude 这样的 AI 智能体也能添加标注吗？",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "可以。把 MCP 服务器 @harie/mcp 注册到 Claude Code 或 Claude Desktop，它就能打开你指定文件夹里的图片、添加标注并修改文字。"
+                }
+              }
+            ]
+          }
+        ]
+      }
+    </script>
+  </head>
+  <body>
+    <header class="nav">
+      <div class="container nav-in">
+        <a class="logo" href="./" aria-label="Harie 首页">
+          <img src="../assets/harie-symbol.svg" alt="" width="30" height="30" />Harie
+        </a>
+        <nav class="nav-links" aria-label="本页内容">
+          <a href="#how">工作原理</a>
+          <a href="#ai">AI</a>
+          <a href="#privacy">隐私</a>
+          <a href="#platforms">支持平台</a>
+          <a href="#mcp">MCP</a>
+          <a href="https://github.com/hosshan/harie">GitHub</a>
+        </nav>
+        <details class="lang">
+          <summary aria-label="语言"><span class="lang-full">简体中文</span><span class="lang-short">简中</span></summary>
+          <ul class="lang-menu">
+            <li><a href="../" hreflang="ja" lang="ja">日本語</a></li>
+            <li><a href="../en/" hreflang="en" lang="en">English</a></li>
+            <li><a href="../ko/" hreflang="ko" lang="ko">한국어</a></li>
+            <li><a href="../zh-tw/" hreflang="zh-TW" lang="zh-TW">繁體中文</a></li>
+            <li><a href="../zh-cn/" hreflang="zh-CN" lang="zh-CN" aria-current="page">简体中文</a></li>
+            <li><a href="../es/" hreflang="es" lang="es">Español</a></li>
+            <li><a href="../pt-br/" hreflang="pt-BR" lang="pt-BR">Português (Brasil)</a></li>
+          </ul>
+        </details>
+        <a class="btn btn-primary btn-sm" href="../app/">在浏览器中打开</a>
+      </div>
+    </header>
+
+    <main>
+      <section class="hero">
+        <div class="paper paper-sq" aria-hidden="true"></div>
+        <div class="paper paper-dot" aria-hidden="true"></div>
+        <div class="container hero-in">
+          <div class="hero-copy">
+            <p class="eyebrow">写 SaaS 帮助文档的人</p>
+            <h1>只是一张图片，<br /><em>却随时可以修改。</em></h1>
+            <p class="lead">
+              给指南用的截图加上方框、编号和说明。Harie 保存为普通的 JPEG 或 PNG，粘贴到哪里都可以。之后在 Harie 中打开，每个方框和说明都还能修改。
+            </p>
+            <div class="cta">
+              <a class="btn btn-primary" href="../app/">在浏览器中打开</a>
+              <a class="btn btn-ghost" href="https://chromewebstore.google.com/detail/harie/dgbghdgnmjcgjdmhfnmcdphkafkbefll?hl=zh-CN">添加到 Chrome</a>
+            </div>
+            <p class="note">
+              免费开源（MIT），源码公开在 <a href="https://github.com/hosshan/harie">GitHub</a>。浏览器版无需安装和账号，编辑器支持简体中文、繁体中文、英语、日语、韩语、西班牙语和葡萄牙语共七种语言。
+            </p>
+          </div>
+          <figure class="hero-demo">
+            <div class="sheet">
+              <div class="demo" id="demo">
+                <img
+                  src="../assets/demo-base.en.webp"
+                  width="1280"
+                  height="720"
+                  alt="虚构 SaaS“Tasklane”的通知设置页面截图"
+                />
+                <img
+                  class="demo-ann"
+                  src="../assets/demo-annotated.en.webp"
+                  width="1280"
+                  height="720"
+                  alt="同一个画面，加上了三个带编号的红色方框和标注框"
+                />
+              </div>
+            </div>
+            <figcaption class="demo-bar">
+              <span>原图和标注保存在同一个文件里</span>
+              <button class="switch" type="button" aria-pressed="true" aria-controls="demo">
+                <span class="switch-track" aria-hidden="true"></span>标注
+              </button>
+            </figcaption>
+          </figure>
+        </div>
+      </section>
+
+      <section class="section" aria-labelledby="pain-title">
+        <div class="container">
+          <h2 id="pain-title" class="h2">做指南截图，比想象中费事。</h2>
+          <ul class="pains">
+            <li class="pain">
+              <h3>每次都要自己决定标出哪里</h3>
+              <p>而且团队里每个人的做法都不太一样。</p>
+              <a class="pain-fix" href="#ai">由 AI 起草方框的位置和说明文字</a>
+            </li>
+            <li class="pain">
+              <h3>每张图片都是同样的步骤</h3>
+              <p>截图、打开、标注、导出，下一张再从头来一遍。</p>
+              <a class="pain-fix" href="#flow">截取页面后马上就能标注</a>
+            </li>
+            <li class="pain">
+              <h3>一个按钮名称变了，图片就得重做</h3>
+              <p>按钮名称一改，截图就得从头再做。如果是同事做的，源文件可能早就找不到了。</p>
+              <a class="pain-fix" href="#how">打开图片，谁都能当场修改</a>
+            </li>
+            <li class="pain">
+              <h3>画面上出现了客户数据</h3>
+              <p>生产环境的画面里满是真实的姓名和邮箱地址。</p>
+              <a class="pain-fix" href="#privacy">替换成无法还原的虚拟数据</a>
+            </li>
+          </ul>
+        </div>
+      </section>
+
+      <section class="section section-tint" id="flow" aria-labelledby="flow-title">
+        <div class="container">
+          <h2 id="flow-title" class="h2">截图、标注、保存。</h2>
+          <p class="sub">从第一次截图到最终保存，Harie 全部搞定。</p>
+          <ol class="steps">
+            <li class="step">
+              <span class="badge" aria-hidden="true">1</span>
+              <h3>截取</h3>
+              <p>
+                用 Chrome 扩展可以截取当前页面并直接在编辑器中打开。可以选择可见区域、拖动选取的范围，或按钮这样的单个元素。
+              </p>
+            </li>
+            <li class="step">
+              <span class="badge" aria-hidden="true">2</span>
+              <h3>标注</h3>
+              <p>
+                用方框、箭头、编号、标注框和聚光灯来说明。告诉 Harie 你想说明什么，AI 就会帮你起草带编号的方框和说明文字。
+              </p>
+            </li>
+            <li class="step">
+              <span class="badge" aria-hidden="true">3</span>
+              <h3>保存</h3>
+              <p>
+                Harie 保存为普通的 JPEG 或 PNG。可以直接粘贴到帮助中心，之后打开它的人也还能编辑标注。
+              </p>
+            </li>
+          </ol>
+        </div>
+      </section>
+
+      <section class="section" id="how" aria-labelledby="how-title">
+        <div class="container split">
+          <div class="split-copy">
+            <p class="eyebrow">为什么还能编辑</p>
+            <h2 id="how-title" class="h2">一张图片里，同时装着原始画面和标注。</h2>
+            <p>
+              用 Harie 保存的图片，除了你看到的画面，还带着原始截图和标注数据。其他应用和浏览器只会把它当作普通图片显示。
+            </p>
+            <p>
+              用 Harie 打开，就能移动或改写每个方框和说明。不需要另外保留项目文件，收到图片的人也能打开并修改。
+            </p>
+            <p class="small">
+              再次保存时不会重新压缩原始截图，所以无论修改多少次，画质都不会下降。
+              <a href="https://github.com/hosshan/harie/blob/main/docs/03-design/harie-format-spec.md"
+                >文件格式规范</a
+              >
+              已公开（日文）。
+            </p>
+          </div>
+          <figure class="anatomy">
+            <div class="file-card">
+              <div class="file-head">
+                <span class="mono">tasklane-notifications.en.harie.png</span>
+                <span class="mono muted">147 KB</span>
+              </div>
+              <div class="layer layer-view">
+                <span>用于查看的图片</span><span class="muted">任何应用都能显示</span>
+              </div>
+              <div class="layer layer-base">
+                <span>原始截图</span><span class="muted">不会重新压缩</span>
+              </div>
+              <div class="layer layer-doc">
+                <span>标注数据</span><span class="muted mono">3 个方框 · 3 个编号 · 3 个标注框</span>
+              </div>
+            </div>
+            <figcaption>
+              <a class="dl" href="../assets/tasklane-notifications.en.harie.png" download
+                >下载这个示例</a
+              >
+              ，在 <a href="../app/">编辑器</a> 中打开即可修改标注。
+            </figcaption>
+          </figure>
+        </div>
+        <div class="container">
+          <div class="table-wrap">
+            <table class="compare">
+              <caption>
+                制作指南截图的方式
+              </caption>
+              <thead>
+                <tr>
+                  <th scope="col"></th>
+                  <th scope="col">用图片编辑软件导出</th>
+                  <th scope="col">指南制作服务</th>
+                  <th scope="col" class="us">Harie</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <th scope="row">直接粘贴到帮助中心</th>
+                  <td>可以</td>
+                  <td>从服务中导出</td>
+                  <td class="us">可以</td>
+                </tr>
+                <tr>
+                  <th scope="row">发布后修改文字</th>
+                  <td>要还留着项目文件</td>
+                  <td>在服务内</td>
+                  <td class="us">可以，打开图片即可</td>
+                </tr>
+                <tr>
+                  <th scope="row">制作者以外的人也能修改</th>
+                  <td>要把项目文件交给对方</td>
+                  <td>同一套餐的成员</td>
+                  <td class="us">可以，发送图片即可</td>
+                </tr>
+                <tr>
+                  <th scope="row">不需要账号或订阅</th>
+                  <td>取决于工具</td>
+                  <td>需要</td>
+                  <td class="us">可以</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <section class="section section-tint" id="ai" aria-labelledby="ai-title">
+        <div class="container">
+          <p class="eyebrow">AI</p>
+          <h2 id="ai-title" class="h2">让 AI 帮你决定标出哪里。</h2>
+          <div class="cards">
+            <article class="card">
+              <h3>建议的标注</h3>
+              <p>
+                输入类似“说明如何设置 Slack 通知”的内容，AI 就会起草方框的位置和说明文字。每条建议都可以采纳、拒绝或修改。如果是 Chrome 扩展截取的截图，方框会对齐页面上实际的元素。
+              </p>
+              <p class="small muted">
+                可以通过 OpenRouter 连接，或使用你自己的 Anthropic API 密钥。Harie 发送图片前一定会先征得同意，密钥也不会离开这个浏览器。
+              </p>
+            </article>
+            <article class="card">
+              <h3>从 Claude 编辑（MCP）</h3>
+              <p>
+                注册 <code>@harie/mcp</code> 服务器后，就能让 Claude Code 或 Claude Desktop 帮你添加或修改标注。界面文字改了的时候，还能一次性更新所有相关图片。
+              </p>
+              <figure class="chat" aria-label="让 Claude 处理的示例">
+                <p class="chat-user">把 guides 里通知图片中的“保存后生效”改成“更新后生效”</p>
+                <p class="chat-tool mono">harie_open → harie_edit</p>
+                <p class="chat-ai">已修改标注框 3 并保存文件。</p>
+              </figure>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section class="section" id="privacy" aria-labelledby="privacy-title">
+        <div class="container split split-rev">
+          <div class="split-copy">
+            <p class="eyebrow">个人信息</p>
+            <h2 id="privacy-title" class="h2">去掉个人信息，保留画面的意思。</h2>
+            <p>
+              把姓名、邮箱地址和电话号码替换成虚拟数据。和模糊处理不同，读者仍然能看出这是什么样的画面。也可以选择填充、马赛克或模糊。
+            </p>
+            <p>
+              遮盖会直接作用于原始图片，无法撤销。也正因为如此，分享文件时原来的信息不会跟着传出去。
+            </p>
+          </div>
+          <figure class="pii">
+            <div class="pii-row">
+              <span class="pii-label">之前</span>
+              <img
+                src="../assets/pii-before.en.webp"
+                width="760"
+                height="92"
+                alt="负责人一栏显示的是虚构的姓名和邮箱地址"
+              />
+            </div>
+            <div class="pii-row">
+              <span class="pii-label pii-label-after">之后</span>
+              <img
+                src="../assets/pii-after.en.webp"
+                width="760"
+                height="92"
+                alt="负责人一栏被替换成虚拟数据“成员 A”"
+              />
+            </div>
+            <figcaption class="small muted">示例画面、姓名和地址均为虚构。</figcaption>
+          </figure>
+        </div>
+      </section>
+
+      <section class="section section-tint" id="platforms" aria-labelledby="platforms-title">
+        <div class="container">
+          <h2 id="platforms-title" class="h2">在你工作的地方就能用。</h2>
+          <p class="sub">无论保存在哪里，都是同一个文件、同样的效果。</p>
+          <div class="platforms">
+            <article class="platform">
+              <div class="platform-head"><h3>Web</h3></div>
+              <p>
+                直接在浏览器中使用，无需安装。图片在浏览器中处理，不会上传到服务器，离线也能用。界面语言可以在设置中切换。
+              </p>
+              <a class="link" href="../app/">打开编辑器</a>
+            </article>
+            <article class="platform">
+              <div class="platform-head"><h3>Chrome 扩展</h3></div>
+              <p>截取当前页面，马上就能标注。可从 Chrome 应用商店安装。</p>
+              <a class="link" href="https://chromewebstore.google.com/detail/harie/dgbghdgnmjcgjdmhfnmcdphkafkbefll?hl=zh-CN">在 Chrome 应用商店查看</a>
+            </article>
+            <article class="platform">
+              <div class="platform-head"><h3>桌面版</h3><span class="tag">即将提供下载</span></div>
+              <p>适用于 macOS 和 Windows。通过系统对话框打开文件，并直接保存回原处。</p>
+              <a class="link" href="https://github.com/hosshan/harie/tree/main/apps/desktop">关于桌面版</a>
+            </article>
+            <article class="platform">
+              <div class="platform-head"><h3>MCP</h3></div>
+              <p>让 Claude 这样的 AI 智能体读写你指定文件夹里的图片。</p>
+              <a class="link" href="#mcp">设置方法</a>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section class="section" id="mcp" aria-labelledby="mcp-title">
+        <div class="container split">
+          <div class="split-copy">
+            <p class="eyebrow">开始使用 MCP</p>
+            <h2 id="mcp-title" class="h2">让 Claude 帮你标注。</h2>
+            <p>注册 <code>@harie/mcp</code> 服务器后，Claude Code、Claude Desktop 和 ChatGPT 桌面应用就能打开 Harie 图片，添加或修改标注。</p>
+          </div>
+          <div class="setup-card">
+            <div class="tabs" role="tablist" aria-label="要注册的应用">
+              <button type="button" role="tab" id="tab-code" aria-controls="setup-code" aria-selected="true">Claude Code</button>
+              <button type="button" role="tab" id="tab-desktop" aria-controls="setup-desktop" aria-selected="false" tabindex="-1">Claude Desktop</button>
+              <button type="button" role="tab" id="tab-chatgpt" aria-controls="setup-chatgpt" aria-selected="false" tabindex="-1">ChatGPT</button>
+            </div>
+            <div class="tab-panel" role="tabpanel" id="setup-code" aria-labelledby="tab-code">
+              <p class="small muted">在终端中运行这条命令。</p>
+              <div class="cmd">
+                <code id="mcp-cmd">claude mcp add harie -- npx -y @harie/mcp --root ~/Pictures/guides</code>
+                <button class="copy" type="button" data-copy="mcp-cmd" data-copied="已复制">复制</button>
+              </div>
+            </div>
+            <div class="tab-panel" role="tabpanel" id="setup-desktop" aria-labelledby="tab-desktop" hidden>
+              <p class="small muted">把这段配置添加到 <code>claude_desktop_config.json</code> ，然后重启 Claude Desktop。请把文件夹换成你自己的路径。</p>
+              <div class="cmd cmd-block">
+                <pre id="mcp-json">{
+  "mcpServers": {
+    "harie": {
+      "command": "npx",
+      "args": ["-y", "@harie/mcp", "--root", "/Users/you/Pictures/guides"]
+    }
+  }
+}</pre>
+                <button class="copy" type="button" data-copy="mcp-json" data-copied="已复制">复制</button>
+              </div>
+            </div>
+            <div class="tab-panel" role="tabpanel" id="setup-chatgpt" aria-labelledby="tab-chatgpt" hidden>
+              <p class="small muted">可在 ChatGPT 桌面应用中使用。把这段配置添加到 <code>~/.codex/config.toml</code> ，然后重启应用。这份配置也由 Codex CLI 和 IDE 扩展共用。也可以在应用设置的 MCP 服务器页面，把同一条命令添加为 STDIO 服务器。</p>
+              <div class="cmd cmd-block">
+                <pre id="mcp-toml">[mcp_servers.harie]
+command = "npx"
+args = ["-y", "@harie/mcp", "--root", "/Users/you/Pictures/guides"]</pre>
+                <button class="copy" type="button" data-copy="mcp-toml" data-copied="已复制">复制</button>
+              </div>
+              <p class="small muted">网页版 ChatGPT 无法连接到在你电脑上运行的 MCP 服务器。</p>
+            </div>
+            <ul class="setup-notes">
+              <li>需要 Node.js 22 或更高版本。服务器通过 npm 的 <code>npx</code>运行，不需要另外安装。</li>
+              <li>用 <code>--root</code> 指定存放图片的文件夹。服务器只能在这个文件夹内读写。</li>
+            </ul>
+            <a class="link" href="https://github.com/hosshan/harie/blob/main/apps/mcp/README.md">完整的工具列表和用法（GitHub）</a>
+            <figure class="chat chat-examples" aria-label="请求示例">
+              <figcaption class="small muted">请求示例</figcaption>
+              <p class="chat-user">把 settings.png 转成 Harie 文件，给“保存”按钮加上红框，并添加写着“在这里保存”的标注框</p>
+              <p class="chat-user">把 guides 里图片中能看到的邮箱地址替换成虚拟数据</p>
+            </figure>
+            <p class="small muted">遮盖个人信息无法撤销，所以服务器会在你确认后才保存。</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="section section-tint" id="faq" aria-labelledby="faq-title">
+        <div class="container">
+          <h2 id="faq-title" class="h2">常见问题</h2>
+          <div class="faq">
+            <article class="faq-item">
+              <h3>Harie 是什么？</h3>
+              <p>Harie 是一款给 SaaS 帮助文档和使用指南的截图加上方框、编号、标注框和箭头的工具。它保存为普通的 JPEG 或 PNG，在 Harie 中重新打开这张图片时，所有标注仍然可以编辑。</p>
+            </article>
+            <article class="faq-item">
+              <h3>保存的图片能在其他应用或网站上显示吗？</h3>
+              <p>可以。Harie 保存的是普通的 JPEG 或 PNG，可以直接粘贴到帮助页面、聊天或文档中。原始截图和标注数据保存在图片的元数据里，只有 Harie 会用到。</p>
+            </article>
+            <article class="faq-item">
+              <h3>别人做的指南图片，我也能修改吗？</h3>
+              <p>可以，只要是用 Harie 保存的图片就行。在 Harie 中打开收到的图片，就能移动或改写每个方框和说明。不需要项目文件，也不需要账号。</p>
+            </article>
+            <article class="faq-item">
+              <h3>Harie 和 Snagit、Scribe 这类工具有什么区别？</h3>
+              <p>导出的图片本身就能继续编辑。截图软件把可编辑的标注保存在自己的项目文件里，而项目文件只留在制作者手里。制作指南的服务只能在自己的账号里编辑。Harie 把原始截图和标注存进 JPEG 或 PNG 里，所以任何拿到帮助页面上那张图片的人，都能打开并修改。Harie 不会根据录制的操作自动生成步骤指南。</p>
+            </article>
+            <article class="faq-item">
+              <h3>Harie 收费吗？</h3>
+              <p>不收费。Harie 免费、以 MIT 许可证开源，也不需要注册。只有 AI 建议需要你自己的 Anthropic API 密钥或 OpenRouter 账号，按用量向这些服务付费。</p>
+            </article>
+            <article class="faq-item">
+              <h3>我的图片会被上传到服务器吗？</h3>
+              <p>不会。图片在你的浏览器或设备上处理，开发者不会收到。只有在使用 AI 功能时，Harie 才会先征得你的同意，再把图片直接发送到 Anthropic 的 Claude API（如果通过 OpenRouter 连接，则经由 OpenRouter）。</p>
+            </article>
+            <article class="faq-item">
+              <h3>可以隐藏截图中的个人信息吗？</h3>
+              <p>可以。你可以把姓名、邮箱地址和电话号码替换成虚拟数据，也可以用填充、马赛克或模糊处理。这些处理会直接作用于原始图片，无法撤销，原来的信息也不会留在分享出去的文件里。</p>
+            </article>
+            <article class="faq-item">
+              <h3>在哪里可以使用 Harie？</h3>
+              <p>有在浏览器中运行的网页版编辑器、截取当前页面的 Chrome 扩展，以及供 AI 智能体使用的 MCP 服务器。macOS 和 Windows 的桌面应用暂未发布，但可以从源码自行构建。</p>
+            </article>
+            <article class="faq-item">
+              <h3>Claude 这样的 AI 智能体也能添加标注吗？</h3>
+              <p>可以。把 MCP 服务器 @harie/mcp 注册到 Claude Code 或 Claude Desktop，它就能打开你指定文件夹里的图片、添加标注并修改文字。</p>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section class="closing">
+        <div class="container closing-in">
+          <img src="../assets/harie-symbol.svg" alt="" width="72" height="72" />
+          <h2 class="h2">让下一份指南，随时都能修改。</h2>
+          <div class="cta">
+            <a class="btn btn-primary" href="../app/">在浏览器中打开</a>
+            <a class="btn btn-ghost" href="https://chromewebstore.google.com/detail/harie/dgbghdgnmjcgjdmhfnmcdphkafkbefll?hl=zh-CN">添加到 Chrome</a>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <div class="container footer-in">
+        <span class="logo logo-sm"><img src="../assets/harie-symbol.svg" alt="" width="22" height="22" />Harie</span>
+        <span class="muted">MIT 许可证 · 内置的 Noto Sans JP、KR、SC 字体采用 SIL Open Font License 1.1</span>
+        <span class="footer-links"><a href="../en/privacy/">隐私政策</a><a href="https://github.com/hosshan/harie">GitHub</a></span>
+      </div>
+    </footer>
+
+    <script src="../main.js" type="module"></script>
+  </body>
+</html>

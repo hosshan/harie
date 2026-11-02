@@ -225,6 +225,108 @@ code,
   border-color: var(--deep);
 }
 
+/* LP の言語メニュー。丸い札を押すと、下に 7 言語の一覧を出す（JS なし） */
+details.lang {
+  position: relative;
+  padding: 0;
+}
+
+details.lang summary {
+  padding: 4px 10px;
+  list-style: none;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+details.lang summary::-webkit-details-marker {
+  display: none;
+}
+
+details.lang summary::after {
+  content: "▾";
+  margin-left: 4px;
+  color: var(--muted);
+}
+
+.lang-menu {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  z-index: 20;
+  min-width: 168px;
+  margin: 0;
+  padding: 6px;
+  list-style: none;
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  box-shadow: var(--shadow);
+}
+
+.lang-menu a {
+  display: block;
+  padding: 6px 10px;
+  border-radius: 8px;
+  color: var(--ink);
+  font-weight: 500;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.lang-menu a:hover {
+  background: var(--cream);
+}
+
+.lang-menu a[aria-current="page"] {
+  color: var(--text-yellow);
+  font-weight: 700;
+}
+
+/* 韓国語・中国語のページは、それぞれの文字の Noto Sans を使う（各ページの <head> で読み込む） */
+:root:lang(ko) {
+  --display: "Noto Sans KR", sans-serif;
+  --body: "Noto Sans KR", system-ui, sans-serif;
+  /* 韓国語は語（分かち書きの単位）の途中で折り返さない */
+  word-break: keep-all;
+  overflow-wrap: anywhere;
+}
+
+/* ヘッダーのロゴとボタンは 1 行に収める（中国語などで 2 行に折れていた） */
+.nav-in .logo,
+.nav-in .btn {
+  flex: none;
+  white-space: nowrap;
+}
+
+/* 言語メニューの札は、狭い画面では略称（EN・KO・繁中など）にする */
+.lang-short {
+  display: none;
+}
+
+@media (max-width: 560px) {
+  .nav-in {
+    gap: 12px;
+  }
+
+  .lang-full {
+    display: none;
+  }
+
+  .lang-short {
+    display: inline;
+  }
+}
+
+:root:lang(zh-TW) {
+  --display: "Noto Sans TC", sans-serif;
+  --body: "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", system-ui, sans-serif;
+}
+
+:root:lang(zh-CN) {
+  --display: "Noto Sans SC", sans-serif;
+  --body: "Noto Sans SC", "PingFang SC", "Microsoft YaHei", system-ui, sans-serif;
+}
+
 /* ヒーロー */
 .hero {
   position: relative;
