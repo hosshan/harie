@@ -12,7 +12,8 @@ test.describe("NFR-I18N-01: 英語のブラウザ", () => {
 
     await page.getByRole("button", { name: "Settings" }).click();
     const dialog = page.getByRole("dialog", { name: "Settings" });
-    await dialog.getByRole("button", { name: "日本語" }).click();
+    await dialog.getByRole("button", { name: "English" }).click();
+    await page.getByRole("menuitemradio", { name: "日本語" }).click();
     await expect(page.getByRole("dialog", { name: "設定" })).toBeVisible();
     await expect(page.getByRole("button", { name: "画像を開く" })).toBeVisible();
     await expect(page.locator("html")).toHaveAttribute("lang", "ja");
