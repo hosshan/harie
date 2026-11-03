@@ -464,6 +464,9 @@ details.lang summary::after {
   font-weight: 700;
   color: var(--ink);
   cursor: pointer;
+  /* 狭い画面で「注釈」が 1 文字ずつ縦に折れないよう、つまみと文字は縮めず 1 行に保つ */
+  flex: none;
+  white-space: nowrap;
 }
 
 .switch-track {
