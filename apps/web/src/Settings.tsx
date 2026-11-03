@@ -3,6 +3,15 @@ import { LOCALE_NAMES, LOCALES, setLocale, useLocale } from "@harie/editor";
 import { type ReactNode, useState } from "react";
 import { storeCredential, useAiCredential } from "./ai/api-key";
 import { canConnectOpenRouter, connectOpenRouter } from "./ai/openrouter-auth";
+import { Button } from "./components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
+  DropdownMenuTrigger,
+} from "./components/ui/dropdown-menu";
+import { HeaderIcon } from "./Header";
 import { Modal } from "./Modal";
 import { useWebMessages } from "./messages";
 
@@ -37,26 +46,48 @@ export function useSettingsDialog(): { open: () => void; dialog: ReactNode } {
   };
 }
 
+/** 表示言語はドロップダウンで選ぶ（言語が増えても欄の高さが変わらないように） */
 function LanguageSettings() {
   const m = useWebMessages();
   const locale = useLocale();
+  // メニューはダイアログ（最前面）の中に出す。body に出すとダイアログの下に隠れる
+  const [container, setContainer] = useState<HTMLElement | null>(null);
+  const current = LANGUAGES.find((l) => l.locale === locale);
   return (
-    <section className="app-settings-section" aria-label={m.settings.language}>
-      <h2>{m.settings.language}</h2>
+    <section ref={setContainer} className="app-settings-section" aria-label={m.settings.language}>
+      <h2 id="app-settings-language">{m.settings.language}</h2>
       <p className="harie-muted">{m.settings.languageNote}</p>
-      <div className="app-settings-languages">
-        {LANGUAGES.map((l) => (
-          <button
-            key={l.locale}
-            type="button"
-            lang={l.locale}
-            aria-pressed={locale === l.locale}
-            onClick={() => setLocale(l.locale)}
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button
+            className="app-settings-language justify-between"
+            aria-describedby="app-settings-language"
+            lang={locale}
           >
-            {l.name}
-          </button>
-        ))}
-      </div>
+            {current?.name ?? locale}
+            <HeaderIcon icon="chevron" />
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent
+          align="start"
+          container={container}
+          className="min-w-(--radix-dropdown-menu-trigger-width)"
+        >
+          <DropdownMenuRadioGroup
+            value={locale}
+            onValueChange={(v) => {
+              const next = LOCALES.find((l) => l === v);
+              if (next !== undefined) setLocale(next);
+            }}
+          >
+            {LANGUAGES.map((l) => (
+              <DropdownMenuRadioItem key={l.locale} value={l.locale} lang={l.locale}>
+                {l.name}
+              </DropdownMenuRadioItem>
+            ))}
+          </DropdownMenuRadioGroup>
+        </DropdownMenuContent>
+      </DropdownMenu>
     </section>
   );
 }

@@ -7,13 +7,18 @@ export const DropdownMenu = Primitive.Root;
 export const DropdownMenuTrigger = Primitive.Trigger;
 export const DropdownMenuRadioGroup = Primitive.RadioGroup;
 
+/**
+ * container: メニューを差し込む先。<dialog>（showModal）の中で開くときはダイアログの要素を渡す。
+ * 省略すると body に出し、最前面のダイアログの下に隠れてしまうため
+ */
 export function DropdownMenuContent({
   className,
   sideOffset = 4,
+  container,
   ...props
-}: ComponentProps<typeof Primitive.Content>) {
+}: ComponentProps<typeof Primitive.Content> & { container?: HTMLElement | null }) {
   return (
-    <Primitive.Portal>
+    <Primitive.Portal container={container}>
       <Primitive.Content
         data-slot="dropdown-menu-content"
         sideOffset={sideOffset}

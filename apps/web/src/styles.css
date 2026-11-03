@@ -203,21 +203,10 @@ input {
   margin-top: 20px;
 }
 /* 言語が増えても 1 行に詰めず、名前が折り返さない幅で並べる */
-.app-settings-languages {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-  gap: 8px;
-}
-.app-settings-languages button {
-  white-space: nowrap;
-}
-/* 選んでいる言語は、右の欄のタイルと同じく淡い黄土色の地と黄土色の枠で示す */
-.app-settings-languages button[aria-pressed="true"] {
-  background: var(--surface);
-  border-color: var(--accent-strong);
-  box-shadow: 0 0 0 1px var(--accent-strong);
-  color: var(--accent-text);
-  font-weight: 600;
+/* 表示言語のドロップダウン。狭い画面では欄の幅いっぱい、広い画面では言語名が収まる幅 */
+.app-settings-language {
+  width: 100%;
+  max-width: 240px;
 }
 /* AI の接続方法（OpenRouter / Anthropic のキー）。それぞれを薄い枠で囲んで並べる */
 .app-settings-option {
