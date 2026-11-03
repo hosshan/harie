@@ -316,6 +316,31 @@
               </p>
             </li>
           </ol>
+          <div class="demo-videos">
+            <div class="tabs" role="tablist" aria-label="조작 동영상">
+              <button type="button" role="tab" id="tab-video-annotate" aria-controls="video-annotate" aria-selected="true">상자와 설명 붙이기</button>
+              <button type="button" role="tab" id="tab-video-edit" aria-controls="video-edit" aria-selected="false" tabindex="-1">문구만 고치기</button>
+              <button type="button" role="tab" id="tab-video-mask" aria-controls="video-mask" aria-selected="false" tabindex="-1">개인정보 지우기</button>
+            </div>
+            <div class="tab-panel video-panel" role="tabpanel" id="video-annotate" aria-labelledby="tab-video-annotate">
+              <div class="video-frame">
+                <video src="../assets/demo-annotate.en.mp4" poster="../assets/demo-annotate.en.webp" width="1012" height="800" muted loop playsinline preload="metadata" aria-label="동영상: 가상의 SaaS인 Tasklane의 설정 화면에 상자 두 개를 그린 뒤, 번호와 말풍선을 붙이고 문구를 입력합니다"></video>
+              </div>
+              <p>스크린샷을 열고 상자를 그린 뒤 “번호와 말풍선 붙이기”를 누르면 번호와 말풍선이 한 번에 붙습니다. 그다음 말풍선의 문구만 입력하면 됩니다.</p>
+            </div>
+            <div class="tab-panel video-panel" role="tabpanel" id="video-edit" aria-labelledby="tab-video-edit" hidden>
+              <div class="video-frame">
+                <video src="../assets/demo-edit.en.mp4" poster="../assets/demo-edit.en.webp" width="1012" height="800" muted loop playsinline preload="none" aria-label="동영상: 저장한 이미지를 열고 말풍선 3의 문구만 고쳐 씁니다"></video>
+              </div>
+              <p>Harie로 저장한 이미지를 열면 상자와 말풍선이 그대로 돌아옵니다. 화면의 문구가 바뀌면 말풍선을 더블클릭해 고치고 다시 저장하면 됩니다.</p>
+            </div>
+            <div class="tab-panel video-panel" role="tabpanel" id="video-mask" aria-labelledby="tab-video-mask" hidden>
+              <div class="video-frame">
+                <video src="../assets/demo-mask.en.mp4" poster="../assets/demo-mask.en.webp" width="1012" height="800" muted loop playsinline preload="none" aria-label="동영상: 멤버 목록 첫 행의 이름과 이메일 주소를 더미 문자로 바꿉니다"></video>
+              </div>
+              <p>이름이나 이메일 주소를 골라 더미 문자로 바꿉니다. 화면의 모양은 그대로라서 무엇인지 알아볼 수 있고, 원래 값은 이미지에 남지 않습니다.</p>
+            </div>
+          </div>
         </div>
       </section>
 

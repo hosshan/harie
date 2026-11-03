@@ -315,6 +315,31 @@
               </p>
             </li>
           </ol>
+          <div class="demo-videos">
+            <div class="tabs" role="tablist" aria-label="Vídeos de demostración">
+              <button type="button" role="tab" id="tab-video-annotate" aria-controls="video-annotate" aria-selected="true">Añadir recuadros y notas</button>
+              <button type="button" role="tab" id="tab-video-edit" aria-controls="video-edit" aria-selected="false" tabindex="-1">Corregir solo el texto</button>
+              <button type="button" role="tab" id="tab-video-mask" aria-controls="video-mask" aria-selected="false" tabindex="-1">Eliminar datos personales</button>
+            </div>
+            <div class="tab-panel video-panel" role="tabpanel" id="video-annotate" aria-labelledby="tab-video-annotate">
+              <div class="video-frame">
+                <video src="../assets/demo-annotate.en.mp4" poster="../assets/demo-annotate.en.webp" width="1012" height="800" muted loop playsinline preload="metadata" aria-label="Vídeo: se dibujan dos recuadros en una página de ajustes del SaaS ficticio Tasklane, se añaden números y globos y se escribe su texto"></video>
+              </div>
+              <p>Abre una captura, dibuja recuadros y pulsa «Añadir números y globos» para añadir los números y los globos de una vez. Después solo tienes que escribir el texto de los globos.</p>
+            </div>
+            <div class="tab-panel video-panel" role="tabpanel" id="video-edit" aria-labelledby="tab-video-edit" hidden>
+              <div class="video-frame">
+                <video src="../assets/demo-edit.en.mp4" poster="../assets/demo-edit.en.webp" width="1012" height="800" muted loop playsinline preload="none" aria-label="Vídeo: se abre una imagen guardada y solo se reescribe el texto del globo 3"></video>
+              </div>
+              <p>Abre una imagen guardada con Harie y sus recuadros y globos vuelven tal cual. Cuando cambie el texto de la interfaz, haz doble clic en el globo, corrígelo y vuelve a guardar.</p>
+            </div>
+            <div class="tab-panel video-panel" role="tabpanel" id="video-mask" aria-labelledby="tab-video-mask" hidden>
+              <div class="video-frame">
+                <video src="../assets/demo-mask.en.mp4" poster="../assets/demo-mask.en.webp" width="1012" height="800" muted loop playsinline preload="none" aria-label="Vídeo: el nombre y el correo de la primera fila de una lista de miembros se sustituyen por texto ficticio"></video>
+              </div>
+              <p>Selecciona nombres y direcciones de correo y sustitúyelos por texto ficticio. La pantalla conserva su aspecto, así que se sigue entendiendo qué es, y los valores originales no quedan en la imagen.</p>
+            </div>
+          </div>
         </div>
       </section>
 

@@ -150,5 +150,15 @@
   "Frequently asked questions": "Perguntas frequentes",
   "Make your next guide editable anytime.": "Faça seu próximo guia editável quando quiser.",
   "MIT License · Bundled fonts Noto Sans JP, KR and SC are under the SIL Open Font License 1.1": "Licença MIT · As fontes incluídas Noto Sans JP, KR e SC usam a SIL Open Font License 1.1",
-  "Privacy Policy": "Política de Privacidade"
+  "Privacy Policy": "Política de Privacidade",
+  "Demo videos": "Vídeos de demonstração",
+  "Video: two boxes are drawn on a settings page of the fictional SaaS Tasklane, then numbers and callouts are added and their text is typed in": "Vídeo: duas caixas são desenhadas em uma página de configurações do SaaS fictício Tasklane, depois números e balões são adicionados e o texto é digitado",
+  "Video: a saved image is opened and only the text of callout 3 is rewritten": "Vídeo: uma imagem salva é aberta e só o texto do balão 3 é reescrito",
+  "Video: the name and email in the first row of a member list are replaced with dummy text": "Vídeo: o nome e o e-mail da primeira linha de uma lista de membros são trocados por texto fictício",
+  "Add boxes and notes": "Adicionar caixas e notas",
+  "Fix just the text": "Corrigir só o texto",
+  "Remove personal data": "Remover dados pessoais",
+  "Open a screenshot, draw boxes, and press “Add numbers and callouts” to add numbered badges and callouts in one go. Then just type over the callout text.": "Abra uma captura de tela, desenhe caixas e clique em “Adicionar números e balões” para adicionar os números e os balões de uma vez. Depois é só digitar o texto dos balões.",
+  "Open an image saved with Harie and its boxes and callouts come right back. When the UI wording changes, double-click the callout, fix it, and save again.": "Abra uma imagem salva com o Harie e as caixas e os balões voltam como estavam. Quando o texto da interface mudar, clique duas vezes no balão, corrija e salve de novo.",
+  "Select names and email addresses and replace them with dummy text. The screen keeps its look, so readers still know what it is, and the original values don't stay in the image.": "Selecione nomes e endereços de e-mail e troque-os por texto fictício. A tela mantém a aparência, então ainda dá para entender o que é, e os valores originais não ficam na imagem."
 }
