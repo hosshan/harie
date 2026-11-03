@@ -150,5 +150,15 @@
   "Frequently asked questions": "Preguntas frecuentes",
   "Make your next guide editable anytime.": "Haz que tu próxima guía se pueda editar cuando quieras.",
   "MIT License · Bundled fonts Noto Sans JP, KR and SC are under the SIL Open Font License 1.1": "Licencia MIT · Las fuentes incluidas Noto Sans JP, KR y SC usan la SIL Open Font License 1.1",
-  "Privacy Policy": "Política de privacidad"
+  "Privacy Policy": "Política de privacidad",
+  "Demo videos": "Vídeos de demostración",
+  "Video: two boxes are drawn on a settings page of the fictional SaaS Tasklane, then numbers and callouts are added and their text is typed in": "Vídeo: se dibujan dos recuadros en una página de ajustes del SaaS ficticio Tasklane, se añaden números y globos y se escribe su texto",
+  "Video: a saved image is opened and only the text of callout 3 is rewritten": "Vídeo: se abre una imagen guardada y solo se reescribe el texto del globo 3",
+  "Video: the name and email in the first row of a member list are replaced with dummy text": "Vídeo: el nombre y el correo de la primera fila de una lista de miembros se sustituyen por texto ficticio",
+  "Add boxes and notes": "Añadir recuadros y notas",
+  "Fix just the text": "Corregir solo el texto",
+  "Remove personal data": "Eliminar datos personales",
+  "Open a screenshot, draw boxes, and press “Add numbers and callouts” to add numbered badges and callouts in one go. Then just type over the callout text.": "Abre una captura, dibuja recuadros y pulsa «Añadir números y globos» para añadir los números y los globos de una vez. Después solo tienes que escribir el texto de los globos.",
+  "Open an image saved with Harie and its boxes and callouts come right back. When the UI wording changes, double-click the callout, fix it, and save again.": "Abre una imagen guardada con Harie y sus recuadros y globos vuelven tal cual. Cuando cambie el texto de la interfaz, haz doble clic en el globo, corrígelo y vuelve a guardar.",
+  "Select names and email addresses and replace them with dummy text. The screen keeps its look, so readers still know what it is, and the original values don't stay in the image.": "Selecciona nombres y direcciones de correo y sustitúyelos por texto ficticio. La pantalla conserva su aspecto, así que se sigue entendiendo qué es, y los valores originales no quedan en la imagen."
 }

@@ -150,5 +150,15 @@
   "Frequently asked questions": "자주 묻는 질문",
   "Make your next guide editable anytime.": "다음 가이드는 언제든 고칠 수 있게.",
   "MIT License · Bundled fonts Noto Sans JP, KR and SC are under the SIL Open Font License 1.1": "MIT License · 함께 제공하는 글꼴 Noto Sans JP, KR, SC는 SIL Open Font License 1.1을 따릅니다",
-  "Privacy Policy": "개인정보 처리방침"
+  "Privacy Policy": "개인정보 처리방침",
+  "Demo videos": "조작 동영상",
+  "Video: two boxes are drawn on a settings page of the fictional SaaS Tasklane, then numbers and callouts are added and their text is typed in": "동영상: 가상의 SaaS인 Tasklane의 설정 화면에 상자 두 개를 그린 뒤, 번호와 말풍선을 붙이고 문구를 입력합니다",
+  "Video: a saved image is opened and only the text of callout 3 is rewritten": "동영상: 저장한 이미지를 열고 말풍선 3의 문구만 고쳐 씁니다",
+  "Video: the name and email in the first row of a member list are replaced with dummy text": "동영상: 멤버 목록 첫 행의 이름과 이메일 주소를 더미 문자로 바꿉니다",
+  "Add boxes and notes": "상자와 설명 붙이기",
+  "Fix just the text": "문구만 고치기",
+  "Remove personal data": "개인정보 지우기",
+  "Open a screenshot, draw boxes, and press “Add numbers and callouts” to add numbered badges and callouts in one go. Then just type over the callout text.": "스크린샷을 열고 상자를 그린 뒤 “번호와 말풍선 붙이기”를 누르면 번호와 말풍선이 한 번에 붙습니다. 그다음 말풍선의 문구만 입력하면 됩니다.",
+  "Open an image saved with Harie and its boxes and callouts come right back. When the UI wording changes, double-click the callout, fix it, and save again.": "Harie로 저장한 이미지를 열면 상자와 말풍선이 그대로 돌아옵니다. 화면의 문구가 바뀌면 말풍선을 더블클릭해 고치고 다시 저장하면 됩니다.",
+  "Select names and email addresses and replace them with dummy text. The screen keeps its look, so readers still know what it is, and the original values don't stay in the image.": "이름이나 이메일 주소를 골라 더미 문자로 바꿉니다. 화면의 모양은 그대로라서 무엇인지 알아볼 수 있고, 원래 값은 이미지에 남지 않습니다."
 }

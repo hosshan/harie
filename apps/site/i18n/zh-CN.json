@@ -150,5 +150,15 @@
   "Frequently asked questions": "常见问题",
   "Make your next guide editable anytime.": "让下一份指南，随时都能修改。",
   "MIT License · Bundled fonts Noto Sans JP, KR and SC are under the SIL Open Font License 1.1": "MIT 许可证 · 内置的 Noto Sans JP、KR、SC 字体采用 SIL Open Font License 1.1",
-  "Privacy Policy": "隐私政策"
+  "Privacy Policy": "隐私政策",
+  "Demo videos": "操作视频",
+  "Video: two boxes are drawn on a settings page of the fictional SaaS Tasklane, then numbers and callouts are added and their text is typed in": "视频：在虚构 SaaS“Tasklane”的设置页面上画两个方框，再加上编号和说明框并输入文字",
+  "Video: a saved image is opened and only the text of callout 3 is rewritten": "视频：打开已保存的图片，只改写说明框 3 的文字",
+  "Video: the name and email in the first row of a member list are replaced with dummy text": "视频：把成员列表第一行的姓名和邮箱换成假数据",
+  "Add boxes and notes": "加上方框和说明",
+  "Fix just the text": "只修改文字",
+  "Remove personal data": "清除个人信息",
+  "Open a screenshot, draw boxes, and press “Add numbers and callouts” to add numbered badges and callouts in one go. Then just type over the callout text.": "打开截图并画好方框后，点击“加上编号和说明框”，即可一次加上编号和说明框。之后只需输入说明框的文字。",
+  "Open an image saved with Harie and its boxes and callouts come right back. When the UI wording changes, double-click the callout, fix it, and save again.": "打开用 Harie 保存的图片，方框和说明框会原样回来。界面文案变了时，双击说明框修改后再保存即可。",
+  "Select names and email addresses and replace them with dummy text. The screen keeps its look, so readers still know what it is, and the original values don't stay in the image.": "选中姓名或邮箱地址，替换成假数据。页面的样子保持不变，读者依然看得懂那是什么，原始值也不会留在图片里。"
 }

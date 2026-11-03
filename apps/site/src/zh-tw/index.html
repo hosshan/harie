@@ -316,6 +316,31 @@
               </p>
             </li>
           </ol>
+          <div class="demo-videos">
+            <div class="tabs" role="tablist" aria-label="操作影片">
+              <button type="button" role="tab" id="tab-video-annotate" aria-controls="video-annotate" aria-selected="true">加上方框與說明</button>
+              <button type="button" role="tab" id="tab-video-edit" aria-controls="video-edit" aria-selected="false" tabindex="-1">只修改文字</button>
+              <button type="button" role="tab" id="tab-video-mask" aria-controls="video-mask" aria-selected="false" tabindex="-1">清除個人資料</button>
+            </div>
+            <div class="tab-panel video-panel" role="tabpanel" id="video-annotate" aria-labelledby="tab-video-annotate">
+              <div class="video-frame">
+                <video src="../assets/demo-annotate.en.mp4" poster="../assets/demo-annotate.en.webp" width="1012" height="800" muted loop playsinline preload="metadata" aria-label="影片：在虛構 SaaS「Tasklane」的設定畫面上畫兩個方框，再加上編號與說明框並輸入文字"></video>
+              </div>
+              <p>開啟截圖並畫好方框後，按下「加上編號與說明框」，就能一次加上編號與說明框。接著只要輸入說明框的文字即可。</p>
+            </div>
+            <div class="tab-panel video-panel" role="tabpanel" id="video-edit" aria-labelledby="tab-video-edit" hidden>
+              <div class="video-frame">
+                <video src="../assets/demo-edit.en.mp4" poster="../assets/demo-edit.en.webp" width="1012" height="800" muted loop playsinline preload="none" aria-label="影片：開啟已儲存的圖片，只改寫說明框 3 的文字"></video>
+              </div>
+              <p>開啟用 Harie 儲存的圖片，方框與說明框會原樣回來。畫面上的用語改變時，雙擊說明框修改後再儲存即可。</p>
+            </div>
+            <div class="tab-panel video-panel" role="tabpanel" id="video-mask" aria-labelledby="tab-video-mask" hidden>
+              <div class="video-frame">
+                <video src="../assets/demo-mask.en.mp4" poster="../assets/demo-mask.en.webp" width="1012" height="800" muted loop playsinline preload="none" aria-label="影片：把成員清單第一列的姓名與電子郵件換成假資料"></video>
+              </div>
+              <p>選取姓名或電子郵件地址，換成假資料。畫面的樣子保持不變，讀者仍看得懂那是什麼，原本的值也不會留在圖片裡。</p>
+            </div>
+          </div>
         </div>
       </section>
 

@@ -316,6 +316,31 @@
               </p>
             </li>
           </ol>
+          <div class="demo-videos">
+            <div class="tabs" role="tablist" aria-label="操作视频">
+              <button type="button" role="tab" id="tab-video-annotate" aria-controls="video-annotate" aria-selected="true">加上方框和说明</button>
+              <button type="button" role="tab" id="tab-video-edit" aria-controls="video-edit" aria-selected="false" tabindex="-1">只修改文字</button>
+              <button type="button" role="tab" id="tab-video-mask" aria-controls="video-mask" aria-selected="false" tabindex="-1">清除个人信息</button>
+            </div>
+            <div class="tab-panel video-panel" role="tabpanel" id="video-annotate" aria-labelledby="tab-video-annotate">
+              <div class="video-frame">
+                <video src="../assets/demo-annotate.en.mp4" poster="../assets/demo-annotate.en.webp" width="1012" height="800" muted loop playsinline preload="metadata" aria-label="视频：在虚构 SaaS“Tasklane”的设置页面上画两个方框，再加上编号和说明框并输入文字"></video>
+              </div>
+              <p>打开截图并画好方框后，点击“加上编号和说明框”，即可一次加上编号和说明框。之后只需输入说明框的文字。</p>
+            </div>
+            <div class="tab-panel video-panel" role="tabpanel" id="video-edit" aria-labelledby="tab-video-edit" hidden>
+              <div class="video-frame">
+                <video src="../assets/demo-edit.en.mp4" poster="../assets/demo-edit.en.webp" width="1012" height="800" muted loop playsinline preload="none" aria-label="视频：打开已保存的图片，只改写说明框 3 的文字"></video>
+              </div>
+              <p>打开用 Harie 保存的图片，方框和说明框会原样回来。界面文案变了时，双击说明框修改后再保存即可。</p>
+            </div>
+            <div class="tab-panel video-panel" role="tabpanel" id="video-mask" aria-labelledby="tab-video-mask" hidden>
+              <div class="video-frame">
+                <video src="../assets/demo-mask.en.mp4" poster="../assets/demo-mask.en.webp" width="1012" height="800" muted loop playsinline preload="none" aria-label="视频：把成员列表第一行的姓名和邮箱换成假数据"></video>
+              </div>
+              <p>选中姓名或邮箱地址，替换成假数据。页面的样子保持不变，读者依然看得懂那是什么，原始值也不会留在图片里。</p>
+            </div>
+          </div>
         </div>
       </section>
 
