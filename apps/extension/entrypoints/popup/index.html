@@ -9,6 +9,7 @@
       h1 img { width: 20px; height: 20px; }
       button { display: block; width: 100%; margin: 0 0 6px; padding: 8px 10px; border: 1px solid #e6dcc6; border-radius: 6px; background: #fff; font: inherit; text-align: left; cursor: pointer; }
       button:hover { border-color: #b0861a; background: #fbf6e9; }
+      .blank { margin-top: 16px; }
       .muted { color: #7a7064; font-size: 12px; margin: 6px 0 0; }
       [role="alert"] { color: #b42318; margin: 6px 0 0; }
       h2 { font-size: 12px; margin: 12px 0 4px; padding-top: 10px; border-top: 1px solid #e6dcc6; }
@@ -34,7 +35,7 @@
     <button type="button" data-mode="region" data-message="region">範囲を選ぶ</button>
     <button type="button" data-mode="element" data-message="element">要素を選ぶ</button>
     <button type="button" class="blank" data-message="blank">空のエディタを開く</button>
-    <p class="muted" data-message="popupNote">撮った画像は Harie のエディタで開きます。画像とページの情報は、AI を使うまでこの端末から出ません。</p>
+    <p class="muted" data-message="popupNote">AIを利用しない場合、画像やページ情報は端末内でのみ処理されます。</p>
     <p role="alert" hidden></p>
     <h2 data-message="pageTitle">サイト上の画像ガイド</h2>
     <label><input type="checkbox" data-feature="edit" disabled /><span data-message="pageEdit">画像に編集ボタンを表示</span></label>
