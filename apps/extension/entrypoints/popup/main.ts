@@ -76,6 +76,8 @@ async function render(): Promise<void> {
   const granted = await browser.permissions.contains({ origins: PAGE_ORIGINS });
   for (const box of featureBoxes) {
     box.checked = granted && settings[box.dataset.feature as "edit" | "copy"];
+    // 設定を読み、変更を受け取る準備ができるまでは押せないようにしておく（HTML で disabled）
+    box.disabled = false;
   }
   siteList.replaceChildren(
     ...settings.sites.map((site) => {
