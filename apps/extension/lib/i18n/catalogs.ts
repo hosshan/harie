@@ -6,6 +6,7 @@ export const ko: ExtensionMessages = {
   visible: "보이는 영역",
   region: "영역 선택",
   element: "요소 선택",
+  blank: "빈 편집기 열기",
   popupNote:
     "찍은 이미지는 Harie 편집기에서 열립니다. 이미지와 페이지 정보는 AI를 쓰기 전까지 이 기기 밖으로 나가지 않습니다.",
   failed: "캡처하지 못했습니다",
@@ -41,6 +42,7 @@ export const zhTW: ExtensionMessages = {
   visible: "可見範圍",
   region: "選擇範圍",
   element: "選擇元素",
+  blank: "開啟空白編輯器",
   popupNote: "擷取的圖片會在 Harie 編輯器中開啟。使用 AI 之前，圖片和頁面資訊都不會離開這台裝置。",
   failed: "無法擷取",
   failedWith: (detail) => `無法擷取：${detail}`,
@@ -75,6 +77,7 @@ export const zhCN: ExtensionMessages = {
   visible: "可见区域",
   region: "选择区域",
   element: "选择元素",
+  blank: "打开空白编辑器",
   popupNote: "截取的图片会在 Harie 编辑器中打开。使用 AI 之前，图片和页面信息都不会离开这台设备。",
   failed: "无法截图",
   failedWith: (detail) => `无法截图：${detail}`,
@@ -109,6 +112,7 @@ export const es: ExtensionMessages = {
   visible: "Área visible",
   region: "Elegir un área",
   element: "Elegir un elemento",
+  blank: "Abrir el editor vacío",
   popupNote:
     "Las capturas se abren en el editor de Harie. La imagen y la información de la página no salen de este dispositivo hasta que uses la IA.",
   failed: "No se pudo capturar",
@@ -144,6 +148,7 @@ export const ptBR: ExtensionMessages = {
   visible: "Área visível",
   region: "Escolher uma área",
   element: "Escolher um elemento",
+  blank: "Abrir o editor vazio",
   popupNote:
     "As capturas abrem no editor do Harie. A imagem e as informações da página não saem deste dispositivo até você usar a IA.",
   failed: "Não foi possível capturar",

@@ -21,6 +21,7 @@ for (const el of document.querySelectorAll<HTMLElement>("[data-message]")) {
     | "visible"
     | "region"
     | "element"
+    | "blank"
     | "popupNote"
     | "pageTitle"
     | "pageEdit"
@@ -52,6 +53,12 @@ for (const button of document.querySelectorAll<HTMLButtonElement>("button[data-m
     }
   });
 }
+
+// 空のエディタ（FR-CAP-08）。撮った画像などを貼り付けて編集する。キャプチャしないので activeTab は使わない
+document.querySelector(".blank")?.addEventListener("click", async () => {
+  await browser.tabs.create({ url: browser.runtime.getURL("/editor.html") });
+  window.close();
+});
 
 // ページ上の Harie 画像（FR-FILE-12, FR-FILE-13）。出すボタンと、ボタンを出すサイト（空ならすべて）を選ぶ。
 // ボタンをオンにしたときだけ、画像を読むためのサイトの権限を求める。設定か権限が変わると background がページ用のスクリプトを登録し直す

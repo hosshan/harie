@@ -266,3 +266,37 @@ test("FR-FILE-11: 撮った画像を保存せずにクリップボードへコ�
   await editor.getByRole("button", { name: "コピー", exact: true }).click();
   await expect(editor.getByRole("status")).toHaveText("画像をコピーしました");
 });
+
+test("FR-CAP-08: ポップアップから空のエディタを開き、貼り付けた画像を編集できる", async ({
+  context,
+  extensionId,
+}) => {
+  const popup = await context.newPage();
+  await popup.goto(`chrome-extension://${extensionId}/popup.html`);
+  const opened = editorOpened(context, extensionId);
+  await popup.getByRole("button", { name: "空のエディタを開く" }).click();
+  const editor = await opened;
+
+  // 画像のない状態では、キャプチャが見つからない旨ではなく、貼り付けの案内を出す
+  await expect(editor.getByText(/貼り付け/)).toBeVisible();
+  await expect(editor.getByRole("alert")).toHaveCount(0);
+  await expect(editor.getByRole("button", { name: "画像を開く" })).toBeVisible();
+
+  // 撮った画像をクリップボードから貼り付けたときと同じイベントを送る
+  await editor.evaluate(async () => {
+    const canvas = document.createElement("canvas");
+    canvas.width = 320;
+    canvas.height = 200;
+    const ctx = canvas.getContext("2d");
+    if (ctx === null) throw new Error("2d がありません");
+    ctx.fillStyle = "#dde3ea";
+    ctx.fillRect(0, 0, 320, 200);
+    const blob = await new Promise<Blob | null>((resolve) => canvas.toBlob(resolve, "image/png"));
+    if (blob === null) throw new Error("PNG を作れませんでした");
+    const dt = new DataTransfer();
+    dt.items.add(new File([blob], "", { type: "image/png" }));
+    window.dispatchEvent(new ClipboardEvent("paste", { clipboardData: dt, cancelable: true }));
+  });
+  await expect(editor.locator(".app-file-name")).toHaveText("clipboard.png");
+  await expect(editor.locator(".harie-canvas-overlay")).toHaveAttribute("viewBox", "0 0 320 200");
+});
