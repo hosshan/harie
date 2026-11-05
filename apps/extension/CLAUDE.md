@@ -7,7 +7,7 @@ Chrome 拡張（WXT, Manifest V3）。表示中のタブをキャプチャし、
 - ページに注入するコード（`lib/collect.ts` の `collectDomSnapshot`、`entrypoints/select.ts`）はページの中で動く。`collectDomSnapshot` は関数ごと送るので、外の変数・import を使わない。
 - 選択オーバーレイは消してから撮る（写り込み防止）。ページから来る範囲は数値か確かめてから使う。
 - DOM 情報は AI にだけ使い、保存ファイルに入れない。パスワード欄の値は取らない。
-- 編集画面は `@harie/web` の `Workspace` をそのまま使う。拡張だけの違い（保存は `chrome.downloads`、DOM 情報を渡す）は `entrypoints/editor/main.tsx` に置く。
+- 編集画面は `@harie/web` の `Workspace` をそのまま使う。拡張だけの違い（保存は `chrome.downloads`、DOM 情報を渡す）は `entrypoints/editor/main.tsx` に置く。画像を開く前の画面と取り込み（貼り付け・ドロップ・ファイル選択）は `@harie/web/start` を Web と共用する。
 - 描画エンジンは WASM なので、拡張ページの CSP に `'wasm-unsafe-eval'` を付けている（`wxt.config.ts`）。
 
 ## コマンド
@@ -27,6 +27,7 @@ pnpm --filter @harie/extension e2e        # 配布用とテスト用をビルド
    - 「見えている範囲」: 新しいタブでエディタが開き、画面と同じ画像が出る。
    - 「範囲を選ぶ」: ドラッグした範囲だけの画像になる。Esc でやめられる。高解像度ディスプレイでも範囲がずれない。
    - 「要素を選ぶ」: ボタンなどにカーソルを当てると枠が出て、クリックで少し余白を付けて撮れる。
+   - 「空のエディタを開く」: 画像のないエディタが新しいタブで開く。OS のスクリーンショットなどを貼り付け（⌘V / Ctrl+V）るとその画像で編集でき、ドラッグ＆ドロップと「画像を開く」でも開ける。
    - Alt+Shift+S（`chrome://extensions/shortcuts` で変更可）で「見えている範囲」が撮れる。
    - 保存するとダウンロードに `*.harie.png` ができ、Web 版の Harie で開くと注釈を直せる。
    - `chrome://` のページでは「このページはブラウザの制限でキャプチャできません」と出る。

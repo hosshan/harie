@@ -9,8 +9,8 @@ const ja = {
   visible: "見えている範囲",
   region: "範囲を選ぶ",
   element: "要素を選ぶ",
-  popupNote:
-    "撮った画像は Harie のエディタで開きます。画像とページの情報は、AI を使うまでこの端末から出ません。",
+  blank: "空のエディタを開く",
+  popupNote: "AIを利用しない場合、画像やページ情報は端末内でのみ処理されます。",
   failed: "キャプチャできませんでした",
   failedWith: (detail: string) => `キャプチャできませんでした: ${detail}`,
   restricted:
@@ -47,8 +47,8 @@ const en: ExtensionMessages = {
   visible: "Visible area",
   region: "Select an area",
   element: "Select an element",
-  popupNote:
-    "Captured images open in the Harie editor. The image and page info stay on this device until you use AI.",
+  blank: "Open a blank editor",
+  popupNote: "Unless you use AI, images and page info are processed only on this device.",
   failed: "Couldn't capture",
   failedWith: (detail) => `Couldn't capture: ${detail}`,
   restricted: "The browser doesn't allow capturing this page. Try a regular web page.",

@@ -1,16 +1,15 @@
 // Web エディタ。画像を開く → 注釈を編集する（AI の提案・個人情報の検出を含む） → 保存する
-import { formatShortcut, isMacPlatform } from "@harie/editor";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useState } from "react";
 import { loadDisplayFonts } from "./fonts";
 import { useGuide } from "./Guide";
 import { Header, HeaderButton } from "./Header";
 import { loadFile, type Opened } from "./load";
 import { useWebMessages, webMessages } from "./messages";
+import { StartHint, useImageIntake } from "./Start";
 import { deliver, type Saved } from "./save";
 import { Workspace } from "./Workspace";
 
 type PickerWindow = Window & {
-  showOpenFilePicker?: (options?: object) => Promise<FileSystemFileHandle[]>;
   showSaveFilePicker?: (options?: object) => Promise<FileSystemFileHandle>;
 };
 
@@ -25,15 +24,6 @@ function saveTypes(format: "jpeg" | "png") {
     : [{ description: m.jpegFiles, accept: { "image/jpeg": [".jpg", ".jpeg"] } }];
 }
 
-function imageTypes() {
-  return [
-    {
-      description: webMessages().open.imageFiles,
-      accept: { "image/jpeg": [".jpg", ".jpeg"], "image/png": [".png"] },
-    },
-  ];
-}
-
 export function App() {
   const m = useWebMessages();
   const [opened, setOpened] = useState<Opened | null>(null);
@@ -42,7 +32,6 @@ export function App() {
   // 開き直すたびにエディタ（と元に戻す履歴）を作り直す。保存で名前が変わっても作り直さない
   const [loadId, setLoadId] = useState(0);
   const guide = useGuide();
-  const input = useRef<HTMLInputElement>(null);
 
   const show = useCallback((next: Opened, fileHandle: FileSystemFileHandle | null) => {
     loadDisplayFonts();
@@ -64,59 +53,13 @@ export function App() {
     [show],
   );
 
-  // ドラッグ＆ドロップと貼り付けで画像を取り込む（FR-CAP-05）
-  useEffect(() => {
-    const onDragOver = (e: DragEvent) => e.preventDefault();
-    const onDrop = (e: DragEvent) => {
-      e.preventDefault();
-      const file = e.dataTransfer?.files[0];
-      if (file !== undefined) void open(file, null);
-    };
-    const onPaste = (e: ClipboardEvent) => {
-      const file = [...(e.clipboardData?.files ?? [])].find((f) => f.type.startsWith("image/"));
-      if (file === undefined) return;
-      e.preventDefault();
-      void open(new File([file], file.name || "clipboard.png", { type: file.type }), null);
-    };
-    window.addEventListener("dragover", onDragOver);
-    window.addEventListener("drop", onDrop);
-    window.addEventListener("paste", onPaste);
-    return () => {
-      window.removeEventListener("dragover", onDragOver);
-      window.removeEventListener("drop", onDrop);
-      window.removeEventListener("paste", onPaste);
-    };
-  }, [open]);
-
-  const pick = async () => {
-    const w = window as PickerWindow;
-    if (w.showOpenFilePicker === undefined) {
-      input.current?.click();
-      return;
-    }
-    try {
-      const [h] = await w.showOpenFilePicker({ types: imageTypes() });
-      if (h !== undefined) await open(await h.getFile(), h);
-    } catch {
-      // 選択をやめた
-    }
-  };
+  // ファイルを選ぶ・ドラッグ＆ドロップ・貼り付けで画像を取り込む（FR-CAP-05）
+  const { pick, input } = useImageIntake((file, fileHandle) => void open(file, fileHandle));
 
   return (
     <div className="app">
       {guide.dialog}
-      <input
-        ref={input}
-        type="file"
-        accept="image/jpeg,image/png"
-        aria-label={m.open.fileInput}
-        hidden
-        onChange={(e) => {
-          const file = e.target.files?.[0];
-          if (file !== undefined) void open(file, null);
-          e.target.value = "";
-        }}
-      />
+      {input}
       {error !== null && (
         <p className="app-error" role="alert">
           {error}
@@ -132,11 +75,7 @@ export function App() {
             }
             actions={[guide.action]}
           />
-          <div className="app-drop">
-            <p>{m.open.dropHint(formatShortcut("paste", isMacPlatform()))}</p>
-            <p className="harie-muted">{m.open.formats}</p>
-            <p className="harie-muted">{m.open.integrations}</p>
-          </div>
+          <StartHint />
         </>
       ) : (
         <Workspace

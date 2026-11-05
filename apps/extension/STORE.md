@@ -26,6 +26,7 @@ Chrome ウェブストアに**公開**（検索に出る）で出すときに、
 
 ■ できること
 ・キャプチャは「見えている範囲」「範囲を選ぶ」「要素を選ぶ」の 3 通り。Alt+Shift+S でも撮れます
+・「空のエディタを開く」から、撮っておいた画像を貼り付けて（Ctrl+V / ⌘V）すぐ編集することもできます
 ・枠、矢印、番号、吹き出し、モザイクやダミーへの置き換え
 ・保存した画像は Web 版（https://harie.studio/app/）やデスクトップ版でも開いて直せます
 ・（任意）GitHub やほかのサイトに載っている Harie 画像にカーソルを当てると、説明文をその場でコピーしたり、そのまま開いて直したりできます
@@ -49,6 +50,7 @@ Saved images are plain JPEG / PNG files, so you can paste them anywhere. The ann
 
 ■ What you can do
 - Capture the visible area, a region you drag, or a single element. Alt+Shift+S captures the visible area
+- Open a blank editor and paste (Ctrl+V / ⌘V) an image you already captured to annotate it right away
 - Boxes, arrows, numbered badges, callouts, and masking personal data with blur or dummy text
 - Open and edit saved images in the web editor (https://harie.studio/app/) or the desktop app
 - (Optional) Hover a Harie image on GitHub or other sites to copy its notes right where they are, or open it and edit it
@@ -72,6 +74,7 @@ Open source (MIT License). Source code: https://github.com/hosshan/harie
 
 ■ 할 수 있는 일
 - 보이는 영역, 드래그한 영역, 요소 하나를 골라 캡처할 수 있습니다. Alt+Shift+S로 보이는 영역을 캡처합니다
+- 빈 편집기를 열고 이미 캡처한 이미지를 붙여넣어(Ctrl+V / ⌘V) 바로 편집할 수도 있습니다
 - 박스, 화살표, 번호, 말풍선, 모자이크나 더미 값으로 개인정보 가리기
 - 저장한 이미지는 웹 버전(https://harie.studio/app/)이나 데스크톱 앱에서도 열어 고칠 수 있습니다
 - (선택) GitHub나 다른 사이트에 올라간 Harie 이미지에 마우스를 올리면 설명을 그 자리에서 복사하거나 바로 열어 고칠 수 있습니다
@@ -96,6 +99,7 @@ Open source (MIT License). Source code: https://github.com/hosshan/harie
 
 ■ 可以做什麼
 - 可擷取可見範圍、拖曳選取的區域，或單一元素。按 Alt+Shift+S 可擷取可見範圍
+- 也可以開啟空白編輯器，貼上（Ctrl+V / ⌘V）已擷取的圖片後立即編輯
 - 方框、箭頭、編號、說明框，以及用馬賽克或假資料遮蔽個人資料
 - 存好的圖片也能在網頁版（https://harie.studio/app/）或桌面版開啟並修改
 - （選用）把游標移到 GitHub 或其他網站上的 Harie 圖片，就能當場複製說明文字，或直接開啟修改
@@ -120,6 +124,7 @@ Open source (MIT License). Source code: https://github.com/hosshan/harie
 
 ■ 功能
 - 可截取可见区域、拖动选取的范围，或单个元素。按 Alt+Shift+S 可截取可见区域
+- 也可以打开空白编辑器，粘贴（Ctrl+V / ⌘V）已截取的图片后立即编辑
 - 方框、箭头、编号、标注框，以及用马赛克或虚拟数据遮盖个人信息
 - 保存的图片也能在网页版（https://harie.studio/app/）或桌面版中打开修改
 - （可选）把鼠标移到 GitHub 或其他网站上的 Harie 图片上，就能当场复制说明文字，或直接打开修改
@@ -144,6 +149,7 @@ Las imágenes guardadas son JPEG / PNG normales, así que puedes pegarlas donde 
 
 ■ Qué puedes hacer
 - Captura el área visible, una zona que arrastres o un solo elemento. Alt+Shift+S captura el área visible
+- También puedes abrir el editor vacío y pegar (Ctrl+V / ⌘V) una imagen que ya capturaste para anotarla al momento
 - Recuadros, flechas, números, globos de texto y ocultación de datos personales con mosaico o valores ficticios
 - Abre y edita las imágenes guardadas en el editor web (https://harie.studio/app/) o en la aplicación de escritorio
 - (Opcional) Pasa el cursor sobre una imagen de Harie en GitHub u otros sitios para copiar sus notas ahí mismo, o ábrela y edítala
@@ -168,6 +174,7 @@ As imagens salvas são JPEG / PNG comuns, então você pode colá-las em qualque
 
 ■ O que você pode fazer
 - Capture a área visível, uma região que você arrasta ou um único elemento. Alt+Shift+S captura a área visível
+- Você também pode abrir o editor vazio e colar (Ctrl+V / ⌘V) uma imagem já capturada para anotá-la na hora
 - Caixas, setas, números, balões e ocultação de dados pessoais com mosaico ou valores fictícios
 - Abra e edite as imagens salvas no editor web (https://harie.studio/app/) ou no app para desktop
 - (Opcional) Passe o cursor sobre uma imagem do Harie no GitHub ou em outros sites para copiar as notas ali mesmo, ou abra e edite

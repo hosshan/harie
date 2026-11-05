@@ -8,6 +8,7 @@
     "./header": "./src/Header.tsx",
     "./load": "./src/load.ts",
     "./save": "./src/save.ts",
+    "./start": "./src/Start.tsx",
     "./fonts": "./src/fonts.ts",
     "./messages": "./src/messages.ts",
     "./styles.css": "./src/styles.css"
