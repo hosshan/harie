@@ -126,6 +126,14 @@ export const zhTW: WebMessages = {
     copy: "複製",
     copied: "已複製",
     copyLabel: (label) => `複製${label}`,
+    appLabel: "應用程式",
+    appTitle: "作為應用程式使用",
+    appAbout:
+      "將 Harie 作為應用程式安裝到電腦或手機後，不必開啟瀏覽器即可啟動，離線也能使用。可以透過「開啟檔案」開啟 JPEG、PNG 檔案，或從手機的分享選單傳送圖片。",
+    appInstall: "作為應用程式安裝",
+    appInstalled: "正在以應用程式方式使用。",
+    appManual:
+      "可以從瀏覽器選單中的「安裝應用程式」進行安裝（Safari 為「加入主畫面」或「加入 Dock」）。",
   },
   ai: {
     title: "用 AI 製作教學",

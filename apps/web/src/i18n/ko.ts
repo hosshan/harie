@@ -128,6 +128,14 @@ export const ko: WebMessages = {
     copy: "복사",
     copied: "복사했습니다",
     copyLabel: (label) => `${label} 복사`,
+    appLabel: "앱",
+    appTitle: "앱으로 사용하기",
+    appAbout:
+      "컴퓨터나 휴대폰에 앱으로 설치하면 브라우저를 열지 않고 실행할 수 있고 오프라인에서도 사용할 수 있습니다. JPEG·PNG 파일을 「연결 프로그램」으로 열거나 휴대폰의 공유 메뉴에서 이미지를 보낼 수 있습니다.",
+    appInstall: "앱으로 설치",
+    appInstalled: "앱으로 실행 중입니다.",
+    appManual:
+      "브라우저 메뉴의 「앱 설치」(Safari에서는 「홈 화면에 추가」 또는 「Dock에 추가」)로 설치할 수 있습니다.",
   },
   ai: {
     title: "AI로 가이드 만들기",

@@ -3,13 +3,13 @@
 Harie の Web エディタ（Vite + React、PWA）。画像を開いて枠・矢印・説明文を付け、注釈を後から直せる JPEG / PNG として保存する。保存したファイルをもう一度開けば注釈を編集できる。
 
 - 描画・保存はすべてブラウザの中で行う（WASM の描画エンジンとフォントを同梱）。画像はサーバーに送らない。
-- PWA として一度開けば、オフラインでも開いて保存できる。
+- PWA として一度開けば、オフラインでも開いて保存できる。アプリとしてインストールすると、OS の「このアプリで開く」から JPEG / PNG を開いたり（デスクトップの Chrome・Edge）、スマホの共有メニューから画像を送ったり（Android の Chrome）できる。
 - AI の補足提案・個人情報の検出は、設定で OpenRouter に接続するか（OAuth、ADR-0012）、自分の Claude API キーを入れると使える（BYOK。キーはブラウザの localStorage にだけ保存する）。Chrome 拡張で撮った画像なら、キーがなくてもページの文字から個人情報を探せる。
 - 編集画面（`src/Workspace.tsx`）は Chrome 拡張のエディタページからも使う。
 
 ## インストール（使う人向け）
 
-公開中の URL はまだない（下の「リリース」を参照）。手元で動かすときは「ローカルでの確認」の手順で起動する。ホストされた Harie を開いたら、ブラウザのアドレスバーの「インストール」からアプリとして追加できる（PWA）。
+https://harie.studio/app/ で公開している。ヘッダーの「連携」の「アプリとして使う」か、ブラウザのアドレスバーの「インストール」からアプリとして追加できる（PWA）。Safari は「ホーム画面に追加」（iPhone・iPad）または「Dock に追加」（Mac）を使う。手元で動かすときは「ローカルでの確認」の手順で起動する。
 
 ## ローカルでの確認
 
@@ -39,12 +39,12 @@ Playwright のブラウザが入っていない環境では `HARIE_CHROMIUM_PATH
 
 ## リリース
 
-`main` に入ると [.github/workflows/pages.yml](../../.github/workflows/pages.yml) が LP（[apps/site](../site/README.md)）と一緒に GitHub Pages の `/harie/app/` へ公開する。ほかの静的ホスティングに置くときは次のとおり。
+`main` に入ると [.github/workflows/pages.yml](../../.github/workflows/pages.yml) が LP（[apps/site](../site/README.md)）と一緒に GitHub Pages の `/app/`（https://harie.studio/app/）へ公開する。ほかの静的ホスティングに置くときは次のとおり。
 
 1. `main` で `pnpm check` と `pnpm e2e` が通っていることを確かめる。
 2. `pnpm --filter @harie/web build` で `apps/web/dist/` を作る。サブパスに置くときは `HARIE_WEB_BASE=/path/` を付けてビルドする（`vite.config.ts` の `base`。manifest の `start_url` は相対なので合わせて変わる）。
 3. `dist/` の中身を静的ホスティングに置く。HTTPS で配信する（PWA の Service Worker と File System Access API に必要）。
-4. 公開後、一度開いてから再読み込みし、オフラインでも開けることを確かめる。更新は `registerType: "autoUpdate"` で、次に開いたときに反映される。
+4. 公開後、一度開いてから再読み込みし、オフラインでも開けることを確かめる。manifest の `id`（`.`）は変えない（変えるとインストール済みのアプリと別のアプリになる）。更新は `registerType: "autoUpdate"` で、次に開いたときに反映される。
 
 ## 関連する文書
 

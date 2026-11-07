@@ -126,6 +126,14 @@ export const zhCN: WebMessages = {
     copy: "复制",
     copied: "已复制",
     copyLabel: (label) => `复制${label}`,
+    appLabel: "应用",
+    appTitle: "作为应用使用",
+    appAbout:
+      "将 Harie 作为应用安装到电脑或手机后，无需打开浏览器即可启动，离线也能使用。可以通过“打开方式”打开 JPEG、PNG 文件，或从手机的分享菜单发送图片。",
+    appInstall: "作为应用安装",
+    appInstalled: "正在以应用方式使用。",
+    appManual:
+      "可以从浏览器菜单中的“安装应用”进行安装（Safari 中为“添加到主屏幕”或“添加到程序坞”）。",
   },
   ai: {
     title: "用 AI 制作教程",

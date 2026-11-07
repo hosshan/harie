@@ -143,6 +143,14 @@ const ja = {
     copy: "コピー",
     copied: "コピーしました",
     copyLabel: (label: string) => `${label}をコピー`,
+    appLabel: "アプリ",
+    appTitle: "アプリとして使う",
+    appAbout:
+      "パソコンやスマホにアプリとして入れると、ブラウザを開かずに起動でき、オフラインでも使えます。JPEG・PNG を「このアプリで開く」から開いたり、スマホの共有メニューから画像を送ったりできます。",
+    appInstall: "アプリとしてインストール",
+    appInstalled: "アプリとして開いています。",
+    appManual:
+      "ブラウザのメニューの「アプリをインストール」（Safari は「ホーム画面に追加」または「Dock に追加」）から入れられます。",
   },
   ai: {
     title: "AIでガイドを作成",
@@ -333,6 +341,14 @@ const en: WebMessages = {
     copy: "Copy",
     copied: "Copied",
     copyLabel: (label) => `Copy ${label.charAt(0).toLowerCase()}${label.slice(1)}`,
+    appLabel: "App",
+    appTitle: "Use as an app",
+    appAbout:
+      "Install Harie as an app on your computer or phone to launch it without opening the browser and use it offline. You can open JPEG and PNG files with “Open with”, or send images from your phone’s share menu.",
+    appInstall: "Install as an app",
+    appInstalled: "You are using Harie as an app.",
+    appManual:
+      "Install it from your browser menu with “Install app” (in Safari, “Add to Home Screen” or “Add to Dock”).",
   },
   ai: {
     title: "Create a guide with AI",

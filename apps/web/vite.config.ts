@@ -18,8 +18,29 @@ export default defineConfig({
         short_name: "Harie",
         description: "スクリーンショットに枠・矢印・説明文を付け、あとから何度でも直せる画像を作る",
         lang: "ja",
+        // 今のインストール（start_url から決まる /app/）と同じ ID。変えると別のアプリとして扱われる
+        id: ".",
         display: "standalone",
         start_url: ".",
+        categories: ["productivity", "utilities"],
+        // OS の「このアプリで開く」に JPEG / PNG を出す（FR-FILE-14）。渡された画像は src/pwa.ts の launchQueue で開く
+        file_handlers: [
+          {
+            action: ".",
+            accept: { "image/jpeg": [".jpg", ".jpeg"], "image/png": [".png"] },
+          },
+        ],
+        // スマホの共有メニューから画像を受け取る（FR-CAP-09）。POST は public/share-target-sw.js が受ける
+        share_target: {
+          action: "share-target",
+          method: "POST",
+          enctype: "multipart/form-data",
+          params: {
+            files: [
+              { name: "image", accept: ["image/jpeg", "image/png", ".jpg", ".jpeg", ".png"] },
+            ],
+          },
+        },
         theme_color: "#D4A72C",
         background_color: "#FBF6E9",
         icons: [
@@ -34,6 +55,8 @@ export default defineConfig({
         ],
       },
       workbox: {
+        // 共有メニューからの画像を受け取る処理（FR-CAP-09）
+        importScripts: ["share-target-sw.js"],
         globPatterns: ["**/*.{js,css,html,wasm,ttf,svg,png}"],
         // Noto Sans JP は 1 ウェイト約 5.5MB あるため、既定の上限（2MB）を上げる
         maximumFileSizeToCacheInBytes: 8 * 1024 * 1024,
