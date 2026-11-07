@@ -5,6 +5,7 @@ import { useGuide } from "./Guide";
 import { Header, HeaderButton } from "./Header";
 import { loadFile, type Opened } from "./load";
 import { useWebMessages, webMessages } from "./messages";
+import { useLaunchedImage } from "./pwa";
 import { StartHint, useImageIntake } from "./Start";
 import { deliver, type Saved } from "./save";
 import { Workspace } from "./Workspace";
@@ -55,6 +56,8 @@ export function App() {
 
   // ファイルを選ぶ・ドラッグ＆ドロップ・貼り付けで画像を取り込む（FR-CAP-05）
   const { pick, input } = useImageIntake((file, fileHandle) => void open(file, fileHandle));
+  // アプリとして入れたときの「このアプリで開く」と共有メニュー（FR-FILE-14, FR-CAP-09）
+  useLaunchedImage((file, fileHandle) => void open(file, fileHandle));
 
   return (
     <div className="app">

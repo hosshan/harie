@@ -1,9 +1,10 @@
-// 連携の案内（Web のヘッダー）。MCP サーバーを Claude に登録する方法と、Chrome 拡張の入れ方を示す
-// （FR-CAP-07, FR-MCP-07）。拡張の中のエディタでは出さない
+// 連携の案内（Web のヘッダー）。MCP サーバーを Claude に登録する方法と、Chrome 拡張の入れ方、
+// アプリとしての入れ方を示す（FR-CAP-07, FR-MCP-07, NFR-PLAT-06）。拡張の中のエディタでは出さない
 import { type ReactNode, useState } from "react";
 import type { HeaderAction } from "./Header";
 import { Modal } from "./Modal";
 import { useWebMessages } from "./messages";
+import { useInstallState } from "./pwa";
 
 export const EXTENSION_STORE_URL =
   "https://chromewebstore.google.com/detail/harie/dgbghdgnmjcgjdmhfnmcdphkafkbefll";
@@ -29,6 +30,7 @@ export function useGuide(): { action: HeaderAction; dialog: ReactNode } {
       <Modal open={open} label={m.guide.title} onClose={() => setOpen(false)} className="app-guide">
         <McpGuide />
         <ExtensionGuide />
+        <AppGuide />
         <p className="app-modal-actions">
           <button type="button" onClick={() => setOpen(false)}>
             {m.guide.close}
@@ -64,6 +66,29 @@ function ExtensionGuide() {
           {m.extensionStore}
         </a>
       </p>
+    </section>
+  );
+}
+
+/** アプリとして入れる（PWA、NFR-PLAT-06）。ブラウザが案内を出せるときはボタン、出せないときは入れ方を示す */
+function AppGuide() {
+  const m = useWebMessages().guide;
+  const state = useInstallState();
+  return (
+    <section className="app-guide-section" aria-label={m.appLabel}>
+      <h2>{m.appTitle}</h2>
+      <p className="harie-muted">{m.appAbout}</p>
+      {state.kind === "installed" ? (
+        <p>{m.appInstalled}</p>
+      ) : state.kind === "available" ? (
+        <p>
+          <button type="button" onClick={() => void state.install()}>
+            {m.appInstall}
+          </button>
+        </p>
+      ) : (
+        <p className="harie-muted">{m.appManual}</p>
+      )}
     </section>
   );
 }

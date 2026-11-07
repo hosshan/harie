@@ -136,6 +136,14 @@ export const ptBR: WebMessages = {
     copy: "Copiar",
     copied: "Copiado",
     copyLabel: (label) => `Copiar: ${label}`,
+    appLabel: "Aplicativo",
+    appTitle: "Usar como aplicativo",
+    appAbout:
+      "Instale o Harie como aplicativo no computador ou no celular para abri-lo sem o navegador e usá-lo offline. Você pode abrir arquivos JPEG e PNG com “Abrir com” ou enviar imagens pelo menu Compartilhar do celular.",
+    appInstall: "Instalar como aplicativo",
+    appInstalled: "Você está usando o Harie como aplicativo.",
+    appManual:
+      "Instale pelo menu do navegador com “Instalar app” (no Safari, “Adicionar à Tela de Início” ou “Adicionar ao Dock”).",
   },
   ai: {
     title: "Criar um guia com IA",

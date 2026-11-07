@@ -6,9 +6,12 @@ import { createRoot } from "react-dom/client";
 import { App } from "./App";
 import { OpenRouterCallback } from "./ai/OpenRouterCallback";
 import { openRouterCallbackCode } from "./ai/openrouter-auth";
+import { listenInstallPrompt } from "./pwa";
 
 // 画面の言語（設定で選んだもの、なければブラウザの言語）を <html lang> に反映する
 applyDocumentLang();
+// ブラウザのインストールの案内は開いてすぐに届くので、先に受けておく（「連携」の案内から出す）
+listenInstallPrompt();
 const root = document.getElementById("root");
 if (root === null) throw new Error("#root がありません");
 // OpenRouter の許可の画面から戻ってきたウィンドウなら、接続を終えるだけの画面にする（ADR-0012）
