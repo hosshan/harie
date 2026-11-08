@@ -1,3 +1,9 @@
 packages:
   - "apps/*"
   - "packages/*"
+
+# 推移的依存のセキュリティ修正（Dependabot / pnpm audit）。
+# workbox-build 7.4.1 は glob ^11 を要求するが、修正版は 14.0.2 以降のみ（GHSA-3g3m-2fjr-6pw4、minimatch GHSA-g3hv-75wg-m249）。
+# workbox-build が使う globSync(pattern, { cwd, follow, ignore }) は glob 14 でも同じ。
+overrides:
+  "workbox-build>glob": ^14.0.2
