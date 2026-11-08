@@ -47,9 +47,9 @@
   },
   "dependencies": {
     "@jsquash/jpeg": "^1.6.0",
-    "@modelcontextprotocol/sdk": "^1.32.1",
+    "@modelcontextprotocol/sdk": "^1.32.2",
     "@resvg/resvg-wasm": "^2.6.2",
-    "zod": "^4.6.5"
+    "zod": "^4.6.7"
   },
   "devDependencies": {
     "@expo-google-fonts/noto-sans-jp": "^0.4.4",
