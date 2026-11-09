@@ -1,0 +1,8 @@
+{
+  "name": "harie",
+  "description": "Annotate screenshots for user guides with boxes, badges and callouts, saved as plain JPEG/PNG that stay re-editable. Works without MCP setup (claude.ai, cloud sessions).",
+  "author": { "name": "hosshan" },
+  "homepage": "https://harie.studio",
+  "repository": "https://github.com/hosshan/harie",
+  "license": "MIT"
+}

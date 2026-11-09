@@ -195,6 +195,18 @@ importers:
         specifier: ^1.64.0
         version: 1.64.0
 
+  apps/skill:
+    devDependencies:
+      '@harie/ai':
+        specifier: workspace:*
+        version: link:../../packages/ai
+      '@harie/mcp':
+        specifier: workspace:*
+        version: link:../mcp
+      tsx:
+        specifier: ^4.23.15
+        version: 4.23.15
+
   apps/web:
     dependencies:
       '@expo-google-fonts/noto-sans-jp':

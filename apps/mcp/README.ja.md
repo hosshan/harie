@@ -63,6 +63,10 @@ Web エディタの AI 提案と同じ基準を、プロンプト `harie_guide`�
 - 「`settings.png` を Harie ファイルにして、保存ボタンを赤枠で囲み、『ここで保存します』と吹き出しを付けて」
 - 「`guides/` の Harie ファイルを一覧して、タイトルのないものにタイトルを付けて」
 
+## MCP を使えない環境（claude.ai、クラウドのセッション）
+
+ローカルの MCP サーバーを追加できない claude.ai やクラウドのセッションでは、[Harie Skill](../skill/README.md) を使う。このパッケージを `npx` で起動するので、結果は同じになる。
+
 ## 開発
 
 - `src/tools.ts`: ツールの本体。`src/server.ts`: MCP への登録と入力の検証。`src/paths.ts`: root 外へのアクセス防止。

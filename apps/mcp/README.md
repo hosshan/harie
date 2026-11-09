@@ -67,6 +67,10 @@ The server ships a prompt, `harie_guide` (arguments: `path`, optional `intent`),
 
 Tool descriptions are currently Japanese-first. Annotation text can be written in Japanese, English, Korean, Chinese (Simplified and Traditional) and other languages the bundled fonts cover.
 
+## Without MCP (claude.ai, cloud sessions)
+
+Where you cannot add a local MCP server, such as claude.ai or cloud sessions, use the [Harie Skill](../skill/README.md) (in Japanese). It runs this package through `npx` and gives the same results.
+
 ## Development
 
 - `src/tools.ts`: tool implementations. `src/server.ts`: MCP registration and input validation. `src/paths.ts`: prevents access outside the root.

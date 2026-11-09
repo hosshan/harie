@@ -21,6 +21,7 @@ apps/web         Web エディタ（Vite + React, PWA）
 apps/extension   Chrome 拡張（WXT, MV3）
 apps/desktop     デスクトップ（Tauri 2）
 apps/mcp         MCP サーバー（Node, stdio）
+apps/skill       Claude の Skill（MCP を設定できない環境向け。@harie/mcp を呼ぶ。.claude/skills/harie はここへのリンク）
 apps/cli         開発用 CLI（inspect / create / render / extract / mask）
 apps/site        LP（静的サイト。GitHub Pages に Web エディタと一緒に公開）
 packages/model   注釈ドキュメントのスキーマと操作（zod）

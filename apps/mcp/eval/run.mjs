@@ -21,6 +21,8 @@ const { values: args } = parseArgs({
     // MCP サーバーの起動コマンド。手元のビルドを測るときは "node /path/to/apps/mcp/dist/index.mjs"
     mcp: { type: "string", default: "npx -y @harie/mcp@0.2.0" },
     timeout: { type: "string", default: "900" },
+    // Skill の条件で読み込むプラグインのディレクトリ（apps/skill）
+    skill: { type: "string", default: join(here, "../../skill") },
   },
 });
 
@@ -34,6 +36,12 @@ const CONDITIONS = {
     tools: ["Read", "Glob"],
     allowed: ["mcp__harie"],
     hint: "画像の編集には harie MCP のツールを使ってください。",
+  },
+  // MCP を設定できない環境向けの Skill（apps/skill, FR-MCP-09）。どのツールを使うかは指示せず、Skill が呼ばれるかも見る
+  skill: {
+    tools: ["Bash", "Read", "Write", "Edit", "Glob", "Skill"],
+    allowed: ["Bash", "Read", "Write", "Edit", "Glob", "Skill"],
+    hint: "",
   },
   nomcp: {
     tools: ["Bash", "Read", "Write", "Edit", "Glob"],
@@ -59,7 +67,7 @@ function runClaude({ cwd, condition, task }) {
   const cond = CONDITIONS[condition];
   const cli = [
     "-p",
-    `${TASKS[task]}\n${cond.hint}`,
+    cond.hint ? `${TASKS[task]}\n${cond.hint}` : TASKS[task],
     "--model",
     args.model,
     "--output-format",
@@ -85,6 +93,7 @@ function runClaude({ cwd, condition, task }) {
     writeFileSync(configPath, JSON.stringify(config));
     cli.push("--mcp-config", configPath);
   }
+  if (condition === "skill") cli.push("--plugin-dir", args.skill);
   return new Promise((resolve) => {
     const child = spawn("claude", cli, { cwd, env: childEnv, stdio: ["ignore", "pipe", "pipe"] });
     let stdout = "";
