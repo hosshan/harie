@@ -115,7 +115,7 @@ claude.ai のチャット・プロジェクトや、MCP を設定していない
 - コマンドは MCP のツールに対応する（`import` = `harie_create`、`open` / `preview` / `edit` / `mask` / `replace-base` / `list`、`guide` = プロンプト `harie_guide`）。
 - 画像はコンテキストを大きく使うので、標準出力には返さない。`open` / `edit` / `replace-base` は画像を省き（MCP の `image: false`）、`preview` / `mask` は描いた画像をファイルに書き出してパスだけを返す。Claude は確かめたいときだけそのファイルを見る。
 - 貼り付け・アップロードされた画像は拡張子がないことがある（プロジェクトの共有フォルダなど）。`find` が既知のアップロード先を探し、先頭のバイトで JPEG / PNG を判定する。`import` は正しい拡張子の一時コピーから Harie ファイルを作る（元画像のバイト列はそのまま。ADR-0004）。WebP などは扱わない。
-- 配り方: zip（`pnpm --filter @harie/skill zip`、`skill-v*` のタグで GitHub Release に添付）を claude.ai にアップロードする、リポジトリをマーケットプレイス（`.claude-plugin/marketplace.json`）として Claude Code のプラグインで入れる、の 2 通り。手順は `apps/skill/README.md`。
+- 配り方: `.skill` ファイル（中身は zip。`pnpm --filter @harie/skill package`、`skill-v*` のタグで GitHub Release に添付）を claude.ai にアップロードする、リポジトリをマーケットプレイス（`.claude-plugin/marketplace.json`）として Claude Code のプラグインで入れる、の 2 通り。手順は `apps/skill/README.md`。
 
 ### 2.4 将来（Later）
 

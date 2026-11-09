@@ -1,7 +1,7 @@
 name: Release Harie Skill
 
-# `skill-v<version>` のタグで、claude.ai にアップロードできる Skill の zip（harie.zip）を GitHub Release に添付する。
-# Claude Code のプラグイン（/plugin install harie@harie）はリポジトリを直接参照するので、この zip は使わない。
+# `skill-v<version>` のタグで、claude.ai にアップロードできる Skill のファイル（harie.skill。中身は zip）を GitHub Release に添付する。
+# Claude Code のプラグイン（/plugin install harie@harie）はリポジトリを直接参照するので、この .skill は使わない。
 on:
   push:
     tags: ["skill-v*"]
@@ -43,11 +43,11 @@ jobs:
           echo "version=$version" >> "$GITHUB_OUTPUT"
 
       - run: pnpm check
-      - run: pnpm --filter @harie/skill zip
+      - run: pnpm --filter @harie/skill package
 
       - name: GitHub Release を作る
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          gh release create "$GITHUB_REF_NAME" apps/skill/dist/harie.zip \
+          gh release create "$GITHUB_REF_NAME" apps/skill/dist/harie.skill \
             --title "Harie Skill ${{ steps.version.outputs.version }}" --generate-notes

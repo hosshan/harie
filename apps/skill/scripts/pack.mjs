@@ -1,4 +1,4 @@
-// skills/harie を claude.ai にアップロードできる zip（dist/harie.zip）にまとめる。依存なし（Node 22 以上）。
+// skills/harie を claude.ai にアップロードできる .skill（中身は zip。dist/harie.skill）にまとめる。依存なし（Node 22 以上）。
 // zip の中は harie/SKILL.md, harie/scripts/harie.mjs のように、フォルダ harie を最上位に置く
 import { mkdirSync, readdirSync, readFileSync, statSync, writeFileSync } from "node:fs";
 import { join, relative } from "node:path";
@@ -67,6 +67,6 @@ end.writeUInt32LE(centralSize, 12);
 end.writeUInt32LE(offset, 16);
 
 mkdirSync(out, { recursive: true });
-const target = join(out, "harie.zip");
+const target = join(out, "harie.skill");
 writeFileSync(target, Buffer.concat([...locals, ...centrals, end]));
 console.log(`作成: ${relative(process.cwd(), target)}（${files.length} ファイル）`);

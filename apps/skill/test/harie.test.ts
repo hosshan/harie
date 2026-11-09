@@ -150,9 +150,9 @@ describe("Harie Skill（FR-MCP-09）", () => {
 });
 
 describe("配布物", () => {
-  it("pack は harie フォルダを最上位にした zip を作る", () => {
+  it("package は harie フォルダを最上位にした .skill（zip）を作る", () => {
     execFileSync("node", [here("../scripts/pack.mjs")], { cwd: here("..") });
-    const zip = readFileSync(here("../dist/harie.zip"));
+    const zip = readFileSync(here("../dist/harie.skill"));
     expect(zip.includes("harie/SKILL.md")).toBe(true);
     expect(zip.includes("harie/scripts/harie.mjs")).toBe(true);
   });

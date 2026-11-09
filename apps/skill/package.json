@@ -4,7 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "zip": "node scripts/pack.mjs",
+    "package": "node scripts/pack.mjs",
     "typecheck": "tsc -p tsconfig.json"
   },
   "devDependencies": {

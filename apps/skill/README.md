@@ -9,10 +9,10 @@ claude.ai のチャットやプロジェクト、Claude Code on the web など�
 ```
 apps/skill/
 ├── .claude-plugin/plugin.json   Claude Code のプラグインとしての定義
-├── skills/harie/                Skill の本体（これを zip にして配る）
+├── skills/harie/                Skill の本体（これを .skill にまとめて配る）
 │   ├── SKILL.md
 │   └── scripts/harie.mjs
-├── scripts/pack.mjs             dist/harie.zip を作る
+├── scripts/pack.mjs             dist/harie.skill を作る
 └── test/                        Vitest（リポジトリの MCP のソースを起動して確かめる）
 ```
 
@@ -20,29 +20,29 @@ apps/skill/
 
 | 環境 | 入れ方 | 備考 |
 |---|---|---|
-| claude.ai（チャット・プロジェクト） | [A. zip をアップロード](#a-claudeai-に-zip-をアップロードする) | 「コード実行とファイル作成」を有効にし、ネットワークで npm レジストリに出られること |
+| claude.ai（チャット・プロジェクト） | [A. .skill をアップロード](#a-claudeai-に-skill-ファイルをアップロードする) | 「コード実行とファイル作成」を有効にし、ネットワークで npm レジストリに出られること |
 | Claude Code on the web / Claude のプロジェクトのスレッド | A でアカウントに入れれば自動で同期される。リポジトリ単位なら [C](#c-リポジトリの-claudesettingsjson-に書いておく) | 既定のネットワーク設定（Trusted）で `registry.npmjs.org` に出られる |
 | 手元の Claude Code | [B. プラグインとして入れる](#b-claude-code-のプラグインとして入れる) | 手元なら [MCP](../mcp/README.ja.md) を使うほうがトークンが少なく済む |
 | このリポジトリ（hosshan/harie）のセッション | 何もしなくてよい | `.claude/skills/harie` から読み込まれる |
 
 どの環境でも Node.js 22 以上と、`npx` が npm レジストリからパッケージを取れることが前提です（初回の呼び出しで取得し、1 回 5〜10 秒かかります）。
 
-## A. claude.ai に zip をアップロードする
+## A. claude.ai に .skill ファイルをアップロードする
 
 いちばん広く使える入れ方です。アカウントに入れたスキルは、claude.ai のチャットとプロジェクト、Claude Code on the web のセッションに同期されます。
 
-1. [GitHub Releases](https://github.com/hosshan/harie/releases) の最新の `skill-v*` から `harie.zip` をダウンロードする。
-   リポジトリから作るときは `pnpm --filter @harie/skill zip`（`apps/skill/dist/harie.zip` ができる）。
+1. [GitHub Releases](https://github.com/hosshan/harie/releases) の最新の `skill-v*` から `harie.skill` をダウンロードする。
+   リポジトリから作るときは `pnpm --filter @harie/skill package`（`apps/skill/dist/harie.skill` ができる）。
 2. claude.ai の「設定」→「機能」で「コード実行とファイル作成」を有効にする。
-3. 同じ画面の「スキル」で「スキルをアップロード」を選び、`harie.zip` を選ぶ。
+3. 同じ画面の「スキル」で「スキルをアップロード」を選び、`harie.skill` を選ぶ。
 4. チャットで画像を添付し、「この画面に通知設定の手順の注釈を付けて」のように頼む。
 
 組織（Team / Enterprise）の場合は、管理者がスキルとコード実行を許可している必要があります。
-`harie.zip` は `.skill` に名前を変えても同じものとして扱えます。
+`.skill` は中身が zip のファイルです（skill-creator が作るものと同じ形式）。`.zip` しか選べない画面では、拡張子を `.zip` に変えればそのまま使えます。
 
 ## B. Claude Code のプラグインとして入れる
 
-リポジトリを直接参照するので、zip は要りません。更新も `/plugin` から取り込めます。
+リポジトリを直接参照するので、.skill ファイルは要りません。更新も `/plugin` から取り込めます。
 
 ```
 /plugin marketplace add hosshan/harie
@@ -88,4 +88,4 @@ node skills/harie/scripts/harie.mjs --help
 
 - テスト: `pnpm exec vitest run --project skill`。npm からは取らず、`HARIE_MCP_COMMAND` でリポジトリの `apps/mcp/src` を tsx で起動して確かめる。
 - MCP のツールや引数を変えたら、`scripts/harie.mjs` と `SKILL.md` の対応表もそろえる。スクリプトが起動する版は `DEFAULT_SERVER`（`@harie/mcp@^0.5.1`）で、互換性のない変更をしたらここも上げる。
-- リリース: Actions の「Release (prepare)」で target に `skill` を選ぶと版上げの PR ができ、マージすると `skill-v<版>` のタグが付いて `harie.zip` が GitHub Release に添付される（`release-skill.yml`）。
+- リリース: Actions の「Release (prepare)」で target に `skill` を選ぶと版上げの PR ができ、マージすると `skill-v<版>` のタグが付いて `harie.skill` が GitHub Release に添付される（`release-skill.yml`）。
