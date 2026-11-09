@@ -142,6 +142,57 @@ describe("Harie Skill（FR-MCP-09）", () => {
     expect(readFileSync(file).equals(before)).toBe(true);
   });
 
+  it("apply は取り込み・加工・注釈を 1 回で行い、描いた画像を書き出す", () => {
+    const src = join(dir, "1f0e2d3c-4b5a-4968-8776-a5b4c3d2e1f0");
+    writeFileSync(src, solidPng(320, 200));
+    const plan = {
+      title: "まとめて",
+      masks: [{ kind: "email", method: "fill", rect: { x: 200, y: 150, w: 60, h: 20 } }],
+      ops: [
+        { op: "add", annotation: { id: "r1", type: "rect", x: 10, y: 10, w: 80, h: 40 } },
+        {
+          op: "add",
+          annotation: {
+            id: "c1",
+            type: "callout",
+            x: 120,
+            y: 10,
+            w: 150,
+            text: "ここを押します",
+            anchor: { annotationId: "r1", side: "left" },
+          },
+        },
+      ],
+    };
+    const view = join(dir, "apply.png");
+    const r = harie("apply", src, "--plan", JSON.stringify(plan), "--view", view);
+    expect(r.code, r.stderr).toBe(0);
+    const out = json(r.stdout);
+    expect(out.done).toEqual(["import", "mask", "edit"]);
+    expect(out.view).toBe(view);
+    expect(existsSync(view)).toBe(true);
+    expect(out.result).toMatchObject({ title: "まとめて", piiApplied: 1 });
+    expect(out.result.annotations).toHaveLength(2);
+    expect(out.result.path).toMatch(/screenshot-.*\.harie\.png$/);
+  });
+
+  it("apply は既存の Harie ファイルへの masks に --confirm を求める", () => {
+    const masks = [{ kind: "name", method: "fill", rect: { x: 1, y: 1, w: 10, h: 10 } }];
+    const r = harie("apply", file, "--plan", JSON.stringify({ masks }));
+    expect(r.code).toBe(2);
+    expect(r.stderr).toContain("--confirm");
+  });
+
+  it("apply は既存の Harie ファイルに ops だけを適用できる", () => {
+    const rev = json(harie("open", file).stdout).result.revision;
+    const ops = [{ op: "update", id: "r1", patch: { w: 90 } }];
+    const r = harie("apply", file, "--plan", JSON.stringify({ ops }), "--rev", String(rev));
+    expect(r.code, r.stderr).toBe(0);
+    expect(json(r.stdout).done).toEqual(["edit"]);
+    expect(json(r.stdout).result.revision).toBe(rev + 1);
+    expect(existsSync(json(r.stdout).view)).toBe(true);
+  });
+
   it("guide は手引きを表示する", () => {
     const r = harie("guide", file, "--intent", "通知の設定");
     expect(r.code, r.stderr).toBe(0);

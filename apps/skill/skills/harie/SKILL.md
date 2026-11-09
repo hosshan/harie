@@ -11,18 +11,35 @@ Harie の画像は普通の JPEG / PNG で、注釈（枠・番号・吹き出�
 
 ## 手順
 
-1. **画像を用意する**。場所が分からなければ `harie find`（アップロード先と作業ディレクトリの画像を新しい順に。拡張子のないファイルも判定）。`harie: true` の画像は Harie 画像なので 4 へ。見つからなければ、画像をファイルとして添付するよう利用者に頼む（画像を描き直したり作り直したりしない）。JPEG / PNG 以外は扱えない。
-2. **Harie 画像にする**: `harie import <画像> [--title "通知設定の画面"] [--format png]`。元の画像は変えない。保存先は元画像と同じフォルダ（アップロード先の画像なら `/mnt/user-data/outputs`、なければカレントディレクトリ）で、`-o` で変えられる。
-3. **画面を見る**: 元の画像を 1 回見て、説明する UI 要素の位置（ピクセル）を読む。
-4. **個人情報があれば先に隠す**（元に戻せない。下の「個人情報」）。
-5. **注釈を付ける**: 下の「注釈の決まり」に沿って ops を作り、`harie edit <file> --ops @ops.json --rev <revision> --view v.png` で保存と同時に描いた画像を書き出し、`v.png` を見て確かめる。崩れていれば直す ops で `edit` し直す（注釈はいつでも直せるので、保存前の `preview` は要らない）。
-6. **渡す**: 保存したファイル（`result.path`）を利用者に渡し、「Harie（https://harie.studio/app/ ）で開くと注釈をそのまま直せる」と添える。
+手数を少なくする。1 回のツール呼び出しで済むことは 1 回で済ませる（シェルのコマンドはつなげて 1 回の Bash で実行する）。
 
-既存の Harie 画像を直すときは `harie open <file>` で注釈の一覧（id・文言・位置）と `revision` を読み、`update` / `add` / `remove` の ops で `edit` する。文言を変えるだけなら画像を見ない。注釈を足すときは、ファイルを 1 回見て位置を決め、`edit --view` の画像で確かめる。
+**新しく作るとき**（3 手が目安）
+
+1. 元の画像を 1 回見て、説明する UI 要素と個人情報の位置（ピクセル）を読む。場所が分からなければ `harie find`（アップロード先と作業ディレクトリの画像を新しい順に。拡張子のないファイルも判定）。見つからなければ画像をファイルとして添付するよう利用者に頼む（画像を描き直したり作り直したりしない）。JPEG / PNG 以外は扱えない。
+2. 1 回の Bash で plan を書いて `apply` する。取り込み・個人情報の加工・注釈がまとめて済み、描いた画像が `view` に書き出される。
+
+   ```sh
+   cat > plan.json <<'EOF'
+   {"title":"通知設定の画面","format":"png","masks":[...],"ops":[...]}
+   EOF
+   harie apply <元の画像> --plan @plan.json --view v.png && rm plan.json
+   ```
+
+   元の画像は変わらず、Harie 画像は元画像と同じフォルダに `<名前>.harie.<拡張子>` で作られる（アップロード先の画像なら `/mnt/user-data/outputs`、なければカレントディレクトリ。`-o` で変えられる）。
+3. `v.png` を見て確かめる。直すところがあれば、作った Harie 画像に対して `ops` だけの plan で `apply` し直す（`--rev` に結果の `revision`）。マスクの範囲を間違えたときは、作った画像を消して元の画像から `apply` し直す。
+
+**既存の Harie 画像を直すとき**
+
+1. `harie open <file>` で注釈の一覧（id・文言・位置）と `revision` を読む。
+2. 文言を変える・消すだけなら、画像を見ずに `harie edit <file> --ops @ops.json --rev <n>` で保存して終わる。注釈を足す・動かすときは、ファイルを 1 回見て位置を決め、`harie apply <file> --plan @plan.json --rev <n> --view v.png` で保存して `v.png` で確かめる。
+
+最後に、保存したファイル（`result.path`）を利用者に渡し、「Harie（https://harie.studio/app/ ）で開くと注釈をそのまま直せる」と添える。
 
 ## コマンド
 
 ```sh
+harie apply <image|file> --plan @plan.json [--view v.png] [--rev <n>] [-o out]
+                                                    # 取り込み・masks・ops を 1 回で（既存の Harie 画像への masks は --confirm も要る）
 harie open <file>                                   # 注釈の一覧・canvas の大きさ・revision（画像は返さない）
 harie preview <file> --ops @ops.json [--view a.png] # 保存せずに描き、画像のパスを "view" で返す
 harie edit <file> --ops @ops.json --rev <n>         # 適用して上書き保存（画像は返さない。見たければ --view）
@@ -32,7 +49,7 @@ harie list [dir]
 harie guide <file> --intent "説明したいこと"        # 手引きの全文（下の決まりの詳しい版）
 ```
 
-`--ops` / `--masks` は JSON の文字列、`@ファイル`、`-`（標準入力）のどれか。長い JSON は Write でファイルに書いてから `@` で渡す。
+`--plan` / `--ops` / `--masks` は JSON の文字列、`@ファイル`、`-`（標準入力）のどれか。長い JSON は Write でファイルに書いてから `@` で渡す。
 `--rev` は `open` / `edit` の結果の `revision`。食い違えば失敗するので `open` し直す。
 
 ## ops
@@ -73,7 +90,7 @@ harie guide <file> --intent "説明したいこと"        # 手引きの全文�
 [{"kind":"name","method":"replace","replacement":"山田 花子","rect":{"x":10,"y":10,"w":120,"h":24}}]
 ```
 
-- まず `--confirm` なしで呼ぶと、保存せずに加工後の画像を `view` に書き出す。範囲を確かめてから同じ masks に `--confirm` を付けて保存する。保存するとベース画像が書き換わり、元の情報はどこにも残らない。原本を残すなら `-o` で別名にする。
+- 新しく作るときは plan の `masks` に入れる（元の画像は残るので、間違えても元から作り直せる）。既存の Harie 画像だけを加工するときは、`harie mask <file> --masks @masks.json` で加工後の見た目を確かめてから `--confirm` を付けて保存する。保存するとベース画像が書き換わり、元の情報はどこにも残らない。
 - kind: name（人の氏名・ユーザー名）, email, phone, address（住所・郵便番号）, id（会員番号・カード番号・社員番号など個人を特定できる番号）, face（顔写真・アバターの顔）, other（その他の個人情報）
 - method: 文字は `replace`（同じ種類のダミー値。例: 山田 花子 / hanako@example.com）か `fill`。`replacement` には画面の元の値と違う値を使う（元の氏名やメールを書き写さない）。ほかに `mosaic` / `blur`。rect は文字より少し広く取る。
 - 会社名・製品名・ボタンの文言など、個人ではない情報は隠さない。example.com のメールなどダミーに見える値でも、個人情報の形をしていれば隠すか利用者に確かめる。

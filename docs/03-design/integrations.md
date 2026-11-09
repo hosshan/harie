@@ -112,7 +112,7 @@ type DomSnapshot = {
 claude.ai のチャット・プロジェクトや、MCP を設定していないクラウドのセッションでは stdio の MCP を使えない（[リモートでの MCP](https://code.claude.com/docs/en/cloud-environments)）。そのため、同じ操作を Claude の Skill として `apps/skill` で配る。
 
 - Skill は `SKILL.md` と `scripts/harie.mjs` だけ。スクリプトは依存なしの Node で、npm の `@harie/mcp` を `npx` で起動し（`--root /`）、MCP の JSON-RPC で 1 回だけツールを呼んで終わる。描画・保存・PII 加工の実装を持たない（ADR-0005 の描画 1 系統のまま、MCP と同じ結果になる）。
-- コマンドは MCP のツールに対応する（`import` = `harie_create`、`open` / `preview` / `edit` / `mask` / `replace-base` / `list`、`guide` = プロンプト `harie_guide`）。
+- コマンドは MCP のツールに対応する（`import` = `harie_create`、`open` / `preview` / `edit` / `mask` / `replace-base` / `list`、`guide` = プロンプト `harie_guide`）。手数を減らすため、`apply` は 1 つのサーバー接続で `harie_open` → `harie_create`（普通の画像のとき）→ `harie_mask`（`confirm: true`）→ `harie_edit` を続けて呼び、最後の画像だけを書き出す。既存の Harie ファイルへの masks は元に戻せないので `--confirm` を求める（新しく作る場合は元画像が残るので求めない）。
 - 画像はコンテキストを大きく使うので、標準出力には返さない。`open` / `edit` / `replace-base` は画像を省き（MCP の `image: false`）、`preview` / `mask` は描いた画像をファイルに書き出してパスだけを返す。Claude は確かめたいときだけそのファイルを見る。
 - 貼り付け・アップロードされた画像は拡張子がないことがある（プロジェクトの共有フォルダなど）。`find` が既知のアップロード先を探し、先頭のバイトで JPEG / PNG を判定する。`import` は正しい拡張子の一時コピーから Harie ファイルを作る（元画像のバイト列はそのまま。ADR-0004）。WebP などは扱わない。
 - 配り方: `.skill` ファイル（中身は zip。`pnpm --filter @harie/skill package`、`skill-v*` のタグで GitHub Release に添付）を claude.ai にアップロードする、リポジトリをマーケットプレイス（`.claude-plugin/marketplace.json`）として Claude Code のプラグインで入れる、の 2 通り。手順は `apps/skill/README.md`。

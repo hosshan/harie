@@ -44,6 +44,9 @@ const USAGE = `harie.mjs — Harie（再編集できる注釈付きスクリー�
   find [dir...] [--limit n]          貼り付け・アップロードされた画像を新しい順に探す（拡張子なしも判定）
   import <image> [-o out] [--format jpeg|png] [--title t]
                                      普通の画像から Harie ファイルを作る（元画像は変えない）
+  apply <image|file> --plan <json> [-o out] [--rev n] [--view out] [--confirm]
+                                     取り込み・個人情報の加工・注釈を 1 回で行い、描いた画像を書き出す
+                                     plan: {"title"?, "format"?, "masks"?: [...], "ops"?: [...]}
   open <file>                        注釈の一覧（JSON）を返す。画像は返さない（ファイルそのものを見る）
   preview <file> --ops <json> [--view out]
                                      ops を適用した画像を書き出す。ファイルは変えない
@@ -78,7 +81,10 @@ function serverCommand() {
   return parsed;
 }
 
-/** サーバーを起動し、requests を順に送って結果を返す。終わったらサーバーを閉じる。 */
+/**
+ * サーバーを起動し、requests を順に送って結果を返す。終わったらサーバーを閉じる。
+ * requests に関数を渡すと、send(method, params) を受け取って続けて呼べる（apply のように前の結果で分岐するとき）
+ */
 async function withServer(requests) {
   const [cmd, ...args] = serverCommand();
   // 操作するパスは呼び出し側が選ぶので、root はファイルシステム全体にする
@@ -134,6 +140,7 @@ async function withServer(requests) {
     child.stdin.write(
       `${JSON.stringify({ jsonrpc: "2.0", method: "notifications/initialized" })}\n`,
     );
+    if (typeof requests === "function") return await requests(send);
     const results = [];
     for (const [method, params] of requests) results.push(await send(method, params));
     return results;
@@ -328,7 +335,8 @@ function stamp() {
   return new Date().toISOString().replace(/[-:]/g, "").replace("T", "-").slice(0, 15);
 }
 
-async function importImage(src, opts) {
+/** import の準備: 形式の確認・保存先・拡張子を付けた一時コピー。cleanup で一時コピーを消す */
+function prepareImport(src, opts) {
   const format = sniff(src);
   if (format !== "png" && format !== "jpeg") {
     throw new UsageError(
@@ -347,16 +355,88 @@ async function importImage(src, opts) {
   const work = mkdtempSync(join(tmpdir(), "harie-import-"));
   const copy = join(work, `${name}.${format === "png" ? "png" : "jpg"}`);
   copyFileSync(src, copy);
-  try {
-    const result = await callTool("harie_create", {
+  return {
+    out,
+    args: {
       imagePath: copy,
       outPath: out,
       format: outFormat,
       ...(opts.title === undefined ? {} : { title: opts.title }),
-    });
-    return unpack(result);
+    },
+    cleanup: () => rmSync(work, { recursive: true, force: true }),
+  };
+}
+
+async function importImage(src, opts) {
+  const prepared = prepareImport(src, opts);
+  try {
+    return unpack(await callTool("harie_create", prepared.args));
   } finally {
-    rmSync(work, { recursive: true, force: true });
+    prepared.cleanup();
+  }
+}
+
+const toolCall = (send, name, args) => send("tools/call", { name, arguments: args });
+
+/**
+ * 取り込み・個人情報の加工・注釈をまとめて 1 回で行う（手数を減らすため）。
+ * plan: { title?, format?, masks?: PiiMask[], ops?: Op[] }
+ * - 普通の画像なら Harie ファイルを新しく作ってから加工する（元画像は変わらない）
+ * - 既存の Harie ファイルに masks を適用するのは元に戻せないので、--confirm を求める
+ * 最後に描いた画像を view に書き出す。途中で失敗したらそこで止め、どこまで済んだかを返す
+ */
+async function apply(src, plan, opts) {
+  if (plan === null || typeof plan !== "object" || Array.isArray(plan)) {
+    throw new UsageError("--plan は { masks?, ops?, title?, format? } の JSON にしてください");
+  }
+  const masks = plan.masks ?? [];
+  const ops = plan.ops ?? [];
+  if (!Array.isArray(masks) || !Array.isArray(ops)) {
+    throw new UsageError("plan の masks と ops は配列にしてください");
+  }
+  const done = [];
+  let prepared = null;
+  try {
+    return await withServer(async (send) => {
+      let path = src;
+      const fail = (result) => ({ ...unpack(result), ok: false, done, file: path });
+      // 普通の画像か Harie ファイルかは、サーバーに開かせて確かめる（拡張子のない画像も扱える）
+      const opened = await toolCall(send, "harie_open", { path: src, image: false });
+      if (opened.isError) return fail(opened);
+      const status = unpack(opened).result.status;
+      if (status !== "plain" && masks.length > 0 && !opts.confirm) {
+        throw new UsageError(
+          "既存の Harie ファイルへの masks は元に戻せません。範囲を mask で確かめてから --confirm を付けてください",
+        );
+      }
+      if (status === "plain") {
+        prepared = prepareImport(src, {
+          ...opts,
+          title: plan.title ?? opts.title,
+          format: plan.format ?? opts.format,
+        });
+        const created = await toolCall(send, "harie_create", prepared.args);
+        if (created.isError) return fail(created);
+        path = prepared.out;
+        done.push("import");
+      }
+      if (masks.length > 0) {
+        const masked = await toolCall(send, "harie_mask", { path, masks, confirm: true });
+        if (masked.isError) return fail(masked);
+        done.push("mask");
+      }
+      const edited = await toolCall(send, "harie_edit", {
+        path,
+        ops,
+        ...(opts.rev === undefined ? {} : { expectedRevision: Number(opts.rev) }),
+        image: true,
+      });
+      if (edited.isError) return fail(edited);
+      done.push("edit");
+      return { ...unpack(edited, opts.view), done };
+    });
+  } finally {
+    prepared?.cleanup();
   }
 }
 
@@ -383,6 +463,7 @@ export async function main(argv) {
       title: { type: "string" },
       ops: { type: "string" },
       masks: { type: "string" },
+      plan: { type: "string" },
       confirm: { type: "boolean" },
       rev: { type: "string" },
       view: { type: "string" },
@@ -410,6 +491,8 @@ export async function main(argv) {
         return print(find(rest, Number(values.limit ?? 10)));
       case "import":
         return print(await importImage(need(), values));
+      case "apply":
+        return print(await apply(need(), readJsonArg(values.plan, "--plan"), { ...values, view }));
       case "open":
         return print(unpack(await callTool("harie_open", { path: need(), image: false })));
       case "preview":
