@@ -1,0 +1,53 @@
+name: Release Harie Skill
+
+# `skill-v<version>` のタグで、claude.ai にアップロードできる Skill の zip（harie.zip）を GitHub Release に添付する。
+# Claude Code のプラグイン（/plugin install harie@harie）はリポジトリを直接参照するので、この zip は使わない。
+on:
+  push:
+    tags: ["skill-v*"]
+  # release-tag.yml がタグを指定して起動する（Actions の画面から既存のタグを選んで再実行もできる）
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  package:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: write # GitHub Release の作成
+    steps:
+      - uses: actions/checkout@v7
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          check-latest: true
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+
+      - name: タグと package.json の版が一致するか確かめる
+        id: version
+        run: |
+          if [ "$GITHUB_REF_TYPE" != "tag" ]; then
+            echo "::error::タグを指定して実行してください（今の ref: $GITHUB_REF_NAME）"
+            exit 1
+          fi
+          version=$(node -p "require('./apps/skill/package.json').version")
+          tag="${GITHUB_REF_NAME#skill-v}"
+          if [ "$version" != "$tag" ]; then
+            echo "::error::タグ ($GITHUB_REF_NAME) と apps/skill/package.json の version ($version) が一致しません"
+            exit 1
+          fi
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+
+      - run: pnpm check
+      - run: pnpm --filter @harie/skill pack
+
+      - name: GitHub Release を作る
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "$GITHUB_REF_NAME" apps/skill/dist/harie.zip \
+            --title "Harie Skill ${{ steps.version.outputs.version }}" --generate-notes

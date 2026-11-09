@@ -1,0 +1,11 @@
+{
+  "name": "harie",
+  "owner": { "name": "hosshan" },
+  "plugins": [
+    {
+      "name": "harie",
+      "source": "./apps/skill",
+      "description": "Harie skill: annotate screenshots for user guides and keep them re-editable, without MCP setup"
+    }
+  ]
+}

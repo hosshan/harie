@@ -48,6 +48,7 @@ Usage, installation, local checks and release steps are in each app's README. Th
 | [apps/web](apps/web/README.md) | Web editor (PWA). Open an image, annotate it and save |
 | [apps/extension](apps/extension/README.md) | Chrome extension. Capture the current page and annotate it right away |
 | [apps/mcp](apps/mcp/README.md) | MCP server (`@harie/mcp` on npm). Read and write annotations from Claude and other clients |
+| [apps/skill](apps/skill/README.md) | Claude Skill. Create and edit annotations from claude.ai and cloud sessions where MCP cannot be set up (upload the zip, or install as a Claude Code plugin) |
 | [apps/cli](apps/cli/README.md) | Development CLI (`pnpm harie`). Inspect, create and re-render files |
 | [apps/desktop](apps/desktop/README.md) | Desktop app (Tauri 2, macOS / Windows). Open with the OS dialog and save in place |
 | [apps/site](apps/site/README.md) | Landing page (GitHub Pages). The web editor is published alongside it at `/app/` |

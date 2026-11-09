@@ -112,6 +112,7 @@
 | FR-MCP-06 | リモート MCP（Streamable HTTP + OAuth）でクラウド上のファイルを扱える | Later |
 | FR-MCP-07 | Web エディタから MCP サーバーを Claude Code / Claude Desktop に登録する方法を案内し、コマンドと設定をコピーできる | MVP |
 | FR-MCP-08 | 「どこに何を補足するか」の手引き（AI 提案と同じ基準）と作業手順を、MCP のプロンプトとサーバーの instructions でクライアントの LLM に渡す | MVP |
+| FR-MCP-09 | MCP を設定できない環境（claude.ai、クラウドのセッション）向けに、MCP と同じ操作を Claude の Skill として提供する。貼り付け・アップロードされた画像（拡張子なしを含む）を見つけて取り込め、画像は必要なときだけファイルで渡す | Next |
 
 ## 3. 非機能要件
 

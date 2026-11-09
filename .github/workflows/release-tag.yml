@@ -1,6 +1,6 @@
 name: Release (tag)
 
-# main で apps/mcp・apps/extension の package.json の版が変わったら、その版のタグを付けて公開のワークフローを起動する。
+# main で apps/mcp・apps/extension・apps/skill の package.json の版が変わったら、その版のタグを付けて公開のワークフローを起動する。
 # GITHUB_TOKEN で push したタグでは push トリガーが起動しないため、公開のワークフローは workflow_dispatch でタグを指定して起動する。
 on:
   push:
@@ -8,6 +8,7 @@ on:
     paths:
       - apps/mcp/package.json
       - apps/extension/package.json
+      - apps/skill/package.json
 
 permissions:
   contents: read
@@ -35,7 +36,7 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          for target in mcp extension; do
+          for target in mcp extension skill; do
             pkg="apps/$target/package.json"
             version=$(node -p "require('./$pkg').version")
             previous=$(git show "$BEFORE:$pkg" 2>/dev/null | jq -r .version || true)

@@ -1,0 +1,14 @@
+{
+  "name": "@harie/skill",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "pack": "node scripts/pack.mjs",
+    "typecheck": "tsc -p tsconfig.json"
+  },
+  "devDependencies": {
+    "@harie/mcp": "workspace:*",
+    "tsx": "^4.23.15"
+  }
+}

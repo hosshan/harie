@@ -1,7 +1,7 @@
 name: Release (prepare)
 
 # Actions の画面から実行すると、対象の版を上げる PR を作る。
-# PR をマージすると release-tag.yml がタグを付け、release-mcp.yml / release-extension.yml が公開する。
+# PR をマージすると release-tag.yml がタグを付け、release-mcp.yml / release-extension.yml / release-skill.yml が公開する。
 # main はブランチ保護で直接 push できないため、版上げは PR を通す。
 on:
   workflow_dispatch:
@@ -9,7 +9,7 @@ on:
       target:
         description: リリースする対象
         type: choice
-        options: [mcp, extension]
+        options: [mcp, extension, skill]
       bump:
         description: 版の上げ方（version を指定したときは無視）
         type: choice
@@ -55,6 +55,7 @@ jobs:
           case "$TARGET" in
             mcp) pkg=apps/mcp/package.json; name="@harie/mcp" ;;
             extension) pkg=apps/extension/package.json; name="Chrome 拡張" ;;
+            skill) pkg=apps/skill/package.json; name="Harie Skill" ;;
             *) echo "::error::target が不正です ($TARGET)"; exit 1 ;;
           esac
           version=$(node .github/scripts/bump-version.mjs "$pkg" "$BUMP" "$VERSION")

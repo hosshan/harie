@@ -107,6 +107,16 @@ type DomSnapshot = {
 - 「どこに何を補足するか」の手引き（FR-MCP-08）は、プロンプト `harie_guide`（引数 `path`, `intent?`）とサーバーの `instructions`（短い版）で渡す。基準の文面は `packages/ai/src/guide.ts` に置き、Web エディタの AI 提案・PII 検出のシステムプロンプトと共有する（MCP は `@harie/ai/guide` だけをバンドルし、Claude API の SDK は取り込まない）。見た目の決まり（枠・番号・吹き出しを組で置き、吹き出しは矢印で枠を指す。番号は枠の左上の角の外側にそろえ、UI 要素に重ねない）も `guide.ts` に置く。手順（開く → `harie_mask` → 枠＋番号＋anchor 付きの吹き出し → `harie_preview` → `harie_edit`）と座標・大きさの目安（番号の座標の計算式など）は MCP 側で足す。サーバー自身は LLM を呼ばない方針のまま。
 - ツール一覧（tools/list）はクライアントのコンテキストを使うので小さく保つ。`StyleSchema` と `AnnotationSchema` は zod のメタデータに id を付け、JSON Schema では `definitions` の 1 か所を `$ref` で参照する。`harie_preview` の `ops` は `harie_edit` と同じ形式なので、ツール定義では形（`op` の種類）だけを示し、中身はサーバー側の `applyOps` が `OpSchema` で検証する。
 
-### 2.3 将来（Later）
+### 2.3 Skill（FR-MCP-09）
+
+claude.ai のチャット・プロジェクトや、MCP を設定していないクラウドのセッションでは stdio の MCP を使えない（[リモートでの MCP](https://code.claude.com/docs/en/cloud-environments)）。そのため、同じ操作を Claude の Skill として `apps/skill` で配る。
+
+- Skill は `SKILL.md` と `scripts/harie.mjs` だけ。スクリプトは依存なしの Node で、npm の `@harie/mcp` を `npx` で起動し（`--root /`）、MCP の JSON-RPC で 1 回だけツールを呼んで終わる。描画・保存・PII 加工の実装を持たない（ADR-0005 の描画 1 系統のまま、MCP と同じ結果になる）。
+- コマンドは MCP のツールに対応する（`import` = `harie_create`、`open` / `preview` / `edit` / `mask` / `replace-base` / `list`、`guide` = プロンプト `harie_guide`）。
+- 画像はコンテキストを大きく使うので、標準出力には返さない。`open` / `edit` / `replace-base` は画像を省き（MCP の `image: false`）、`preview` / `mask` は描いた画像をファイルに書き出してパスだけを返す。Claude は確かめたいときだけそのファイルを見る。
+- 貼り付け・アップロードされた画像は拡張子がないことがある（プロジェクトの共有フォルダなど）。`find` が既知のアップロード先を探し、先頭のバイトで JPEG / PNG を判定する。`import` は正しい拡張子の一時コピーから Harie ファイルを作る（元画像のバイト列はそのまま。ADR-0004）。WebP などは扱わない。
+- 配り方: zip（`pnpm --filter @harie/skill pack`、`skill-v*` のタグで GitHub Release に添付）を claude.ai にアップロードする、リポジトリをマーケットプレイス（`.claude-plugin/marketplace.json`）として Claude Code のプラグインで入れる、の 2 通り。手順は `apps/skill/README.md`。
+
+### 2.4 将来（Later）
 
 - クラウド保存を始めたら、Streamable HTTP + OAuth のリモート MCP を追加し、チームの画像を横断して更新できるようにする（FR-MCP-06）。
