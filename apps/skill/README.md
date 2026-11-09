@@ -32,7 +32,7 @@ apps/skill/
 いちばん広く使える入れ方です。アカウントに入れたスキルは、claude.ai のチャットとプロジェクト、Claude Code on the web のセッションに同期されます。
 
 1. [GitHub Releases](https://github.com/hosshan/harie/releases) の最新の `skill-v*` から `harie.zip` をダウンロードする。
-   リポジトリから作るときは `pnpm --filter @harie/skill pack`（`apps/skill/dist/harie.zip` ができる）。
+   リポジトリから作るときは `pnpm --filter @harie/skill zip`（`apps/skill/dist/harie.zip` ができる）。
 2. claude.ai の「設定」→「機能」で「コード実行とファイル作成」を有効にする。
 3. 同じ画面の「スキル」で「スキルをアップロード」を選び、`harie.zip` を選ぶ。
 4. チャットで画像を添付し、「この画面に通知設定の手順の注釈を付けて」のように頼む。

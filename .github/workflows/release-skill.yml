@@ -43,7 +43,7 @@ jobs:
           echo "version=$version" >> "$GITHUB_OUTPUT"
 
       - run: pnpm check
-      - run: pnpm --filter @harie/skill pack
+      - run: pnpm --filter @harie/skill zip
 
       - name: GitHub Release を作る
         env:
