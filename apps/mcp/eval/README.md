@@ -35,7 +35,7 @@ node apps/mcp/eval/judge.mjs /tmp/eval-b
 node apps/mcp/eval/report.mjs "MCP 公開版=/tmp/eval-a:mcp" "MCP 手元=/tmp/eval-b:mcp" "MCP なし=/tmp/eval-a:nomcp"
 ```
 
-主なオプション（`run.mjs`）: `--model`（既定 `claude-sonnet-5-5`）、`--runs`、`--parallel`、`--conditions mcp,nomcp`、`--tasks create,revise`、`--mcp`（MCP サーバーの起動コマンド）、`--timeout`（秒）。
+主なオプション（`run.mjs`）: `--model`（既定 `claude-sonnet-5-5`）、`--runs`、`--parallel`、`--conditions mcp,nomcp`（`skill` で Harie Skill。[結果](../../../docs/02-research/skill-effectiveness.md)）、`--tasks create,revise`、`--mcp`（MCP サーバーの起動コマンド）、`--timeout`（秒）、`--skill`（Skill の条件で読み込むプラグインのディレクトリ。既定は `apps/skill`）。
 
 ## 気をつけること
 

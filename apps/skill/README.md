@@ -84,6 +84,15 @@ Claude Code on the web で、特定のリポジトリを開いたときに毎回
 node skills/harie/scripts/harie.mjs --help
 ```
 
+## 評価
+
+[評価の結果](../../docs/02-research/skill-effectiveness.md)（2026-11-09）: 頼み方に応じた呼び出しは 24/24 正解。注釈の品質は MCP と同等で、コストは MCP より少し安い（手数と時間は多い）。
+
+```sh
+node apps/skill/eval/trigger.mjs --runs 2                            # 呼ばれるべき頼み方で呼ばれるか
+node apps/mcp/eval/run.mjs --runs 8 --conditions skill --out /tmp/a  # 作成・修正の課題（採点と集計は apps/mcp/eval/README.md）
+```
+
 ## 開発
 
 - テスト: `pnpm exec vitest run --project skill`。npm からは取らず、`HARIE_MCP_COMMAND` でリポジトリの `apps/mcp/src` を tsx で起動して確かめる。

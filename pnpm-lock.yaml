@@ -197,6 +197,9 @@ importers:
 
   apps/skill:
     devDependencies:
+      '@harie/ai':
+        specifier: workspace:*
+        version: link:../../packages/ai
       '@harie/mcp':
         specifier: workspace:*
         version: link:../mcp

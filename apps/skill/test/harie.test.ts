@@ -5,6 +5,12 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { crc32, deflateSync } from "node:zlib";
+import {
+  GUIDE_LAYOUT_RULES,
+  GUIDE_TARGET_RULE,
+  GUIDE_TEXT_RULES,
+  PII_KIND_RULE,
+} from "@harie/ai/guide";
 import { beforeAll, describe, expect, it } from "vitest";
 
 const here = (p: string) => fileURLToPath(new URL(p, import.meta.url));
@@ -40,15 +46,17 @@ function solidPng(width: number, height: number): Buffer {
 let dir: string;
 
 function harie(...args: string[]) {
-  const r = spawnSync("node", [SCRIPT, ...args], {
-    cwd: dir,
-    encoding: "utf8",
-    env: {
-      ...process.env,
-      HARIE_MCP_COMMAND: JSON.stringify(["node", "--import", TSX, SERVER]),
-      HARIE_OUT_DIR: dir,
-    },
-  });
+  return run({ HARIE_OUT_DIR: dir }, ...args);
+}
+
+function run(extraEnv: Record<string, string>, ...args: string[]) {
+  const env: Record<string, string | undefined> = {
+    ...process.env,
+    HARIE_MCP_COMMAND: JSON.stringify(["node", "--import", TSX, SERVER]),
+    ...extraEnv,
+  };
+  if (!("HARIE_OUT_DIR" in extraEnv)) delete env.HARIE_OUT_DIR;
+  const r = spawnSync("node", [SCRIPT, ...args], { cwd: dir, encoding: "utf8", env });
   return { code: r.status, stdout: r.stdout, stderr: r.stderr };
 }
 
@@ -140,12 +148,36 @@ describe("Harie Skill（FR-MCP-09）", () => {
     expect(r.stdout).toContain("説明したいこと: 通知の設定");
   });
 
+  it("import は拡張子のある画像なら、既定で同じフォルダに作る", () => {
+    const sub = mkdtempSync(join(tmpdir(), "harie-skill-src-"));
+    writeFileSync(join(sub, "settings.png"), solidPng(64, 48));
+    const r = run({}, "import", join(sub, "settings.png"));
+    expect(r.code, r.stderr).toBe(0);
+    expect(json(r.stdout).result.path).toBe(join(sub, "settings.harie.png"));
+  });
+
   it("JPEG / PNG 以外は import できない", () => {
     const webp = join(dir, "a.webp");
     writeFileSync(webp, Buffer.from("RIFF\0\0\0\0WEBPVP8 ", "ascii"));
     const r = harie("import", webp);
     expect(r.code).toBe(2);
     expect(r.stderr).toContain("JPEG / PNG");
+  });
+});
+
+describe("SKILL.md の手引き（FR-MCP-08 と同じ基準）", () => {
+  const skill = readFileSync(here("../skills/harie/SKILL.md"), "utf8");
+
+  it("注釈の決まりが @harie/ai/guide と一致する", () => {
+    const block = /<!-- guide:start -->\n([\s\S]*?)<!-- guide:end -->/.exec(skill)?.[1];
+    const expected = [GUIDE_TARGET_RULE, ...GUIDE_TEXT_RULES, ...GUIDE_LAYOUT_RULES]
+      .map((r) => `- ${r}\n`)
+      .join("");
+    expect(block, "SKILL.md の guide:start〜guide:end をこの内容にしてください").toBe(expected);
+  });
+
+  it("個人情報の種類が @harie/ai/guide と一致する", () => {
+    expect(skill).toContain(`- ${PII_KIND_RULE}\n`);
   });
 });
 

@@ -21,7 +21,7 @@ import {
   writeFileSync,
 } from "node:fs";
 import { homedir, tmpdir } from "node:os";
-import { basename, extname, join, resolve } from "node:path";
+import { basename, dirname, extname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { parseArgs } from "node:util";
 
@@ -307,10 +307,18 @@ function writable(dir) {
   }
 }
 
-/** 保存先の既定。claude.ai ならダウンロードできる outputs、なければカレントディレクトリ */
-function defaultOutDir() {
+const UPLOAD_ROOTS = UPLOAD_DIRS.slice(0, -1).map((d) => `${resolve(d)}/`);
+
+/**
+ * 保存先の既定。普通に置かれた画像なら同じフォルダ（MCP の harie_create と同じ）。
+ * アップロード先の画像は、claude.ai でダウンロードできる outputs、なければカレントディレクトリ
+ */
+function defaultOutDir(src) {
   const env = process.env.HARIE_OUT_DIR;
   if (env) return env;
+  const dir = dirname(src);
+  const uploaded = UPLOAD_ROOTS.some((root) => `${dir}/`.startsWith(root));
+  if (!uploaded && extname(src) !== "" && writable(dir)) return dir;
   if (existsSync("/mnt/user-data/outputs") && writable("/mnt/user-data/outputs"))
     return "/mnt/user-data/outputs";
   return process.cwd();
@@ -334,7 +342,7 @@ async function importImage(src, opts) {
     extname(src) === "" || /^[0-9a-f-]{20,}$/i.test(basename(src, extname(src)))
       ? `screenshot-${stamp()}`
       : basename(src, extname(src));
-  const out = resolve(opts.out ?? join(defaultOutDir(), `${name}.harie.${ext}`));
+  const out = resolve(opts.out ?? join(defaultOutDir(src), `${name}.harie.${ext}`));
   // 拡張子のない元画像も扱えるよう、正しい拡張子を付けた一時コピーから作る（元画像は変えない）
   const work = mkdtempSync(join(tmpdir(), "harie-import-"));
   const copy = join(work, `${name}.${format === "png" ? "png" : "jpg"}`);
