@@ -4,6 +4,7 @@ import {
   addDetectedMasks,
   EDITOR_MESSAGES,
   Editor,
+  formatShortcut,
   isMacPlatform,
   matchesShortcut,
   type PickableElement,
@@ -84,6 +85,7 @@ export function Workspace({
   // コピーできたら、少しのあいだボタンのアイコンを ✓ にして知らせる
   const [copied, setCopied] = useState(false);
   const copyable = useMemo(() => canCopyImage(), []);
+  const mac = useMemo(() => isMacPlatform(), []);
   const [format, setFormat] = useState<ImageFormat>(opened.format);
   const [showWarning, setShowWarning] = useState(opened.warning !== undefined);
   // 保存するまでは、適用したマスクを外せるように加工前の画像を持つ（ADR-0009）
@@ -264,7 +266,8 @@ export function Workspace({
     );
   };
 
-  // 保存（Ctrl / ⌘ + S）・画像を開く（Ctrl / ⌘ + O）・画像のコピー（Ctrl / ⌘ + Shift + C）は、
+  // 保存（Ctrl / ⌘ + S）・画像を開く（Ctrl / ⌘ + O）・画像の差し替え（Ctrl / ⌘ + Shift + O）・
+  // 画像のコピー（Ctrl / ⌘ + Shift + C）は、
   // 文字の入力中でも効かせる（FR-EDIT-12）。入力中の文字は、入力欄を離れたときに確定するので、
   // 先に離れてから次の描画で保存する
   const saveRef = useRef(save);
@@ -272,7 +275,6 @@ export function Workspace({
   const copyRef = useRef(copy);
   copyRef.current = copy;
   useEffect(() => {
-    const mac = isMacPlatform();
     const onKey = (e: KeyboardEvent) => {
       if (matchesShortcut(e, "save", mac)) {
         e.preventDefault();
@@ -287,11 +289,15 @@ export function Workspace({
       } else if (matchesShortcut(e, "open", mac) && onOpenImage !== undefined) {
         e.preventDefault();
         setConfirmOpen(true);
+      } else if (matchesShortcut(e, "replaceImage", mac)) {
+        e.preventDefault();
+        if (saving) return;
+        replaceInput.current?.click();
       }
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [saving, copying, copyable, onOpenImage]);
+  }, [saving, copying, copyable, onOpenImage, mac]);
 
   return (
     <>
@@ -311,7 +317,13 @@ export function Workspace({
         fileName={opened.fileName}
         status={status}
         primary={
-          <HeaderButton icon="save" variant="default" disabled={saving} onClick={save}>
+          <HeaderButton
+            icon="save"
+            variant="default"
+            disabled={saving}
+            onClick={save}
+            title={em.withKey(m.save.button, formatShortcut("save", mac))}
+          >
             {m.save.button}
           </HeaderButton>
         }
@@ -323,6 +335,7 @@ export function Workspace({
                   icon: "open",
                   label: m.open.button,
                   onSelect: () => setConfirmOpen(true),
+                  shortcut: formatShortcut("open", mac),
                   placement: "start",
                 } satisfies HeaderAction,
               ]),
@@ -331,6 +344,7 @@ export function Workspace({
             label: m.replace.button,
             onSelect: () => replaceInput.current?.click(),
             disabled: saving,
+            shortcut: formatShortcut("replaceImage", mac),
             placement: "start",
           },
           // 「保存」のすぐ右に置く。狭い画面では三点メニューに入る
@@ -341,6 +355,7 @@ export function Workspace({
                   label: m.copy.button,
                   onSelect: () => void copy(),
                   disabled: copying,
+                  shortcut: formatShortcut("copyImage", mac),
                 } satisfies HeaderAction,
               ]
             : []),
@@ -380,7 +395,12 @@ export function Workspace({
       >
         <h2>{em.shortcuts.title}</h2>
         <ShortcutList
-          file={{ save: true, open: onOpenImage !== undefined, copyImage: copyable }}
+          file={{
+            save: true,
+            open: onOpenImage !== undefined,
+            replaceImage: true,
+            copyImage: copyable,
+          }}
           element={elements.length > 0}
         />
         <p className="app-modal-actions">

@@ -1,6 +1,7 @@
 // 1 段のヘッダー。ロゴ | ファイル名 と、右側にファイル操作・設定のメニューを置く
 // （注釈の道具は編集面の上のパレットに分け、どちらの操作か迷わないようにする）。
 // 狭い画面（スマホ）では主な操作（primary）だけを残し、ほかは三点メニューにまとめる
+import { EDITOR_MESSAGES, useMessages } from "@harie/editor";
 import { type ComponentProps, type ReactNode, useId } from "react";
 import { Button } from "./components/ui/button";
 import {
@@ -8,6 +9,7 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
+  DropdownMenuShortcut,
   DropdownMenuTrigger,
 } from "./components/ui/dropdown-menu";
 import { useWebMessages } from "./messages";
@@ -19,6 +21,8 @@ export type HeaderAction = {
   label: string;
   onSelect: () => void;
   disabled?: boolean;
+  /** ショートカットの表示（「⌘O」など）。ボタンの title と三点メニューの右端に出す */
+  shortcut?: string;
   /** start は主な操作の左、end（既定）は右に置く。三点メニューでもこの順に並べる */
   placement?: "start" | "end";
 };
@@ -39,11 +43,18 @@ export type HeaderProps = {
 
 export function Header({ fileName, status, primary, actions = [], children, menu }: HeaderProps) {
   const m = useWebMessages();
+  const em = useMessages(EDITOR_MESSAGES);
   const settings = useSettingsDialog();
   const start = actions.filter((a) => a.placement === "start");
   const end = actions.filter((a) => a.placement !== "start");
   const button = (a: HeaderAction) => (
-    <HeaderButton key={a.label} icon={a.icon} disabled={a.disabled} onClick={a.onSelect}>
+    <HeaderButton
+      key={a.label}
+      icon={a.icon}
+      disabled={a.disabled}
+      onClick={a.onSelect}
+      title={a.shortcut === undefined ? undefined : em.withKey(a.label, a.shortcut)}
+    >
       {a.label}
     </HeaderButton>
   );
@@ -51,6 +62,7 @@ export function Header({ fileName, status, primary, actions = [], children, menu
     <DropdownMenuItem key={a.label} disabled={a.disabled} onSelect={a.onSelect}>
       <HeaderIcon icon={a.icon} />
       {a.label}
+      {a.shortcut !== undefined && <DropdownMenuShortcut>{a.shortcut}</DropdownMenuShortcut>}
     </DropdownMenuItem>
   );
   return (

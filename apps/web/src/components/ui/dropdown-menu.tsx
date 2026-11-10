@@ -100,3 +100,13 @@ export function DropdownMenuSeparator({
     />
   );
 }
+
+/** 項目の右端に出すショートカットの表示 */
+export function DropdownMenuShortcut({ className, ...props }: ComponentProps<"span">) {
+  return (
+    <span
+      className={cn("ml-auto pl-4 text-xs tracking-widest text-muted-foreground", className)}
+      {...props}
+    />
+  );
+}

@@ -1,5 +1,11 @@
 // 画像を開く前の画面と、画像の取り込み（ファイルを選ぶ・ドラッグ＆ドロップ・貼り付け）。Web と Chrome 拡張の空のエディタで共通
-import { formatShortcut, isMacPlatform } from "@harie/editor";
+import {
+  EDITOR_MESSAGES,
+  formatShortcut,
+  getLocale,
+  isMacPlatform,
+  matchesShortcut,
+} from "@harie/editor";
 import { type ReactNode, useCallback, useEffect, useRef } from "react";
 import { useWebMessages, webMessages } from "./messages";
 
@@ -84,6 +90,31 @@ export function useImageIntake(onFile: OnImageFile): {
     />
   );
   return { pick, input };
+}
+
+/**
+ * 画像を開く前の画面で、Ctrl / ⌘ + O でファイルを選ぶ（FR-EDIT-12）。
+ * 画像を開いた後は Workspace が同じキーを受け持つ（保存していない変更の確認を挟む）ので、`enabled` で切り替える
+ */
+export function useOpenShortcut(pick: () => unknown, enabled = true): void {
+  const latest = useRef(pick);
+  latest.current = pick;
+  useEffect(() => {
+    if (!enabled) return;
+    const mac = isMacPlatform();
+    const onKey = (e: KeyboardEvent) => {
+      if (!matchesShortcut(e, "open", mac)) return;
+      e.preventDefault();
+      void latest.current();
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [enabled]);
+}
+
+/** 「画像を開く」ボタンの title（ショートカットを添える） */
+export function openButtonTitle(label: string): string {
+  return EDITOR_MESSAGES[getLocale()].withKey(label, formatShortcut("open", isMacPlatform()));
 }
 
 /** 画像を開く前の案内（ドロップ・貼り付けの説明）。`integrations` は Web だけで出す（拡張には「連携」がない） */

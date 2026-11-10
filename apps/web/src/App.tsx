@@ -6,7 +6,7 @@ import { Header, HeaderButton } from "./Header";
 import { loadFile, type Opened } from "./load";
 import { useWebMessages, webMessages } from "./messages";
 import { useLaunchedImage } from "./pwa";
-import { StartHint, useImageIntake } from "./Start";
+import { openButtonTitle, StartHint, useImageIntake, useOpenShortcut } from "./Start";
 import { deliver, type Saved } from "./save";
 import { Workspace } from "./Workspace";
 
@@ -58,6 +58,8 @@ export function App() {
   const { pick, input } = useImageIntake((file, fileHandle) => void open(file, fileHandle));
   // アプリとして入れたときの「このアプリで開く」と共有メニュー（FR-FILE-14, FR-CAP-09）
   useLaunchedImage((file, fileHandle) => void open(file, fileHandle));
+  // 画像を開く前も Ctrl / ⌘ + O で開ける。開いた後は Workspace が受け持つ
+  useOpenShortcut(pick, opened === null);
 
   return (
     <div className="app">
@@ -72,7 +74,12 @@ export function App() {
         <>
           <Header
             primary={
-              <HeaderButton icon="open" variant="default" onClick={pick}>
+              <HeaderButton
+                icon="open"
+                variant="default"
+                onClick={pick}
+                title={openButtonTitle(m.open.button)}
+              >
                 {m.open.button}
               </HeaderButton>
             }

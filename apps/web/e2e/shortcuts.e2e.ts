@@ -132,3 +132,44 @@ test("FR-EDIT-12: ? でショートカット一覧を開き、Ctrl / ⌘ + S で
   ]);
   expect(download.suggestedFilename()).toBe("large-base.harie.jpg");
 });
+
+test("FR-EDIT-12: 画像を開く前も Ctrl / ⌘ + O で開け、Ctrl / ⌘ + Shift + O で画像を差し替えられる", async ({
+  page,
+}) => {
+  // ファイルを選ぶ画面（File System Access API）を差し替え、選ばれたことにする
+  await page.addInitScript(
+    (bytes: number[]) => {
+      (window as unknown as Record<string, unknown>).showOpenFilePicker = async () => [
+        {
+          getFile: async () =>
+            new File([new Uint8Array(bytes)], "large-base.jpg", { type: "image/jpeg" }),
+        },
+      ];
+    },
+    [...fixture],
+  );
+  await page.goto("/");
+  await expect(
+    page.getByRole("banner").getByRole("button", { name: "画像を開く" }),
+  ).toHaveAttribute("title", "画像を開く（Ctrl+O）");
+  await page.keyboard.press("ControlOrMeta+o");
+  await expect(page.getByRole("application", { name: "注釈の編集面" })).toBeVisible();
+
+  // 開いた後のファイル操作も、ボタンの title にショートカットを出す
+  const header = page.getByRole("banner");
+  await expect(header.getByRole("button", { name: "画像を差し替える" })).toHaveAttribute(
+    "title",
+    "画像を差し替える（Ctrl+Shift+O）",
+  );
+  const [chooser] = await Promise.all([
+    page.waitForEvent("filechooser"),
+    page.keyboard.press("ControlOrMeta+Shift+O"),
+  ]);
+  await chooser.setFiles({ name: "new.jpg", mimeType: "image/jpeg", buffer: fixture });
+  await expect(page.getByRole("status")).toContainText("画像を差し替えました");
+
+  // 一覧にも載る
+  await page.keyboard.press("Shift+?");
+  const dialog = page.getByRole("dialog", { name: "キーボードショートカット" });
+  await expect(dialog.getByRole("region", { name: "ファイル" })).toContainText("Ctrl+Shift+O");
+});

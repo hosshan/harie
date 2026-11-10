@@ -112,6 +112,7 @@ export const zhTW: EditorMessages = {
     save: "儲存",
     openImage: "開啟圖片",
     copyImage: "將圖片複製到剪貼簿",
+    replaceImage: "替換圖片",
     undo: "復原",
     redo: "重做",
     selectAll: "全選",

@@ -112,6 +112,7 @@ export const zhCN: EditorMessages = {
     save: "保存",
     openImage: "打开图片",
     copyImage: "将图片复制到剪贴板",
+    replaceImage: "替换图片",
     undo: "撤销",
     redo: "重做",
     selectAll: "全选",

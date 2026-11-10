@@ -8,7 +8,7 @@ import { Header, HeaderButton } from "@harie/web/header";
 import { loadFile, type Opened } from "@harie/web/load";
 import { useWebMessages, webMessages } from "@harie/web/messages";
 import type { Saved } from "@harie/web/save";
-import { StartHint, useImageIntake } from "@harie/web/start";
+import { openButtonTitle, StartHint, useImageIntake, useOpenShortcut } from "@harie/web/start";
 import { Workspace } from "@harie/web/workspace";
 import { StrictMode, useCallback, useEffect, useState } from "react";
 import { createRoot } from "react-dom/client";
@@ -66,6 +66,8 @@ function App() {
   const { pick, input } = useImageIntake(
     (file) => void file.arrayBuffer().then((b) => show(file.name, new Uint8Array(b), null)),
   );
+  // 画像を開く前も Ctrl / ⌘ + O で開ける。開いた後は Workspace が受け持つ
+  useOpenShortcut(pick, loaded === null && !loading);
 
   return (
     <div className="app">
@@ -80,7 +82,12 @@ function App() {
           {/* 開いた後は Workspace がファイル名と保存の入ったヘッダーを出す */}
           <Header
             primary={
-              <HeaderButton icon="open" variant="default" onClick={pick}>
+              <HeaderButton
+                icon="open"
+                variant="default"
+                onClick={pick}
+                title={openButtonTitle(m.open.button)}
+              >
                 {m.open.button}
               </HeaderButton>
             }

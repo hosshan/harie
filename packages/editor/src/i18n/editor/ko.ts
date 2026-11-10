@@ -114,6 +114,7 @@ export const ko: EditorMessages = {
     save: "저장",
     openImage: "이미지 열기",
     copyImage: "이미지를 클립보드에 복사",
+    replaceImage: "이미지 교체",
     undo: "실행 취소",
     redo: "다시 실행",
     selectAll: "모두 선택",
