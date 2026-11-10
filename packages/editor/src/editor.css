@@ -159,6 +159,34 @@
   stroke-linecap: round;
   stroke-linejoin: round;
 }
+/* 道具の切り替えキー。割り当てのないキーが押されたときだけ、ボタンの右上に重ねて出す */
+.harie-palette button {
+  position: relative;
+}
+.harie-palette-key {
+  position: absolute;
+  top: 1px;
+  right: 1px;
+  min-width: 14px;
+  padding: 0 3px;
+  border-radius: 4px;
+  background: var(--harie-fg);
+  color: #fff;
+  font:
+    600 9px / 14px system-ui,
+    sans-serif;
+  text-align: center;
+  opacity: 0;
+  transform: scale(0.8);
+  transition:
+    opacity 0.12s,
+    transform 0.12s;
+  pointer-events: none;
+}
+.harie-palette[data-show-keys="true"] .harie-palette-key {
+  opacity: 1;
+  transform: none;
+}
 .harie-palette .harie-palette-icon {
   min-width: 32px;
 }

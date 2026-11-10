@@ -153,6 +153,13 @@ export function Editor({
   const [editingId, setEditingId] = useState<string | null>(null);
   const [dragging, setDragging] = useState(false);
   const [paletteCollapsed, setPaletteCollapsed] = useState(false);
+  // 割り当てのない文字キーを押したら、パレットに道具のキーを少しのあいだ重ねて出す（FR-EDIT-12）
+  const [keyHint, setKeyHint] = useState(0);
+  useEffect(() => {
+    if (keyHint === 0) return;
+    const timer = setTimeout(() => setKeyHint(0), 2000);
+    return () => clearTimeout(timer);
+  }, [keyHint]);
   // 前回選んだ線の太さ・文字サイズを、次に描く注釈の初期値にする
   // 記録は等倍の画面での値で持ち、使うときに画像の解像度の倍率を掛ける（別の解像度の画像でも同じ見た目になる）
   const [storedDefaults, setStoredDefaults] = useState<DrawDefaults>(() => loadDrawDefaults());
@@ -333,7 +340,13 @@ export function Editor({
         setSelectedMaskId(null);
       } else if (!e.metaKey && !e.ctrlKey && !e.altKey && !e.shiftKey) {
         const t = tools.find((x) => x.key === e.key.toLowerCase());
-        if (t !== undefined) selectTool(t.tool);
+        if (t !== undefined) {
+          setKeyHint(0);
+          selectTool(t.tool);
+        } else if (/^[a-z0-9]$/i.test(e.key)) {
+          // 押すたびに数え直して、出している時間を延ばす
+          setKeyHint((n) => n + 1);
+        }
       }
     };
     // コピー・切り取り・貼り付けはクリップボードのイベントで受ける（画像の貼り付けは呼び出し側が受ける）
@@ -443,6 +456,7 @@ export function Editor({
             onCollapsedChange={setPaletteCollapsed}
             onShowShortcuts={onShowShortcuts}
             actions={paletteActions}
+            showKeys={keyHint > 0}
           />
         </div>
         <aside className="harie-inspector" aria-label={m.inspector.label}>

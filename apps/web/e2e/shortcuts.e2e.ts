@@ -173,3 +173,23 @@ test("FR-EDIT-12: 画像を開く前も Ctrl / ⌘ + O で開け、Ctrl / ⌘ + 
   const dialog = page.getByRole("dialog", { name: "キーボードショートカット" });
   await expect(dialog.getByRole("region", { name: "ファイル" })).toContainText("Ctrl+Shift+O");
 });
+
+test("FR-EDIT-12: 割り当てのない文字キーを押すと、パレットに道具の切り替えキーを少しのあいだ出す", async ({
+  page,
+}) => {
+  await open(page);
+  const palette = page.getByRole("toolbar", { name: "ツール" });
+  const key = palette.locator(".harie-palette-key").first();
+  await expect(key).toHaveCSS("opacity", "0");
+  await page.keyboard.press("q");
+  await expect(palette).toHaveAttribute("data-show-keys", "true");
+  await expect(key).toHaveCSS("opacity", "1");
+  // 割り当てのあるキーを押したら道具を切り替えて、表示を消す
+  await page.keyboard.press("r");
+  await expect(page.getByRole("button", { name: "四角" })).toHaveAttribute("aria-pressed", "true");
+  await expect(palette).toHaveAttribute("data-show-keys", "false");
+  // しばらくすると自然に消える
+  await page.keyboard.press("q");
+  await expect(palette).toHaveAttribute("data-show-keys", "true");
+  await expect(palette).toHaveAttribute("data-show-keys", "false", { timeout: 4000 });
+});
