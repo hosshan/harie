@@ -53,10 +53,19 @@ test("FR-FILE-11, FR-EDIT-12: Ctrl / ⌘ + Shift + C でもコピーでき、シ
   await expect(page.getByRole("dialog")).toContainText("画像をクリップボードにコピー");
 });
 
-test("FR-FILE-11: 狭い画面では三点メニューからコピーする", async ({ page }) => {
+test("FR-FILE-11: 狭い画面（インストールしたアプリの小さな窓など）でも「コピー」はアイコンのボタンとして出る", async ({
+  page,
+}) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await openImage(page);
-  await page.getByRole("button", { name: "その他の操作" }).click();
-  await page.getByRole("menuitem", { name: "コピー" }).click();
+  const button = page.getByRole("button", { name: "コピー" });
+  await expect(button).toBeVisible();
+  // 文字は隠してアイコンだけにする
+  await expect(button.locator(".app-header-label")).toBeHidden();
+  await button.click();
   await expect(page.getByRole("status")).toContainText("画像をコピーしました");
+  expect(await clipboardImage(page)).toMatchObject({ width: 520, height: 400 });
+  // 三点メニューには重ねて入れない
+  await page.getByRole("button", { name: "その他の操作" }).click();
+  await expect(page.getByRole("menuitem", { name: "コピー" })).toHaveCount(0);
 });
