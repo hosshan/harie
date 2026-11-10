@@ -74,7 +74,11 @@ test("FR-FILE-08, FR-EDIT-01〜04, 07, 18: 画像を開いて注釈を付け、�
   await page.keyboard.press("Control+Shift+Z");
   await expect(annotationRects(page)).toHaveCount(1);
 
+  // 描いた後も道具は四角のまま、続けて描ける（FR-EDIT-18）
+  await expect(page.getByRole("button", { name: "四角" })).toHaveAttribute("aria-pressed", "true");
+
   // 選択して移動 → Delete で削除 → Ctrl+Z で戻る
+  await page.getByRole("button", { name: "選択" }).click();
   await drag(page, [140, 42], [180, 82]);
   await expect(annotationRects(page).first()).toHaveAttribute("x", "80");
   await page.keyboard.press("Delete");
@@ -418,6 +422,8 @@ test("FR-EDIT-11: 注釈を複数選んで、まとめて線の太さ・色を�
   await page.getByRole("button", { name: "太", exact: true }).click();
   const rects = annotationRects(page);
   await expect(rects.nth(1)).toHaveAttribute("stroke-width", "6");
+  await expect(rects).toHaveCount(2);
+  await page.getByRole("button", { name: "選択" }).click();
 
   // 何もない所からドラッグして、範囲に重なる注釈を選ぶ
   await drag(page, [20, 20], [220, 60]);
