@@ -17,8 +17,8 @@ export const TOOL_SHORTCUTS: readonly { tool: Tool; key: string }[] = [
 
 /**
  * 画像を開いたときに選んでおく道具（FR-EDIT-18）。
- * 注釈のない画像ならすぐ枠を描けるよう四角、注釈のある画像なら直しに来たので選択にする
+ * 注釈のない画像ならなぞるだけで枠・丸・矢印を描けるようスケッチ、注釈のある画像なら直しに来たので選択にする
  */
 export function initialTool(doc: { annotations: readonly unknown[] }): Tool {
-  return doc.annotations.length > 0 ? "select" : "rect";
+  return doc.annotations.length > 0 ? "select" : "sketch";
 }

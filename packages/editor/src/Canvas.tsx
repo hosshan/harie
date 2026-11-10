@@ -284,8 +284,9 @@ export function Canvas({
       if (picked !== undefined) onPickElement?.(picked);
       return;
     }
-    if (tool === "sketch") {
-      // 選んでいる図形は、スケッチの道具のままでもつまみで大きさを変え、掴んで動かせる
+    if (tool === "sketch" || tool === "rect" || tool === "ellipse" || tool === "arrow") {
+      // 描く道具は描いた後もそのまま続けて使う。選んでいる図形（描いた直後の図形を含む）は、
+      // 道具を持ち替えなくてもつまみで大きさを変え、掴んで動かせる
       const grip = (e.target as Element).getAttribute("data-handle") as Handle | null;
       const [only, ...rest] = state.selectedIds;
       if (grip !== null && only !== undefined && rest.length === 0) {
@@ -297,15 +298,15 @@ export function Canvas({
         setDrag({ kind: "move", ids: state.selectedIds, start: p, current: p });
         return;
       }
-      setDrag({ kind: "sketch", points: [p], start: p, current: p });
+      setDrag(
+        tool === "sketch"
+          ? { kind: "sketch", points: [p], start: p, current: p }
+          : { kind: "create", tool, start: p, current: p },
+      );
       return;
     }
     if (tool === "mask") {
       setDrag({ kind: "mask", start: p, current: p });
-      return;
-    }
-    if (tool === "rect" || tool === "ellipse" || tool === "arrow") {
-      setDrag({ kind: "create", tool, start: p, current: p });
       return;
     }
     if (tool === "text" || tool === "callout" || tool === "badge") {
@@ -330,12 +331,12 @@ export function Canvas({
                 ...badgeAnchorAt(doc, p, screenPx(6)),
               };
       dispatch({ type: "apply", ops: [{ op: "add", annotation }], select: id });
-      // 文字を置いたら、すぐに内容を打てるようにする
-      if (tool !== "badge") {
-        // 続く mousedown でフォーカスが編集面に移り、開いた入力欄が閉じないようにする
-        e.preventDefault();
-        setEditingId(id);
-      }
+      // 番号は続けて ①②③ と置けるよう、道具をそのままにする
+      if (tool === "badge") return;
+      // 文字を置いたら、すぐに内容を打てるようにする。続けてクリックしても次の文字を置かないよう選択に戻す
+      // 続く mousedown でフォーカスが編集面に移り、開いた入力欄が閉じないようにする
+      e.preventDefault();
+      setEditingId(id);
       onToolDone();
       return;
     }
@@ -443,7 +444,6 @@ export function Canvas({
     const ops = dragOps(doc, final, drawDefaults);
     const id = created(ops);
     dispatch({ type: "apply", ops, ...(id === undefined ? {} : { select: id }) });
-    if (final.kind === "create") onToolDone();
   };
 
   // 範囲選択の途中は、選ばれる注釈を先に示す
