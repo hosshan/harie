@@ -6,7 +6,7 @@
     <title>Harie — 평범한 이미지인데, 언제든 다시 고칠 수 있다.</title>
     <meta
       name="description"
-      content="도움말 문서의 스크린샷에 박스, 번호, 설명을 붙이세요. Harie는 언제든 다시 열어 고칠 수 있는 일반 JPEG 또는 PNG로 저장합니다. 오픈 소스이며 AI 제안, 개인정보 마스킹, Chrome 확장 프로그램, MCP 서버를 제공합니다."
+      content="도움말 문서의 스크린샷에 박스, 번호, 설명을 붙이세요. Harie는 언제든 다시 열어 고칠 수 있는 일반 JPEG 또는 PNG로 저장합니다. 오픈 소스이며 AI 제안, 개인정보 마스킹, Chrome 확장 프로그램, Claude Skill과 MCP 서버를 제공합니다."
     />
     <meta name="theme-color" content="#D4A72C" />
     <link rel="canonical" href="https://harie.studio/ko/" />
@@ -69,7 +69,7 @@
             "name": "Harie",
             "alternateName": "はりえ",
             "url": "https://harie.studio/ko/",
-            "description": "도움말 문서의 스크린샷에 박스, 번호, 설명을 붙이세요. Harie는 언제든 다시 열어 고칠 수 있는 일반 JPEG 또는 PNG로 저장합니다. 오픈 소스이며 AI 제안, 개인정보 마스킹, Chrome 확장 프로그램, MCP 서버를 제공합니다.",
+            "description": "도움말 문서의 스크린샷에 박스, 번호, 설명을 붙이세요. Harie는 언제든 다시 열어 고칠 수 있는 일반 JPEG 또는 PNG로 저장합니다. 오픈 소스이며 AI 제안, 개인정보 마스킹, Chrome 확장 프로그램, Claude Skill과 MCP 서버를 제공합니다.",
             "applicationCategory": "DesignApplication",
             "operatingSystem": "Web, Chrome, macOS, Windows",
             "inLanguage": [
@@ -167,7 +167,7 @@
                 "name": "Harie는 어디에서 쓸 수 있나요?",
                 "acceptedAnswer": {
                   "@type": "Answer",
-                  "text": "브라우저에서 동작하는 웹 편집기, 보고 있는 페이지를 캡처하는 Chrome 확장 프로그램, AI 에이전트용 MCP 서버가 있습니다. macOS와 Windows용 데스크톱 앱은 아직 배포하지 않지만 소스에서 빌드할 수 있습니다."
+                  "text": "브라우저에서 동작하는 웹 편집기, 보고 있는 페이지를 캡처하는 Chrome 확장 프로그램, claude.ai 등에 추가하는 Skill, AI 에이전트용 MCP 서버가 있습니다. macOS와 Windows용 데스크톱 앱은 아직 배포하지 않지만, 소스에서 빌드해 사용할 수 있습니다."
                 }
               },
               {
@@ -175,7 +175,7 @@
                 "name": "Claude 같은 AI 에이전트가 주석을 붙일 수 있나요?",
                 "acceptedAnswer": {
                   "@type": "Answer",
-                  "text": "네. MCP 서버 @harie/mcp를 Claude Code나 Claude Desktop에 등록하면, 지정한 폴더의 이미지를 열어 주석을 붙이고 글자를 고칠 수 있습니다."
+                  "text": "네. claude.ai에 Skill(harie.skill)을 추가하면 채팅에 첨부한 스크린샷에 Claude가 주석을 붙입니다. Claude Code나 Claude Desktop에 MCP 서버 @harie/mcp를 등록하면 지정한 폴더의 이미지를 열어 주석을 추가하고 문구를 고칠 수 있습니다."
                 }
               }
             ]
@@ -195,7 +195,7 @@
           <a href="#ai">AI</a>
           <a href="#privacy">개인정보</a>
           <a href="#platforms">사용 환경</a>
-          <a href="#mcp">MCP</a>
+          <a href="#integrations">AI 연동</a>
           <a href="https://github.com/hosshan/harie">GitHub</a>
         </nav>
         <details class="lang">
@@ -447,9 +447,9 @@
               </p>
             </article>
             <article class="card">
-              <h3>Claude에서 편집하기(MCP)</h3>
+              <h3>Claude에서 바로 편집(Skill과 MCP)</h3>
               <p>
-                 <code>@harie/mcp</code> 서버를 등록하면 Claude Code나 Claude Desktop에 주석을 붙이거나 고쳐 달라고 부탁할 수 있습니다. 화면 문구가 바뀌었을 때 관련된 이미지를 한 번에 고칠 수도 있습니다.
+                claude.ai에 Harie Skill을 추가해 두면, 채팅에 스크린샷을 첨부하고 요청하기만 해도 Claude가 주석을 붙이거나 고칩니다. 내 컴퓨터의 Claude Code나 Claude Desktop에서는 <code>@harie/mcp</code> 서버로 폴더의 이미지를 직접 다룹니다. UI 문구가 바뀌어도 관련 이미지를 한 번에 고칠 수 있습니다.
               </p>
               <figure class="chat" aria-label="Claude에게 보내는 요청 예시">
                 <p class="chat-user">guides 폴더의 알림 이미지에서 ‘저장하여 적용’을 ‘업데이트하여 적용’으로 바꿔 줘</p>
@@ -520,38 +520,70 @@
               <a class="link" href="https://github.com/hosshan/harie/tree/main/apps/desktop">데스크톱 앱 안내</a>
             </article>
             <article class="platform">
-              <div class="platform-head"><h3>MCP</h3></div>
-              <p>Claude 같은 AI 에이전트가 지정한 폴더의 이미지를 읽고 쓸 수 있습니다.</p>
-              <a class="link" href="#mcp">설정 방법</a>
+              <div class="platform-head"><h3>AI 연동</h3></div>
+              <p>Claude 같은 AI에게 요청해 주석을 붙이거나 고칠 수 있습니다. claude.ai에서는 Skill을, 내 컴퓨터의 앱에서는 MCP 서버를 사용합니다.</p>
+              <a class="link" href="#integrations">설정 방법</a>
             </article>
           </div>
         </div>
       </section>
 
-      <section class="section" id="mcp" aria-labelledby="mcp-title">
+      <section class="section" id="integrations" aria-labelledby="integrations-title">
         <div class="container split">
           <div class="split-copy">
-            <p class="eyebrow">MCP 시작하기</p>
-            <h2 id="mcp-title" class="h2">Claude에게 주석을 맡기세요.</h2>
-            <p> <code>@harie/mcp</code> 서버를 등록하면 Claude Code, Claude Desktop, ChatGPT 데스크톱 앱이 Harie 이미지를 열어 주석을 붙이거나 고칠 수 있습니다.</p>
+            <p class="eyebrow">AI 연동</p>
+            <h2 id="integrations-title" class="h2">AI에게 주석을 맡기세요.</h2>
+            <p>Claude에게 요청하기만 하면 Harie 이미지에 주석을 붙이거나 문구를 고칩니다. claude.ai나 클라우드 세션에서는 Skill을, 내 컴퓨터의 Claude Code, Claude Desktop, ChatGPT 데스크톱 앱에서는 MCP 서버를 사용합니다. 어느 쪽으로 만들어도 같은 파일이 됩니다.</p>
+            <figure class="chat chat-examples" aria-label="요청 예시">
+              <figcaption class="small muted">요청 예시</figcaption>
+              <p class="chat-user">첨부한 화면에 알림 설정 방법을 3단계로 주석 달아 줘</p>
+              <p class="chat-user">settings.png를 Harie 파일로 만들고, 저장 버튼을 빨간 박스로 감싼 다음 ‘여기서 저장’이라는 말풍선을 붙여 줘</p>
+              <p class="chat-user">guides 폴더의 이미지에서 보이는 이메일 주소를 모두 더미 값으로 바꿔 줘</p>
+            </figure>
+            <p class="small muted">개인정보 처리는 되돌릴 수 없으므로, Harie는 확인을 받은 뒤에만 저장합니다.</p>
           </div>
           <div class="setup-card">
-            <div class="tabs" role="tablist" aria-label="등록할 앱">
-              <button type="button" role="tab" id="tab-code" aria-controls="setup-code" aria-selected="true">Claude Code</button>
-              <button type="button" role="tab" id="tab-desktop" aria-controls="setup-desktop" aria-selected="false" tabindex="-1">Claude Desktop</button>
-              <button type="button" role="tab" id="tab-chatgpt" aria-controls="setup-chatgpt" aria-selected="false" tabindex="-1">ChatGPT</button>
+            <div class="tabs tabs-switch" role="tablist" aria-label="연결 방법">
+              <button type="button" role="tab" id="tab-skill" aria-controls="setup-skill" aria-selected="true">Skill</button>
+              <button type="button" role="tab" id="tab-mcp" aria-controls="setup-mcp" aria-selected="false" tabindex="-1">MCP</button>
             </div>
-            <div class="tab-panel" role="tabpanel" id="setup-code" aria-labelledby="tab-code">
-              <p class="small muted">터미널에서 이 명령을 실행하세요.</p>
-              <div class="cmd">
-                <code id="mcp-cmd">claude mcp add harie -- npx -y @harie/mcp --root ~/Pictures/guides</code>
-                <button class="copy" type="button" data-copy="mcp-cmd" data-copied="복사했습니다">복사</button>
-              </div>
-            </div>
-            <div class="tab-panel" role="tabpanel" id="setup-desktop" aria-labelledby="tab-desktop" hidden>
-              <p class="small muted"> <code>claude_desktop_config.json</code> 에 이 설정을 추가하고 Claude Desktop을 다시 시작하세요. 폴더는 자신의 경로로 바꿔 주세요.</p>
+            <div class="tab-panel setup-panel" role="tabpanel" id="setup-skill" aria-labelledby="tab-skill">
+              <p>claude.ai의 채팅과 프로젝트, Claude Code on the web에서 사용할 수 있습니다. 컴퓨터에 아무것도 설치하지 않고, 채팅에 스크린샷을 첨부해 주석을 요청하면 됩니다.</p>
+              <ol class="setup-steps">
+                <li>GitHub 릴리스에서 <a href="https://github.com/hosshan/harie/releases?q=skill-v&amp;expanded=true"><code>harie.skill</code></a> 파일을 다운로드합니다.</li>
+                <li>claude.ai의 설정 → 기능에서 &#x27;코드 실행 및 파일 생성&#x27;을 켭니다.</li>
+                <li>같은 화면의 스킬에서 <code>harie.skill</code> 파일을 업로드합니다.</li>
+              </ol>
+              <p class="small muted">계정에 추가한 Skill은 Claude Code on the web 세션에서도 사용할 수 있습니다. Claude Code에서는 다음 명령으로 플러그인으로 설치할 수도 있습니다.</p>
               <div class="cmd cmd-block">
-                <pre id="mcp-json">{
+                <pre id="skill-cmd">/plugin marketplace add hosshan/harie
+/plugin install harie@harie</pre>
+                <button class="copy" type="button" data-copy="skill-cmd" data-copied="복사했습니다">복사</button>
+              </div>
+              <ul class="setup-notes">
+                <li>Skill은 대화 안에서 npm의 <code>@harie/mcp</code> 패키지를 받아 실행하므로, 그리기와 저장은 MCP와 똑같습니다.</li>
+                <li>Team이나 Enterprise 플랜에서는 관리자가 스킬과 코드 실행을 허용해야 합니다.</li>
+              </ul>
+              <a class="link" href="https://github.com/hosshan/harie/blob/main/apps/skill/README.md">자세한 설치 방법(GitHub, 일본어)</a>
+            </div>
+            <div class="tab-panel setup-panel" role="tabpanel" id="setup-mcp" aria-labelledby="tab-mcp" hidden>
+              <p>내 컴퓨터의 앱에 <code>@harie/mcp</code> 서버를 등록하면, 컴퓨터 안 폴더의 이미지를 직접 열어 고칠 수 있습니다.</p>
+              <div class="tabs" role="tablist" aria-label="등록할 앱">
+                <button type="button" role="tab" id="tab-code" aria-controls="setup-code" aria-selected="true">Claude Code</button>
+                <button type="button" role="tab" id="tab-desktop" aria-controls="setup-desktop" aria-selected="false" tabindex="-1">Claude Desktop</button>
+                <button type="button" role="tab" id="tab-chatgpt" aria-controls="setup-chatgpt" aria-selected="false" tabindex="-1">ChatGPT</button>
+              </div>
+              <div class="tab-panel" role="tabpanel" id="setup-code" aria-labelledby="tab-code">
+                <p class="small muted">터미널에서 이 명령을 실행하세요.</p>
+                <div class="cmd">
+                  <code id="mcp-cmd">claude mcp add harie -- npx -y @harie/mcp --root ~/Pictures/guides</code>
+                  <button class="copy" type="button" data-copy="mcp-cmd" data-copied="복사했습니다">복사</button>
+                </div>
+              </div>
+              <div class="tab-panel" role="tabpanel" id="setup-desktop" aria-labelledby="tab-desktop" hidden>
+                <p class="small muted"> <code>claude_desktop_config.json</code> 에 이 설정을 추가하고 Claude Desktop을 다시 시작하세요. 폴더는 자신의 경로로 바꿔 주세요.</p>
+                <div class="cmd cmd-block">
+                  <pre id="mcp-json">{
   "mcpServers": {
     "harie": {
       "command": "npx",
@@ -559,30 +591,25 @@
     }
   }
 }</pre>
-                <button class="copy" type="button" data-copy="mcp-json" data-copied="복사했습니다">복사</button>
+                  <button class="copy" type="button" data-copy="mcp-json" data-copied="복사했습니다">복사</button>
+                </div>
               </div>
-            </div>
-            <div class="tab-panel" role="tabpanel" id="setup-chatgpt" aria-labelledby="tab-chatgpt" hidden>
-              <p class="small muted">ChatGPT 데스크톱 앱에서 쓸 수 있습니다. <code>~/.codex/config.toml</code> 에 이 설정을 추가하고 앱을 다시 시작하세요. 이 설정은 Codex CLI와 IDE 확장 프로그램에서도 함께 씁니다. 앱 설정의 MCP 서버 화면에서 같은 명령을 STDIO 서버로 추가할 수도 있습니다.</p>
-              <div class="cmd cmd-block">
-                <pre id="mcp-toml">[mcp_servers.harie]
+              <div class="tab-panel" role="tabpanel" id="setup-chatgpt" aria-labelledby="tab-chatgpt" hidden>
+                <p class="small muted">ChatGPT 데스크톱 앱에서 쓸 수 있습니다. <code>~/.codex/config.toml</code> 에 이 설정을 추가하고 앱을 다시 시작하세요. 이 설정은 Codex CLI와 IDE 확장 프로그램에서도 함께 씁니다. 앱 설정의 MCP 서버 화면에서 같은 명령을 STDIO 서버로 추가할 수도 있습니다.</p>
+                <div class="cmd cmd-block">
+                  <pre id="mcp-toml">[mcp_servers.harie]
 command = "npx"
 args = ["-y", "@harie/mcp", "--root", "/Users/you/Pictures/guides"]</pre>
-                <button class="copy" type="button" data-copy="mcp-toml" data-copied="복사했습니다">복사</button>
+                  <button class="copy" type="button" data-copy="mcp-toml" data-copied="복사했습니다">복사</button>
+                </div>
+                <p class="small muted">웹의 ChatGPT는 내 컴퓨터에서 실행 중인 MCP 서버에 연결할 수 없습니다.</p>
               </div>
-              <p class="small muted">웹의 ChatGPT는 내 컴퓨터에서 실행 중인 MCP 서버에 연결할 수 없습니다.</p>
+              <ul class="setup-notes">
+                <li>Node.js 22 이상이 필요합니다. 서버는 npm에서 <code>npx</code>로 실행되므로 따로 설치할 것은 없습니다.</li>
+                <li> <code>--root</code> 에 이미지가 있는 폴더를 지정하세요. 서버는 그 폴더 안에서만 읽고 쓸 수 있습니다.</li>
+              </ul>
+              <a class="link" href="https://github.com/hosshan/harie/blob/main/apps/mcp/README.md">전체 도구 목록과 사용법(GitHub)</a>
             </div>
-            <ul class="setup-notes">
-              <li>Node.js 22 이상이 필요합니다. 서버는 npm에서 <code>npx</code>로 실행되므로 따로 설치할 것은 없습니다.</li>
-              <li> <code>--root</code> 에 이미지가 있는 폴더를 지정하세요. 서버는 그 폴더 안에서만 읽고 쓸 수 있습니다.</li>
-            </ul>
-            <a class="link" href="https://github.com/hosshan/harie/blob/main/apps/mcp/README.md">전체 도구 목록과 사용법(GitHub)</a>
-            <figure class="chat chat-examples" aria-label="요청 예시">
-              <figcaption class="small muted">요청 예시</figcaption>
-              <p class="chat-user">settings.png를 Harie 파일로 만들고, 저장 버튼을 빨간 박스로 감싼 다음 ‘여기서 저장’이라는 말풍선을 붙여 줘</p>
-              <p class="chat-user">guides 폴더의 이미지에서 보이는 이메일 주소를 모두 더미 값으로 바꿔 줘</p>
-            </figure>
-            <p class="small muted">개인정보 마스킹은 되돌릴 수 없으므로, 서버는 확인을 받은 뒤에만 저장합니다.</p>
           </div>
         </div>
       </section>
@@ -621,11 +648,11 @@ args = ["-y", "@harie/mcp", "--root", "/Users/you/Pictures/guides"]</pre>
             </article>
             <article class="faq-item">
               <h3>Harie는 어디에서 쓸 수 있나요?</h3>
-              <p>브라우저에서 동작하는 웹 편집기, 보고 있는 페이지를 캡처하는 Chrome 확장 프로그램, AI 에이전트용 MCP 서버가 있습니다. macOS와 Windows용 데스크톱 앱은 아직 배포하지 않지만 소스에서 빌드할 수 있습니다.</p>
+              <p>브라우저에서 동작하는 웹 편집기, 보고 있는 페이지를 캡처하는 Chrome 확장 프로그램, claude.ai 등에 추가하는 Skill, AI 에이전트용 MCP 서버가 있습니다. macOS와 Windows용 데스크톱 앱은 아직 배포하지 않지만, 소스에서 빌드해 사용할 수 있습니다.</p>
             </article>
             <article class="faq-item">
               <h3>Claude 같은 AI 에이전트가 주석을 붙일 수 있나요?</h3>
-              <p>네. MCP 서버 @harie/mcp를 Claude Code나 Claude Desktop에 등록하면, 지정한 폴더의 이미지를 열어 주석을 붙이고 글자를 고칠 수 있습니다.</p>
+              <p>네. claude.ai에 Skill(harie.skill)을 추가하면 채팅에 첨부한 스크린샷에 Claude가 주석을 붙입니다. Claude Code나 Claude Desktop에 MCP 서버 @harie/mcp를 등록하면 지정한 폴더의 이미지를 열어 주석을 추가하고 문구를 고칠 수 있습니다.</p>
             </article>
           </div>
         </div>

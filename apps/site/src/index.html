@@ -6,7 +6,7 @@
     <title>Harie — ただの画像なのに、何度でも直せる</title>
     <meta
       name="description"
-      content="ガイド用のスクリーンショットに、枠や番号、説明を書き込むツールです。保存した画像はふつうの JPEG / PNG として表示でき、Harie で開けばあとから何度でも直せます。AI による補足の提案、個人情報のダミー置換、Chrome 拡張、MCP に対応したオープンソースです。"
+      content="ガイド用のスクリーンショットに、枠や番号、説明を書き込むツールです。保存した画像はふつうの JPEG / PNG として表示でき、Harie で開けばあとから何度でも直せます。AI による補足の提案、個人情報のダミー置換、Chrome 拡張、Claude の Skill と MCP に対応したオープンソースです。"
     />
     <meta name="theme-color" content="#D4A72C" />
     <link rel="canonical" href="https://harie.studio/" />
@@ -68,7 +68,7 @@
             "name": "Harie",
             "alternateName": "はりえ",
             "url": "https://harie.studio/",
-            "description": "ガイド用のスクリーンショットに、枠や番号、説明を書き込むツールです。保存した画像はふつうの JPEG / PNG として表示でき、Harie で開けばあとから何度でも直せます。AI による補足の提案、個人情報のダミー置換、Chrome 拡張、MCP に対応したオープンソースです。",
+            "description": "ガイド用のスクリーンショットに、枠や番号、説明を書き込むツールです。保存した画像はふつうの JPEG / PNG として表示でき、Harie で開けばあとから何度でも直せます。AI による補足の提案、個人情報のダミー置換、Chrome 拡張、Claude の Skill と MCP に対応したオープンソースです。",
             "applicationCategory": "DesignApplication",
             "operatingSystem": "Web, Chrome, macOS, Windows",
             "inLanguage": [
@@ -166,7 +166,7 @@
                 "name": "どこで使えますか？",
                 "acceptedAnswer": {
                   "@type": "Answer",
-                  "text": "ブラウザで動く Web エディタ、表示中のページを撮れる Chrome 拡張、AI エージェントから使う MCP サーバーがあります。macOS と Windows 向けのデスクトップ版は配布の準備中で、いまはソースからビルドすると使えます。"
+                  "text": "ブラウザで動く Web エディタ、表示中のページを撮れる Chrome 拡張、claude.ai などに入れる Skill、AI エージェントから使う MCP サーバーがあります。macOS と Windows 向けのデスクトップ版は配布の準備中で、いまはソースからビルドすると使えます。"
                 }
               },
               {
@@ -174,7 +174,7 @@
                 "name": "Claude などの AI エージェントから注釈を付けられますか？",
                 "acceptedAnswer": {
                   "@type": "Answer",
-                  "text": "はい。MCP サーバー @harie/mcp を Claude Code や Claude Desktop に登録すると、指定したフォルダの中の画像を開いて、注釈を付けたり文言を直したりできます。"
+                  "text": "はい。claude.ai に Skill（harie.skill）を入れると、チャットに添付した画像に注釈を付けられます。Claude Code や Claude Desktop に MCP サーバー @harie/mcp を登録すると、指定したフォルダの中の画像を開いて、注釈を付けたり文言を直したりできます。"
                 }
               }
             ]
@@ -194,7 +194,7 @@
           <a href="#ai">AI</a>
           <a href="#privacy">個人情報</a>
           <a href="#platforms">使える場所</a>
-          <a href="#mcp">MCP</a>
+          <a href="#integrations">AI 連携</a>
           <a href="https://github.com/hosshan/harie">GitHub</a>
         </nav>
         <details class="lang">
@@ -445,9 +445,9 @@
               <p class="small muted">使うには OpenRouter で接続するか、Anthropic の API キーを設定します。画像を送る前には必ず確認が出て、キーはお使いのブラウザの中にだけ保存されます。</p>
             </article>
             <article class="card">
-              <h3>Claude から直接編集（MCP）</h3>
+              <h3>Claude から直接編集（Skill・MCP）</h3>
               <p>
-                MCP サーバー <code>@harie/mcp</code> を登録しておけば、Claude Code や Claude Desktop に頼むだけで注釈を付けたり直したりできます。UI の文言が変わったときも、関係する画像をまとめて直せます。
+                Harie の Skill を claude.ai に入れておけば、チャットに画像を添付して頼むだけで注釈を付けたり直したりできます。手元の Claude Code や Claude Desktop なら、MCP サーバー <code>@harie/mcp</code> でフォルダの画像を直接扱えます。UI の文言が変わったときも、関係する画像をまとめて直せます。
               </p>
               <figure class="chat" aria-label="Claude への依頼の例">
                 <p class="chat-user">guides の通知設定の画像で、「保存して反映」を「更新して反映」に直して</p>
@@ -516,38 +516,70 @@
               <a class="link" href="https://github.com/hosshan/harie/tree/main/apps/desktop">詳しく見る</a>
             </article>
             <article class="platform">
-              <div class="platform-head"><h3>MCP</h3></div>
-              <p>Claude などの AI エージェントが、指定したフォルダの中の画像を読み書きします。</p>
-              <a class="link" href="#mcp">始め方を見る</a>
+              <div class="platform-head"><h3>AI 連携</h3></div>
+              <p>Claude などの AI に頼んで、注釈を付けたり直したりできます。claude.ai では Skill を、手元のアプリでは MCP サーバーを使います。</p>
+              <a class="link" href="#integrations">始め方を見る</a>
             </article>
           </div>
         </div>
       </section>
 
-      <section class="section" id="mcp" aria-labelledby="mcp-title">
+      <section class="section" id="integrations" aria-labelledby="integrations-title">
         <div class="container split">
           <div class="split-copy">
-            <p class="eyebrow">MCP の始め方</p>
-            <h2 id="mcp-title" class="h2"><span class="nb">Claude に頼んで、</span><span class="nb">注釈を付ける。</span></h2>
-            <p>MCP サーバー <code>@harie/mcp</code> を登録すると、Claude Code や Claude Desktop、ChatGPT のデスクトップアプリから Harie の画像を開いて、注釈を付けたり直したりできるようになります。</p>
+            <p class="eyebrow">AI 連携</p>
+            <h2 id="integrations-title" class="h2"><span class="nb">AI に頼んで、</span><span class="nb">注釈を付ける。</span></h2>
+            <p>Claude に頼むだけで、Harie の画像に注釈を付けたり、文言を直したりできます。claude.ai やクラウドのセッションで使うなら Skill を、手元の Claude Code や Claude Desktop、ChatGPT のデスクトップアプリで使うなら MCP サーバーを入れます。どちらで作っても、できあがるファイルは同じです。</p>
+            <figure class="chat chat-examples" aria-label="頼み方の例">
+              <figcaption class="small muted">頼み方の例</figcaption>
+              <p class="chat-user">添付した画面に、通知設定の手順を 3 ステップで注釈して</p>
+              <p class="chat-user">settings.png を Harie ファイルにして、保存ボタンを赤枠で囲み、「ここで保存します」と吹き出しを付けて</p>
+              <p class="chat-user">guides の画像で、メールアドレスが映っているところをダミーに置き換えて</p>
+            </figure>
+            <p class="small muted">個人情報の加工は元に戻せないので、確認が取れたときだけ保存します。</p>
           </div>
           <div class="setup-card">
-            <div class="tabs" role="tablist" aria-label="登録するアプリ">
-              <button type="button" role="tab" id="tab-code" aria-controls="setup-code" aria-selected="true">Claude Code</button>
-              <button type="button" role="tab" id="tab-desktop" aria-controls="setup-desktop" aria-selected="false" tabindex="-1">Claude Desktop</button>
-              <button type="button" role="tab" id="tab-chatgpt" aria-controls="setup-chatgpt" aria-selected="false" tabindex="-1">ChatGPT</button>
+            <div class="tabs tabs-switch" role="tablist" aria-label="使う方法">
+              <button type="button" role="tab" id="tab-skill" aria-controls="setup-skill" aria-selected="true">Skill</button>
+              <button type="button" role="tab" id="tab-mcp" aria-controls="setup-mcp" aria-selected="false" tabindex="-1">MCP</button>
             </div>
-            <div class="tab-panel" role="tabpanel" id="setup-code" aria-labelledby="tab-code">
-              <p class="small muted">ターミナルで次のコマンドを実行します。</p>
-              <div class="cmd">
-                <code id="mcp-cmd">claude mcp add harie -- npx -y @harie/mcp --root ~/Pictures/guides</code>
-                <button class="copy" type="button" data-copy="mcp-cmd" data-copied="コピーしました">コピー</button>
-              </div>
-            </div>
-            <div class="tab-panel" role="tabpanel" id="setup-desktop" aria-labelledby="tab-desktop" hidden>
-              <p class="small muted"><code>claude_desktop_config.json</code> に次の設定を足して、Claude Desktop を再起動します。フォルダのパスは、ご自分の環境に合わせて書き換えてください。</p>
+            <div class="tab-panel setup-panel" role="tabpanel" id="setup-skill" aria-labelledby="tab-skill">
+              <p>claude.ai のチャットやプロジェクト、Claude Code on the web で使えます。パソコンに何も入れずに、チャットに添付した画像へ注釈を付けられます。</p>
+              <ol class="setup-steps">
+                <li>GitHub のリリースから <a href="https://github.com/hosshan/harie/releases?q=skill-v&amp;expanded=true"><code>harie.skill</code></a> をダウンロードします。</li>
+                <li>claude.ai の「設定」→「機能」で、「コード実行とファイル作成」をオンにします。</li>
+                <li>同じ画面の「スキル」で <code>harie.skill</code> をアップロードします。</li>
+              </ol>
+              <p class="small muted">アカウントに入れた Skill は、Claude Code on the web のセッションでもそのまま使えます。Claude Code なら、次のコマンドでプラグインとして入れることもできます。</p>
               <div class="cmd cmd-block">
-                <pre id="mcp-json">{
+                <pre id="skill-cmd">/plugin marketplace add hosshan/harie
+/plugin install harie@harie</pre>
+                <button class="copy" type="button" data-copy="skill-cmd" data-copied="コピーしました">コピー</button>
+              </div>
+              <ul class="setup-notes">
+                <li>Skill は会話の中で npm から <code>@harie/mcp</code> を取ってきて動かすので、描画や保存は MCP と同じです。</li>
+                <li>Team や Enterprise のプランでは、管理者が Skill とコード実行を許可している必要があります。</li>
+              </ul>
+              <a class="link" href="https://github.com/hosshan/harie/blob/main/apps/skill/README.md">Skill の入れ方を詳しく見る（GitHub）</a>
+            </div>
+            <div class="tab-panel setup-panel" role="tabpanel" id="setup-mcp" aria-labelledby="tab-mcp" hidden>
+              <p>手元のアプリに MCP サーバー <code>@harie/mcp</code> を登録すると、パソコンの中のフォルダの画像を直接開いて直せます。</p>
+              <div class="tabs" role="tablist" aria-label="登録するアプリ">
+                <button type="button" role="tab" id="tab-code" aria-controls="setup-code" aria-selected="true">Claude Code</button>
+                <button type="button" role="tab" id="tab-desktop" aria-controls="setup-desktop" aria-selected="false" tabindex="-1">Claude Desktop</button>
+                <button type="button" role="tab" id="tab-chatgpt" aria-controls="setup-chatgpt" aria-selected="false" tabindex="-1">ChatGPT</button>
+              </div>
+              <div class="tab-panel" role="tabpanel" id="setup-code" aria-labelledby="tab-code">
+                <p class="small muted">ターミナルで次のコマンドを実行します。</p>
+                <div class="cmd">
+                  <code id="mcp-cmd">claude mcp add harie -- npx -y @harie/mcp --root ~/Pictures/guides</code>
+                  <button class="copy" type="button" data-copy="mcp-cmd" data-copied="コピーしました">コピー</button>
+                </div>
+              </div>
+              <div class="tab-panel" role="tabpanel" id="setup-desktop" aria-labelledby="tab-desktop" hidden>
+                <p class="small muted"><code>claude_desktop_config.json</code> に次の設定を足して、Claude Desktop を再起動します。フォルダのパスは、ご自分の環境に合わせて書き換えてください。</p>
+                <div class="cmd cmd-block">
+                  <pre id="mcp-json">{
   "mcpServers": {
     "harie": {
       "command": "npx",
@@ -555,30 +587,25 @@
     }
   }
 }</pre>
-                <button class="copy" type="button" data-copy="mcp-json" data-copied="コピーしました">コピー</button>
+                  <button class="copy" type="button" data-copy="mcp-json" data-copied="コピーしました">コピー</button>
+                </div>
               </div>
-            </div>
-            <div class="tab-panel" role="tabpanel" id="setup-chatgpt" aria-labelledby="tab-chatgpt" hidden>
-              <p class="small muted">ChatGPT のデスクトップアプリで使えます。<code>~/.codex/config.toml</code> に次の設定を足して、アプリを再起動します。この設定は Codex の CLI や IDE 拡張とも共通です。アプリの設定にある MCP サーバーの画面から、STDIO で同じコマンドを登録することもできます。</p>
-              <div class="cmd cmd-block">
-                <pre id="mcp-toml">[mcp_servers.harie]
+              <div class="tab-panel" role="tabpanel" id="setup-chatgpt" aria-labelledby="tab-chatgpt" hidden>
+                <p class="small muted">ChatGPT のデスクトップアプリで使えます。<code>~/.codex/config.toml</code> に次の設定を足して、アプリを再起動します。この設定は Codex の CLI や IDE 拡張とも共通です。アプリの設定にある MCP サーバーの画面から、STDIO で同じコマンドを登録することもできます。</p>
+                <div class="cmd cmd-block">
+                  <pre id="mcp-toml">[mcp_servers.harie]
 command = "npx"
 args = ["-y", "@harie/mcp", "--root", "/Users/you/Pictures/guides"]</pre>
-                <button class="copy" type="button" data-copy="mcp-toml" data-copied="コピーしました">コピー</button>
+                  <button class="copy" type="button" data-copy="mcp-toml" data-copied="コピーしました">コピー</button>
+                </div>
+                <p class="small muted">Web 版の ChatGPT は、パソコンの中で動く MCP サーバーにはつながりません。</p>
               </div>
-              <p class="small muted">Web 版の ChatGPT は、パソコンの中で動く MCP サーバーにはつながりません。</p>
+              <ul class="setup-notes">
+                <li>Node.js 22 以上が必要です。サーバーは <code>npx</code> が npm から取ってきて動かすので、ほかに入れるものはありません。</li>
+                <li><code>--root</code> には、注釈を付けたい画像を置くフォルダを指定します。サーバーが読み書きできるのは、このフォルダの中だけです。</li>
+              </ul>
+              <a class="link" href="https://github.com/hosshan/harie/blob/main/apps/mcp/README.ja.md">ツールの一覧と詳しい使い方（GitHub）</a>
             </div>
-            <ul class="setup-notes">
-              <li>Node.js 22 以上が必要です。サーバーは <code>npx</code> が npm から取ってきて動かすので、ほかに入れるものはありません。</li>
-              <li><code>--root</code> には、注釈を付けたい画像を置くフォルダを指定します。サーバーが読み書きできるのは、このフォルダの中だけです。</li>
-            </ul>
-            <a class="link" href="https://github.com/hosshan/harie/blob/main/apps/mcp/README.ja.md">ツールの一覧と詳しい使い方（GitHub）</a>
-            <figure class="chat chat-examples" aria-label="頼み方の例">
-              <figcaption class="small muted">頼み方の例</figcaption>
-              <p class="chat-user">settings.png を Harie ファイルにして、保存ボタンを赤枠で囲み、「ここで保存します」と吹き出しを付けて</p>
-              <p class="chat-user">guides の画像で、メールアドレスが映っているところをダミーに置き換えて</p>
-            </figure>
-            <p class="small muted">個人情報の加工は元に戻せないので、確認が取れたときだけ保存します。</p>
           </div>
         </div>
       </section>
@@ -617,11 +644,11 @@ args = ["-y", "@harie/mcp", "--root", "/Users/you/Pictures/guides"]</pre>
             </article>
             <article class="faq-item">
               <h3>どこで使えますか？</h3>
-              <p>ブラウザで動く Web エディタ、表示中のページを撮れる Chrome 拡張、AI エージェントから使う MCP サーバーがあります。macOS と Windows 向けのデスクトップ版は配布の準備中で、いまはソースからビルドすると使えます。</p>
+              <p>ブラウザで動く Web エディタ、表示中のページを撮れる Chrome 拡張、claude.ai などに入れる Skill、AI エージェントから使う MCP サーバーがあります。macOS と Windows 向けのデスクトップ版は配布の準備中で、いまはソースからビルドすると使えます。</p>
             </article>
             <article class="faq-item">
               <h3>Claude などの AI エージェントから注釈を付けられますか？</h3>
-              <p>はい。MCP サーバー @harie/mcp を Claude Code や Claude Desktop に登録すると、指定したフォルダの中の画像を開いて、注釈を付けたり文言を直したりできます。</p>
+              <p>はい。claude.ai に Skill（harie.skill）を入れると、チャットに添付した画像に注釈を付けられます。Claude Code や Claude Desktop に MCP サーバー @harie/mcp を登録すると、指定したフォルダの中の画像を開いて、注釈を付けたり文言を直したりできます。</p>
             </article>
           </div>
         </div>

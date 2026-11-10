@@ -9,14 +9,14 @@ Key facts:
 - Images are processed locally in the browser or on the device. There is no developer-run server, analytics or tracking.
 - Optional AI features (annotation suggestions and personal data detection) use the user's own Anthropic API key, or an OpenRouter account connected from the web editor. Images are sent to Anthropic's Claude API only after the user confirms.
 - Personal data such as names, email addresses and phone numbers can be replaced with dummy values (or filled, mosaicked or blurred). This is applied to the original image irreversibly, so the original values do not remain in the file.
-- Available as a web editor (https://harie.studio/app/), a Chrome extension (Chrome Web Store), and an MCP server (`npx -y @harie/mcp --root <folder>`) for AI agents such as Claude Code and Claude Desktop. A desktop app for macOS and Windows (Tauri 2) can be built from source; signed binaries are not distributed yet.
+- Available as a web editor (https://harie.studio/app/), a Chrome extension (Chrome Web Store), a Claude Skill (`harie.skill`, uploaded to claude.ai; also works in Claude Code on the web, or as a Claude Code plugin with `/plugin install harie@harie`) for annotating screenshots attached to a chat without installing anything, and an MCP server (`npx -y @harie/mcp --root <folder>`) for AI agents such as Claude Code and Claude Desktop. A desktop app for macOS and Windows (Tauri 2) can be built from source; signed binaries are not distributed yet.
 - The editor UI is available in English, Japanese, Korean, Traditional Chinese, Simplified Chinese, Spanish and Brazilian Portuguese. Annotation text in Korean and Chinese renders with bundled Noto Sans KR and SC fonts.
 - Compared with screenshot tools such as Snagit or CleanShot X, which keep editable annotations in their own project files, and guide-making services such as Scribe or Tango, which keep guides in their own accounts, Harie keeps the annotations inside the exported image file itself.
 - Harie does not generate step-by-step guides automatically from recorded actions.
 
 ## Pages
 
-- [Harie (English)](https://harie.studio/en/): overview, how the editable image works, AI, personal data masking, platforms, MCP setup, FAQ
+- [Harie (English)](https://harie.studio/en/): overview, how the editable image works, AI, personal data masking, platforms, AI integrations (Skill and MCP setup), FAQ
 - [Harie (日本語)](https://harie.studio/): the same page in Japanese
 - The same page in [한국어](https://harie.studio/ko/), [繁體中文](https://harie.studio/zh-tw/), [简体中文](https://harie.studio/zh-cn/), [Español](https://harie.studio/es/) and [Português (Brasil)](https://harie.studio/pt-br/)
 - [Web editor](https://harie.studio/app/): runs in the browser, no install
@@ -25,6 +25,7 @@ Key facts:
 ## Get it
 
 - [Chrome extension](https://chromewebstore.google.com/detail/harie/dgbghdgnmjcgjdmhfnmcdphkafkbefll): capture the current page and annotate it
+- [Harie Skill](https://github.com/hosshan/harie/releases?q=skill-v&expanded=true): `harie.skill` for claude.ai; install steps in the [README (Japanese)](https://github.com/hosshan/harie/blob/main/apps/skill/README.md)
 - [@harie/mcp on npm](https://www.npmjs.com/package/@harie/mcp): MCP server; tools and usage in the [README](https://github.com/hosshan/harie/blob/main/apps/mcp/README.md)
 - [Source code on GitHub](https://github.com/hosshan/harie)
 
