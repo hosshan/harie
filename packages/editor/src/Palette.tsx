@@ -87,6 +87,8 @@ export type PaletteProps = {
   onShowShortcuts?: (() => void) | undefined;
   /** 道具の後ろに並べる操作 */
   actions?: readonly PaletteAction[];
+  /** 道具のボタンに切り替えのキーを重ねて出す（割り当てのないキーが押されたとき） */
+  showKeys?: boolean;
 };
 
 export function Palette({
@@ -102,6 +104,7 @@ export function Palette({
   collapsed,
   onCollapsedChange,
   onShowShortcuts,
+  showKeys = false,
 }: PaletteProps) {
   const m = useMessages(EDITOR_MESSAGES);
   const mac = isMacPlatform();
@@ -113,6 +116,7 @@ export function Palette({
       aria-label={m.palette.label}
       data-hidden={hidden}
       data-collapsed={collapsed}
+      data-show-keys={showKeys}
     >
       {/* 道具が入りきらない幅（スマホ）では、この中だけを横にスクロールする */}
       <div className="harie-palette-scroll">
@@ -166,6 +170,9 @@ export function Palette({
               >
                 <Icon>{TOOL_ICONS[t.tool]}</Icon>
                 <span aria-hidden="true">{t.label}</span>
+                <span className="harie-palette-key" aria-hidden="true">
+                  {t.key.toUpperCase()}
+                </span>
               </button>
             ))}
             {actions.map((a) => (

@@ -119,6 +119,7 @@ export const ptBR: EditorMessages = {
     save: "Salvar",
     openImage: "Abrir imagem",
     copyImage: "Copiar a imagem para a área de transferência",
+    replaceImage: "Substituir a imagem",
     undo: "Desfazer",
     redo: "Refazer",
     selectAll: "Selecionar tudo",

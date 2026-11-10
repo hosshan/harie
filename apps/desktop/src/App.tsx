@@ -7,6 +7,7 @@ import { Header, HeaderButton } from "@harie/web/header";
 import { loadFile, type Opened } from "@harie/web/load";
 import { useWebMessages, webMessages } from "@harie/web/messages";
 import type { Saved } from "@harie/web/save";
+import { openButtonTitle, useOpenShortcut } from "@harie/web/start";
 import { Workspace } from "@harie/web/workspace";
 import { listen } from "@tauri-apps/api/event";
 import { getCurrentWebview } from "@tauri-apps/api/webview";
@@ -74,6 +75,8 @@ export function App() {
     dirty.current = false;
     await openPath(filePath);
   };
+  // 画像を開く前も Ctrl / ⌘ + O で開ける。開いた後は Workspace が受け持つ
+  useOpenShortcut(pick, opened === null);
 
   // 関連付け・「このアプリで開く」から渡されたファイルを開く。1 つのウィンドウで扱うので、最後の 1 つだけを開く
   useEffect(() => {
@@ -156,7 +159,12 @@ export function App() {
         <>
           <Header
             primary={
-              <HeaderButton icon="open" variant="default" onClick={pick}>
+              <HeaderButton
+                icon="open"
+                variant="default"
+                onClick={pick}
+                title={openButtonTitle(m.open.button)}
+              >
                 {m.open.button}
               </HeaderButton>
             }

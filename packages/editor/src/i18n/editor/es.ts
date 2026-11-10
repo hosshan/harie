@@ -119,6 +119,7 @@ export const es: EditorMessages = {
     save: "Guardar",
     openImage: "Abrir imagen",
     copyImage: "Copiar la imagen al portapapeles",
+    replaceImage: "Reemplazar la imagen",
     undo: "Deshacer",
     redo: "Rehacer",
     selectAll: "Seleccionar todo",

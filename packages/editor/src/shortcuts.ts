@@ -17,6 +17,7 @@ export type ShortcutId =
   | "save"
   | "open"
   | "copyImage"
+  | "replaceImage"
   | "undo"
   | "redo"
   | "selectAll"
@@ -43,6 +44,8 @@ export const SHORTCUTS: Record<ShortcutId, readonly KeyCombo[]> = {
   open: [{ key: "o", mod: true }],
   // 描いた画像をクリップボードへ（注釈のコピー ⌘C と分ける）
   copyImage: [{ key: "c", mod: true, shift: true }],
+  // 注釈を残して画像だけを差し替える（FR-EDIT-10）。「開く」に Shift を足したもの
+  replaceImage: [{ key: "o", mod: true, shift: true }],
   undo: [{ key: "z", mod: true }],
   redo: [
     { key: "z", mod: true, shift: true },

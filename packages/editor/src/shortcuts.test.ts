@@ -42,6 +42,14 @@ describe("キーボードのショートカット（FR-EDIT-12）", () => {
     expect(matchesShortcut(key("c", { ctrl: true }), "copyImage", false)).toBe(false);
   });
 
+  it("画像の差し替えは開くに Shift を足したもので、開くとは取り違えない（FR-EDIT-12, FR-EDIT-10）", () => {
+    expect(matchesShortcut(key("O", { meta: true, shift: true }), "replaceImage", true)).toBe(true);
+    expect(matchesShortcut(key("O", { meta: true, shift: true }), "open", true)).toBe(false);
+    expect(matchesShortcut(key("o", { ctrl: true }), "replaceImage", false)).toBe(false);
+    expect(formatShortcut("replaceImage", true)).toBe("⇧⌘O");
+    expect(formatShortcut("replaceImage", false)).toBe("Ctrl+Shift+O");
+  });
+
   it("記号のキーは位置（code）で判定する。? は Shift の有無を見ない", () => {
     const bracket = key("}", { meta: true, shift: true, code: "BracketRight" });
     expect(matchesShortcut(bracket, "bringToFront", true)).toBe(true);
