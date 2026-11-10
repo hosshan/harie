@@ -31,7 +31,7 @@ export type HeaderProps = {
   fileName?: string;
   /** 保存の状況など、メニューの左に出す短い文（狭い画面では 2 行目に出す） */
   status?: string | null;
-  /** どの幅でも出す主な操作（「保存」や「画像を開く」） */
+  /** どの幅でも出す主な操作（「保存」や「画像を開く」、Workspace では「コピー」も） */
   primary?: ReactNode;
   /** 画面の幅に合わせて、ボタンか三点メニューの項目にする操作 */
   actions?: readonly HeaderAction[];
@@ -186,13 +186,18 @@ export type HeaderIconName = keyof typeof ICONS;
 
 export function HeaderButton({
   icon,
+  compact = false,
   children,
   ...props
-}: { icon: HeaderIconName } & ComponentProps<typeof Button>) {
+}: {
+  icon: HeaderIconName;
+  /** 狭い画面ではアイコンだけにする（文字は隠すので aria-label を付けること） */
+  compact?: boolean;
+} & ComponentProps<typeof Button>) {
   return (
-    <Button {...props}>
+    <Button {...props} data-compact={compact || undefined}>
       <HeaderIcon icon={icon} />
-      {children}
+      {compact ? <span className="app-header-label">{children}</span> : children}
     </Button>
   );
 }

@@ -4,7 +4,7 @@ Web エディタ（Vite + React）。画像を開く → `packages/editor` で�
 
 - 描画エンジン（resvg-wasm・mozjpeg）とフォントは `src/browser-renderer.ts` で読み込む。描画の処理そのものは `packages/render` を使い、ここで分岐させない（ADR-0005）。
 - 読み込みは `src/load.ts`、保存ファイルの組み立ては `src/save.ts`。ベース画像は読み込んだバイト列のまま埋め込む（ADR-0004）。
-- ヘッダー（`src/Header.tsx`）: 操作は `primary`（どの幅でも出す）と `actions`（広い画面はボタン、720px 以下は三点メニューの項目）で渡す。ファイル名は 1 行で末尾を…にする。
+- ヘッダー（`src/Header.tsx`）: 操作は `primary`（どの幅でも出す）と `actions`（広い画面はボタン、720px 以下は三点メニューの項目）で渡す。「コピー」は `primary` に入れ、狭い画面では `compact`（アイコンだけ）にする。ファイル名は 1 行で末尾を…にする。
 - UI 部品は shadcn/ui（`src/components/ui/`、Tailwind CSS v4 + Radix UI。ADR-0010）。preflight は入れていないので既存の CSS はそのまま効く。部品の import は相対パスにする（拡張の WXT では `@/` が拡張のルートを指すため）。
 - E2E は `e2e/`（Playwright）。`pnpm e2e` でビルドしたものをプレビューして動かす。ローカルでは `HARIE_CHROMIUM_PATH` でブラウザを指定できる。
 - ブラウザと Node の保存結果がバイト単位で一致することを E2E で確認している（NFR-PLAT-05）。描画や保存を変えたらこのテストを通す。
