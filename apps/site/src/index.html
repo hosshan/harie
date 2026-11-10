@@ -528,7 +528,7 @@
         <div class="container split">
           <div class="split-copy">
             <p class="eyebrow">AI 連携</p>
-            <h2 id="integrations-title" class="h2"><span class="nb">Claude に頼んで、</span><span class="nb">注釈を付ける。</span></h2>
+            <h2 id="integrations-title" class="h2"><span class="nb">AI に頼んで、</span><span class="nb">注釈を付ける。</span></h2>
             <p>Claude に頼むだけで、Harie の画像に注釈を付けたり、文言を直したりできます。claude.ai やクラウドのセッションで使うなら Skill を、手元の Claude Code や Claude Desktop、ChatGPT のデスクトップアプリで使うなら MCP サーバーを入れます。どちらで作っても、できあがるファイルは同じです。</p>
             <figure class="chat chat-examples" aria-label="頼み方の例">
               <figcaption class="small muted">頼み方の例</figcaption>
@@ -538,9 +538,12 @@
             </figure>
             <p class="small muted">個人情報の加工は元に戻せないので、確認が取れたときだけ保存します。</p>
           </div>
-          <div class="setup-stack">
-            <div class="setup-card">
-              <h3 class="setup-title">Skill</h3>
+          <div class="setup-card">
+            <div class="tabs tabs-switch" role="tablist" aria-label="使う方法">
+              <button type="button" role="tab" id="tab-skill" aria-controls="setup-skill" aria-selected="true">Skill</button>
+              <button type="button" role="tab" id="tab-mcp" aria-controls="setup-mcp" aria-selected="false" tabindex="-1">MCP</button>
+            </div>
+            <div class="tab-panel setup-panel" role="tabpanel" id="setup-skill" aria-labelledby="tab-skill">
               <p>claude.ai のチャットやプロジェクト、Claude Code on the web で使えます。パソコンに何も入れずに、チャットに添付した画像へ注釈を付けられます。</p>
               <ol class="setup-steps">
                 <li>GitHub のリリースから <a href="https://github.com/hosshan/harie/releases?q=skill-v&amp;expanded=true"><code>harie.skill</code></a> をダウンロードします。</li>
@@ -559,8 +562,7 @@
               </ul>
               <a class="link" href="https://github.com/hosshan/harie/blob/main/apps/skill/README.md">Skill の入れ方を詳しく見る（GitHub）</a>
             </div>
-            <div class="setup-card">
-              <h3 class="setup-title">MCP</h3>
+            <div class="tab-panel setup-panel" role="tabpanel" id="setup-mcp" aria-labelledby="tab-mcp" hidden>
               <p>手元のアプリに MCP サーバー <code>@harie/mcp</code> を登録すると、パソコンの中のフォルダの画像を直接開いて直せます。</p>
               <div class="tabs" role="tablist" aria-label="登録するアプリ">
                 <button type="button" role="tab" id="tab-code" aria-controls="setup-code" aria-selected="true">Claude Code</button>

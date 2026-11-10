@@ -126,7 +126,7 @@
   "For macOS and Windows. Open files from the system dialog and save them back in place.": "Para macOS y Windows. Abre archivos desde el cuadro de diálogo del sistema y guárdalos en el mismo sitio.",
   "About the desktop app": "Sobre la aplicación de escritorio",
   "How to set it up": "Cómo configurarlo",
-  "Ask Claude to annotate for you.": "Pide a Claude que anote por ti.",
+  "Ask AI to annotate for you.": "Pide a la IA que anote por ti.",
   "Run this command in your terminal.": "Ejecuta este comando en tu terminal.",
   "Copy": "Copiar",
   "Add this to": "Añade esto a",
@@ -174,5 +174,6 @@
   "On Team and Enterprise plans, an admin needs to allow skills and code execution.": "En los planes Team y Enterprise, un administrador debe permitir las Skills y la ejecución de código.",
   "Detailed install guide (GitHub, Japanese)": "Guía de instalación detallada (GitHub, en japonés)",
   "Register the": "Registra el servidor",
-  "server with an app on your computer, and it can open and fix images in a folder on your machine.": "en una app de tu ordenador, y podrá abrir y corregir imágenes de una carpeta de tu equipo."
+  "server with an app on your computer, and it can open and fix images in a folder on your machine.": "en una app de tu ordenador, y podrá abrir y corregir imágenes de una carpeta de tu equipo.",
+  "How to connect": "Cómo conectar"
 }

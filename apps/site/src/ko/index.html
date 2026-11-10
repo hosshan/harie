@@ -532,7 +532,7 @@
         <div class="container split">
           <div class="split-copy">
             <p class="eyebrow">AI 연동</p>
-            <h2 id="integrations-title" class="h2">Claude에게 주석을 맡기세요.</h2>
+            <h2 id="integrations-title" class="h2">AI에게 주석을 맡기세요.</h2>
             <p>Claude에게 요청하기만 하면 Harie 이미지에 주석을 붙이거나 문구를 고칩니다. claude.ai나 클라우드 세션에서는 Skill을, 내 컴퓨터의 Claude Code, Claude Desktop, ChatGPT 데스크톱 앱에서는 MCP 서버를 사용합니다. 어느 쪽으로 만들어도 같은 파일이 됩니다.</p>
             <figure class="chat chat-examples" aria-label="요청 예시">
               <figcaption class="small muted">요청 예시</figcaption>
@@ -542,9 +542,12 @@
             </figure>
             <p class="small muted">개인정보 처리는 되돌릴 수 없으므로, Harie는 확인을 받은 뒤에만 저장합니다.</p>
           </div>
-          <div class="setup-stack">
-            <div class="setup-card">
-              <h3 class="setup-title">Skill</h3>
+          <div class="setup-card">
+            <div class="tabs tabs-switch" role="tablist" aria-label="연결 방법">
+              <button type="button" role="tab" id="tab-skill" aria-controls="setup-skill" aria-selected="true">Skill</button>
+              <button type="button" role="tab" id="tab-mcp" aria-controls="setup-mcp" aria-selected="false" tabindex="-1">MCP</button>
+            </div>
+            <div class="tab-panel setup-panel" role="tabpanel" id="setup-skill" aria-labelledby="tab-skill">
               <p>claude.ai의 채팅과 프로젝트, Claude Code on the web에서 사용할 수 있습니다. 컴퓨터에 아무것도 설치하지 않고, 채팅에 스크린샷을 첨부해 주석을 요청하면 됩니다.</p>
               <ol class="setup-steps">
                 <li>GitHub 릴리스에서 <a href="https://github.com/hosshan/harie/releases?q=skill-v&amp;expanded=true"><code>harie.skill</code></a> 파일을 다운로드합니다.</li>
@@ -563,8 +566,7 @@
               </ul>
               <a class="link" href="https://github.com/hosshan/harie/blob/main/apps/skill/README.md">자세한 설치 방법(GitHub, 일본어)</a>
             </div>
-            <div class="setup-card">
-              <h3 class="setup-title">MCP</h3>
+            <div class="tab-panel setup-panel" role="tabpanel" id="setup-mcp" aria-labelledby="tab-mcp" hidden>
               <p>내 컴퓨터의 앱에 <code>@harie/mcp</code> 서버를 등록하면, 컴퓨터 안 폴더의 이미지를 직접 열어 고칠 수 있습니다.</p>
               <div class="tabs" role="tablist" aria-label="등록할 앱">
                 <button type="button" role="tab" id="tab-code" aria-controls="setup-code" aria-selected="true">Claude Code</button>

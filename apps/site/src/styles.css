@@ -1040,15 +1040,31 @@ details.lang summary::after {
   font-size: 13.5px;
 }
 
-.setup-stack {
-  display: grid;
-  gap: 16px;
-  min-width: 0;
+/* Skill と MCP の切り替え。中の MCP のアプリ別タブと見分けるため、丸い切り替えにする */
+.tabs.tabs-switch {
+  justify-self: start;
+  display: inline-flex;
+  gap: 2px;
+  padding: 4px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--cream);
 }
 
-.setup-title {
+.tabs.tabs-switch [role="tab"] {
   margin: 0;
-  font-size: 18px;
+  padding: 6px 20px;
+  border-bottom: 0;
+  border-radius: 999px;
+}
+
+.tabs.tabs-switch [aria-selected="true"] {
+  background: var(--ochre);
+  color: var(--ink);
+}
+
+.setup-panel {
+  gap: 14px;
 }
 
 .setup-steps {

@@ -531,7 +531,7 @@
         <div class="container split">
           <div class="split-copy">
             <p class="eyebrow">Integrações com IA</p>
-            <h2 id="integrations-title" class="h2">Peça ao Claude para anotar por você.</h2>
+            <h2 id="integrations-title" class="h2">Peça à IA para anotar por você.</h2>
             <p>Basta pedir ao Claude, e ele adiciona anotações às suas imagens do Harie ou corrige o texto delas. Use a Skill no claude.ai e em sessões na nuvem, ou o servidor MCP com o Claude Code, o Claude Desktop e o app desktop do ChatGPT no seu computador. De qualquer forma, você obtém o mesmo arquivo.</p>
             <figure class="chat chat-examples" aria-label="Exemplos de pedidos">
               <figcaption class="small muted">Exemplos de pedidos</figcaption>
@@ -541,9 +541,12 @@
             </figure>
             <p class="small muted">O mascaramento de dados pessoais não pode ser desfeito, então o Harie só salva depois que você confirma.</p>
           </div>
-          <div class="setup-stack">
-            <div class="setup-card">
-              <h3 class="setup-title">Skill</h3>
+          <div class="setup-card">
+            <div class="tabs tabs-switch" role="tablist" aria-label="Como conectar">
+              <button type="button" role="tab" id="tab-skill" aria-controls="setup-skill" aria-selected="true">Skill</button>
+              <button type="button" role="tab" id="tab-mcp" aria-controls="setup-mcp" aria-selected="false" tabindex="-1">MCP</button>
+            </div>
+            <div class="tab-panel setup-panel" role="tabpanel" id="setup-skill" aria-labelledby="tab-skill">
               <p>Funciona nos chats e projetos do claude.ai e no Claude Code on the web. Não é preciso instalar nada no computador: anexe uma captura ao chat e peça as anotações.</p>
               <ol class="setup-steps">
                 <li>Baixe <a href="https://github.com/hosshan/harie/releases?q=skill-v&amp;expanded=true"><code>harie.skill</code></a> nas releases do GitHub.</li>
@@ -562,8 +565,7 @@
               </ul>
               <a class="link" href="https://github.com/hosshan/harie/blob/main/apps/skill/README.md">Guia de instalação detalhado (GitHub, em japonês)</a>
             </div>
-            <div class="setup-card">
-              <h3 class="setup-title">MCP</h3>
+            <div class="tab-panel setup-panel" role="tabpanel" id="setup-mcp" aria-labelledby="tab-mcp" hidden>
               <p>Registre o servidor <code>@harie/mcp</code> em um app do seu computador, e ele poderá abrir e corrigir imagens de uma pasta da sua máquina.</p>
               <div class="tabs" role="tablist" aria-label="App onde registrar">
                 <button type="button" role="tab" id="tab-code" aria-controls="setup-code" aria-selected="true">Claude Code</button>

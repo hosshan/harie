@@ -126,7 +126,7 @@
   "For macOS and Windows. Open files from the system dialog and save them back in place.": "適用 macOS 和 Windows。從系統對話框開啟檔案，並直接存回原處。",
   "About the desktop app": "關於桌面版",
   "How to set it up": "設定方式",
-  "Ask Claude to annotate for you.": "請 Claude 幫你標註。",
+  "Ask AI to annotate for you.": "請 AI 幫你標註。",
   "Run this command in your terminal.": "在終端機執行這個指令。",
   "Copy": "複製",
   "Add this to": "把這段設定加到",
@@ -174,5 +174,6 @@
   "On Team and Enterprise plans, an admin needs to allow skills and code execution.": "Team 或 Enterprise 方案需要管理員允許技能與程式碼執行。",
   "Detailed install guide (GitHub, Japanese)": "詳細安裝方式（GitHub，日文）",
   "Register the": "在電腦上的應用程式註冊",
-  "server with an app on your computer, and it can open and fix images in a folder on your machine.": "伺服器後，就能直接開啟並修改電腦中資料夾裡的圖片。"
+  "server with an app on your computer, and it can open and fix images in a folder on your machine.": "伺服器後，就能直接開啟並修改電腦中資料夾裡的圖片。",
+  "How to connect": "連接方式"
 }

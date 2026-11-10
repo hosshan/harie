@@ -532,7 +532,7 @@
         <div class="container split">
           <div class="split-copy">
             <p class="eyebrow">AI 集成</p>
-            <h2 id="integrations-title" class="h2">让 Claude 帮你标注。</h2>
+            <h2 id="integrations-title" class="h2">让 AI 帮你标注。</h2>
             <p>只要向 Claude 提出要求，就能为 Harie 图片添加注释或修改文字。在 claude.ai 或云端会话中使用 Skill，在电脑上的 Claude Code、Claude Desktop 和 ChatGPT 桌面应用中使用 MCP 服务器。无论用哪一种，生成的文件都相同。</p>
             <figure class="chat chat-examples" aria-label="请求示例">
               <figcaption class="small muted">请求示例</figcaption>
@@ -542,9 +542,12 @@
             </figure>
             <p class="small muted">个人信息的处理无法撤销，因此 Harie 只会在你确认后才保存。</p>
           </div>
-          <div class="setup-stack">
-            <div class="setup-card">
-              <h3 class="setup-title">Skill</h3>
+          <div class="setup-card">
+            <div class="tabs tabs-switch" role="tablist" aria-label="连接方式">
+              <button type="button" role="tab" id="tab-skill" aria-controls="setup-skill" aria-selected="true">Skill</button>
+              <button type="button" role="tab" id="tab-mcp" aria-controls="setup-mcp" aria-selected="false" tabindex="-1">MCP</button>
+            </div>
+            <div class="tab-panel setup-panel" role="tabpanel" id="setup-skill" aria-labelledby="tab-skill">
               <p>可在 claude.ai 的对话和项目，以及 Claude Code on the web 中使用。无需在电脑上安装任何东西，只要在对话中附加截图并要求添加注释。</p>
               <ol class="setup-steps">
                 <li>从 GitHub 的发布页面下载 <a href="https://github.com/hosshan/harie/releases?q=skill-v&amp;expanded=true"><code>harie.skill</code></a> 。</li>
@@ -563,8 +566,7 @@
               </ul>
               <a class="link" href="https://github.com/hosshan/harie/blob/main/apps/skill/README.md">详细安装方法（GitHub，日文）</a>
             </div>
-            <div class="setup-card">
-              <h3 class="setup-title">MCP</h3>
+            <div class="tab-panel setup-panel" role="tabpanel" id="setup-mcp" aria-labelledby="tab-mcp" hidden>
               <p>在电脑上的应用中注册 <code>@harie/mcp</code> 服务器后，就能直接打开并修改电脑中文件夹里的图片。</p>
               <div class="tabs" role="tablist" aria-label="要注册的应用">
                 <button type="button" role="tab" id="tab-code" aria-controls="setup-code" aria-selected="true">Claude Code</button>

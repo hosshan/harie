@@ -534,7 +534,7 @@
         <div class="container split">
           <div class="split-copy">
             <p class="eyebrow">AI integrations</p>
-            <h2 id="integrations-title" class="h2">Ask Claude to annotate for you.</h2>
+            <h2 id="integrations-title" class="h2">Ask AI to annotate for you.</h2>
             <p>Just ask Claude, and it adds annotations to your Harie images or fixes their text. Use the Skill on claude.ai and in cloud sessions, or the MCP server with Claude Code, Claude Desktop and the ChatGPT desktop app on your computer. Either way, you get the same file.</p>
             <figure class="chat chat-examples" aria-label="Example requests">
               <figcaption class="small muted">Example requests</figcaption>
@@ -544,9 +544,12 @@
             </figure>
             <p class="small muted">Masking personal data can't be undone, so Harie only saves it once you've confirmed.</p>
           </div>
-          <div class="setup-stack">
-            <div class="setup-card">
-              <h3 class="setup-title">Skill</h3>
+          <div class="setup-card">
+            <div class="tabs tabs-switch" role="tablist" aria-label="How to connect">
+              <button type="button" role="tab" id="tab-skill" aria-controls="setup-skill" aria-selected="true">Skill</button>
+              <button type="button" role="tab" id="tab-mcp" aria-controls="setup-mcp" aria-selected="false" tabindex="-1">MCP</button>
+            </div>
+            <div class="tab-panel setup-panel" role="tabpanel" id="setup-skill" aria-labelledby="tab-skill">
               <p>Works in claude.ai chats and projects, and in Claude Code on the web. Nothing to install on your computer: attach a screenshot to the chat and ask for annotations.</p>
               <ol class="setup-steps">
                 <li>Download <a href="https://github.com/hosshan/harie/releases?q=skill-v&amp;expanded=true"><code>harie.skill</code></a> from the GitHub releases.</li>
@@ -565,8 +568,7 @@
               </ul>
               <a class="link" href="https://github.com/hosshan/harie/blob/main/apps/skill/README.md">Detailed install guide (GitHub, Japanese)</a>
             </div>
-            <div class="setup-card">
-              <h3 class="setup-title">MCP</h3>
+            <div class="tab-panel setup-panel" role="tabpanel" id="setup-mcp" aria-labelledby="tab-mcp" hidden>
               <p>Register the <code>@harie/mcp</code> server with an app on your computer, and it can open and fix images in a folder on your machine.</p>
               <div class="tabs" role="tablist" aria-label="App to register with">
                 <button type="button" role="tab" id="tab-code" aria-controls="setup-code" aria-selected="true">Claude Code</button>
