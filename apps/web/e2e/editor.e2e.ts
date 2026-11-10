@@ -58,8 +58,12 @@ test("FR-FILE-08, FR-EDIT-01〜04, 07, 18: 画像を開いて注釈を付け、�
   await openFixture(page, "large-base.jpg");
   // DOM 情報のない画像では「要素で囲む」は出さない（FR-EDIT-15）
   await expect(page.getByRole("button", { name: "要素で囲む" })).toHaveCount(0);
-  // 注釈のない画像を開いたら、道具は四角のまま、すぐ枠を描ける（FR-EDIT-18）
-  await expect(page.getByRole("button", { name: "四角" })).toHaveAttribute("aria-pressed", "true");
+  // 注釈のない画像を開いたら、道具はスケッチにする（FR-EDIT-18）
+  await expect(page.getByRole("button", { name: "スケッチ" })).toHaveAttribute(
+    "aria-pressed",
+    "true",
+  );
+  await page.getByRole("button", { name: "四角" }).click();
   await drag(page, [40, 40], [240, 120]);
   await expect(annotationRects(page)).toHaveCount(1);
   await expect(page.locator("[data-selected]")).toHaveCount(1);

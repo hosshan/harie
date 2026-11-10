@@ -11,8 +11,8 @@ const base = () =>
   });
 
 describe("画像を開いたときの道具（FR-EDIT-18）", () => {
-  it("注釈のない画像を開いたら四角にする", () => {
-    expect(initialTool(base())).toBe("rect");
+  it("注釈のない画像を開いたらスケッチにする", () => {
+    expect(initialTool(base())).toBe("sketch");
   });
 
   it("注釈のある画像を開いたら選択にする", () => {
