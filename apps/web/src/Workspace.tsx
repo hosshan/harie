@@ -311,9 +311,24 @@ export function Workspace({
         fileName={opened.fileName}
         status={status}
         primary={
-          <HeaderButton icon="save" variant="default" disabled={saving} onClick={save}>
-            {m.save.button}
-          </HeaderButton>
+          <>
+            <HeaderButton icon="save" variant="default" disabled={saving} onClick={save}>
+              {m.save.button}
+            </HeaderButton>
+            {/* 「保存」のすぐ右に、どの幅でも出す。狭い画面（インストールしたアプリの小さな窓を含む）ではアイコンだけにする */}
+            {copyable && (
+              <HeaderButton
+                icon={copied ? "check" : "copy"}
+                compact
+                aria-label={m.copy.button}
+                title={m.copy.button}
+                disabled={copying}
+                onClick={() => void copy()}
+              >
+                {m.copy.button}
+              </HeaderButton>
+            )}
+          </>
         }
         actions={[
           ...(onOpenImage === undefined
@@ -333,17 +348,6 @@ export function Workspace({
             disabled: saving,
             placement: "start",
           },
-          // 「保存」のすぐ右に置く。狭い画面では三点メニューに入る
-          ...(copyable
-            ? [
-                {
-                  icon: copied ? "check" : "copy",
-                  label: m.copy.button,
-                  onSelect: () => void copy(),
-                  disabled: copying,
-                } satisfies HeaderAction,
-              ]
-            : []),
           ...actions,
         ]}
         menu={<SaveFormatMenuItems value={format} onChange={setFormat} disabled={saving} />}

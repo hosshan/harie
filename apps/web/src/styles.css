@@ -166,6 +166,13 @@ input {
   .app-header-more {
     display: inline-flex;
   }
+  /* アイコンだけにするボタン（「コピー」）。三点メニューの開閉ボタンと同じ幅にする */
+  .app-header [data-compact] {
+    padding-inline: 0.5rem;
+  }
+  .app-header [data-compact] .app-header-label {
+    display: none;
+  }
 }
 .app-modal {
   width: min(440px, calc(100vw - 32px));
