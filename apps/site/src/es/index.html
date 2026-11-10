@@ -6,7 +6,7 @@
     <title>Harie: solo una imagen, editable cuando quieras.</title>
     <meta
       name="description"
-      content="Añade recuadros, números y notas a las capturas de pantalla de tus guías de ayuda. Harie guarda un JPEG o PNG normal que puedes volver a abrir y editar cuando quieras. Código abierto, con sugerencias de IA, ocultación de datos personales, una extensión de Chrome y un servidor MCP."
+      content="Añade recuadros, números y notas a las capturas de pantalla de tu documentación de ayuda. Harie guarda un JPEG o PNG normal que puedes volver a abrir y editar cuando quieras. De código abierto, con sugerencias de IA, enmascaramiento de datos personales, una extensión de Chrome, y una Skill de Claude y un servidor MCP."
     />
     <meta name="theme-color" content="#D4A72C" />
     <link rel="canonical" href="https://harie.studio/es/" />
@@ -68,7 +68,7 @@
             "name": "Harie",
             "alternateName": "はりえ",
             "url": "https://harie.studio/es/",
-            "description": "Añade recuadros, números y notas a las capturas de pantalla de tus guías de ayuda. Harie guarda un JPEG o PNG normal que puedes volver a abrir y editar cuando quieras. Código abierto, con sugerencias de IA, ocultación de datos personales, una extensión de Chrome y un servidor MCP.",
+            "description": "Añade recuadros, números y notas a las capturas de pantalla de tu documentación de ayuda. Harie guarda un JPEG o PNG normal que puedes volver a abrir y editar cuando quieras. De código abierto, con sugerencias de IA, enmascaramiento de datos personales, una extensión de Chrome, y una Skill de Claude y un servidor MCP.",
             "applicationCategory": "DesignApplication",
             "operatingSystem": "Web, Chrome, macOS, Windows",
             "inLanguage": [
@@ -166,7 +166,7 @@
                 "name": "¿Dónde puedo usar Harie?",
                 "acceptedAnswer": {
                   "@type": "Answer",
-                  "text": "Hay un editor web que funciona en el navegador, una extensión de Chrome que captura la página en la que estás y un servidor MCP para agentes de IA. La aplicación de escritorio para macOS y Windows todavía no se distribuye, pero puedes compilarla desde el código fuente."
+                  "text": "Hay un editor web que funciona en el navegador, una extensión de Chrome que captura la página en la que estás, una Skill para claude.ai y otros entornos, y un servidor MCP para agentes de IA. La app de escritorio para macOS y Windows aún no se distribuye, pero puedes compilarla desde el código fuente."
                 }
               },
               {
@@ -174,7 +174,7 @@
                 "name": "¿Los agentes de IA como Claude pueden añadir anotaciones?",
                 "acceptedAnswer": {
                   "@type": "Answer",
-                  "text": "Sí. Registra el servidor MCP @harie/mcp en Claude Code o Claude Desktop y podrá abrir imágenes de una carpeta que elijas, añadir anotaciones y actualizar el texto."
+                  "text": "Sí. Añade la Skill (harie.skill) a claude.ai y Claude podrá anotar las capturas que adjuntes al chat. Registra el servidor MCP @harie/mcp en Claude Code o Claude Desktop y podrá abrir imágenes de la carpeta que elijas, añadir anotaciones y actualizar el texto."
                 }
               }
             ]
@@ -194,7 +194,7 @@
           <a href="#ai">AI</a>
           <a href="#privacy">Privacidad</a>
           <a href="#platforms">Plataformas</a>
-          <a href="#mcp">MCP</a>
+          <a href="#integrations">Integraciones con IA</a>
           <a href="https://github.com/hosshan/harie">GitHub</a>
         </nav>
         <details class="lang">
@@ -446,9 +446,9 @@
               </p>
             </article>
             <article class="card">
-              <h3>Editar desde Claude (MCP)</h3>
+              <h3>Edita desde Claude (Skill y MCP)</h3>
               <p>
-                Cuando registres el servidor <code>@harie/mcp</code> , podrás pedir a Claude Code o Claude Desktop que añadan o corrijan anotaciones por ti. Si cambia un texto de la interfaz, puedes actualizar de una vez todas las imágenes afectadas.
+                Añade la Skill de Harie a claude.ai, adjunta una captura al chat y pide a Claude que añada o corrija anotaciones. Con Claude Code o Claude Desktop en tu ordenador, el servidor <code>@harie/mcp</code> trabaja directamente con las imágenes de una carpeta. Cuando cambia el texto de la interfaz, puedes actualizar de una vez todas las imágenes afectadas.
               </p>
               <figure class="chat" aria-label="Ejemplo de petición a Claude">
                 <p class="chat-user">En la imagen de notificaciones de guides, cambia «Guardar para aplicar» por «Actualizar para aplicar»</p>
@@ -519,38 +519,68 @@
               <a class="link" href="https://github.com/hosshan/harie/tree/main/apps/desktop">Sobre la aplicación de escritorio</a>
             </article>
             <article class="platform">
-              <div class="platform-head"><h3>MCP</h3></div>
-              <p>Permite que agentes de IA como Claude lean y escriban las imágenes de una carpeta que elijas.</p>
-              <a class="link" href="#mcp">Cómo configurarlo</a>
+              <div class="platform-head"><h3>Integraciones con IA</h3></div>
+              <p>Pide a una IA como Claude que añada o corrija anotaciones. Usa la Skill en claude.ai y el servidor MCP con las apps de tu ordenador.</p>
+              <a class="link" href="#integrations">Cómo configurarlo</a>
             </article>
           </div>
         </div>
       </section>
 
-      <section class="section" id="mcp" aria-labelledby="mcp-title">
+      <section class="section" id="integrations" aria-labelledby="integrations-title">
         <div class="container split">
           <div class="split-copy">
-            <p class="eyebrow">Primeros pasos con MCP</p>
-            <h2 id="mcp-title" class="h2">Pide a Claude que anote por ti.</h2>
-            <p>Cuando registres el servidor <code>@harie/mcp</code> , Claude Code, Claude Desktop y la aplicación de escritorio de ChatGPT pueden abrir imágenes de Harie y añadir o corregir anotaciones.</p>
+            <p class="eyebrow">Integraciones con IA</p>
+            <h2 id="integrations-title" class="h2">Pide a Claude que anote por ti.</h2>
+            <p>Solo tienes que pedírselo a Claude, y añadirá anotaciones a tus imágenes de Harie o corregirá su texto. Usa la Skill en claude.ai y en sesiones en la nube, o el servidor MCP con Claude Code, Claude Desktop y la app de escritorio de ChatGPT en tu ordenador. De cualquier forma, obtienes el mismo archivo.</p>
+            <figure class="chat chat-examples" aria-label="Ejemplos de peticiones">
+              <figcaption class="small muted">Ejemplos de peticiones</figcaption>
+              <p class="chat-user">Anota en la pantalla adjunta los 3 pasos para configurar las notificaciones</p>
+              <p class="chat-user">Convierte settings.png en un archivo de Harie, pon un recuadro rojo alrededor del botón Guardar y añade un globo que diga Guarda aquí</p>
+              <p class="chat-user">En las imágenes de guides, sustituye por valores ficticios las direcciones de correo que se vean</p>
+            </figure>
+            <p class="small muted">El enmascaramiento de datos personales no se puede deshacer, así que Harie solo lo guarda cuando lo confirmas.</p>
           </div>
-          <div class="setup-card">
-            <div class="tabs" role="tablist" aria-label="Aplicación en la que registrarlo">
-              <button type="button" role="tab" id="tab-code" aria-controls="setup-code" aria-selected="true">Claude Code</button>
-              <button type="button" role="tab" id="tab-desktop" aria-controls="setup-desktop" aria-selected="false" tabindex="-1">Claude Desktop</button>
-              <button type="button" role="tab" id="tab-chatgpt" aria-controls="setup-chatgpt" aria-selected="false" tabindex="-1">ChatGPT</button>
-            </div>
-            <div class="tab-panel" role="tabpanel" id="setup-code" aria-labelledby="tab-code">
-              <p class="small muted">Ejecuta este comando en tu terminal.</p>
-              <div class="cmd">
-                <code id="mcp-cmd">claude mcp add harie -- npx -y @harie/mcp --root ~/Pictures/guides</code>
-                <button class="copy" type="button" data-copy="mcp-cmd" data-copied="Copiado">Copiar</button>
-              </div>
-            </div>
-            <div class="tab-panel" role="tabpanel" id="setup-desktop" aria-labelledby="tab-desktop" hidden>
-              <p class="small muted">Añade esto a <code>claude_desktop_config.json</code> y reinicia Claude Desktop. Sustituye la carpeta por tu propia ruta.</p>
+          <div class="setup-stack">
+            <div class="setup-card">
+              <h3 class="setup-title">Skill</h3>
+              <p>Funciona en los chats y proyectos de claude.ai, y en Claude Code on the web. No tienes que instalar nada en tu ordenador: adjunta una captura al chat y pide las anotaciones.</p>
+              <ol class="setup-steps">
+                <li>Descarga <a href="https://github.com/hosshan/harie/releases?q=skill-v&amp;expanded=true"><code>harie.skill</code></a> desde las releases de GitHub.</li>
+                <li>En claude.ai, ve a Configuración → Capacidades y activa Ejecución de código y creación de archivos.</li>
+                <li>En la misma página, sube <code>harie.skill</code> en Skills.</li>
+              </ol>
+              <p class="small muted">Las Skills que añadas a tu cuenta también funcionan en Claude Code on the web. En Claude Code, también puedes instalarla como plugin con estos comandos.</p>
               <div class="cmd cmd-block">
-                <pre id="mcp-json">{
+                <pre id="skill-cmd">/plugin marketplace add hosshan/harie
+/plugin install harie@harie</pre>
+                <button class="copy" type="button" data-copy="skill-cmd" data-copied="Copiado">Copiar</button>
+              </div>
+              <ul class="setup-notes">
+                <li>La Skill obtiene <code>@harie/mcp</code> de npm y lo ejecuta dentro de la conversación, así que el dibujo y el guardado funcionan exactamente igual que con MCP.</li>
+                <li>En los planes Team y Enterprise, un administrador debe permitir las Skills y la ejecución de código.</li>
+              </ul>
+              <a class="link" href="https://github.com/hosshan/harie/blob/main/apps/skill/README.md">Guía de instalación detallada (GitHub, en japonés)</a>
+            </div>
+            <div class="setup-card">
+              <h3 class="setup-title">MCP</h3>
+              <p>Registra el servidor <code>@harie/mcp</code> en una app de tu ordenador, y podrá abrir y corregir imágenes de una carpeta de tu equipo.</p>
+              <div class="tabs" role="tablist" aria-label="Aplicación en la que registrarlo">
+                <button type="button" role="tab" id="tab-code" aria-controls="setup-code" aria-selected="true">Claude Code</button>
+                <button type="button" role="tab" id="tab-desktop" aria-controls="setup-desktop" aria-selected="false" tabindex="-1">Claude Desktop</button>
+                <button type="button" role="tab" id="tab-chatgpt" aria-controls="setup-chatgpt" aria-selected="false" tabindex="-1">ChatGPT</button>
+              </div>
+              <div class="tab-panel" role="tabpanel" id="setup-code" aria-labelledby="tab-code">
+                <p class="small muted">Ejecuta este comando en tu terminal.</p>
+                <div class="cmd">
+                  <code id="mcp-cmd">claude mcp add harie -- npx -y @harie/mcp --root ~/Pictures/guides</code>
+                  <button class="copy" type="button" data-copy="mcp-cmd" data-copied="Copiado">Copiar</button>
+                </div>
+              </div>
+              <div class="tab-panel" role="tabpanel" id="setup-desktop" aria-labelledby="tab-desktop" hidden>
+                <p class="small muted">Añade esto a <code>claude_desktop_config.json</code> y reinicia Claude Desktop. Sustituye la carpeta por tu propia ruta.</p>
+                <div class="cmd cmd-block">
+                  <pre id="mcp-json">{
   "mcpServers": {
     "harie": {
       "command": "npx",
@@ -558,30 +588,25 @@
     }
   }
 }</pre>
-                <button class="copy" type="button" data-copy="mcp-json" data-copied="Copiado">Copiar</button>
+                  <button class="copy" type="button" data-copy="mcp-json" data-copied="Copiado">Copiar</button>
+                </div>
               </div>
-            </div>
-            <div class="tab-panel" role="tabpanel" id="setup-chatgpt" aria-labelledby="tab-chatgpt" hidden>
-              <p class="small muted">Funciona en la aplicación de escritorio de ChatGPT. Añade esto a <code>~/.codex/config.toml</code> y reinicia la aplicación. Esta configuración se comparte con Codex CLI y la extensión para IDE. También puedes añadir el mismo comando como servidor STDIO en la sección de servidores MCP de los ajustes de la aplicación.</p>
-              <div class="cmd cmd-block">
-                <pre id="mcp-toml">[mcp_servers.harie]
+              <div class="tab-panel" role="tabpanel" id="setup-chatgpt" aria-labelledby="tab-chatgpt" hidden>
+                <p class="small muted">Funciona en la aplicación de escritorio de ChatGPT. Añade esto a <code>~/.codex/config.toml</code> y reinicia la aplicación. Esta configuración se comparte con Codex CLI y la extensión para IDE. También puedes añadir el mismo comando como servidor STDIO en la sección de servidores MCP de los ajustes de la aplicación.</p>
+                <div class="cmd cmd-block">
+                  <pre id="mcp-toml">[mcp_servers.harie]
 command = "npx"
 args = ["-y", "@harie/mcp", "--root", "/Users/you/Pictures/guides"]</pre>
-                <button class="copy" type="button" data-copy="mcp-toml" data-copied="Copiado">Copiar</button>
+                  <button class="copy" type="button" data-copy="mcp-toml" data-copied="Copiado">Copiar</button>
+                </div>
+                <p class="small muted">ChatGPT en la web no puede conectarse a servidores MCP que se ejecutan en tu ordenador.</p>
               </div>
-              <p class="small muted">ChatGPT en la web no puede conectarse a servidores MCP que se ejecutan en tu ordenador.</p>
+              <ul class="setup-notes">
+                <li>Requiere Node.js 22 o posterior. El servidor se ejecuta desde npm con <code>npx</code>, así que no hay nada más que instalar.</li>
+                <li>Apunta <code>--root</code> a la carpeta que contiene tus imágenes. El servidor solo puede leer y escribir dentro de esa carpeta.</li>
+              </ul>
+              <a class="link" href="https://github.com/hosshan/harie/blob/main/apps/mcp/README.md">Lista completa de herramientas y uso (GitHub)</a>
             </div>
-            <ul class="setup-notes">
-              <li>Requiere Node.js 22 o posterior. El servidor se ejecuta desde npm con <code>npx</code>, así que no hay nada más que instalar.</li>
-              <li>Apunta <code>--root</code> a la carpeta que contiene tus imágenes. El servidor solo puede leer y escribir dentro de esa carpeta.</li>
-            </ul>
-            <a class="link" href="https://github.com/hosshan/harie/blob/main/apps/mcp/README.md">Lista completa de herramientas y uso (GitHub)</a>
-            <figure class="chat chat-examples" aria-label="Ejemplos de peticiones">
-              <figcaption class="small muted">Ejemplos de peticiones</figcaption>
-              <p class="chat-user">Convierte settings.png en un archivo de Harie, pon un recuadro rojo alrededor del botón Guardar y añade un globo que diga Guarda aquí</p>
-              <p class="chat-user">En las imágenes de guides, sustituye por valores ficticios las direcciones de correo que se vean</p>
-            </figure>
-            <p class="small muted">Ocultar datos personales no se puede deshacer, así que el servidor solo guarda después de que lo confirmes.</p>
           </div>
         </div>
       </section>
@@ -620,11 +645,11 @@ args = ["-y", "@harie/mcp", "--root", "/Users/you/Pictures/guides"]</pre>
             </article>
             <article class="faq-item">
               <h3>¿Dónde puedo usar Harie?</h3>
-              <p>Hay un editor web que funciona en el navegador, una extensión de Chrome que captura la página en la que estás y un servidor MCP para agentes de IA. La aplicación de escritorio para macOS y Windows todavía no se distribuye, pero puedes compilarla desde el código fuente.</p>
+              <p>Hay un editor web que funciona en el navegador, una extensión de Chrome que captura la página en la que estás, una Skill para claude.ai y otros entornos, y un servidor MCP para agentes de IA. La app de escritorio para macOS y Windows aún no se distribuye, pero puedes compilarla desde el código fuente.</p>
             </article>
             <article class="faq-item">
               <h3>¿Los agentes de IA como Claude pueden añadir anotaciones?</h3>
-              <p>Sí. Registra el servidor MCP @harie/mcp en Claude Code o Claude Desktop y podrá abrir imágenes de una carpeta que elijas, añadir anotaciones y actualizar el texto.</p>
+              <p>Sí. Añade la Skill (harie.skill) a claude.ai y Claude podrá anotar las capturas que adjuntes al chat. Registra el servidor MCP @harie/mcp en Claude Code o Claude Desktop y podrá abrir imágenes de la carpeta que elijas, añadir anotaciones y actualizar el texto.</p>
             </article>
           </div>
         </div>

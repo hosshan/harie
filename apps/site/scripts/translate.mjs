@@ -38,6 +38,7 @@ const KEEP = new Set([
   "Harie",
   "AI",
   "MCP",
+  "Skill",
   "GitHub",
   "Web",
   "Claude Code",

@@ -6,7 +6,7 @@
     <title>Harie：只是一张图片，却随时可以修改。</title>
     <meta
       name="description"
-      content="给帮助文档里的截图加上方框、编号和说明文字。Harie 保存为普通的 JPEG 或 PNG，之后随时可以重新打开修改。开源，提供 AI 建议、个人信息遮盖、Chrome 扩展和 MCP 服务器。"
+      content="为帮助文档中的截图添加框线、编号和说明。Harie 保存为普通的 JPEG 或 PNG，随时都能重新打开修改。开源，提供 AI 建议、个人信息遮盖、Chrome 扩展，以及 Claude Skill 和 MCP 服务器。"
     />
     <meta name="theme-color" content="#D4A72C" />
     <link rel="canonical" href="https://harie.studio/zh-cn/" />
@@ -69,7 +69,7 @@
             "name": "Harie",
             "alternateName": "はりえ",
             "url": "https://harie.studio/zh-cn/",
-            "description": "给帮助文档里的截图加上方框、编号和说明文字。Harie 保存为普通的 JPEG 或 PNG，之后随时可以重新打开修改。开源，提供 AI 建议、个人信息遮盖、Chrome 扩展和 MCP 服务器。",
+            "description": "为帮助文档中的截图添加框线、编号和说明。Harie 保存为普通的 JPEG 或 PNG，随时都能重新打开修改。开源，提供 AI 建议、个人信息遮盖、Chrome 扩展，以及 Claude Skill 和 MCP 服务器。",
             "applicationCategory": "DesignApplication",
             "operatingSystem": "Web, Chrome, macOS, Windows",
             "inLanguage": [
@@ -167,7 +167,7 @@
                 "name": "在哪里可以使用 Harie？",
                 "acceptedAnswer": {
                   "@type": "Answer",
-                  "text": "有在浏览器中运行的网页版编辑器、截取当前页面的 Chrome 扩展，以及供 AI 智能体使用的 MCP 服务器。macOS 和 Windows 的桌面应用暂未发布，但可以从源码自行构建。"
+                  "text": "有在浏览器中运行的网页编辑器、可截取当前页面的 Chrome 扩展、添加到 claude.ai 等处使用的 Skill，以及供 AI 智能体使用的 MCP 服务器。macOS 和 Windows 的桌面版尚未发布，但可以从源代码构建使用。"
                 }
               },
               {
@@ -175,7 +175,7 @@
                 "name": "Claude 这样的 AI 智能体也能添加标注吗？",
                 "acceptedAnswer": {
                   "@type": "Answer",
-                  "text": "可以。把 MCP 服务器 @harie/mcp 注册到 Claude Code 或 Claude Desktop，它就能打开你指定文件夹里的图片、添加标注并修改文字。"
+                  "text": "可以。在 claude.ai 添加 Skill（harie.skill）后，Claude 就能为你附加到对话中的截图添加注释。在 Claude Code 或 Claude Desktop 中注册 MCP 服务器 @harie/mcp 后，就能打开指定文件夹中的图片，添加注释或修改文字。"
                 }
               }
             ]
@@ -195,7 +195,7 @@
           <a href="#ai">AI</a>
           <a href="#privacy">隐私</a>
           <a href="#platforms">支持平台</a>
-          <a href="#mcp">MCP</a>
+          <a href="#integrations">AI 集成</a>
           <a href="https://github.com/hosshan/harie">GitHub</a>
         </nav>
         <details class="lang">
@@ -447,9 +447,9 @@
               </p>
             </article>
             <article class="card">
-              <h3>从 Claude 编辑（MCP）</h3>
+              <h3>从 Claude 直接编辑（Skill 和 MCP）</h3>
               <p>
-                注册 <code>@harie/mcp</code> 服务器后，就能让 Claude Code 或 Claude Desktop 帮你添加或修改标注。界面文字改了的时候，还能一次性更新所有相关图片。
+                在 claude.ai 添加 Harie Skill 后，只要在对话中附加截图并提出要求，Claude 就会添加或修改注释。在自己电脑上的 Claude Code 或 Claude Desktop 中，则可通过 <code>@harie/mcp</code> 服务器直接处理文件夹中的图片。UI 文字变更时，也能一次修改所有相关图片。
               </p>
               <figure class="chat" aria-label="让 Claude 处理的示例">
                 <p class="chat-user">把 guides 里通知图片中的“保存后生效”改成“更新后生效”</p>
@@ -520,38 +520,68 @@
               <a class="link" href="https://github.com/hosshan/harie/tree/main/apps/desktop">关于桌面版</a>
             </article>
             <article class="platform">
-              <div class="platform-head"><h3>MCP</h3></div>
-              <p>让 Claude 这样的 AI 智能体读写你指定文件夹里的图片。</p>
-              <a class="link" href="#mcp">设置方法</a>
+              <div class="platform-head"><h3>AI 集成</h3></div>
+              <p>请 Claude 等 AI 帮你添加或修改注释。在 claude.ai 使用 Skill，在电脑上的应用中使用 MCP 服务器。</p>
+              <a class="link" href="#integrations">设置方法</a>
             </article>
           </div>
         </div>
       </section>
 
-      <section class="section" id="mcp" aria-labelledby="mcp-title">
+      <section class="section" id="integrations" aria-labelledby="integrations-title">
         <div class="container split">
           <div class="split-copy">
-            <p class="eyebrow">开始使用 MCP</p>
-            <h2 id="mcp-title" class="h2">让 Claude 帮你标注。</h2>
-            <p>注册 <code>@harie/mcp</code> 服务器后，Claude Code、Claude Desktop 和 ChatGPT 桌面应用就能打开 Harie 图片，添加或修改标注。</p>
+            <p class="eyebrow">AI 集成</p>
+            <h2 id="integrations-title" class="h2">让 Claude 帮你标注。</h2>
+            <p>只要向 Claude 提出要求，就能为 Harie 图片添加注释或修改文字。在 claude.ai 或云端会话中使用 Skill，在电脑上的 Claude Code、Claude Desktop 和 ChatGPT 桌面应用中使用 MCP 服务器。无论用哪一种，生成的文件都相同。</p>
+            <figure class="chat chat-examples" aria-label="请求示例">
+              <figcaption class="small muted">请求示例</figcaption>
+              <p class="chat-user">在附加的界面上，用 3 个步骤注释通知设置的方法</p>
+              <p class="chat-user">把 settings.png 转成 Harie 文件，给“保存”按钮加上红框，并添加写着“在这里保存”的标注框</p>
+              <p class="chat-user">把 guides 里图片中能看到的邮箱地址替换成虚拟数据</p>
+            </figure>
+            <p class="small muted">个人信息的处理无法撤销，因此 Harie 只会在你确认后才保存。</p>
           </div>
-          <div class="setup-card">
-            <div class="tabs" role="tablist" aria-label="要注册的应用">
-              <button type="button" role="tab" id="tab-code" aria-controls="setup-code" aria-selected="true">Claude Code</button>
-              <button type="button" role="tab" id="tab-desktop" aria-controls="setup-desktop" aria-selected="false" tabindex="-1">Claude Desktop</button>
-              <button type="button" role="tab" id="tab-chatgpt" aria-controls="setup-chatgpt" aria-selected="false" tabindex="-1">ChatGPT</button>
-            </div>
-            <div class="tab-panel" role="tabpanel" id="setup-code" aria-labelledby="tab-code">
-              <p class="small muted">在终端中运行这条命令。</p>
-              <div class="cmd">
-                <code id="mcp-cmd">claude mcp add harie -- npx -y @harie/mcp --root ~/Pictures/guides</code>
-                <button class="copy" type="button" data-copy="mcp-cmd" data-copied="已复制">复制</button>
-              </div>
-            </div>
-            <div class="tab-panel" role="tabpanel" id="setup-desktop" aria-labelledby="tab-desktop" hidden>
-              <p class="small muted">把这段配置添加到 <code>claude_desktop_config.json</code> ，然后重启 Claude Desktop。请把文件夹换成你自己的路径。</p>
+          <div class="setup-stack">
+            <div class="setup-card">
+              <h3 class="setup-title">Skill</h3>
+              <p>可在 claude.ai 的对话和项目，以及 Claude Code on the web 中使用。无需在电脑上安装任何东西，只要在对话中附加截图并要求添加注释。</p>
+              <ol class="setup-steps">
+                <li>从 GitHub 的发布页面下载 <a href="https://github.com/hosshan/harie/releases?q=skill-v&amp;expanded=true"><code>harie.skill</code></a> 。</li>
+                <li>在 claude.ai 的“设置”→“功能”中，开启“代码执行和文件创建”。</li>
+                <li>在同一页面的“技能”中上传 <code>harie.skill</code> 。</li>
+              </ol>
+              <p class="small muted">添加到账号的 Skill 也能在 Claude Code on the web 的会话中使用。在 Claude Code 中，也可以用以下命令以插件的方式安装。</p>
               <div class="cmd cmd-block">
-                <pre id="mcp-json">{
+                <pre id="skill-cmd">/plugin marketplace add hosshan/harie
+/plugin install harie@harie</pre>
+                <button class="copy" type="button" data-copy="skill-cmd" data-copied="已复制">复制</button>
+              </div>
+              <ul class="setup-notes">
+                <li>Skill 会在对话中从 npm 获取并运行 <code>@harie/mcp</code> ，因此绘制和保存都与 MCP 完全相同。</li>
+                <li>Team 或 Enterprise 套餐需要管理员允许技能和代码执行。</li>
+              </ul>
+              <a class="link" href="https://github.com/hosshan/harie/blob/main/apps/skill/README.md">详细安装方法（GitHub，日文）</a>
+            </div>
+            <div class="setup-card">
+              <h3 class="setup-title">MCP</h3>
+              <p>在电脑上的应用中注册 <code>@harie/mcp</code> 服务器后，就能直接打开并修改电脑中文件夹里的图片。</p>
+              <div class="tabs" role="tablist" aria-label="要注册的应用">
+                <button type="button" role="tab" id="tab-code" aria-controls="setup-code" aria-selected="true">Claude Code</button>
+                <button type="button" role="tab" id="tab-desktop" aria-controls="setup-desktop" aria-selected="false" tabindex="-1">Claude Desktop</button>
+                <button type="button" role="tab" id="tab-chatgpt" aria-controls="setup-chatgpt" aria-selected="false" tabindex="-1">ChatGPT</button>
+              </div>
+              <div class="tab-panel" role="tabpanel" id="setup-code" aria-labelledby="tab-code">
+                <p class="small muted">在终端中运行这条命令。</p>
+                <div class="cmd">
+                  <code id="mcp-cmd">claude mcp add harie -- npx -y @harie/mcp --root ~/Pictures/guides</code>
+                  <button class="copy" type="button" data-copy="mcp-cmd" data-copied="已复制">复制</button>
+                </div>
+              </div>
+              <div class="tab-panel" role="tabpanel" id="setup-desktop" aria-labelledby="tab-desktop" hidden>
+                <p class="small muted">把这段配置添加到 <code>claude_desktop_config.json</code> ，然后重启 Claude Desktop。请把文件夹换成你自己的路径。</p>
+                <div class="cmd cmd-block">
+                  <pre id="mcp-json">{
   "mcpServers": {
     "harie": {
       "command": "npx",
@@ -559,30 +589,25 @@
     }
   }
 }</pre>
-                <button class="copy" type="button" data-copy="mcp-json" data-copied="已复制">复制</button>
+                  <button class="copy" type="button" data-copy="mcp-json" data-copied="已复制">复制</button>
+                </div>
               </div>
-            </div>
-            <div class="tab-panel" role="tabpanel" id="setup-chatgpt" aria-labelledby="tab-chatgpt" hidden>
-              <p class="small muted">可在 ChatGPT 桌面应用中使用。把这段配置添加到 <code>~/.codex/config.toml</code> ，然后重启应用。这份配置也由 Codex CLI 和 IDE 扩展共用。也可以在应用设置的 MCP 服务器页面，把同一条命令添加为 STDIO 服务器。</p>
-              <div class="cmd cmd-block">
-                <pre id="mcp-toml">[mcp_servers.harie]
+              <div class="tab-panel" role="tabpanel" id="setup-chatgpt" aria-labelledby="tab-chatgpt" hidden>
+                <p class="small muted">可在 ChatGPT 桌面应用中使用。把这段配置添加到 <code>~/.codex/config.toml</code> ，然后重启应用。这份配置也由 Codex CLI 和 IDE 扩展共用。也可以在应用设置的 MCP 服务器页面，把同一条命令添加为 STDIO 服务器。</p>
+                <div class="cmd cmd-block">
+                  <pre id="mcp-toml">[mcp_servers.harie]
 command = "npx"
 args = ["-y", "@harie/mcp", "--root", "/Users/you/Pictures/guides"]</pre>
-                <button class="copy" type="button" data-copy="mcp-toml" data-copied="已复制">复制</button>
+                  <button class="copy" type="button" data-copy="mcp-toml" data-copied="已复制">复制</button>
+                </div>
+                <p class="small muted">网页版 ChatGPT 无法连接到在你电脑上运行的 MCP 服务器。</p>
               </div>
-              <p class="small muted">网页版 ChatGPT 无法连接到在你电脑上运行的 MCP 服务器。</p>
+              <ul class="setup-notes">
+                <li>需要 Node.js 22 或更高版本。服务器通过 npm 的 <code>npx</code>运行，不需要另外安装。</li>
+                <li>用 <code>--root</code> 指定存放图片的文件夹。服务器只能在这个文件夹内读写。</li>
+              </ul>
+              <a class="link" href="https://github.com/hosshan/harie/blob/main/apps/mcp/README.md">完整的工具列表和用法（GitHub）</a>
             </div>
-            <ul class="setup-notes">
-              <li>需要 Node.js 22 或更高版本。服务器通过 npm 的 <code>npx</code>运行，不需要另外安装。</li>
-              <li>用 <code>--root</code> 指定存放图片的文件夹。服务器只能在这个文件夹内读写。</li>
-            </ul>
-            <a class="link" href="https://github.com/hosshan/harie/blob/main/apps/mcp/README.md">完整的工具列表和用法（GitHub）</a>
-            <figure class="chat chat-examples" aria-label="请求示例">
-              <figcaption class="small muted">请求示例</figcaption>
-              <p class="chat-user">把 settings.png 转成 Harie 文件，给“保存”按钮加上红框，并添加写着“在这里保存”的标注框</p>
-              <p class="chat-user">把 guides 里图片中能看到的邮箱地址替换成虚拟数据</p>
-            </figure>
-            <p class="small muted">遮盖个人信息无法撤销，所以服务器会在你确认后才保存。</p>
           </div>
         </div>
       </section>
@@ -621,11 +646,11 @@ args = ["-y", "@harie/mcp", "--root", "/Users/you/Pictures/guides"]</pre>
             </article>
             <article class="faq-item">
               <h3>在哪里可以使用 Harie？</h3>
-              <p>有在浏览器中运行的网页版编辑器、截取当前页面的 Chrome 扩展，以及供 AI 智能体使用的 MCP 服务器。macOS 和 Windows 的桌面应用暂未发布，但可以从源码自行构建。</p>
+              <p>有在浏览器中运行的网页编辑器、可截取当前页面的 Chrome 扩展、添加到 claude.ai 等处使用的 Skill，以及供 AI 智能体使用的 MCP 服务器。macOS 和 Windows 的桌面版尚未发布，但可以从源代码构建使用。</p>
             </article>
             <article class="faq-item">
               <h3>Claude 这样的 AI 智能体也能添加标注吗？</h3>
-              <p>可以。把 MCP 服务器 @harie/mcp 注册到 Claude Code 或 Claude Desktop，它就能打开你指定文件夹里的图片、添加标注并修改文字。</p>
+              <p>可以。在 claude.ai 添加 Skill（harie.skill）后，Claude 就能为你附加到对话中的截图添加注释。在 Claude Code 或 Claude Desktop 中注册 MCP 服务器 @harie/mcp 后，就能打开指定文件夹中的图片，添加注释或修改文字。</p>
             </article>
           </div>
         </div>

@@ -1019,8 +1019,8 @@ details.lang summary::after {
   }
 }
 
-/* MCP の始め方: 左に説明、右に登録のしかたと頼み方の例 */
-#mcp code:not(.cmd code) {
+/* AI 連携: 左に説明と頼み方の例、右に Skill と MCP の入れ方 */
+#integrations code:not(.cmd code) {
   background: var(--cream);
   border: 1px solid var(--line);
   border-radius: 4px;
@@ -1038,6 +1038,24 @@ details.lang summary::after {
   gap: 4px;
   color: var(--muted);
   font-size: 13.5px;
+}
+
+.setup-stack {
+  display: grid;
+  gap: 16px;
+  min-width: 0;
+}
+
+.setup-title {
+  margin: 0;
+  font-size: 18px;
+}
+
+.setup-steps {
+  margin: 0;
+  padding-left: 1.4em;
+  display: grid;
+  gap: 6px;
 }
 
 .setup-card {
@@ -1157,14 +1175,32 @@ details.lang summary::after {
   max-width: none;
 }
 
-#mcp .split {
+#integrations .split {
   grid-template-columns: minmax(0, 5fr) minmax(0, 6fr);
-  align-items: center;
+  align-items: start;
+}
+
+#integrations .split-copy {
+  position: sticky;
+  top: 96px;
+}
+
+#integrations .split-copy .chat-examples {
+  margin-bottom: 4px;
+}
+
+#skill-cmd {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
 }
 
 @media (max-width: 900px) {
-  #mcp .split {
+  #integrations .split {
     grid-template-columns: minmax(0, 1fr);
+  }
+
+  #integrations .split-copy {
+    position: static;
   }
 }
 
