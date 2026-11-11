@@ -89,6 +89,10 @@ export const es: EditorMessages = {
     sample: "A",
     strokeWidth: "Grosor de línea",
     dash: "Tipo de línea",
+    arrowHeads: "Puntas de flecha",
+    headSide: { start: "Inicio", end: "Final" },
+    headArrow: "Flecha",
+    headNone: "Ninguna",
     summaryLine: (width, dash) =>
       `Línea ${width === undefined ? "mixto" : `${width}px`} · ${dash ?? "mixto"}`,
     summaryText: (size) => `Texto ${size === undefined ? "mixto" : `${size}px`}`,

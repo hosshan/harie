@@ -18,6 +18,22 @@ const color = z.string().regex(/^#[0-9a-fA-F]{6}([0-9a-fA-F]{2})?$/, "#RRGGBB �
 export const LineDashSchema = z.enum(["solid", "dashed", "dotted"]);
 export type LineDash = z.infer<typeof LineDashSchema>;
 
+export const ArrowHeadSchema = z.enum(["end", "start", "both", "none"]);
+export type ArrowHead = z.infer<typeof ArrowHeadSchema>;
+
+/** 矢じりの位置を、始端（from）・終端（to）それぞれに付くかに分ける。省略は終端だけ */
+export function arrowEnds(head: ArrowHead | undefined): { start: boolean; end: boolean } {
+  const h = head ?? "end";
+  return { start: h === "start" || h === "both", end: h === "end" || h === "both" };
+}
+
+/** 始端・終端それぞれの矢じりの有無から、`style.head` の値を作る */
+export function arrowHeadOf(ends: { start: boolean; end: boolean }): ArrowHead {
+  if (ends.start && ends.end) return "both";
+  if (ends.start) return "start";
+  return ends.end ? "end" : "none";
+}
+
 // id は JSON Schema に変換したとき（MCP のツール定義など）に $ref で共有し、定義を繰り返さないため
 export const StyleSchema = z
   .looseObject({
@@ -29,7 +45,8 @@ export const StyleSchema = z
     color: color.optional(),
     fontSize: finite.positive().optional(),
     fontWeight: z.enum(["normal", "bold"]).optional(),
-    head: z.enum(["end", "both", "none"]).optional(),
+    /** 矢印の矢じりの位置（FR-EDIT-19）。`start` は from 側、`end` は to 側。省略は `end` */
+    head: ArrowHeadSchema.optional(),
     /** 線の種類（四角・楕円・矢印）。省略は実線 */
     dash: LineDashSchema.optional(),
   })

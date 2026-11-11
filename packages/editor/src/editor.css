@@ -932,3 +932,32 @@ label.harie-field .harie-field-label {
   font-size: 12px;
   color: inherit;
 }
+/* 矢じり（FR-EDIT-19）。始端と終端を左右に並べる */
+.harie-heads {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+.harie-head-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+.harie-inspector-body .harie-head-side {
+  display: flex;
+  width: 100%;
+  padding: 0;
+  justify-content: space-between;
+  font-size: 11px;
+  color: var(--harie-muted);
+}
+.harie-tiles-2 {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+.harie-tiles-2 .harie-tile {
+  height: 44px;
+}

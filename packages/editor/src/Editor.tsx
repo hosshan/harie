@@ -2,6 +2,8 @@
 import {
   type Annotation,
   AnnotationSchema,
+  arrowEnds,
+  arrowHeadOf,
   type HarieDocument,
   type LineDash,
   type PiiMask,
@@ -87,6 +89,46 @@ const LINE_DASHES: readonly { value: LineDash; dasharray?: string }[] = [
   { value: "dashed", dasharray: "5 3" },
   { value: "dotted", dasharray: "0 4.5" },
 ];
+
+type ArrowSide = "start" | "end";
+const ARROW_SIDES: readonly ArrowSide[] = ["start", "end"];
+
+/** 矢じりのタイルの見本。始端は左、終端は右の端を示し、その端に矢じりがあるかを描く */
+function HeadSample({ side, head }: { side: ArrowSide; head: boolean }) {
+  const tipX = side === "end" ? 28 : 2;
+  const dir = side === "end" ? 1 : -1;
+  const lineEnd = head ? tipX - dir * 5 : tipX;
+  return (
+    <svg viewBox="0 0 30 12" width="30" height="12" aria-hidden="true">
+      <line
+        x1={side === "end" ? 4 : lineEnd}
+        y1="6"
+        x2={side === "end" ? lineEnd : 26}
+        y2="6"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        opacity={0.55}
+      />
+      {head ? (
+        <polygon
+          points={`${tipX},6 ${tipX - dir * 7},2 ${tipX - dir * 7},10`}
+          fill="currentColor"
+        />
+      ) : (
+        <line
+          x1={tipX}
+          y1="6"
+          x2={side === "end" ? tipX - 8 : tipX + 8}
+          y2="6"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+        />
+      )}
+    </svg>
+  );
+}
 
 function isTyping(target: EventTarget | null): boolean {
   return (
@@ -705,6 +747,23 @@ function Inspector({
       const { dash: _, ...rest } = a.style ?? {};
       return v === "solid" ? rest : { ...rest, dash: v };
     });
+  // 矢じり（FR-EDIT-19）。始端（from）・終端（to）を別々に付け外しし、外した端はただの線になる
+  const withHeads = annotations.every((a) => a.type === "arrow");
+  const headOn = (side: ArrowSide) =>
+    common(annotations.map((a) => arrowEnds(a.style?.head)[side]));
+  const setHead = (side: ArrowSide, on: boolean) => {
+    const heads = annotations.map((a) => arrowHeadOf({ ...arrowEnds(a.style?.head), [side]: on }));
+    const first = heads[0];
+    if (first !== undefined) onDrawDefaults({ arrowHead: first });
+    updateStyles((a) => {
+      const ends = arrowEnds(a.style?.head);
+      if (ends[side] === on) return null;
+      const head = arrowHeadOf({ ...ends, [side]: on });
+      // 終端だけは既定なので、フィールドごと外す
+      const { head: _, ...rest } = a.style ?? {};
+      return head === "end" ? rest : { ...rest, head };
+    });
+  };
   // 色を指定していない注釈は、テーマの既定の色を選んでいるものとして示す
   const color = common(
     annotations.map((a) => (a.style?.[colorKey(a)] ?? defaults[colorKey(a)]).toUpperCase()),
@@ -868,6 +927,40 @@ function Inspector({
                 <small>{m.dashes[d.value]}</small>
               </button>
             ))}
+          </div>
+        </fieldset>
+      )}
+      {withHeads && (
+        <fieldset className="harie-field">
+          <legend className="harie-field-label">{m.inspector.arrowHeads}</legend>
+          <div className="harie-heads">
+            {ARROW_SIDES.map((side) => {
+              const on = headOn(side);
+              return (
+                <fieldset key={side} className="harie-head-group">
+                  <legend className="harie-head-side">
+                    {m.inspector.headSide[side]}
+                    {on === undefined && (
+                      <span className="harie-field-value">{m.inspector.mixed}</span>
+                    )}
+                  </legend>
+                  <div className="harie-tiles harie-tiles-2">
+                    {[false, true].map((value) => (
+                      <button
+                        key={String(value)}
+                        type="button"
+                        className="harie-tile"
+                        aria-pressed={on === value}
+                        onClick={() => setHead(side, value)}
+                      >
+                        <HeadSample side={side} head={value} />
+                        <small>{value ? m.inspector.headArrow : m.inspector.headNone}</small>
+                      </button>
+                    ))}
+                  </div>
+                </fieldset>
+              );
+            })}
           </div>
         </fieldset>
       )}

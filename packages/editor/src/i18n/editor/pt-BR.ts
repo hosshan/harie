@@ -89,6 +89,10 @@ export const ptBR: EditorMessages = {
     sample: "A",
     strokeWidth: "Espessura da linha",
     dash: "Tipo de linha",
+    arrowHeads: "Pontas de seta",
+    headSide: { start: "Início", end: "Fim" },
+    headArrow: "Seta",
+    headNone: "Nenhuma",
     summaryLine: (width, dash) =>
       `Linha ${width === undefined ? "misto" : `${width}px`} · ${dash ?? "misto"}`,
     summaryText: (size) => `Texto ${size === undefined ? "misto" : `${size}px`}`,

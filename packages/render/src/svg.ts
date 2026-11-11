@@ -1,6 +1,13 @@
 // 注釈ドキュメント → SVG（ADR-0005）
 // 純粋関数。エディタの表示と保存時のラスタライズの両方がこの SVG を使い、見た目を一致させる。
-import type { Annotation, HarieDocument, LineDash, Style } from "@harie/model";
+import {
+  type Annotation,
+  type ArrowHead,
+  arrowEnds,
+  type HarieDocument,
+  type LineDash,
+  type Style,
+} from "@harie/model";
 import { EXTRA_FONT_FAMILIES, type ExtraFont, extraFontOf } from "./extra-fonts";
 import { THEMES, type Theme } from "./theme";
 import { attrs, esc, n } from "./xml";
@@ -52,7 +59,7 @@ type Resolved = {
   radius?: number | undefined;
   opacity?: number | undefined;
   fontWeight?: "normal" | "bold" | undefined;
-  head?: "end" | "both" | "none" | undefined;
+  head?: ArrowHead | undefined;
   dash?: LineDash | undefined;
 };
 
@@ -155,7 +162,6 @@ function arrow(a: { from: Point; to: Point }, s: Resolved): string {
   const len = Math.hypot(dx, dy) || 1;
   const [ux, uy] = [dx / len, dy / len];
   const head = Math.min(s.strokeWidth * 4, len / 2);
-  const headMode = s.head ?? "end";
   const tip = (p: { x: number; y: number }, dir: number) => {
     const bx = p.x - dir * ux * head;
     const by = p.y - dir * uy * head;
@@ -169,8 +175,9 @@ function arrow(a: { from: Point; to: Point }, s: Resolved): string {
       fill: s.stroke,
     })}/>`;
   };
-  const endInset = headMode === "none" ? 0 : head * 0.8;
-  const startInset = headMode === "both" ? head * 0.8 : 0;
+  const ends = arrowEnds(s.head);
+  const endInset = ends.end ? head * 0.8 : 0;
+  const startInset = ends.start ? head * 0.8 : 0;
   const line = `<line ${attrs({
     x1: a.from.x + ux * startInset,
     y1: a.from.y + uy * startInset,
@@ -181,9 +188,7 @@ function arrow(a: { from: Point; to: Point }, s: Resolved): string {
     "stroke-linecap": "round",
     ...dashAttrs(s, true),
   })}/>`;
-  return (
-    line + (headMode !== "none" ? tip(a.to, 1) : "") + (headMode === "both" ? tip(a.from, -1) : "")
-  );
+  return line + (ends.end ? tip(a.to, 1) : "") + (ends.start ? tip(a.from, -1) : "");
 }
 
 const clamp = (v: number, lo: number, hi: number) => Math.min(hi, Math.max(lo, v));

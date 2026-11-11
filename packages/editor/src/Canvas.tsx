@@ -96,8 +96,10 @@ export function hitTest(doc: HarieDocument, p: Point, tolerance: number): Annota
 /** 読み取った図形を、四角・楕円・矢印の注釈として追加する。線は矢じりのない矢印にする */
 export function sketchOps(doc: HarieDocument, shape: SketchShape, defaults: DrawDefaults = {}) {
   const id = newAnnotationId(doc, shape.type);
+  // 矢じりは読み取った形に従う（前回選んだ矢じりは引き継がない）
+  const { head: _, ...base } = styleForNew(shape.type, defaults) ?? {};
   const style = {
-    ...styleForNew(shape.type, defaults),
+    ...base,
     ...(shape.type === "arrow" && shape.head === "none" ? { head: "none" } : {}),
   };
   const geometry =

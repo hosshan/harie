@@ -75,6 +75,10 @@ export const zhCN: EditorMessages = {
     sample: "字",
     strokeWidth: "线条粗细",
     dash: "线条样式",
+    arrowHeads: "箭头",
+    headSide: { start: "起点", end: "终点" },
+    headArrow: "箭头",
+    headNone: "无",
     summaryLine: (width, dash) =>
       `线条 ${width === undefined ? "混合" : `${width}px`}・${dash ?? "混合"}`,
     summaryText: (size) => `文字 ${size === undefined ? "混合" : `${size}px`}`,

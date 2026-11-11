@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { createDocument, prepareForSave } from "./document";
 import { migrateDocument } from "./migrate";
 import { applyOps } from "./ops";
-import type { HarieDocument } from "./schema";
+import { arrowEnds, arrowHeadOf, type HarieDocument } from "./schema";
 
 const DOC_ID = "c8be77cd-bc6d-4747-bf15-12e345a4b522";
 const NOW = new Date("2026-10-07T08:00:00Z");
@@ -133,5 +133,35 @@ describe("FR-FILE-07: マイグレーション", () => {
       ok: false,
       error: { kind: "Invalid" },
     });
+  });
+});
+
+describe("FR-EDIT-19: 矢印の矢じり", () => {
+  it("style.head を始端・終端それぞれの有無に分け、組み立て直せる（省略は終端だけ）", () => {
+    expect(arrowEnds(undefined)).toEqual({ start: false, end: true });
+    expect(arrowEnds("start")).toEqual({ start: true, end: false });
+    expect(arrowEnds("both")).toEqual({ start: true, end: true });
+    expect(arrowEnds("none")).toEqual({ start: false, end: false });
+    for (const head of ["end", "start", "both", "none"] as const) {
+      expect(arrowHeadOf(arrowEnds(head))).toBe(head);
+    }
+  });
+
+  it("始端だけの矢印を追加・保存できる", () => {
+    const doc = createDocument({ width: 100, height: 100, docId: DOC_ID, now: NOW });
+    const r = applyOps(doc, [
+      {
+        op: "add",
+        annotation: {
+          id: "a",
+          type: "arrow",
+          from: { x: 0, y: 0 },
+          to: { x: 50, y: 0 },
+          style: { head: "start" },
+        },
+      },
+    ]);
+    expect(r.ok).toBe(true);
+    if (r.ok) expect(migrateDocument(JSON.parse(JSON.stringify(r.value))).ok).toBe(true);
   });
 });
