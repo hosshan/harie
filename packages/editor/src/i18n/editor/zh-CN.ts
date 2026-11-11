@@ -26,7 +26,7 @@ export const zhCN: EditorMessages = {
     spotlight: "聚光灯",
     blur: "模糊",
   },
-  colors: { red: "红", orange: "橙", green: "绿", blue: "蓝", black: "黑" },
+  colors: { red: "红", orange: "橙", green: "绿", blue: "蓝", purple: "紫", black: "黑" },
   fontSizes: { small: "小", medium: "中", large: "大", xlarge: "特大" },
   strokeWidths: { thin: "细", medium: "中", thick: "粗", xthick: "特粗" },
   dashes: { solid: "实线", dashed: "虚线", dotted: "点线" },
