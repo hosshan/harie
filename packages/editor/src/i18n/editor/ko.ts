@@ -77,6 +77,10 @@ export const ko: EditorMessages = {
     sample: "가",
     strokeWidth: "선 굵기",
     dash: "선 종류",
+    arrowHeads: "화살촉",
+    headSide: { start: "시작점", end: "끝점" },
+    headArrow: "화살표",
+    headNone: "없음",
     summaryLine: (width, dash) =>
       `선 ${width === undefined ? "혼합" : `${width}px`} · ${dash ?? "혼합"}`,
     summaryText: (size) => `글자 ${size === undefined ? "혼합" : `${size}px`}`,

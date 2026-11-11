@@ -376,6 +376,36 @@ describe("次に描く注釈の初期値（FR-EDIT-01・FR-EDIT-03）", () => {
   });
 });
 
+describe("矢じりの初期値（FR-EDIT-19）", () => {
+  it("選んだ矢じりを記録し、次に描く矢印にだけ付ける（終端だけは既定なので付けない）", () => {
+    const m = new Map<string, string>();
+    const storage = {
+      getItem: (k: string) => m.get(k) ?? null,
+      setItem: (k: string, v: string) => void m.set(k, v),
+    };
+    saveDrawDefaults({ strokeWidth: 6, arrowHead: "none" }, storage);
+    expect(loadDrawDefaults(storage)).toEqual({ strokeWidth: 6, arrowHead: "none" });
+    storage.setItem(DRAW_DEFAULTS_KEY, JSON.stringify({ arrowHead: "dot" }));
+    expect(loadDrawDefaults(storage)).toEqual({});
+
+    expect(styleForNew("arrow", { strokeWidth: 6, arrowHead: "none" })).toEqual({
+      strokeWidth: 6,
+      head: "none",
+    });
+    expect(styleForNew("arrow", { arrowHead: "start" })).toEqual({ head: "start" });
+    expect(styleForNew("arrow", { arrowHead: "end" })).toBeUndefined();
+    expect(styleForNew("rect", { strokeWidth: 6, arrowHead: "none" })).toEqual({ strokeWidth: 6 });
+  });
+
+  it("解像度の倍率を掛けても外しても、矢じりはそのまま", () => {
+    expect(scaleDrawDefaults({ arrowHead: "both" }, 2).arrowHead).toBe("both");
+    expect(unscaleDrawDefaults({ strokeWidth: 12, arrowHead: "none" }, 2)).toEqual({
+      strokeWidth: 6,
+      arrowHead: "none",
+    });
+  });
+});
+
 describe("解像度に合わせた初期値（FR-EDIT-16）", () => {
   it("等倍なら記録のまま、2 倍なら未記録の項目もテーマの既定に倍率を掛けて埋める", () => {
     expect(scaleDrawDefaults({}, 1)).toEqual({});

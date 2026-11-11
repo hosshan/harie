@@ -1,10 +1,18 @@
-// 次に描く注釈の初期値（前回選んだ線の太さ・文字サイズ・番号の大きさ）。このブラウザの localStorage にだけ置く
+// 次に描く注釈の初期値（前回選んだ線の太さ・文字サイズ・番号の大きさ・矢じり）。このブラウザの localStorage にだけ置く
 // 引数名を storage にしない（Chrome 拡張の WXT が wxt/utils/storage を自動で import してしまう）
-import { type Style, StyleSchema } from "@harie/model";
+import { type ArrowHead, ArrowHeadSchema, type Style, StyleSchema } from "@harie/model";
 import { THEMES } from "@harie/render";
 
-/** 番号の大きさは文字サイズと別に持つ（吹き出しを大きくしても番号は大きくしない） */
-export type DrawDefaults = { strokeWidth?: number; fontSize?: number; badgeFontSize?: number };
+/**
+ * 番号の大きさは文字サイズと別に持つ（吹き出しを大きくしても番号は大きくしない）。
+ * `arrowHead` は矢印の矢じり（FR-EDIT-19。線を続けて描けるよう、前回選んだ始端・終端を引き継ぐ）
+ */
+export type DrawDefaults = {
+  strokeWidth?: number;
+  fontSize?: number;
+  badgeFontSize?: number;
+  arrowHead?: ArrowHead;
+};
 
 export const DRAW_DEFAULTS_KEY = "harie.drawDefaults";
 
@@ -12,6 +20,7 @@ type KeyValueStorage = Pick<Storage, "getItem" | "setItem">;
 
 const DrawDefaultsSchema = StyleSchema.pick({ strokeWidth: true, fontSize: true }).extend({
   badgeFontSize: StyleSchema.shape.fontSize,
+  arrowHead: ArrowHeadSchema.optional(),
 });
 
 function browserStorage(): KeyValueStorage | undefined {
@@ -30,11 +39,12 @@ export function loadDrawDefaults(store = browserStorage()): DrawDefaults {
     if (raw === null || raw === undefined) return {};
     const parsed = DrawDefaultsSchema.safeParse(JSON.parse(raw));
     if (!parsed.success) return {};
-    const { strokeWidth, fontSize, badgeFontSize } = parsed.data;
+    const { strokeWidth, fontSize, badgeFontSize, arrowHead } = parsed.data;
     return {
       ...(strokeWidth === undefined ? {} : { strokeWidth }),
       ...(fontSize === undefined ? {} : { fontSize }),
       ...(badgeFontSize === undefined ? {} : { badgeFontSize }),
+      ...(arrowHead === undefined ? {} : { arrowHead }),
     };
   } catch {
     return {};
@@ -49,16 +59,24 @@ export function saveDrawDefaults(defaults: DrawDefaults, store = browserStorage(
   }
 }
 
-/** 新しく描く注釈に付ける style。線の太さは四角・楕円・矢印、文字サイズはテキスト・吹き出し、番号の大きさは番号に使う */
+/**
+ * 新しく描く注釈に付ける style。線の太さは四角・楕円・矢印、矢じりは矢印、文字サイズはテキスト・吹き出し、
+ * 番号の大きさは番号に使う。矢じりが既定（終端だけ）なら `head` を付けない
+ */
 export function styleForNew(type: string, defaults: DrawDefaults): Style | undefined {
   const value =
-    type === "rect" || type === "ellipse" || type === "arrow"
+    type === "rect" || type === "ellipse"
       ? { strokeWidth: defaults.strokeWidth }
-      : type === "text" || type === "callout"
-        ? { fontSize: defaults.fontSize }
-        : type === "badge"
-          ? { fontSize: defaults.badgeFontSize }
-          : {};
+      : type === "arrow"
+        ? {
+            strokeWidth: defaults.strokeWidth,
+            head: defaults.arrowHead === "end" ? undefined : defaults.arrowHead,
+          }
+        : type === "text" || type === "callout"
+          ? { fontSize: defaults.fontSize }
+          : type === "badge"
+            ? { fontSize: defaults.badgeFontSize }
+            : {};
   const style = Object.fromEntries(Object.entries(value).filter(([, v]) => v !== undefined));
   return Object.keys(style).length === 0 ? undefined : style;
 }
@@ -71,6 +89,7 @@ export function scaleDrawDefaults(defaults: DrawDefaults, scale: number): DrawDe
   if (!(scale > 1)) return defaults;
   const base = THEMES.default.defaults;
   return {
+    ...(defaults.arrowHead === undefined ? {} : { arrowHead: defaults.arrowHead }),
     strokeWidth: Math.round((defaults.strokeWidth ?? base.strokeWidth) * scale),
     fontSize: Math.round((defaults.fontSize ?? base.fontSize) * scale),
     badgeFontSize: Math.round((defaults.badgeFontSize ?? base.fontSize) * scale),
@@ -81,6 +100,9 @@ export function scaleDrawDefaults(defaults: DrawDefaults, scale: number): DrawDe
 export function unscaleDrawDefaults(patch: DrawDefaults, scale: number): DrawDefaults {
   if (!(scale > 1)) return patch;
   return Object.fromEntries(
-    Object.entries(patch).map(([k, v]) => [k, Math.round((v / scale) * 100) / 100]),
+    Object.entries(patch).map(([k, v]) => [
+      k,
+      typeof v === "number" ? Math.round((v / scale) * 100) / 100 : v,
+    ]),
   ) as DrawDefaults;
 }

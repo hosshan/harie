@@ -68,7 +68,7 @@ harie guide <file> --intent "説明したいこと"        # 手引きの全文�
 
 - type: `rect` / `ellipse` / `arrow`(from, to) / `text`(x, y, text) / `callout`(x, y, w, text, anchor?) / `badge`(x, y, number, anchor?) / `spotlight` / `blur`。
 - `badge` の `anchor` で枠の左上の外側に自動で置かれる（x, y は 0 でよい）。`callout` の `anchor`（`side`: top / right / bottom / left）で枠への矢印が描かれる。`arrow` を別に引かない。
-- `style`（任意）: `stroke`, `strokeWidth`, `fill`, `color`, `fontSize`, `fontWeight`, `radius`, `opacity`, `head`, `dash`。目安は `fontSize` が画像の幅の 1.1% 前後、`strokeWidth` が 0.2% 前後。
+- `style`（任意）: `stroke`, `strokeWidth`, `fill`, `color`, `fontSize`, `fontWeight`, `radius`, `opacity`, `head`（矢印の矢じり。`end`（既定）/ `start`（`from` 側）/ `both` / `none`（ただの線））, `dash`。目安は `fontSize` が画像の幅の 1.1% 前後、`strokeWidth` が 0.2% 前後。
 - 注釈の `blur` は外せるぼかし。個人情報には使わない。
 
 ## 注釈の決まり

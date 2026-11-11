@@ -86,6 +86,31 @@ describe("buildSvg", () => {
     expect(svg.match(/stroke-dasharray/g)).toHaveLength(3);
   });
 
+  it("FR-EDIT-19: 矢じりを始端・終端それぞれに付け外しでき、付けた端だけ線を短くする", () => {
+    const arrowWith = (head?: string) =>
+      buildSvg(
+        doc([
+          {
+            id: "a",
+            type: "arrow",
+            from: { x: 0, y: 0 },
+            to: { x: 100, y: 0 },
+            style: { strokeWidth: 5, ...(head === undefined ? {} : { head }) },
+          },
+        ]),
+      );
+    const polygons = (svg: string) => svg.match(/<polygon /g)?.length ?? 0;
+    const line = (svg: string) => /<line x1="([\d.]+)" y1="0" x2="([\d.]+)"/.exec(svg)?.slice(1);
+    // 矢じりの長さ 20（太さ 5 × 4）の 0.8 倍だけ、矢じりの側の線を短くする
+    expect([polygons(arrowWith()), line(arrowWith())]).toEqual([1, ["0", "84"]]);
+    expect([polygons(arrowWith("end")), line(arrowWith("end"))]).toEqual([1, ["0", "84"]]);
+    expect([polygons(arrowWith("start")), line(arrowWith("start"))]).toEqual([1, ["16", "100"]]);
+    expect([polygons(arrowWith("both")), line(arrowWith("both"))]).toEqual([2, ["16", "84"]]);
+    expect([polygons(arrowWith("none")), line(arrowWith("none"))]).toEqual([0, ["0", "100"]]);
+    // 始端だけのときは、矢じりの先が from に来る
+    expect(arrowWith("start")).toMatch(/<polygon points="0,0 /);
+  });
+
   it("吹き出しから対象への線は、吹き出しの線の種類によらず実線で描く", () => {
     const svg = buildSvg(
       doc([

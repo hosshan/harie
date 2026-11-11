@@ -87,6 +87,11 @@ const ja = {
     sample: "あ",
     strokeWidth: "線の太さ",
     dash: "線の種類",
+    /** 矢印の両端の矢じり（FR-EDIT-19）。始端は描き始めた側 */
+    arrowHeads: "矢じり",
+    headSide: { start: "始端", end: "終端" },
+    headArrow: "矢印",
+    headNone: "なし",
     summaryLine: (width: number | undefined, dash: string | undefined) =>
       `線 ${width === undefined ? "混在" : `${width}px`}・${dash ?? "混在"}`,
     summaryText: (size: number | undefined) => `文字 ${size === undefined ? "混在" : `${size}px`}`,
@@ -281,6 +286,10 @@ const en: EditorMessages = {
     sample: "A",
     strokeWidth: "Line width",
     dash: "Line style",
+    arrowHeads: "Arrowheads",
+    headSide: { start: "Start", end: "End" },
+    headArrow: "Arrow",
+    headNone: "None",
     summaryLine: (width, dash) =>
       `Line ${width === undefined ? "mixed" : `${width}px`} · ${dash ?? "mixed"}`,
     summaryText: (size) => `Text ${size === undefined ? "mixed" : `${size}px`}`,
