@@ -26,7 +26,7 @@ export const zhTW: EditorMessages = {
     spotlight: "聚光燈",
     blur: "模糊",
   },
-  colors: { red: "紅", orange: "橙", green: "綠", blue: "藍", black: "黑" },
+  colors: { red: "紅", orange: "橙", green: "綠", blue: "藍", purple: "紫", black: "黑" },
   fontSizes: { small: "小", medium: "中", large: "大", xlarge: "特大" },
   strokeWidths: { thin: "細", medium: "中", thick: "粗", xthick: "特粗" },
   dashes: { solid: "實線", dashed: "虛線", dotted: "點線" },

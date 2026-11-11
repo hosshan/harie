@@ -58,6 +58,7 @@ const COLORS = [
   { name: "orange", value: "#F76B15" },
   { name: "green", value: "#30A46C" },
   { name: "blue", value: "#0B6BCB" },
+  { name: "purple", value: "#BF7FF0" },
   { name: "black", value: "#1C2024" },
 ] as const;
 
