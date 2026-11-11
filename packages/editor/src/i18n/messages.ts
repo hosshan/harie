@@ -88,7 +88,7 @@ const ja = {
     strokeWidth: "線の太さ",
     dash: "線の種類",
     /** 矢印の両端の矢じり（FR-EDIT-19）。始端は描き始めた側 */
-    arrowHeads: "矢じり",
+    arrowHeads: "先端",
     headSide: { start: "始端", end: "終端" },
     headArrow: "矢印",
     headNone: "なし",
