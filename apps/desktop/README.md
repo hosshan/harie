@@ -38,7 +38,7 @@ Windows / Linux は起動引数でも試せる（`src-tauri/target/debug/harie-d
 | `src/App.tsx` | 開く（ダイアログ・D&D・貼り付け）と保存先の決定 |
 | `src/native.ts` | ダイアログと、Rust のコマンドの呼び出し |
 | `src/paths.ts` | パスの扱い（macOS / Windows の区切り） |
-| `src-tauri/src/lib.rs` | `read_image` / `write_image`（JPEG / PNG だけを読み書きし、上書きは一時ファイルから置き換える）。関連付けから渡されたファイルの受け取り（`take_pending_files`） |
+| `src-tauri/src/lib.rs` | `read_image` / `write_image`（`read_image` は JPEG / PNG と、画面側で変換して開く SVG・WebP・GIF・BMP・AVIF・HEIC を読む。`write_image` は JPEG / PNG だけを書き、上書きは一時ファイルから置き換える）。関連付けから渡されたファイルの受け取り（`take_pending_files`） |
 | `src-tauri/capabilities/default.json` | 画面に許す権限（ダイアログ、題名の変更、閉じる確認のあとにウィンドウを閉じること。fs プラグインは使わない） |
 | `src-tauri/icons/` | アイコン。元は `docs/brand`（`pnpm brand:icons` で `app-icon.png` を作り、`pnpm --filter @harie/desktop tauri icon src-tauri/icons/app-icon.png` で各 OS 向けを作る） |
 

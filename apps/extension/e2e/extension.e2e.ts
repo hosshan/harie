@@ -300,3 +300,23 @@ test("FR-CAP-08: ポップアップから空のエディタを開き、貼り付
   await expect(editor.locator(".app-file-name")).toHaveText("clipboard.png");
   await expect(editor.locator(".harie-canvas-overlay")).toHaveAttribute("viewBox", "0 0 320 200");
 });
+
+test("FR-FILE-15, FR-CAP-08: 空のエディタで HEIC を開ける（拡張のページでも HEIC のデコーダ（WASM）が動く）", async ({
+  context,
+  extensionId,
+}) => {
+  const popup = await context.newPage();
+  await popup.goto(`chrome-extension://${extensionId}/popup.html`);
+  const opened = editorOpened(context, extensionId);
+  await popup.getByRole("button", { name: "空のエディタを開く" }).click();
+  const editor = await opened;
+  await editor.getByLabel("画像ファイル", { exact: true }).setInputFiles({
+    name: "photo.heic",
+    mimeType: "image/heic",
+    buffer: readFileSync(
+      new URL("../../../packages/format/fixtures/import/sample.heic", import.meta.url),
+    ),
+  });
+  await expect(editor.locator(".app-file-name")).toHaveText("photo.heic");
+  await expect(editor.locator(".harie-canvas-overlay")).toHaveAttribute("viewBox", "0 0 64 48");
+});

@@ -21,6 +21,7 @@ import { AiPiiPanel, useAiSuggest } from "./ai/AiPanel";
 import { browserRenderer } from "./browser-renderer";
 import { canCopyImage, copyImage } from "./copy";
 import { Header, type HeaderAction, HeaderButton } from "./Header";
+import { IMAGE_ACCEPT_ATTR, prepareImage } from "./import-image";
 import { mismatchMessage, type Opened } from "./load";
 import { Modal } from "./Modal";
 import { useWebMessages } from "./messages";
@@ -238,7 +239,13 @@ export function Workspace({
   // 注釈を残したまま、画像だけを新しいキャプチャに差し替える（FR-EDIT-10）。大きさが違えば注釈を比率で合わせる。
   // 元の画像にかけていたマスクは新しい画像にはかかっていないので、同じ範囲を下書きにしてかけ直してもらう（ADR-0007）
   const replaceBase = async (file: File) => {
-    const next = readBaseImage(new Uint8Array(await file.arrayBuffer()));
+    // JPEG / PNG 以外は、取り込むときに JPEG / PNG に変換する（FR-FILE-15）
+    const prepared = await prepareImage(new Uint8Array(await file.arrayBuffer()));
+    if (!prepared.ok) {
+      setStatus(prepared.message);
+      return;
+    }
+    const next = readBaseImage(prepared.bytes);
     if (next === null) {
       setStatus(m.replace.notImage);
       return;
@@ -304,7 +311,7 @@ export function Workspace({
       <input
         ref={replaceInput}
         type="file"
-        accept="image/jpeg,image/png"
+        accept={IMAGE_ACCEPT_ATTR}
         aria-label={m.replace.input}
         hidden
         onChange={(e) => {

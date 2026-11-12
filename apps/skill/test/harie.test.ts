@@ -207,12 +207,36 @@ describe("Harie Skill（FR-MCP-09）", () => {
     expect(json(r.stdout).result.path).toBe(join(sub, "settings.harie.png"));
   });
 
-  it("JPEG / PNG 以外は import できない", () => {
-    const webp = join(dir, "a.webp");
-    writeFileSync(webp, Buffer.from("RIFF\0\0\0\0WEBPVP8 ", "ascii"));
-    const r = harie("import", webp);
+  it("FR-FILE-15: SVG・HEIC は PNG・JPEG に変換して import し、apply もできる", () => {
+    const fixtures = new URL("../../../packages/format/fixtures/import/", import.meta.url);
+    writeFileSync(join(dir, "diagram.svg"), readFileSync(new URL("sample.svg", fixtures)));
+    writeFileSync(join(dir, "photo.heic"), readFileSync(new URL("sample.heic", fixtures)));
+    const found = json(harie("find", dir).stdout).result.images;
+    expect(found).toContainEqual(expect.objectContaining({ format: "svg" }));
+    const svg = harie("import", join(dir, "diagram.svg"));
+    expect(svg.code, svg.stderr + svg.stdout).toBe(0);
+    expect(json(svg.stdout).result).toMatchObject({
+      path: join(dir, "diagram.harie.png"),
+      canvas: { width: 1024, height: 768 },
+    });
+    writeFileSync(
+      join(dir, "plan.json"),
+      JSON.stringify({
+        ops: [{ op: "add", annotation: { id: "r1", type: "rect", x: 4, y: 4, w: 20, h: 20 } }],
+      }),
+    );
+    const heic = harie("apply", join(dir, "photo.heic"), "--plan", `@${join(dir, "plan.json")}`);
+    expect(heic.code, heic.stderr + heic.stdout).toBe(0);
+    expect(json(heic.stdout)).toMatchObject({ done: ["import", "edit"] });
+    expect(existsSync(join(dir, "photo.harie.jpg"))).toBe(true);
+  });
+
+  it("扱えない形式は import できない", () => {
+    const txt = join(dir, "a.txt");
+    writeFileSync(txt, "hello");
+    const r = harie("import", txt);
     expect(r.code).toBe(2);
-    expect(r.stderr).toContain("JPEG / PNG");
+    expect(r.stderr).toContain("JPEG・PNG・SVG");
   });
 });
 

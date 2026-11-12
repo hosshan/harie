@@ -7,6 +7,7 @@ import {
   matchesShortcut,
 } from "@harie/editor";
 import { type ReactNode, useCallback, useEffect, useRef } from "react";
+import { IMAGE_ACCEPT, IMAGE_ACCEPT_ATTR } from "./import-image";
 import { useWebMessages, webMessages } from "./messages";
 
 type PickerWindow = Window & {
@@ -17,7 +18,7 @@ function imageTypes() {
   return [
     {
       description: webMessages().open.imageFiles,
-      accept: { "image/jpeg": [".jpg", ".jpeg"], "image/png": [".png"] },
+      accept: IMAGE_ACCEPT,
     },
   ];
 }
@@ -79,7 +80,7 @@ export function useImageIntake(onFile: OnImageFile): {
     <input
       ref={ref}
       type="file"
-      accept="image/jpeg,image/png"
+      accept={IMAGE_ACCEPT_ATTR}
       aria-label={m.open.fileInput}
       hidden
       onChange={(e) => {

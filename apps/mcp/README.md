@@ -14,12 +14,12 @@ The server never calls an LLM. The client's LLM looks at the image and decides w
 | Tool | What it does |
 |---|---|
 | `harie_open` | Opens a file and returns its annotations (as JSON, including callout text) and the image. A plain image returns `status: plain` |
-| `harie_create` | Creates a Harie file from a plain JPEG / PNG (default `<name>.harie.<ext>`; the original is kept). `format` (`jpeg` / `png`) picks the output format |
+| `harie_create` | Creates a Harie file from a plain image (default `<name>.harie.<ext>`; the original is kept). Besides JPEG / PNG it reads SVG, WebP, GIF and HEIC, converting them to PNG (HEIC to JPEG) once on import (0.7.0 and later). `format` (`jpeg` / `png`) picks the output format |
 | `harie_preview` | Returns the image with annotation changes (ops) applied. The file is not changed |
 | `harie_edit` | Applies annotation changes, re-renders and overwrites the file. `expectedRevision` provides optimistic locking |
 | `harie_list` | Lists Harie files in a directory |
 | `harie_mask` | Hides personal information by burning it into the base image (irreversible). Saves only with `confirm: true`; without it, only the masked image is returned |
-| `harie_replace_base` | Replaces the image with a new screenshot while keeping the annotations (for when the screen changed). If the size differs, annotations are scaled to fit. Masks from the old image are not carried over; their areas are returned as `previousPii` |
+| `harie_replace_base` | Replaces the image with a new screenshot while keeping the annotations (for when the screen changed). The new image can be in any format `harie_create` reads. If the size differs, annotations are scaled to fit. Masks from the old image are not carried over; their areas are returned as `previousPii` |
 
 Annotations are `rect`, `ellipse`, `arrow`, `text`, `callout`, `badge`, `spotlight` and `blur`. Boxes, ellipses, text and callouts can be rotated with `rotation` (degrees, clockwise, around the center of the box), and arrows can have heads at the end, the start, both or neither (`style.head`). Versions before 0.6.0 keep `rotation` but draw the shape unrotated, and read a file with `head: "start"` only as a plain image.
 

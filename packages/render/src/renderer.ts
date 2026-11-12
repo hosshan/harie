@@ -7,6 +7,18 @@ import encodeJpeg, { init as initJpegEncoder } from "@jsquash/jpeg/encode.js";
 import { initWasm, Resvg } from "@resvg/resvg-wasm";
 import { toDataUri } from "./base64";
 import { type ExtraFont, requiredExtraFonts } from "./extra-fonts";
+import {
+  type ConvertibleType,
+  flattenOnWhite,
+  gifSize,
+  type ImageDecoder,
+  ImportImageError,
+  importedMediaType,
+  MAX_IMPORT_SIDE,
+  type RgbaImage,
+  svgTargetWidth,
+  uncompressedPng,
+} from "./import";
 import { planMasks } from "./mask";
 import { buildSvg, FONT_FAMILY } from "./svg";
 
@@ -56,6 +68,17 @@ export type MaskOutput = {
   applied: PiiApplied[];
 };
 
+export type ImportInput = {
+  bytes: Uint8Array;
+  /** 中身から判定した形式（@harie/format の sniffImageType） */
+  type: ConvertibleType;
+  /** SVG・GIF 以外を読むデコーダ */
+  decode?: ImageDecoder;
+};
+
+/** 変換したベース画像と、その大きさ */
+export type ImportedImage = BaseImage & { width: number; height: number };
+
 export type Renderer = {
   /** RGBA ピクセルを返す。テストとエディタのプレビュー用 */
   /** 同期で描くため、補助フォントは読み込み済みのものだけを使う（render / applyMasks は読み込みを待つ） */
@@ -64,6 +87,12 @@ export type Renderer = {
   render(input: RenderInput): Promise<Uint8Array>;
   /** PII 加工をベース画像に不可逆に適用する（ADR-0007） */
   applyMasks(input: MaskInput): Promise<MaskOutput>;
+  /**
+   * JPEG / PNG 以外の画像を、ベース画像にする JPEG / PNG に変換する（FR-FILE-15, ADR-0016）。
+   * SVG と GIF（最初のコマ）は resvg で描く。それ以外は `decode` でピクセルにしてから描き直す。
+   * 透過部分は白地に合成する（保存時の描画と同じ見た目）。読めないときは ImportImageError を投げる
+   */
+  importImage(input: ImportInput): Promise<ImportedImage>;
 };
 
 let resvgReady: Promise<void> | undefined;
@@ -100,11 +129,12 @@ export async function createRenderer(init: RendererInit): Promise<Renderer> {
     );
   };
 
-  const rasterizeSvg = (svg: string) => {
+  const rasterizeSvg = (svg: string, width?: number) => {
     const resvg = new Resvg(svg, {
       font: { fontBuffers, defaultFontFamily: FONT_FAMILY, sansSerifFamily: FONT_FAMILY },
       // 背景は不透明の白。透過 PNG のベース画像でも JPEG と同じ見た目にする
       background: "#FFFFFF",
+      ...(width === undefined ? {} : { fitTo: { mode: "width" as const, value: width } }),
     });
     try {
       return resvg.render();
@@ -140,7 +170,93 @@ export async function createRenderer(init: RendererInit): Promise<Renderer> {
     return new Uint8Array(encoded);
   };
 
+  /** ラスタ画像を同じ大きさの SVG に貼って描き、指定の形式にする */
+  const reencode = async (
+    href: string,
+    size: { width: number; height: number },
+    mediaType: BaseImage["mediaType"],
+  ): Promise<ImportedImage> => {
+    const { width, height } = size;
+    const img = rasterizeSvg(
+      `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}"><image href="${href}" width="${width}" height="${height}" preserveAspectRatio="none"/></svg>`,
+    );
+    try {
+      const bytes = await encode(img, mediaType === "image/png" ? "png" : "jpeg", 92);
+      return { bytes, mediaType, width: img.width, height: img.height };
+    } finally {
+      img.free();
+    }
+  };
+
+  const fromPixels = async (pixels: RgbaImage, type: ConvertibleType): Promise<ImportedImage> => {
+    const { width, height } = pixels;
+    if (width > MAX_IMPORT_SIDE || height > MAX_IMPORT_SIDE) {
+      throw new ImportImageError("too-large", `画像が大きすぎます（${width}×${height}）`);
+    }
+    const mediaType = importedMediaType(type);
+    if (mediaType === "image/jpeg") {
+      const data = flattenOnWhite(pixels);
+      const encoded = await encodeJpeg(
+        { data, width, height, colorSpace: "srgb" },
+        { quality: 92, progressive: false },
+      );
+      return { bytes: new Uint8Array(encoded), mediaType, width, height };
+    }
+    return reencode(toDataUri(uncompressedPng(pixels), "image/png"), pixels, mediaType);
+  };
+
   return {
+    async importImage({ bytes, type, decode }) {
+      if (type === "svg") {
+        const svg = new TextDecoder().decode(bytes);
+        let natural: { width: number; height: number };
+        try {
+          const probe = new Resvg(svg);
+          natural = { width: probe.width, height: probe.height };
+          probe.free();
+        } catch (e) {
+          throw new ImportImageError("decode-failed", `SVG を読めません（${String(e)}）`);
+        }
+        await ensureFonts(svg);
+        const img = rasterizeSvg(svg, svgTargetWidth(natural.width, natural.height));
+        try {
+          return {
+            bytes: img.asPng(),
+            mediaType: "image/png",
+            width: img.width,
+            height: img.height,
+          };
+        } finally {
+          img.free();
+        }
+      }
+      if (type === "gif") {
+        const size = gifSize(bytes);
+        if (size.width > MAX_IMPORT_SIDE || size.height > MAX_IMPORT_SIDE) {
+          throw new ImportImageError(
+            "too-large",
+            `画像が大きすぎます（${size.width}×${size.height}）`,
+          );
+        }
+        return reencode(toDataUri(bytes, "image/gif"), size, "image/png");
+      }
+      let pixels: RgbaImage | null = null;
+      try {
+        pixels = decode === undefined ? null : await decode(bytes, type);
+      } catch (e) {
+        throw new ImportImageError(
+          "decode-failed",
+          `${type.toUpperCase()} を読めません（${String(e)}）`,
+        );
+      }
+      if (pixels === null) {
+        throw new ImportImageError(
+          "unsupported",
+          `この環境では ${type.toUpperCase()} を読めません`,
+        );
+      }
+      return fromPixels(pixels, type);
+    },
     renderPixels(input) {
       const img = rasterizeSvg(toSvg(input));
       try {

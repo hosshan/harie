@@ -10,12 +10,14 @@
     "typecheck": "tsc -p tsconfig.json"
   },
   "dependencies": {
+    "@expo-google-fonts/noto-sans-jp": "^0.4.4",
     "@harie/format": "workspace:*",
     "@harie/model": "workspace:*",
     "@harie/render": "workspace:*",
-    "@expo-google-fonts/noto-sans-jp": "^0.4.4",
     "@jsquash/jpeg": "^1.6.0",
+    "@jsquash/webp": "^1.5.0",
     "@resvg/resvg-wasm": "^2.6.2",
+    "libheif-js": "^1.23.5",
     "tsx": "^4.23.15"
   }
 }

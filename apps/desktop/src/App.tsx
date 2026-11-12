@@ -4,7 +4,8 @@
 import { formatShortcut, isMacPlatform } from "@harie/editor";
 import { loadDisplayFonts } from "@harie/web/fonts";
 import { Header, HeaderButton } from "@harie/web/header";
-import { loadFile, type Opened } from "@harie/web/load";
+import { loadImageFile } from "@harie/web/import-image";
+import type { Opened } from "@harie/web/load";
 import { useWebMessages, webMessages } from "@harie/web/messages";
 import type { Saved } from "@harie/web/save";
 import { openButtonTitle, useOpenShortcut } from "@harie/web/start";
@@ -47,8 +48,9 @@ export function App() {
   }, []);
 
   const openBytes = useCallback(
-    (name: string, bytes: Uint8Array, filePath: string | null) => {
-      const result = loadFile(name, bytes);
+    async (name: string, bytes: Uint8Array, filePath: string | null) => {
+      // JPEG / PNG 以外は変換してから開く（FR-FILE-15）。Harie ファイルではないので上書き保存の対象にはならない
+      const result = await loadImageFile(name, bytes);
       if (result.ok) show(result.opened, filePath);
       else setError(result.message);
     },
@@ -60,7 +62,7 @@ export function App() {
       // D&D・関連付けから開くときは、ヘッダーの「画像を開く」と違って画面の確認を通らないので、ここで確かめる
       if (dirty.current && !(await confirmDiscard("open"))) return;
       try {
-        openBytes(baseName(filePath), await readImage(filePath), filePath);
+        await openBytes(baseName(filePath), await readImage(filePath), filePath);
       } catch (e) {
         setError(String(e));
       }

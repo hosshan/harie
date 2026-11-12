@@ -52,6 +52,54 @@
         "description": "PNG 画像",
         "role": "Editor",
         "rank": "Alternate"
+      },
+      {
+        "ext": ["svg"],
+        "mimeType": "image/svg+xml",
+        "name": "SVG 画像",
+        "description": "SVG 画像",
+        "role": "Viewer",
+        "rank": "Alternate"
+      },
+      {
+        "ext": ["webp"],
+        "mimeType": "image/webp",
+        "name": "WebP 画像",
+        "description": "WebP 画像",
+        "role": "Viewer",
+        "rank": "Alternate"
+      },
+      {
+        "ext": ["gif"],
+        "mimeType": "image/gif",
+        "name": "GIF 画像",
+        "description": "GIF 画像",
+        "role": "Viewer",
+        "rank": "Alternate"
+      },
+      {
+        "ext": ["heic", "heif"],
+        "mimeType": "image/heic",
+        "name": "HEIC 画像",
+        "description": "HEIC 画像",
+        "role": "Viewer",
+        "rank": "Alternate"
+      },
+      {
+        "ext": ["avif"],
+        "mimeType": "image/avif",
+        "name": "AVIF 画像",
+        "description": "AVIF 画像",
+        "role": "Viewer",
+        "rank": "Alternate"
+      },
+      {
+        "ext": ["bmp"],
+        "mimeType": "image/bmp",
+        "name": "BMP 画像",
+        "description": "BMP 画像",
+        "role": "Viewer",
+        "rank": "Alternate"
       }
     ]
   }

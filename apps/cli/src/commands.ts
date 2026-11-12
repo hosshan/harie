@@ -7,6 +7,7 @@ import {
   readBaseImage,
   readHarie,
   readImageSize,
+  sniffImageType,
   writeHarie,
 } from "@harie/format";
 import {
@@ -18,8 +19,24 @@ import {
   recordPiiApplied,
   renameForSave,
 } from "@harie/model";
-import { rebaseDocument } from "@harie/render";
-import { nodeRenderer } from "./runtime";
+import { ImportImageError, rebaseDocument } from "@harie/render";
+import { nodeDecoder, nodeRenderer } from "./runtime";
+
+/**
+ * JPEG / PNG 以外の画像（SVG・WebP・GIF・HEIC）を、ベース画像にする PNG / JPEG に変換する（FR-FILE-15, ADR-0016）。
+ * JPEG / PNG と形式の分からないものはそのまま返す
+ */
+async function readImage(path: string): Promise<Uint8Array> {
+  const bytes = new Uint8Array(readFileSync(path));
+  const type = sniffImageType(bytes);
+  if (type === null || type === "jpeg" || type === "png") return bytes;
+  try {
+    return (await (await nodeRenderer()).importImage({ bytes, type, decode: nodeDecoder })).bytes;
+  } catch (e) {
+    if (e instanceof ImportImageError) throw new CliError(`${path}: ${e.message}`);
+    throw e;
+  }
+}
 
 /** 利用者に見せるエラー。スタックトレースを出さずにメッセージだけ表示する。 */
 export class CliError extends Error {}
@@ -126,11 +143,13 @@ export async function create(
   if (options.format !== undefined && options.format !== "jpeg" && options.format !== "png") {
     throw new CliError("--format は jpeg か png で指定してください");
   }
-  const bytes = new Uint8Array(readFileSync(imagePath));
+  const bytes = await readImage(imagePath);
   const read = readHarie(bytes);
   if (read.kind === "harie") throw new CliError(`${imagePath}: すでに Harie ファイルです`);
   if (read.kind === "unsupported" || read.kind === "corrupted") {
-    throw new CliError(`${imagePath}: JPEG / PNG として読めません`);
+    throw new CliError(
+      `${imagePath}: 画像として読めません（JPEG・PNG・SVG・WebP・GIF・HEIC に対応）`,
+    );
   }
   const size = readImageSize(bytes);
   if (size === null) throw new CliError(`${imagePath}: 画像の大きさを読めません`);
@@ -244,8 +263,12 @@ export async function replaceBase(
   options: { image: string; out?: string; now?: Date },
 ): Promise<{ out: string; previousPii: number }> {
   const loaded = loadHarie(path);
-  const image = readBaseImage(new Uint8Array(readFileSync(options.image)));
-  if (image === null) throw new CliError(`${options.image}: JPEG / PNG として読めません`);
+  const image = readBaseImage(await readImage(options.image));
+  if (image === null) {
+    throw new CliError(
+      `${options.image}: 画像として読めません（JPEG・PNG・SVG・WebP・GIF・HEIC に対応）`,
+    );
+  }
   const { doc, previousPii } = rebaseDocument(loaded.doc, image);
   const base = { bytes: image.bytes, mediaType: image.mediaType };
   const out = await save({ doc, base, format: loaded.format }, options.out ?? path, options.now);

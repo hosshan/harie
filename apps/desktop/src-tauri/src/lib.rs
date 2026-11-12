@@ -8,16 +8,29 @@ use percent_encoding::percent_decode_str;
 use tauri::ipc::{InvokeBody, Request, Response};
 use tauri::{AppHandle, Emitter, Manager};
 
-/// 開ける・保存できるのは JPEG と PNG だけ（FR-FILE-01, 02）。画面から任意のファイルを読み書きできないようにする
+/// 保存できるのは JPEG と PNG だけ（FR-FILE-01, 02）。画面から任意のファイルを読み書きできないようにする
 fn check_image_path(path: &Path) -> Result<(), String> {
-    let ext = path
-        .extension()
-        .and_then(|e| e.to_str())
-        .map(|e| e.to_ascii_lowercase());
-    match ext.as_deref() {
+    match lower_extension(path).as_deref() {
         Some("jpg" | "jpeg" | "png") => Ok(()),
         _ => Err("JPEG か PNG のファイルを選んでください。".into()),
     }
+}
+
+/// 開ける画像か拡張子で確かめる。JPEG / PNG 以外は画面側で JPEG / PNG に変換してから開く（FR-FILE-15）。
+/// 保存できるのは JPEG / PNG だけ（`check_image_path`）
+fn check_openable_path(path: &Path) -> Result<(), String> {
+    match lower_extension(path).as_deref() {
+        Some(
+            "jpg" | "jpeg" | "png" | "svg" | "gif" | "webp" | "bmp" | "avif" | "heic" | "heif",
+        ) => Ok(()),
+        _ => Err("画像ファイル（JPEG・PNG・SVG・WebP・GIF・HEIC など）を選んでください。".into()),
+    }
+}
+
+fn lower_extension(path: &Path) -> Option<String> {
+    path.extension()
+        .and_then(|e| e.to_str())
+        .map(|e| e.to_ascii_lowercase())
 }
 
 /// 同じフォルダーの一時ファイルに書いてから置き換える。書き込みの途中で失敗しても元のファイルを壊さない
@@ -40,7 +53,7 @@ fn write_atomically(path: &Path, bytes: &[u8]) -> std::io::Result<()> {
 /// 画像ファイルを読む。バイト列はそのまま返す（ベース画像を再エンコードしない。ADR-0004）
 #[tauri::command]
 fn read_image(path: PathBuf) -> Result<Response, String> {
-    check_image_path(&path)?;
+    check_openable_path(&path)?;
     let bytes = fs::read(&path).map_err(|e| format!("ファイルを読めません: {e}"))?;
     Ok(Response::new(bytes))
 }
@@ -76,7 +89,7 @@ fn image_paths_from_args(args: &[String], cwd: &Path) -> Vec<PathBuf> {
         .skip(1)
         .filter(|a| !a.starts_with('-'))
         .map(|a| cwd.join(a))
-        .filter(|p| check_image_path(p).is_ok())
+        .filter(|p| check_openable_path(p).is_ok())
         .collect()
 }
 
@@ -133,7 +146,7 @@ pub fn run() {
 fn handle_run_event(app: &AppHandle, event: tauri::RunEvent) {
     if let tauri::RunEvent::Opened { urls } = event {
         let paths = urls.into_iter().filter_map(|u| u.to_file_path().ok());
-        receive_files(app, paths.filter(|p| check_image_path(p).is_ok()).collect());
+        receive_files(app, paths.filter(|p| check_openable_path(p).is_ok()).collect());
     }
 }
 
@@ -151,6 +164,17 @@ mod tests {
         assert!(check_image_path(Path::new("画面.png")).is_ok());
         assert!(check_image_path(Path::new("/etc/passwd")).is_err());
         assert!(check_image_path(Path::new("/a/b.png.txt")).is_err());
+        assert!(check_image_path(Path::new("/a/b.svg")).is_err());
+    }
+
+    #[test]
+    fn opens_other_image_formats() {
+        assert!(check_openable_path(Path::new("/a/b.harie.jpg")).is_ok());
+        assert!(check_openable_path(Path::new("図.SVG")).is_ok());
+        assert!(check_openable_path(Path::new("IMG_0001.HEIC")).is_ok());
+        assert!(check_openable_path(Path::new("a.webp")).is_ok());
+        assert!(check_openable_path(Path::new("/etc/passwd")).is_err());
+        assert!(check_openable_path(Path::new("a.svg.txt")).is_err());
     }
 
     #[test]

@@ -8,3 +8,4 @@
 | `rendered.jpg` / `rendered.png` | 上に赤枠を描いたもの（レンダリング画像） | ImageMagick `-draw` |
 | `large-base.jpg` | 520×400 のノイズ画像。APP11 が複数セグメントに分割されることの確認用 | ImageMagick `plasma:` |
 | `v0.1/sample.harie.jpg` / `.png` | 形式 v0.1 のゴールデンファイル。**再生成しない**（後方互換テスト） | `writeHarie` で生成 |
+| `import/sample.{svg,gif,webp,bmp,avif,heic}` | 64×48。左半分が赤、右上が青、右下が透明（BMP・AVIF・HEIC は黒）。JPEG / PNG 以外の取り込み（FR-FILE-15）の確認用 | Pillow + pillow-heif（SVG は手書き） |

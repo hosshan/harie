@@ -12,7 +12,7 @@ export const es: WebMessages = {
     button: "Abrir imagen",
     dropHint: (paste) => `Arrastra y suelta una captura de pantalla, o pégala (${paste}).`,
     formats:
-      "Admite JPEG y PNG. Las imágenes guardadas funcionan como imágenes normales, y si las abres en Harie puedes volver a editar las anotaciones.",
+      "Admite JPEG y PNG, y también SVG, WebP, GIF, HEIC y otros (se guardan como JPEG o PNG). Las imágenes guardadas funcionan como imágenes normales, y si las abres en Harie puedes volver a editar las anotaciones.",
     integrations:
       "Para capturar con la extensión de Chrome o editar desde Claude (MCP), consulta «Integraciones» arriba a la derecha (dentro de «…» en pantallas estrechas).",
     fileInput: "Archivo de imagen",
@@ -27,9 +27,11 @@ export const es: WebMessages = {
     loading: "Cargando…",
   },
   load: {
-    unsupported: "Abre una imagen JPEG o PNG.",
+    unsupported:
+      "Este archivo no se puede leer como imagen. Abre una imagen JPEG, PNG, SVG, WebP, GIF, HEIC u otra similar.",
     corrupted: "La imagen está dañada y no se puede abrir.",
     noSize: "No se pudo leer el tamaño de la imagen.",
+    decodeFailed: (type: string) => `No se pudo leer esta imagen ${type}.`,
     mismatch: {
       PayloadMissing: "Faltan datos de las anotaciones. Solo se abrió la imagen.",
       PayloadCorrupted: "Los datos de las anotaciones están dañados. Solo se abrió la imagen.",
@@ -62,7 +64,7 @@ export const es: WebMessages = {
   replace: {
     button: "Reemplazar imagen",
     input: "Imagen de reemplazo",
-    notImage: "Elige una imagen JPEG o PNG",
+    notImage: "Elige una imagen (JPEG, PNG, SVG, WebP, GIF, HEIC, etc.)",
     done: "Se reemplazó la imagen. ",
     resized: "Las anotaciones se ajustaron al tamaño de la nueva imagen. ",
     remask: (n) =>

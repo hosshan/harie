@@ -36,7 +36,7 @@ export default defineConfig({
   vite: () => ({
     plugins: [react(), tailwindcss()],
     // WASM を含むパッケージは事前バンドルしない（?url で読み込む .wasm の位置が変わるため）
-    optimizeDeps: { exclude: ["@resvg/resvg-wasm", "@jsquash/jpeg"] },
+    optimizeDeps: { exclude: ["@resvg/resvg-wasm", "@jsquash/jpeg", "@jsquash/webp"] },
     build: { target: "es2022" },
   }),
 });

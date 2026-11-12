@@ -9,7 +9,8 @@ export const zhCN: WebMessages = {
   open: {
     button: "打开图片",
     dropHint: (paste) => `请拖放截图，或直接粘贴（${paste}）。`,
-    formats: "支持 JPEG 和 PNG。保存的图片可以当作普通图片使用，用 Harie 打开即可再次修改标注。",
+    formats:
+      "除 JPEG 和 PNG 外，还可打开 SVG、WebP、GIF、HEIC 等（保存为 JPEG 或 PNG）。保存的图片可以当作普通图片使用，用 Harie 打开即可再次修改标注。",
     integrations:
       "用 Chrome 扩展截图、从 Claude 编辑（MCP）的方法，请见右上角的“集成”（窄屏时在“…”中）。",
     fileInput: "图片文件",
@@ -24,9 +25,10 @@ export const zhCN: WebMessages = {
     loading: "正在加载…",
   },
   load: {
-    unsupported: "请打开 JPEG 或 PNG 图片。",
+    unsupported: "无法作为图片读取此文件。请打开 JPEG、PNG、SVG、WebP、GIF、HEIC 等图片。",
     corrupted: "图片已损坏，无法打开。",
     noSize: "无法读取图片尺寸。",
+    decodeFailed: (type: string) => `无法读取此 ${type} 图片。`,
     mismatch: {
       PayloadMissing: "部分标注数据丢失。只打开了图片。",
       PayloadCorrupted: "标注数据已损坏。只打开了图片。",
@@ -58,7 +60,7 @@ export const zhCN: WebMessages = {
   replace: {
     button: "替换图片",
     input: "要替换的图片",
-    notImage: "请选择 JPEG 或 PNG 图片",
+    notImage: "请选择图片（JPEG、PNG、SVG、WebP、GIF、HEIC 等）",
     done: "已替换图片。",
     resized: "已按新图片的大小调整标注。",
     remask: (n) => `之前图片中遮罩的 ${n} 处，请重新遮罩`,

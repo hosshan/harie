@@ -3,7 +3,8 @@ import { useCallback, useState } from "react";
 import { loadDisplayFonts } from "./fonts";
 import { useGuide } from "./Guide";
 import { Header, HeaderButton } from "./Header";
-import { loadFile, type Opened } from "./load";
+import { loadImageFile } from "./import-image";
+import type { Opened } from "./load";
 import { useWebMessages, webMessages } from "./messages";
 import { useLaunchedImage } from "./pwa";
 import { openButtonTitle, StartHint, useImageIntake, useOpenShortcut } from "./Start";
@@ -44,7 +45,7 @@ export function App() {
 
   const open = useCallback(
     async (file: File, fileHandle: FileSystemFileHandle | null) => {
-      const result = loadFile(file.name, new Uint8Array(await file.arrayBuffer()));
+      const result = await loadImageFile(file.name, new Uint8Array(await file.arrayBuffer()));
       if (!result.ok) {
         setError(result.message);
         return;

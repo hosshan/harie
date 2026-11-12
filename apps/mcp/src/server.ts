@@ -95,7 +95,7 @@ export function createServer(options: { root: string }): McpServer {
     {
       title: "画像から Harie ファイルを作る",
       description:
-        "普通の JPEG/PNG から注釈のない Harie ファイルを作る。元の画像はそのまま残し、既定では <名前>.harie.<拡張子> に保存する。以後の保存もこの形式になる",
+        "普通の画像から注釈のない Harie ファイルを作る。JPEG/PNG のほか SVG・WebP・GIF・HEIC も読め、それらは PNG（HEIC は JPEG）に変換して取り込む。元の画像はそのまま残し、既定では <名前>.harie.<拡張子> に保存する。以後の保存もこの形式になる",
       inputSchema: {
         imagePath: path,
         outPath: z.string().optional().describe("保存先。省略時は <名前>.harie.<拡張子>"),
@@ -181,7 +181,9 @@ rect はベース画像のピクセル（左上原点）で、文字より少し
         "Harie ファイルの注釈を残したまま、画像だけを新しいスクリーンショットに差し替えて保存する（画面が変わったときのガイドの更新）。大きさが違えば注釈を比率で拡大縮小する。位置がずれた注釈は保存後の画像を見て harie_edit で直す",
       inputSchema: {
         path,
-        imagePath: z.string().describe("新しい画像（JPEG/PNG）のパス"),
+        imagePath: z
+          .string()
+          .describe("新しい画像のパス（JPEG/PNG。SVG・WebP・GIF・HEIC は変換して取り込む）"),
         outPath: z
           .string()
           .optional()

@@ -16,11 +16,15 @@ describe("paths（NFR-PLAT-03）", () => {
     expect(siblingPath("screen.png", "screen.harie.png")).toBe("screen.harie.png");
   });
 
-  it("JPEG と PNG だけを開ける画像とみなす", () => {
+  it("FR-FILE-15: JPEG・PNG と、変換して開ける画像を開ける画像とみなす", () => {
     expect(isImagePath("/a/b.JPG")).toBe(true);
     expect(isImagePath("/a/b.jpeg")).toBe(true);
     expect(isImagePath("/a/b.png")).toBe(true);
-    expect(isImagePath("/a/b.gif")).toBe(false);
+    expect(isImagePath("/a/b.svg")).toBe(true);
+    expect(isImagePath("/a/IMG_0001.HEIC")).toBe(true);
+    expect(isImagePath("/a/b.webp")).toBe(true);
+    expect(isImagePath("/a/b.tiff")).toBe(false);
+    expect(isImagePath("/a/b.txt")).toBe(false);
     expect(isImagePath("/a/b.png.txt")).toBe(false);
   });
 

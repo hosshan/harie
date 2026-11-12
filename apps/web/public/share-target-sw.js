@@ -11,7 +11,8 @@ self.addEventListener("fetch", (event) => {
         const data = await event.request.formData();
         const file = data
           .getAll("image")
-          .find((f) => typeof f !== "string" && /^image\/(jpeg|png)$/.test(f.type));
+          // 形式は開くときに中身で確かめる（JPEG / PNG 以外は変換する。FR-FILE-15）
+          .find((f) => typeof f !== "string" && (f.type === "" || f.type.startsWith("image/")));
         if (file !== undefined) {
           const cache = await caches.open("harie-share-target");
           await cache.put(

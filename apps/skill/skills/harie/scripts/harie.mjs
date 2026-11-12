@@ -26,7 +26,7 @@ import { fileURLToPath } from "node:url";
 import { parseArgs } from "node:util";
 
 /** 起動する MCP サーバー。HARIE_MCP_COMMAND（JSON の配列）で差し替えられる（テストやローカルのビルドを使うとき） */
-const DEFAULT_SERVER = ["npx", "-y", "@harie/mcp@^0.6.0"];
+const DEFAULT_SERVER = ["npx", "-y", "@harie/mcp@^0.7.0"];
 const PROTOCOL_VERSION = "2025-06-18";
 const TIMEOUT_MS = Number(process.env.HARIE_TIMEOUT_MS ?? 180_000);
 
@@ -216,10 +216,11 @@ function print(out) {
 
 /** 先頭のバイトで画像の形式を判定する（貼り付けた画像は拡張子がないことがある）。 */
 function sniff(path) {
-  const head = Buffer.alloc(16);
+  const head = Buffer.alloc(512);
   const fd = openSync(path, "r");
+  let n;
   try {
-    readSync(fd, head, 0, 16, 0);
+    n = readSync(fd, head, 0, head.length, 0);
   } finally {
     closeSync(fd);
   }
@@ -228,10 +229,23 @@ function sniff(path) {
   if (head[0] === 0xff && head[1] === 0xd8 && head[2] === 0xff) return "jpeg";
   if (head.toString("ascii", 0, 4) === "RIFF" && head.toString("ascii", 8, 12) === "WEBP")
     return "webp";
-  if (head.toString("ascii", 4, 8) === "ftyp") return "heic";
+  if (head.toString("ascii", 4, 8) === "ftyp") {
+    const brand = head.toString("ascii", 8, 12);
+    return brand === "avif" || brand === "avis" ? "avif" : "heic";
+  }
   if (head.toString("ascii", 0, 3) === "GIF") return "gif";
+  if (head[0] === 0x42 && head[1] === 0x4d) return "bmp";
+  // XML 宣言・コメント・DOCTYPE のあとのルート要素が svg なら SVG
+  const text = head
+    .toString("utf8", 0, n)
+    .replace(/^\uFEFF/, "")
+    .replace(/^(\s|<\?xml[\s\S]*?\?>|<!--[\s\S]*?-->|<!DOCTYPE[^>]*>)*/i, "");
+  if (/^<svg[\s>]/i.test(text)) return "svg";
   return null;
 }
+
+/** 取り込むときに MCP サーバーが PNG / JPEG に変換する形式と、変換後の形式（FR-FILE-15）。AVIF・BMP は Node では読めない */
+const CONVERTED = { svg: "png", webp: "png", gif: "png", heic: "jpeg" };
 
 /** PNG の IHDR / JPEG の SOF から大きさを読む（find の表示用。読めなければ null）。 */
 function imageSize(bytes, format) {
@@ -294,8 +308,10 @@ function find(dirs, limit) {
         const size = imageSize(bytes, format);
         if (size) entry.size = `${size.width}x${size.height}`;
         entry.harie = looksHarie(bytes);
+      } else if (format in CONVERTED) {
+        entry.note = `取り込むときに ${CONVERTED[format].toUpperCase()} に変換します`;
       } else {
-        entry.note = "JPEG / PNG ではないので、Harie では扱えません（PNG で保存し直してもらう）";
+        entry.note = "この形式は扱えません（PNG で保存し直してもらう）";
       }
       found.push(entry);
     }
@@ -338,12 +354,12 @@ function stamp() {
 /** import の準備: 形式の確認・保存先・拡張子を付けた一時コピー。cleanup で一時コピーを消す */
 function prepareImport(src, opts) {
   const format = sniff(src);
-  if (format !== "png" && format !== "jpeg") {
+  if (format !== "png" && format !== "jpeg" && !(format in CONVERTED)) {
     throw new UsageError(
-      `${src} は ${format ?? "画像ではない形式"} です。Harie は JPEG / PNG だけを扱います`,
+      `${src} は ${format ?? "画像ではない形式"} です。Harie は JPEG・PNG・SVG・WebP・GIF・HEIC を扱います`,
     );
   }
-  const outFormat = opts.format ?? format;
+  const outFormat = opts.format ?? CONVERTED[format] ?? format;
   if (outFormat !== "png" && outFormat !== "jpeg") throw new UsageError("--format は jpeg か png");
   const ext = outFormat === "png" ? "png" : "jpg";
   const name =
@@ -353,7 +369,7 @@ function prepareImport(src, opts) {
   const out = resolve(opts.out ?? join(defaultOutDir(src), `${name}.harie.${ext}`));
   // 拡張子のない元画像も扱えるよう、正しい拡張子を付けた一時コピーから作る（元画像は変えない）
   const work = mkdtempSync(join(tmpdir(), "harie-import-"));
-  const copy = join(work, `${name}.${format === "png" ? "png" : "jpg"}`);
+  const copy = join(work, `${name}.${format === "jpeg" ? "jpg" : format}`);
   copyFileSync(src, copy);
   return {
     out,
@@ -400,10 +416,14 @@ async function apply(src, plan, opts) {
     return await withServer(async (send) => {
       let path = src;
       const fail = (result) => ({ ...unpack(result), ok: false, done, file: path });
-      // 普通の画像か Harie ファイルかは、サーバーに開かせて確かめる（拡張子のない画像も扱える）
-      const opened = await toolCall(send, "harie_open", { path: src, image: false });
-      if (opened.isError) return fail(opened);
-      const status = unpack(opened).result.status;
+      // 普通の画像か Harie ファイルかは、サーバーに開かせて確かめる（拡張子のない画像も扱える）。
+      // SVG などは Harie ファイルではありえないので、開かずに取り込む（FR-FILE-15）
+      let status = "plain";
+      if (!(sniff(src) in CONVERTED)) {
+        const opened = await toolCall(send, "harie_open", { path: src, image: false });
+        if (opened.isError) return fail(opened);
+        status = unpack(opened).result.status;
+      }
       if (status !== "plain" && masks.length > 0 && !opts.confirm) {
         throw new UsageError(
           "既存の Harie ファイルへの masks は元に戻せません。範囲を mask で確かめてから --confirm を付けてください",

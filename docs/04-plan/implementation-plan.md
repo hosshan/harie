@@ -54,6 +54,7 @@
 | ✅ 保存（File System Access API / ダウンロード）、ファイル名規則 | FR-FILE-06, NFR-PLAT-05 | 保存 → 再読込で同じ状態。ブラウザと Node の保存結果がバイト単位で一致（E2E） |
 | ✅ 不整合ファイルの扱い UI | FR-FILE-05 | E2E（外部で編集されたファイルは「保存されていた注釈で開く / 今の画像を下地にする」を選べる） |
 | ✅ PWA 化（オフライン、WASM・フォントのキャッシュ） | NFR-PLAT-01 | オフラインで起動し保存まで（E2E、Chromium）。Safari / Firefox は手動確認が残る |
+| ✅ JPEG / PNG 以外の画像（SVG・WebP・GIF・BMP・AVIF・HEIC）の取り込み | FR-FILE-15 | 単体テスト（判定・変換・MCP・CLI・Skill）と E2E（6 形式を開いて保存、WebP への差し替え）。Safari の HEIC と実際の iPhone の写真は手動確認 |
 | ✅ アプリとしての入口（「このアプリで開く」・共有メニュー・インストールの案内） | NFR-PLAT-06, FR-FILE-14, FR-CAP-09 | E2E（launchQueue と beforeinstallprompt は差し替え、共有は Service Worker への POST）。インストールしたアプリでの実機確認（デスクトップ Chrome・Android）は手動 |
 
 ### M4: AI 提案・PII

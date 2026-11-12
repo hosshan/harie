@@ -1,6 +1,6 @@
 {
   "name": "@harie/mcp",
-  "version": "0.6.0",
+  "version": "0.7.0",
   "mcpName": "io.github.hosshan/harie",
   "description": "Local MCP server for Harie: annotate screenshots for user guides with boxes, arrows and callouts, saved as plain JPEG/PNG that stay re-editable",
   "license": "MIT",
@@ -40,15 +40,17 @@
     "access": "public"
   },
   "scripts": {
-    "build": "esbuild src/index.ts --bundle --platform=node --format=esm --target=node22 --outfile=dist/index.mjs --banner:js=\"#!/usr/bin/env node\" --external:@modelcontextprotocol/sdk --external:zod --external:@resvg/resvg-wasm --external:@jsquash/jpeg && node scripts/copy-assets.mjs",
+    "build": "esbuild src/index.ts --bundle --platform=node --format=esm --target=node22 --outfile=dist/index.mjs --banner:js=\"#!/usr/bin/env node\" --external:@modelcontextprotocol/sdk --external:zod --external:@resvg/resvg-wasm --external:@jsquash/jpeg --external:@jsquash/webp --external:libheif-js && node scripts/copy-assets.mjs",
     "start": "node dist/index.mjs",
     "typecheck": "tsc -p tsconfig.json",
     "prepublishOnly": "pnpm build"
   },
   "dependencies": {
     "@jsquash/jpeg": "^1.6.0",
+    "@jsquash/webp": "^1.5.0",
     "@modelcontextprotocol/sdk": "^1.32.2",
     "@resvg/resvg-wasm": "^2.6.2",
+    "libheif-js": "^1.23.5",
     "zod": "^4.6.7"
   },
   "devDependencies": {
