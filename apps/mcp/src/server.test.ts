@@ -167,6 +167,51 @@ describe("harie MCP server", () => {
     expect(edited.json()).toMatchObject({ annotations: [box, { ...badge, x: 10, y: 20 }] });
   });
 
+  it("FR-EDIT-19, 21: rotation と矢印の始端の矢じりを受け付け、保存して描き分ける", async () => {
+    const { root, call } = await setup();
+    await call("harie_create", { imagePath: "screen.png" });
+    const box = { id: "r1", type: "rect", x: 16, y: 8, w: 32, h: 12 };
+    const arrow = {
+      id: "a1",
+      type: "arrow",
+      from: { x: 4, y: 36 },
+      to: { x: 60, y: 36 },
+      style: { head: "start" },
+    };
+    const flat = await call("harie_preview", {
+      path: "screen.harie.png",
+      ops: [{ op: "add", annotation: box }],
+    });
+    const edited = await call("harie_edit", {
+      path: "screen.harie.png",
+      ops: [
+        { op: "add", annotation: { ...box, rotation: 30 } },
+        { op: "add", annotation: arrow },
+      ],
+    });
+    expect(edited.isError).toBe(false);
+    expect(edited.json()).toMatchObject({ annotations: [{ ...box, rotation: 30 }, arrow] });
+    const read = readHarie(new Uint8Array(readFileSync(join(root, "screen.harie.png"))));
+    expect(read.kind === "harie" && read.doc.annotations).toEqual([
+      { ...box, rotation: 30 },
+      arrow,
+    ]);
+
+    const rotated = await call("harie_preview", {
+      path: "screen.harie.png",
+      ops: [{ op: "remove", id: "a1" }],
+    });
+    // 回した枠は、回していない枠と違う画像になる
+    expect(rotated.image?.data).not.toBe(flat.image?.data);
+
+    const turned = await call("harie_edit", {
+      path: "screen.harie.png",
+      ops: [{ op: "update", id: "r1", patch: { rotation: 90 } }],
+      image: false,
+    });
+    expect(turned.json()).toMatchObject({ annotations: [{ id: "r1", rotation: 90 }, arrow] });
+  });
+
   it("FR-FILE-01, 02: format で保存形式を選べ、ベース画像はそのまま埋め込み、以後もその形式で保存する", async () => {
     const { root, call } = await setup();
     const created = await call("harie_create", { imagePath: "screen.jpg", format: "png" });

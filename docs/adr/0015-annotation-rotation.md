@@ -1,6 +1,6 @@
 # ADR-0015: 注釈の回転を、範囲の中心を軸にした角度 `rotation` として持つ
 
-- ステータス: 提案中
+- ステータス: 承認
 - 日付: 2026-11-12
 - 決定者: Shun（2026-11-12 に「要素を回転したい」と依頼。この ADR を含む PR のマージで承認）
 - 関連: FR-EDIT-21 / [注釈ドキュメントモデル](../03-design/document-model.md) / [ADR-0004](./0004-image-container-format.md) / [ADR-0005](./0005-rendering-pipeline.md) / [ADR-0011](./0011-badge-anchor.md)

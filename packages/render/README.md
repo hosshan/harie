@@ -12,7 +12,8 @@
 | 名前 | 内容 |
 |---|---|
 | `buildSvg(doc, options)` | 注釈を SVG 文字列にする純粋関数。エディタはこれをそのまま表示する |
-| `annotationBounds` | 注釈の描画範囲。エディタの選択枠・当たり判定に使う |
+| `annotationBounds` | 注釈の描画範囲。回した注釈は回したあとの形を囲む縦横の四角（ADR-0015）。範囲選択・当たり判定・番号や吹き出しの配置に使う |
+| `annotationBox` / `rotatePoint` / `boxCenter` | 回す前の範囲と、その中心を軸にした点の回転。回した注釈のつまみや変形に使う |
 | `createRenderer({ resvgWasm, jpegEncoderWasm, fonts, loadExtraFont? })` | 描画エンジンを作る。`loadExtraFont` は補助フォント（`EXTRA_FONT_FILES`）のバイト列を返す |
 | `requiredExtraFonts(text)` | テキストを描くのに要る補助フォント |
 | `renderer.render({ doc, base, output })` | 保存用の画像（`@harie/format` で埋め込む前のもの）を返す |

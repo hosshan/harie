@@ -21,6 +21,8 @@ The server never calls an LLM. The client's LLM looks at the image and decides w
 | `harie_mask` | Hides personal information by burning it into the base image (irreversible). Saves only with `confirm: true`; without it, only the masked image is returned |
 | `harie_replace_base` | Replaces the image with a new screenshot while keeping the annotations (for when the screen changed). If the size differs, annotations are scaled to fit. Masks from the old image are not carried over; their areas are returned as `previousPii` |
 
+Annotations are `rect`, `ellipse`, `arrow`, `text`, `callout`, `badge`, `spotlight` and `blur`. Boxes, ellipses, text and callouts can be rotated with `rotation` (degrees, clockwise, around the center of the box), and arrows can have heads at the end, the start, both or neither (`style.head`). Versions before 0.6.0 keep `rotation` but draw the shape unrotated, and read a file with `head: "start"` only as a plain image.
+
 `harie_open`, `harie_edit` and `harie_replace_base` accept `image: false` to skip the image and return only the JSON. Images take up much of the client's context, so use it when you only read or rewrite text.
 
 The server can only access files under the directory given by `--root` (default: the current directory). `harie_mask` rewrites the base image, so the change cannot be undone once saved. To keep the original, save to another file with `outPath`.
