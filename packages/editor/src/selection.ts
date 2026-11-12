@@ -109,7 +109,8 @@ export const PASTE_OFFSET = 16;
 export function pasteOps(
   doc: HarieDocument,
   annotations: readonly Annotation[],
-  offset = PASTE_OFFSET,
+  dx = PASTE_OFFSET,
+  dy = dx,
 ): { ops: unknown[]; ids: string[] } {
   const taken = new Set(doc.annotations.map((a) => a.id));
   const renamed = new Map<string, string>();
@@ -123,7 +124,7 @@ export function pasteOps(
   const ops = annotations.map((a) => {
     const copy: Record<string, unknown> = {
       ...a,
-      ...movePatch(a, offset, offset),
+      ...movePatch(a, dx, dy),
       id: renamed.get(a.id) ?? a.id,
     };
     const anchor = a.type === "badge" || a.type === "callout" ? a.anchor : undefined;
@@ -133,4 +134,20 @@ export function pasteOps(
     return { op: "add", annotation: copy };
   });
   return { ops, ids: [...renamed.values()] };
+}
+
+/**
+ * Alt（Option）を押しながらドラッグしたとき、選んだ注釈を複製して (dx, dy) だけずらした所に置く操作と、
+ * 複製した注釈の ID（FR-EDIT-12）。元の注釈は動かさない。重なりは元の並びのまま、いちばん上に重ねる
+ */
+export function duplicateOps(
+  doc: HarieDocument,
+  ids: readonly string[],
+  dx: number,
+  dy: number,
+): { ops: unknown[]; ids: string[] } {
+  const selected = new Set(ids);
+  const picked = doc.annotations.filter((a) => selected.has(a.id));
+  if (picked.length === 0) return { ops: [], ids: [] };
+  return pasteOps(doc, picked, dx, dy);
 }
