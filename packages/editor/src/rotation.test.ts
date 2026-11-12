@@ -3,6 +3,7 @@ import { annotationBox, boxCenter, rotatePoint } from "@harie/render";
 import { describe, expect, it } from "vitest";
 import { hitTest } from "./Canvas";
 import { handlePosition, hitsBox, isRotatable, resizePatch, rotatePatch } from "./geometry";
+import { scaleOps } from "./selection";
 
 function annotation(a: unknown) {
   const d = createDocument({
@@ -88,5 +89,29 @@ describe("FR-EDIT-21: 回転のつまみ（ADR-0015）", () => {
   it("回していなければ大きさの変え方は今までどおり", () => {
     const { a } = annotation(rect);
     expect(resizePatch(a, "se", { x: 310, y: 210 })).toEqual({ x: 100, y: 100, w: 210, h: 110 });
+  });
+});
+
+describe("FR-EDIT-11 × FR-EDIT-21: まとめて拡大・縮小と回転", () => {
+  it("回した注釈は中心を写して幅・高さを掛け、角度を保つ", () => {
+    const { doc } = annotation({
+      id: "r",
+      type: "rect",
+      x: 100,
+      y: 100,
+      w: 200,
+      h: 100,
+      rotation: 30,
+    });
+    const ops = scaleOps(
+      doc,
+      ["r"],
+      { x: 0, y: 0, w: 400, h: 400 },
+      { x: 0, y: 0, w: 800, h: 800 },
+    );
+    const r = applyOps(doc, ops);
+    if (!r.ok) throw new Error(r.error.message);
+    // 中心 (200, 150) → (400, 300)、大きさは 2 倍
+    expect(r.value.annotations[0]).toMatchObject({ x: 200, y: 200, w: 400, h: 200, rotation: 30 });
   });
 });

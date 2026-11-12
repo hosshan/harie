@@ -160,3 +160,34 @@ export function contains(b: Bounds, p: Point, margin = 0): boolean {
     p.y <= b.y + b.h + margin
   );
 }
+
+/** まとめてリサイズするときの枠の最小の幅・高さ（画像のピクセル） */
+export const MIN_GROUP_SIZE = 8;
+
+/**
+ * 複数選んだ注釈を囲む枠のつまみを p までドラッグしたときの新しい枠（FR-EDIT-11）。
+ * 反対側の角・辺を固定し、裏返らないよう最小の大きさで止める。keepRatio（Shift）のときは、角のつまみで
+ * 縦横比を保つ（大きく動かした方の向きに合わせる）。幅・高さが 0 の向きは変えない
+ */
+export function scaleBox(b: Bounds, h: Handle, p: Point, keepRatio = false): Bounds {
+  const right = b.x + b.w;
+  const bottom = b.y + b.h;
+  const canX = b.w > 0 && (h.includes("w") || h.includes("e"));
+  const canY = b.h > 0 && (h.includes("n") || h.includes("s"));
+  let w = !canX ? b.w : h.includes("w") ? right - p.x : p.x - b.x;
+  let hh = !canY ? b.h : h.includes("n") ? bottom - p.y : p.y - b.y;
+  w = canX ? Math.max(MIN_GROUP_SIZE, w) : w;
+  hh = canY ? Math.max(MIN_GROUP_SIZE, hh) : hh;
+  if (keepRatio && canX && canY) {
+    const k = Math.abs(w / b.w - 1) >= Math.abs(hh / b.h - 1) ? w / b.w : hh / b.h;
+    const s = Math.max(k, MIN_GROUP_SIZE / Math.min(b.w, b.h));
+    w = b.w * s;
+    hh = b.h * s;
+  }
+  return {
+    x: h.includes("w") ? right - w : b.x,
+    y: h.includes("n") ? bottom - hh : b.y,
+    w,
+    h: hh,
+  };
+}
