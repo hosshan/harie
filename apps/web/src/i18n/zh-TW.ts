@@ -9,7 +9,8 @@ export const zhTW: WebMessages = {
   open: {
     button: "開啟圖片",
     dropHint: (paste) => `請拖放螢幕截圖，或直接貼上（${paste}）。`,
-    formats: "支援 JPEG 和 PNG。儲存的圖片可以當成一般圖片使用，用 Harie 開啟就能再修改註解。",
+    formats:
+      "除了 JPEG 和 PNG，也能開啟 SVG、WebP、GIF、HEIC 等（儲存為 JPEG 或 PNG）。儲存的圖片可以當成一般圖片使用，用 Harie 開啟就能再修改註解。",
     integrations:
       "用 Chrome 擴充功能擷取畫面，以及從 Claude 編輯（MCP）的方法，請見右上角的「整合」（窄螢幕時在「…」裡）。",
     fileInput: "圖片檔案",
@@ -24,9 +25,10 @@ export const zhTW: WebMessages = {
     loading: "正在載入…",
   },
   load: {
-    unsupported: "請開啟 JPEG 或 PNG 圖片。",
+    unsupported: "無法將此檔案讀取為圖片。請開啟 JPEG、PNG、SVG、WebP、GIF、HEIC 等圖片。",
     corrupted: "圖片已損毀，無法開啟。",
     noSize: "無法讀取圖片尺寸。",
+    decodeFailed: (type: string) => `無法讀取這張 ${type} 圖片。`,
     mismatch: {
       PayloadMissing: "部分註解資料遺失。只開啟了圖片。",
       PayloadCorrupted: "註解資料已損毀。只開啟了圖片。",
@@ -58,7 +60,7 @@ export const zhTW: WebMessages = {
   replace: {
     button: "替換圖片",
     input: "要替換的圖片",
-    notImage: "請選擇 JPEG 或 PNG 圖片",
+    notImage: "請選擇圖片（JPEG、PNG、SVG、WebP、GIF、HEIC 等）",
     done: "已替換圖片。",
     resized: "已依新圖片的大小調整註解。",
     remask: (n) => `在先前圖片中遮罩的 ${n} 個位置，請重新遮罩`,

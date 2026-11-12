@@ -13,10 +13,12 @@
   "dependencies": {
     "@harie/model": "workspace:*",
     "@jsquash/jpeg": "^1.6.0",
+    "@jsquash/webp": "^1.5.0",
     "@resvg/resvg-wasm": "^2.6.2"
   },
   "devDependencies": {
+    "@expo-google-fonts/noto-sans-jp": "^0.4.4",
     "@harie/format": "workspace:*",
-    "@expo-google-fonts/noto-sans-jp": "^0.4.4"
+    "libheif-js": "^1.23.5"
   }
 }

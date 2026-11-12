@@ -10,7 +10,7 @@ export const ko: WebMessages = {
     button: "이미지 열기",
     dropHint: (paste) => `스크린샷을 드래그 앤 드롭하거나 붙여넣으세요 (${paste}).`,
     formats:
-      "JPEG와 PNG를 지원합니다. 저장한 이미지는 일반 이미지로 쓸 수 있고, Harie에서 열면 주석을 다시 고칠 수 있습니다.",
+      "JPEG와 PNG 외에 SVG, WebP, GIF, HEIC 등도 열 수 있습니다(저장은 JPEG 또는 PNG). 저장한 이미지는 일반 이미지로 쓸 수 있고, Harie에서 열면 주석을 다시 고칠 수 있습니다.",
     integrations:
       "Chrome 확장 프로그램으로 캡처하는 방법과 Claude에서 편집하는 방법(MCP)은 오른쪽 위의 ‘연동’(좁은 화면에서는 ‘…’ 안)에 있습니다.",
     fileInput: "이미지 파일",
@@ -25,9 +25,11 @@ export const ko: WebMessages = {
     loading: "불러오는 중…",
   },
   load: {
-    unsupported: "JPEG 또는 PNG 이미지를 열어 주세요.",
+    unsupported:
+      "이미지로 읽을 수 없는 파일입니다. JPEG, PNG, SVG, WebP, GIF, HEIC 등의 이미지를 열어 주세요.",
     corrupted: "이미지가 손상되어 열 수 없습니다.",
     noSize: "이미지 크기를 읽을 수 없습니다.",
+    decodeFailed: (type: string) => `이 ${type} 이미지를 읽을 수 없습니다.`,
     mismatch: {
       PayloadMissing: "주석 데이터 일부가 없습니다. 이미지만 열었습니다.",
       PayloadCorrupted: "주석 데이터가 손상되었습니다. 이미지만 열었습니다.",
@@ -59,7 +61,7 @@ export const ko: WebMessages = {
   replace: {
     button: "이미지 바꾸기",
     input: "바꿀 이미지",
-    notImage: "JPEG 또는 PNG 이미지를 선택해 주세요",
+    notImage: "이미지(JPEG, PNG, SVG, WebP, GIF, HEIC 등)를 선택해 주세요",
     done: "이미지를 바꿨습니다. ",
     resized: "주석을 새 이미지 크기에 맞췄습니다. ",
     remask: (n) => `이전 이미지에서 마스크한 ${n}곳은 다시 마스크해 주세요`,

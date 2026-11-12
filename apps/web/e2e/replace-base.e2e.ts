@@ -53,7 +53,7 @@ test("FR-EDIT-10: 注釈を残したまま画像を差し替え、大きさが�
   expect(read.base.bytes).toEqual(new Uint8Array(fixture("large-base.jpg")));
 });
 
-test("FR-EDIT-10: JPEG / PNG でないファイルでは差し替えない", async ({ page }) => {
+test("FR-EDIT-10: 画像でないファイルでは差し替えない", async ({ page }) => {
   await page.goto("/");
   await page.getByLabel("画像ファイル", { exact: true }).setInputFiles({
     name: "screen.jpg",
@@ -65,5 +65,7 @@ test("FR-EDIT-10: JPEG / PNG でないファイルでは差し替えない", asy
     mimeType: "text/plain",
     buffer: Buffer.from("not an image"),
   });
-  await expect(page.getByRole("status")).toContainText("JPEG か PNG の画像を選んでください");
+  await expect(page.getByRole("status")).toContainText(
+    "画像（JPEG・PNG・SVG・WebP・GIF・HEIC など）を選んでください",
+  );
 });

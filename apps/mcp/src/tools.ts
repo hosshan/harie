@@ -8,6 +8,7 @@ import {
   readBaseImage,
   readHarie,
   readImageSize,
+  sniffImageType,
   writeHarie,
 } from "@harie/format";
 import {
@@ -19,9 +20,9 @@ import {
   recordPiiApplied,
   renameForSave,
 } from "@harie/model";
-import { layoutAnchors, rebaseDocument } from "@harie/render";
+import { ImportImageError, layoutAnchors, rebaseDocument } from "@harie/render";
 import type { RootGuard } from "./paths";
-import { nodeRenderer } from "./runtime";
+import { nodeDecoder, nodeRenderer } from "./runtime";
 
 /** 利用者（LLM）に返すエラー。ツール結果の isError として返す。 */
 export class ToolError extends Error {}
@@ -47,6 +48,23 @@ function readBytes(path: string): Uint8Array {
     throw new ToolError(`ファイルを読めません: ${(e as NodeJS.ErrnoException).code ?? e}`);
   }
 }
+
+/**
+ * JPEG / PNG 以外の画像（SVG・WebP・GIF・HEIC）を、ベース画像にする PNG / JPEG に変換する（FR-FILE-15, ADR-0016）。
+ * JPEG / PNG と形式の分からないものはそのまま返す（読み込み側で判断する）
+ */
+async function convertImage(bytes: Uint8Array): Promise<Uint8Array> {
+  const type = sniffImageType(bytes);
+  if (type === null || type === "jpeg" || type === "png") return bytes;
+  try {
+    return (await (await nodeRenderer()).importImage({ bytes, type, decode: nodeDecoder })).bytes;
+  } catch (e) {
+    if (e instanceof ImportImageError) throw new ToolError(e.message);
+    throw e;
+  }
+}
+
+const NOT_IMAGE = "画像として読めません（JPEG・PNG・SVG・WebP・GIF・HEIC に対応）";
 
 /** 一時ファイルに書いてから置き換える。書き込み途中で落ちても元のファイルを壊さない。 */
 function writeAtomic(path: string, bytes: Uint8Array): void {
@@ -147,8 +165,14 @@ export function open(guard: RootGuard, input: { path: string }): ToolOutput {
         },
         image: { data: bytes, mediaType: mediaTypeOf(read.format) },
       };
-    case "unsupported":
-      throw new ToolError("JPEG / PNG ではありません");
+    case "unsupported": {
+      const type = sniffImageType(bytes);
+      throw new ToolError(
+        type === null
+          ? NOT_IMAGE
+          : `${type.toUpperCase()} の画像です。harie_create で PNG / JPEG に変換して Harie ファイルにできます`,
+      );
+    }
     case "corrupted":
       throw new ToolError(`壊れたファイルです（${read.message}）`);
   }
@@ -164,11 +188,12 @@ export async function create(
   },
 ): Promise<ToolOutput> {
   const source = guard.resolve(input.imagePath);
-  const bytes = readBytes(source);
+  // JPEG / PNG 以外は、ここで一度だけ PNG / JPEG に変換してベース画像にする（FR-FILE-15）
+  const bytes = await convertImage(readBytes(source));
   const read = readHarie(bytes);
   if (read.kind === "harie")
     throw new ToolError("すでに Harie ファイルです。harie_open で開けます");
-  if (read.kind !== "plain") throw new ToolError("JPEG / PNG として読めません");
+  if (read.kind !== "plain") throw new ToolError(NOT_IMAGE);
   const size = readImageSize(bytes);
   if (size === null) throw new ToolError("画像の大きさを読めません");
   const mediaType = mediaTypeOf(read.format);
@@ -294,8 +319,8 @@ export async function replaceBase(
 ): Promise<ToolOutput> {
   const loaded = load(guard, input.path);
   checkRevision(loaded, input.expectedRevision);
-  const image = readBaseImage(readBytes(guard.resolve(input.imagePath)));
-  if (image === null) throw new ToolError("imagePath は JPEG / PNG の画像にしてください");
+  const image = readBaseImage(await convertImage(readBytes(guard.resolve(input.imagePath))));
+  if (image === null) throw new ToolError(`imagePath: ${NOT_IMAGE}`);
   const { doc, previousPii } = rebaseDocument(loaded.doc, image);
   const target = input.outPath === undefined ? loaded.path : guard.resolve(input.outPath);
   if (target !== loaded.path) {

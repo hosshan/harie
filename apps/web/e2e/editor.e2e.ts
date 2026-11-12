@@ -689,7 +689,7 @@ test("画像でないファイルは開かずに理由を表示する", async ({
   await page
     .getByLabel("画像ファイル")
     .setInputFiles({ name: "note.png", mimeType: "image/png", buffer: Buffer.from("hello") });
-  await expect(page.getByRole("alert")).toContainText("JPEG か PNG");
+  await expect(page.getByRole("alert")).toContainText("画像として読めないファイルです");
 });
 
 test("FR-EDIT-05, FR-PII-04: 個人情報のマスクはベース画像に焼き込まれ、元の画像は保存されない", async ({

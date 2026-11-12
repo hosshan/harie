@@ -19,7 +19,7 @@ const ja = {
     dropHint: (paste: string) =>
       `スクリーンショットをドラッグ＆ドロップするか、貼り付け（${paste}）してください。`,
     formats:
-      "JPEG と PNG に対応しています。保存した画像は普通の画像として使え、Harie で開けば注釈を直せます。",
+      "JPEG・PNG のほか、SVG・WebP・GIF・HEIC なども開けます（保存は JPEG か PNG）。保存した画像は普通の画像として使え、Harie で開けば注釈を直せます。",
     integrations:
       "Chrome 拡張でのキャプチャと、Claude からの編集（MCP）の始め方は、右上の「連携」（狭い画面では「…」の中）にあります。",
     fileInput: "画像ファイル",
@@ -34,9 +34,11 @@ const ja = {
     loading: "読み込んでいます…",
   },
   load: {
-    unsupported: "JPEG か PNG の画像を開いてください。",
+    unsupported:
+      "画像として読めないファイルです。JPEG・PNG・SVG・WebP・GIF・HEIC などの画像を開いてください。",
     corrupted: "画像が壊れているため開けません。",
     noSize: "画像の大きさを読めません。",
+    decodeFailed: (type: string) => `この ${type} 画像を読み込めませんでした。`,
     mismatch: {
       PayloadMissing: "注釈データの一部が失われています。画像だけを開きました。",
       PayloadCorrupted: "注釈データが壊れています。画像だけを開きました。",
@@ -69,7 +71,7 @@ const ja = {
   replace: {
     button: "画像を差し替える",
     input: "差し替える画像",
-    notImage: "JPEG か PNG の画像を選んでください",
+    notImage: "画像（JPEG・PNG・SVG・WebP・GIF・HEIC など）を選んでください",
     done: "画像を差し替えました。",
     resized: "注釈を新しい画像の大きさに合わせました。",
     remask: (n: number) => `前の画像でマスクしていた ${n} か所は、かけ直してください`,
@@ -222,7 +224,7 @@ const en: WebMessages = {
     button: "Open image",
     dropHint: (paste) => `Drag and drop a screenshot, or paste it (${paste}).`,
     formats:
-      "JPEG and PNG are supported. Saved images work as ordinary images, and you can edit the annotations again by opening them in Harie.",
+      "Besides JPEG and PNG, you can open SVG, WebP, GIF, HEIC and more (saved as JPEG or PNG). Saved images work as ordinary images, and you can edit the annotations again by opening them in Harie.",
     integrations:
       "To capture with the Chrome extension or edit from Claude (MCP), see “Integrations” at the top right (inside “…” on narrow screens).",
     fileInput: "Image file",
@@ -237,9 +239,11 @@ const en: WebMessages = {
     loading: "Loading…",
   },
   load: {
-    unsupported: "Please open a JPEG or PNG image.",
+    unsupported:
+      "This file can't be read as an image. Please open a JPEG, PNG, SVG, WebP, GIF, HEIC or similar image.",
     corrupted: "This image is damaged and can't be opened.",
     noSize: "Couldn't read the image size.",
+    decodeFailed: (type: string) => `Couldn't read this ${type} image.`,
     mismatch: {
       PayloadMissing: "Part of the annotation data is missing. Opened the image only.",
       PayloadCorrupted: "The annotation data is damaged. Opened the image only.",
@@ -271,7 +275,7 @@ const en: WebMessages = {
   replace: {
     button: "Replace image",
     input: "Replacement image",
-    notImage: "Please choose a JPEG or PNG image",
+    notImage: "Please choose an image (JPEG, PNG, SVG, WebP, GIF, HEIC, etc.)",
     done: "Replaced the image. ",
     resized: "Annotations were resized to fit the new image. ",
     remask: (n) =>

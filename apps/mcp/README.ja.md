@@ -12,12 +12,12 @@ Claude などの MCP クライアントから「この画像に枠を付けて�
 | ツール | 内容 |
 |---|---|
 | `harie_open` | ファイルを開き、注釈の一覧（吹き出しの文言を含む JSON）と画像を返す。普通の画像なら `status: plain` |
-| `harie_create` | 普通の JPEG / PNG から Harie ファイルを作る（既定は `<名前>.harie.<拡張子>`。元画像は残す）。`format`（`jpeg` / `png`）で保存形式を選べる |
+| `harie_create` | 普通の画像から Harie ファイルを作る（既定は `<名前>.harie.<拡張子>`。元画像は残す）。JPEG / PNG のほか SVG・WebP・GIF・HEIC も読め、取り込むときに一度だけ PNG（HEIC は JPEG）に変換する（0.7.0 以降）。`format`（`jpeg` / `png`）で保存形式を選べる |
 | `harie_preview` | 注釈の変更（ops）を適用した画像を返す。ファイルは変えない |
 | `harie_edit` | 注釈の変更を適用し、描き直して上書き保存する。`expectedRevision` で楽観的ロック |
 | `harie_list` | ディレクトリ内の Harie ファイルを一覧する |
 | `harie_mask` | 個人情報をベース画像に焼き込んで隠す（元に戻せない）。`confirm: true` を付けたときだけ保存し、付けなければ加工後の画像を返すだけ |
-| `harie_replace_base` | 注釈を残したまま、画像だけを新しいスクリーンショットに差し替える（画面が変わったとき）。大きさが違えば注釈を比率で合わせる。前の画像のマスクは引き継がず、その範囲を `previousPii` で返す |
+| `harie_replace_base` | 注釈を残したまま、画像だけを新しいスクリーンショットに差し替える（画面が変わったとき）。新しい画像は `harie_create` と同じ形式を読める。大きさが違えば注釈を比率で合わせる。前の画像のマスクは引き継がず、その範囲を `previousPii` で返す |
 
 注釈は `rect` / `ellipse` / `arrow` / `text` / `callout` / `badge` / `spotlight` / `blur`。四角・楕円・テキスト・吹き出しは `rotation`（度、時計回り。範囲の中心が軸）で回せ、矢印の矢じりは終端・始端・両端・なしを選べる（`style.head`）。0.6.0 より前の版は `rotation` を保持するが回さずに描き、`head: "start"` を含むファイルは普通の画像としてしか読めない。
 

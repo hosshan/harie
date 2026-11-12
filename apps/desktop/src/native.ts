@@ -9,7 +9,13 @@ import { withExtension } from "./paths";
 function filters() {
   const m = webMessages().open;
   return {
-    open: [{ name: m.imageFiles, extensions: ["jpg", "jpeg", "png"] }],
+    // JPEG / PNG 以外は開くときに変換する（FR-FILE-15）。src-tauri/src/lib.rs の check_openable_path と合わせる
+    open: [
+      {
+        name: m.imageFiles,
+        extensions: ["jpg", "jpeg", "png", "svg", "gif", "webp", "bmp", "avif", "heic", "heif"],
+      },
+    ],
     jpeg: [{ name: m.jpegFiles, extensions: ["jpg", "jpeg"] }],
     png: [{ name: m.pngFiles, extensions: ["png"] }],
   };

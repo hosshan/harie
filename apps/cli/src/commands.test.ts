@@ -34,6 +34,28 @@ describe("harie CLI", () => {
     },
   );
 
+  it.each([
+    ["svg", "png", { width: 1024, height: 768 }],
+    ["webp", "png", { width: 64, height: 48 }],
+    ["gif", "png", { width: 64, height: 48 }],
+    ["heic", "jpg", { width: 64, height: 48 }],
+  ] as const)(
+    "FR-FILE-15: %s から Harie ファイルを作る（%s に変換して取り込む）",
+    async (ext, out, size) => {
+      const dir = workdir();
+      writeFileSync(
+        join(dir, `fig.${ext}`),
+        readFileSync(new URL(`import/sample.${ext}`, FIXTURES)),
+      );
+      const file = await create(join(dir, `fig.${ext}`), { now: NOW });
+      expect(file).toBe(join(dir, `fig.harie.${out}`));
+      const read = readFile(file);
+      if (read.kind !== "harie") throw new Error(read.kind);
+      expect(read.base.mediaType).toBe(out === "png" ? "image/png" : "image/jpeg");
+      expect(read.doc.canvas).toMatchObject(size);
+    },
+  );
+
   it("FR-FILE-01, 02: --format で保存形式を選べ、描き直してもその形式を保つ", async () => {
     const dir = workdir();
     const file = await create(join(dir, "screen.jpg"), { format: "png", now: NOW });

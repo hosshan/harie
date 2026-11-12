@@ -360,6 +360,54 @@ describe("harie MCP server", () => {
     expect(r.isError).toBe(true);
   });
 
+  it("FR-FILE-15: SVG・WebP・GIF・HEIC から作れ、PNG（HEIC は JPEG）に変換して取り込む", async () => {
+    const { root, call } = await setup();
+    for (const [ext, format, base] of [
+      ["svg", "png", "image/png"],
+      ["webp", "png", "image/png"],
+      ["gif", "png", "image/png"],
+      ["heic", "jpeg", "image/jpeg"],
+    ] as const) {
+      writeFileSync(
+        join(root, `${ext}-image.${ext}`),
+        readFileSync(new URL(`import/sample.${ext}`, FIXTURES)),
+      );
+      const opened = await call("harie_open", { path: `${ext}-image.${ext}` });
+      expect(opened.isError).toBe(true);
+      expect(opened.text).toContain("harie_create");
+      const created = await call("harie_create", { imagePath: `${ext}-image.${ext}` });
+      expect(created.isError, created.text).toBe(false);
+      const out = `${ext}-image.harie.${format === "png" ? "png" : "jpg"}`;
+      expect(created.json()).toMatchObject({ path: out });
+      const read = readHarie(new Uint8Array(readFileSync(join(root, out))));
+      expect(read).toMatchObject({ kind: "harie", format, base: { mediaType: base } });
+      // 元の画像はそのまま残す
+      expect(readFileSync(join(root, `${ext}-image.${ext}`))).toEqual(
+        readFileSync(new URL(`import/sample.${ext}`, FIXTURES)),
+      );
+    }
+    // Node では AVIF を読めない（ブラウザでは読める）
+    writeFileSync(join(root, "photo.avif"), readFileSync(new URL("import/sample.avif", FIXTURES)));
+    const avif = await call("harie_create", { imagePath: "photo.avif" });
+    expect(avif.isError).toBe(true);
+    expect(avif.text).toContain("AVIF");
+  });
+
+  it("FR-FILE-15, FR-EDIT-10: SVG の画像に差し替えられる", async () => {
+    const { root, call } = await setup();
+    writeFileSync(join(root, "new.svg"), readFileSync(new URL("import/sample.svg", FIXTURES)));
+    await call("harie_create", { imagePath: "screen.jpg" });
+    const replaced = await call("harie_replace_base", {
+      path: "screen.harie.jpg",
+      imagePath: "new.svg",
+      image: false,
+    });
+    expect(replaced.isError).toBe(false);
+    expect(replaced.json()).toMatchObject({ canvas: { width: 1024, height: 768 } });
+    const read = readHarie(new Uint8Array(readFileSync(join(root, "screen.harie.jpg"))));
+    expect(read).toMatchObject({ kind: "harie", format: "jpeg", base: { mediaType: "image/png" } });
+  });
+
   it("create は既存ファイルを上書きせず、JPEG / PNG 以外の拡張子も拒否する", async () => {
     const { call } = await setup();
     await call("harie_create", { imagePath: "screen.png" });

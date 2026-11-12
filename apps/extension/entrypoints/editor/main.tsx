@@ -5,7 +5,8 @@ import type { DomSnapshot } from "@harie/ai";
 import { applyDocumentLang } from "@harie/editor/locale";
 import { loadDisplayFonts } from "@harie/web/fonts";
 import { Header, HeaderButton } from "@harie/web/header";
-import { loadFile, type Opened } from "@harie/web/load";
+import { loadImageFile } from "@harie/web/import-image";
+import type { Opened } from "@harie/web/load";
 import { useWebMessages, webMessages } from "@harie/web/messages";
 import type { Saved } from "@harie/web/save";
 import { openButtonTitle, StartHint, useImageIntake, useOpenShortcut } from "@harie/web/start";
@@ -40,8 +41,9 @@ function App() {
   const [error, setError] = useState<string | null>(null);
   const [loadId, setLoadId] = useState(0);
 
-  const show = useCallback((fileName: string, bytes: Uint8Array, dom: DomSnapshot | null) => {
-    const result = loadFile(fileName, bytes);
+  const show = useCallback(async (fileName: string, bytes: Uint8Array, dom: DomSnapshot | null) => {
+    // JPEG / PNG 以外（空のエディタで取り込んだ SVG・HEIC など）は変換してから開く（FR-FILE-15）
+    const result = await loadImageFile(fileName, bytes);
     if (!result.ok) {
       setError(result.message);
       return;
@@ -57,7 +59,8 @@ function App() {
     void (async () => {
       const record = await getCapture(captureId);
       if (record === undefined) setError(webMessages().extension.notFound);
-      else show(record.fileName, new Uint8Array(await record.image.arrayBuffer()), record.dom);
+      else
+        await show(record.fileName, new Uint8Array(await record.image.arrayBuffer()), record.dom);
       setLoading(false);
     })();
   }, [captureId, show]);

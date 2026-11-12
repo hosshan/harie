@@ -15,7 +15,7 @@
   <a href="https://www.npmjs.com/package/@harie/mcp">MCP server</a>
 </p>
 
-An app for adding boxes, arrows and captions to screenshots, for example when writing user guides for web services. Saved files display as ordinary JPEG / PNG images, and opening one in Harie lets you edit the annotations again and again.
+An app for adding boxes, arrows and captions to screenshots, for example when writing user guides for web services. Saved files display as ordinary JPEG / PNG images, and opening one in Harie lets you edit the annotations again and again. SVG, WebP, GIF, HEIC and more can be opened too (they are converted to PNG / JPEG when opened; saving is JPEG / PNG only).
 
 ![Harie demo. A saved PNG is opened in the web editor, its annotations come back, and only a callout's text is changed before saving again](docs/images/demo.en.gif)
 

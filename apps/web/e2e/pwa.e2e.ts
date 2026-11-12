@@ -17,7 +17,16 @@ test("NFR-PLAT-06: manifest に ID・ファイルの関連付け・共有の受�
     start_url: ".",
     display: "standalone",
     file_handlers: [
-      { action: ".", accept: { "image/jpeg": [".jpg", ".jpeg"], "image/png": [".png"] } },
+      {
+        action: ".",
+        accept: expect.objectContaining({
+          "image/jpeg": [".jpg", ".jpeg"],
+          "image/png": [".png"],
+          // FR-FILE-15: JPEG / PNG 以外も開ける
+          "image/svg+xml": [".svg"],
+          "image/heic": [".heic", ".heif"],
+        }),
+      },
     ],
     share_target: { action: "share-target", method: "POST", enctype: "multipart/form-data" },
   });

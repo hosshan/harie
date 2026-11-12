@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- テスト用の SVG（viewBox のみで width / height なし） -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 48">
+  <title>赤と青の四角</title>
+  <rect width="32" height="48" fill="#dc2828"/>
+  <rect x="32" width="32" height="24" fill="#285adc"/>
+</svg>

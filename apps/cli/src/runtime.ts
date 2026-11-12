@@ -1,7 +1,14 @@
 // Node で描画に必要な WASM とフォントを読み込む。描画そのものは @harie/render（全環境共通）
 import { readFileSync } from "node:fs";
 import { createRequire } from "node:module";
-import { createRenderer, EXTRA_FONT_FILES, type Renderer } from "@harie/render";
+import {
+  createRenderer,
+  createWasmDecoder,
+  EXTRA_FONT_FILES,
+  type ImageDecoder,
+  type LibHeif,
+  type Renderer,
+} from "@harie/render";
 
 const require = createRequire(import.meta.url);
 const read = (id: string) => new Uint8Array(readFileSync(require.resolve(id)));
@@ -23,3 +30,14 @@ export function nodeRenderer(): Promise<Renderer> {
     }))();
   return renderer;
 }
+
+/**
+ * JPEG / PNG 以外の画像を読むデコーダ（FR-FILE-15）。Node にはブラウザの画像デコーダがないので WASM で読む。
+ * SVG・GIF は描画エンジン（resvg）が読むので要らない。WebP と HEIC だけ読める（AVIF・BMP は読めない）
+ */
+export const nodeDecoder: ImageDecoder = createWasmDecoder({
+  webp: async () =>
+    WebAssembly.compile(readFileSync(require.resolve("@jsquash/webp/codec/dec/webp_dec.wasm"))),
+  heic: async () =>
+    (await import("libheif-js/libheif-wasm/libheif-bundle.mjs")).default() as LibHeif,
+});
