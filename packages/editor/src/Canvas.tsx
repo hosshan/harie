@@ -1,6 +1,6 @@
 // 編集面。下層に buildSvg の SVG（保存時と同じ見た目、ADR-0005）、上層に操作用の SVG を重ねる
 import { type Annotation, applyOps, type HarieDocument, type Point } from "@harie/model";
-import { annotationBounds, buildSvg, layoutAnchors, THEMES } from "@harie/render";
+import { annotationBounds, type Bounds, buildSvg, layoutAnchors, THEMES } from "@harie/render";
 import {
   type CSSProperties,
   type Dispatch,
@@ -20,6 +20,7 @@ import {
   handlePosition,
   handlesFor,
   resizePatch,
+  scaleBox,
 } from "./geometry";
 import { type EditorAction, type EditorState, newAnnotationId } from "./history";
 import { EDITOR_MESSAGES } from "./i18n/messages";
@@ -30,6 +31,8 @@ import {
   duplicateOps,
   mergeSelection,
   moveOps,
+  scaleOps,
+  selectionBounds,
   toggleSelection,
 } from "./selection";
 import { isMacPlatform } from "./shortcuts";
@@ -64,6 +67,16 @@ type Drag =
   /** 選んだ注釈をまとめて動かす。copy は Alt（Option）を押している間で、元を残して複製を動かす */
   | { kind: "move"; ids: readonly string[]; copy: boolean; start: Point; current: Point }
   | { kind: "resize"; id: string; handle: Handle; current: Point }
+  /** 複数選んだ注釈を囲む枠のつまみで、まとめて拡大・縮小する（FR-EDIT-11）。Shift で縦横比を保つ */
+  | {
+      kind: "scale";
+      ids: readonly string[];
+      handle: Handle;
+      bounds: Bounds;
+      start: Point;
+      current: Point;
+      keepRatio: boolean;
+    }
   | { kind: "create"; tool: "rect" | "ellipse" | "arrow"; start: Point; current: Point }
   /** 個人情報のマスク範囲。注釈ではないので履歴に積まず、onMaskDrawn で渡す */
   | { kind: "mask"; start: Point; current: Point }
@@ -159,6 +172,17 @@ function dragOps(doc: HarieDocument, drag: Drag, defaults: DrawDefaults = {}): u
       ? { x: Math.round(drag.start.x), y: Math.round(drag.start.y), ...DEFAULT_BOX }
       : boxFrom(drag.start, drag.current);
     return [{ op: "add", annotation: { id, type: drag.tool, ...box, ...styled } }];
+  }
+  if (drag.kind === "scale") {
+    // つまみは枠の少し外に描くので、掴んだ位置からの動きを枠の角・辺に足す
+    const b = drag.bounds;
+    const edge = handlePosition({ type: "rect", id: "group", ...b }, b, drag.handle);
+    const p = {
+      x: edge.x + drag.current.x - drag.start.x,
+      y: edge.y + drag.current.y - drag.start.y,
+    };
+    const to = scaleBox(b, drag.handle, p, drag.keepRatio);
+    return scaleOps(doc, drag.ids, drag.bounds, to);
   }
   const target = doc.annotations.find((a) => a.id === drag.id);
   if (target === undefined) return [];
@@ -284,7 +308,10 @@ export function Canvas({
   // クリックしただけ（動かしていない）ではパレットを隠さない。ちらつかないように
   const moved =
     drag !== null &&
-    (drag.kind === "resize" || drag.current.x !== drag.start.x || drag.current.y !== drag.start.y);
+    (drag.kind === "resize" ||
+      drag.kind === "scale" ||
+      drag.current.x !== drag.start.x ||
+      drag.current.y !== drag.start.y);
   useEffect(() => onDraggingChange?.(moved), [moved, onDraggingChange]);
 
   const toPoint = (e: { clientX: number; clientY: number }): Point => {
@@ -348,6 +375,24 @@ export function Canvas({
       ? snapArrowEnd(p, connectionPoints(doc), snapLines(doc), tolerance).point
       : snapPoint(p, snapLines(doc), tolerance).point;
   };
+  /**
+   * つまみを掴んだら大きさを変え始める。1 つだけ選んでいればその注釈を、複数選んでいれば
+   * 囲む枠ごとまとめて変える（FR-EDIT-11）
+   */
+  const grabHandle = (e: PointerEvent<SVGSVGElement>, p: Point): boolean => {
+    const handle = (e.target as Element).getAttribute("data-handle") as Handle | null;
+    const ids = state.selectedIds;
+    const [only] = ids;
+    if (handle === null || only === undefined) return false;
+    if (ids.length === 1) {
+      setDrag({ kind: "resize", id: only, handle, current: p });
+      return true;
+    }
+    const bounds = selectionBounds(doc, ids);
+    if (bounds === undefined) return false;
+    setDrag({ kind: "scale", ids, handle, bounds, start: p, current: p, keepRatio: e.shiftKey });
+    return true;
+  };
 
   const onPointerDown = (e: PointerEvent<SVGSVGElement>) => {
     if (e.button !== 0) return;
@@ -363,12 +408,7 @@ export function Canvas({
     if (tool === "sketch" || tool === "rect" || tool === "ellipse" || tool === "arrow") {
       // 描く道具は描いた後もそのまま続けて使う。選んでいる図形（描いた直後の図形を含む）は、
       // 道具を持ち替えなくてもつまみで大きさを変え、掴んで動かせる
-      const grip = (e.target as Element).getAttribute("data-handle") as Handle | null;
-      const [only, ...rest] = state.selectedIds;
-      if (grip !== null && only !== undefined && rest.length === 0) {
-        setDrag({ kind: "resize", id: only, handle: grip, current: p });
-        return;
-      }
+      if (grabHandle(e, p)) return;
       const grabbed = e.shiftKey ? undefined : hitTest(doc, p, screenPx(6));
       if (grabbed !== undefined && state.selectedIds.includes(grabbed.id)) {
         setDrag({ kind: "move", ids: state.selectedIds, copy: e.altKey, start: p, current: p });
@@ -417,12 +457,7 @@ export function Canvas({
       onToolDone();
       return;
     }
-    const handle = (e.target as Element).getAttribute("data-handle") as Handle | null;
-    const [only, ...others] = state.selectedIds;
-    if (handle !== null && only !== undefined && others.length === 0) {
-      setDrag({ kind: "resize", id: only, handle, current: p });
-      return;
-    }
+    if (grabHandle(e, p)) return;
     const hit = hitTest(doc, p, screenPx(6));
     if (hit === undefined) {
       // 何もない所: ドラッグで範囲選択。Shift を押していれば今の選択に足す（FR-EDIT-11）
@@ -483,7 +518,9 @@ export function Canvas({
     setDrag(
       drag.kind === "move"
         ? { ...drag, copy: e.altKey, current: snapped.point }
-        : { ...drag, current: snapped.point },
+        : drag.kind === "scale"
+          ? { ...drag, current: snapped.point, keepRatio: e.shiftKey }
+          : { ...drag, current: snapped.point },
     );
   };
 
@@ -491,7 +528,11 @@ export function Canvas({
     if (drag === null) return;
     const current = snapDrag(drag, toPoint(e), e).point;
     const final: Drag =
-      drag.kind === "move" ? { ...drag, copy: e.altKey, current } : { ...drag, current };
+      drag.kind === "move"
+        ? { ...drag, copy: e.altKey, current }
+        : drag.kind === "scale"
+          ? { ...drag, current, keepRatio: e.shiftKey }
+          : { ...drag, current };
     setDrag(null);
     setSnapMark(null);
     if (final.kind === "mask") {
@@ -646,10 +687,21 @@ export function Canvas({
             annotation={a}
             handleSize={handleSize}
             stroke={screenPx(1.5)}
-            // 大きさを変えるつまみは、1 つだけ選んでいるときに出す
+            // 1 つだけ選んでいるときは注釈ごとのつまみ、複数のときは囲む枠のつまみを出す
             handles={selected.length === 1}
           />
         ))}
+        {selected.length > 1 &&
+          !(drag?.kind === "marquee") &&
+          (() => {
+            const b = selectionBounds(
+              display,
+              selected.map((a) => a.id),
+            );
+            return b === undefined ? null : (
+              <GroupSelection bounds={b} handleSize={handleSize} stroke={screenPx(1.5)} />
+            );
+          })()}
         {drag?.kind === "sketch" && (
           <polyline
             className="harie-sketch-trail"
@@ -821,6 +873,59 @@ function Selection({
       )}
       {(handles ? handlesFor(annotation) : []).map((h) => {
         const p = handlePosition(annotation, b, h);
+        return (
+          <rect
+            key={h}
+            data-handle={h}
+            x={p.x - handleSize / 2}
+            y={p.y - handleSize / 2}
+            width={handleSize}
+            height={handleSize}
+            fill="#FFFFFF"
+            stroke={SELECTION_COLOR}
+            strokeWidth={stroke}
+            className={`harie-handle harie-handle-${h}`}
+          />
+        );
+      })}
+    </g>
+  );
+}
+
+const GROUP_HANDLES: Handle[] = ["nw", "n", "ne", "e", "se", "s", "sw", "w"];
+
+/** 複数選んだ注釈を囲む枠と、まとめて大きさを変えるつまみ（FR-EDIT-11） */
+function GroupSelection({
+  bounds: b,
+  handleSize,
+  stroke,
+}: {
+  bounds: Bounds;
+  handleSize: number;
+  stroke: number;
+}) {
+  const pad = handleSize;
+  const box = { x: b.x - pad, y: b.y - pad, w: b.w + pad * 2, h: b.h + pad * 2 };
+  // 幅・高さが 0 の向き（縦一直線の矢印だけなど）は、その向きのつまみを出さない
+  const handles = GROUP_HANDLES.filter(
+    (h) =>
+      !(b.w === 0 && (h === "e" || h === "w" || h.length === 2)) &&
+      !(b.h === 0 && (h === "n" || h === "s" || h.length === 2)),
+  );
+  return (
+    <g className="harie-group-selection">
+      <rect
+        x={box.x}
+        y={box.y}
+        width={box.w}
+        height={box.h}
+        fill="none"
+        stroke={SELECTION_COLOR}
+        strokeWidth={stroke}
+        pointerEvents="none"
+      />
+      {handles.map((h) => {
+        const p = handlePosition({ type: "rect", id: "", ...box }, box, h);
         return (
           <rect
             key={h}

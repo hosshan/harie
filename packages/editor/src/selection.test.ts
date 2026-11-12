@@ -1,5 +1,6 @@
 import { createDocument, type HarieDocument } from "@harie/model";
 import { describe, expect, it } from "vitest";
+import { MIN_GROUP_SIZE, scaleBox } from "./geometry";
 import { editorReducer, initialState } from "./history";
 import {
   annotationsInRect,
@@ -10,6 +11,8 @@ import {
   removeOps,
   reorderOps,
   resizeOps,
+  scaleOps,
+  selectionBounds,
   toggleSelection,
 } from "./selection";
 
@@ -148,6 +151,93 @@ describe("キーで枠の大きさを変える（FR-EDIT-12）", () => {
       { op: "update", id: "callout-1", patch: { w: 130 } },
     ]);
     expect(resizeOps(d, ["callout-1"], 0, 10)).toEqual([]);
+  });
+});
+
+describe("複数選んだ注釈をまとめて拡大・縮小する（FR-EDIT-11）", () => {
+  const ids = ["rect-1", "badge-1", "arrow-1", "text-1"];
+
+  it("選んだ注釈をすべて囲む枠を返す", () => {
+    expect(selectionBounds(doc(), ["rect-1", "arrow-1"])).toEqual({ x: 10, y: 10, w: 390, h: 290 });
+    expect(selectionBounds(doc(), [])).toBeUndefined();
+  });
+
+  it("囲む枠の比で位置と大きさを変え、紐付けた番号は枠に任せる", () => {
+    const from = { x: 10, y: 10, w: 390, h: 290 };
+    const to = { x: 10, y: 10, w: 780, h: 580 };
+    const result = editorReducer(initialState(doc()), {
+      type: "apply",
+      ops: scaleOps(doc(), ids, from, to),
+    });
+    const byId = new Map(result.doc.annotations.map((a) => [a.id, a]));
+    expect(byId.get("rect-1")).toMatchObject({ x: 10, y: 10, w: 200, h: 100 });
+    expect(byId.get("arrow-1")).toMatchObject({ from: { x: 590, y: 590 }, to: { x: 790, y: 590 } });
+    // テキストは位置だけ動き、文字の大きさは変えない
+    expect(byId.get("text-1")).toMatchObject({ x: 1190, y: 990 });
+    expect(byId.get("text-1")?.style).toBeUndefined();
+    // 番号は紐付けたまま
+    expect(byId.get("badge-1")).toMatchObject({ anchor: { annotationId: "rect-1" } });
+    expect(
+      scaleOps(doc(), ids, from, to).some((op) => JSON.stringify(op).includes("badge-1")),
+    ).toBe(false);
+  });
+
+  it("番号だけを選んでいれば紐付けを外し、吹き出しは幅を比で変える（最小の幅は保つ）", () => {
+    const d: HarieDocument = {
+      ...doc(),
+      annotations: [
+        ...doc().annotations,
+        { id: "callout-1", type: "callout", x: 100, y: 100, w: 200, text: "説明" },
+      ],
+    };
+    const from = { x: 0, y: 0, w: 400, h: 200 };
+    const ops = scaleOps(d, ["badge-1", "callout-1"], from, { x: 0, y: 0, w: 200, h: 100 });
+    expect(ops).toContainEqual({
+      op: "update",
+      id: "badge-1",
+      patch: { x: 0, y: 0, anchor: undefined },
+    });
+    expect(ops).toContainEqual({ op: "update", id: "callout-1", patch: { x: 50, y: 50, w: 100 } });
+    const tiny = scaleOps(d, ["callout-1"], from, { x: 0, y: 0, w: 20, h: 10 });
+    expect(tiny).toContainEqual({ op: "update", id: "callout-1", patch: { x: 5, y: 5, w: 40 } });
+  });
+
+  it("大きさが変わらなければ操作は空", () => {
+    const b = { x: 10, y: 10, w: 390, h: 290 };
+    expect(scaleOps(doc(), ids, b, b)).toEqual([]);
+  });
+});
+
+describe("囲む枠のつまみで新しい枠を決める（FR-EDIT-11）", () => {
+  const b = { x: 100, y: 100, w: 200, h: 100 };
+
+  it("反対側の角・辺を固定する", () => {
+    expect(scaleBox(b, "se", { x: 500, y: 300 })).toEqual({ x: 100, y: 100, w: 400, h: 200 });
+    expect(scaleBox(b, "nw", { x: 0, y: 50 })).toEqual({ x: 0, y: 50, w: 300, h: 150 });
+    expect(scaleBox(b, "e", { x: 200, y: 999 })).toEqual({ x: 100, y: 100, w: 100, h: 100 });
+  });
+
+  it("裏返らず、最小の大きさで止まる", () => {
+    expect(scaleBox(b, "w", { x: 900, y: 0 })).toEqual({
+      x: 300 - MIN_GROUP_SIZE,
+      y: 100,
+      w: MIN_GROUP_SIZE,
+      h: 100,
+    });
+  });
+
+  it("Shift のときは角のつまみで縦横比を保つ", () => {
+    expect(scaleBox(b, "se", { x: 700, y: 210 }, true)).toEqual({
+      x: 100,
+      y: 100,
+      w: 600,
+      h: 300,
+    });
+  });
+
+  it("幅が 0 の向きは変えない", () => {
+    const line = { x: 50, y: 0, w: 0, h: 100 };
+    expect(scaleBox(line, "se", { x: 300, y: 200 })).toEqual({ x: 50, y: 0, w: 0, h: 200 });
   });
 });
 
