@@ -105,8 +105,6 @@ type Drag =
   /** 何もない所からドラッグして、範囲に重なる注釈を選ぶ。base は Shift で足すときの元の選択 */
   | { kind: "marquee"; base: readonly string[]; start: Point; current: Point };
 
-/** クリックだけで作ったときの大きさ（ドラッグが短すぎる場合） */
-const DEFAULT_BOX = { w: 160, h: 80 };
 const MIN_DRAG = 4;
 /** なぞった線が図形にならなかったときの案内を出しておく時間 */
 const SKETCH_MISS_MS = 2500;
@@ -178,16 +176,17 @@ function dragOps(doc: HarieDocument, drag: Drag, defaults: DrawDefaults = {}): u
     const id = newAnnotationId(doc, drag.tool);
     const style = styleForNew(drag.tool, defaults);
     const styled = style === undefined ? {} : { style };
-    const short =
-      Math.abs(drag.current.x - drag.start.x) < MIN_DRAG &&
-      Math.abs(drag.current.y - drag.start.y) < MIN_DRAG;
+    // クリックしただけでは描かない（選択に使う。onPointerUp）
+    if (isClick(drag)) return [];
     if (drag.tool === "arrow") {
-      const to = short ? { x: drag.start.x + DEFAULT_BOX.w, y: drag.start.y } : drag.current;
-      return [{ op: "add", annotation: { id, type: "arrow", from: drag.start, to, ...styled } }];
+      return [
+        {
+          op: "add",
+          annotation: { id, type: "arrow", from: drag.start, to: drag.current, ...styled },
+        },
+      ];
     }
-    const box = short
-      ? { x: Math.round(drag.start.x), y: Math.round(drag.start.y), ...DEFAULT_BOX }
-      : boxFrom(drag.start, drag.current);
+    const box = boxFrom(drag.start, drag.current);
     return [{ op: "add", annotation: { id, type: drag.tool, ...box, ...styled } }];
   }
   if (drag.kind === "scale") {
@@ -613,6 +612,15 @@ export function Canvas({
       return;
     }
     if (final.kind === "move" && isClick(final)) return;
+    if (final.kind === "create" && isClick(final)) {
+      // 四角・楕円・矢印は描いた後も道具がそのまま残るので、ドラッグせずにクリックしただけでは描かない。
+      // スケッチと同じく、クリックした注釈を選ぶ（何もない所なら選択を外す）
+      const hit = hitTest(doc, toPoint(e), screenPx(6));
+      const ids =
+        hit === undefined ? [] : e.shiftKey ? toggleSelection(state.selectedIds, hit.id) : [hit.id];
+      dispatch({ type: "select", ids });
+      return;
+    }
     if (final.kind === "move" && final.copy) {
       // 複製したものを選び、続けて動かしたり文言を直したりできるようにする
       const copied = duplicateOps(

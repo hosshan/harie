@@ -515,6 +515,32 @@ test("FR-EDIT-11: 複数選んだ注釈を、囲む枠のつまみでまとめ�
   await expect.poll(() => geometry(1)).toEqual(b1);
 });
 
+test("FR-EDIT-18: 四角の道具のままクリックしても四角は増えず、クリックした注釈を選ぶ", async ({
+  page,
+}) => {
+  await openFixture(page, "large-base.jpg");
+  await page.getByRole("button", { name: "四角" }).click();
+  await drag(page, [40, 40], [140, 100]);
+  await drag(page, [240, 40], [340, 100]);
+  const rects = annotationRects(page);
+  await expect(rects).toHaveCount(2);
+  const inspector = page.getByRole("complementary", { name: "選択中の注釈" });
+  // 選んでいない四角をクリックすると、その四角を選ぶ（新しい四角は描かない）
+  await drag(page, [90, 70], [90, 70]);
+  await expect(rects).toHaveCount(2);
+  await expect(inspector.getByRole("heading", { name: /四角/ })).toBeVisible();
+  // 選んだ四角はそのまま掴んで動かせる
+  await drag(page, [90, 70], [90, 170]);
+  await expect(rects).toHaveCount(2);
+  await expect.poll(async () => Number(await rects.nth(0).getAttribute("y"))).toBe(140);
+  // 何もない所をクリックすると選択を外す。ドラッグすれば描ける
+  await drag(page, [400, 300], [400, 300]);
+  await expect(rects).toHaveCount(2);
+  await expect(page.getByRole("button", { name: "四角" })).toHaveAttribute("aria-pressed", "true");
+  await drag(page, [400, 300], [480, 360]);
+  await expect(rects).toHaveCount(3);
+});
+
 test("FR-EDIT-12: Alt を押しながらドラッグすると、選んだ注釈を複製して動かす", async ({ page }) => {
   await openFixture(page, "large-base.jpg");
   await page.getByRole("button", { name: "四角" }).click();
