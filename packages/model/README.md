@@ -11,6 +11,7 @@
 |---|---|
 | `DocumentSchema` / `HarieDocument` | 注釈ドキュメント全体（キャンバスの大きさ・注釈の配列・リビジョンなど） |
 | `AnnotationSchema` / `Annotation` | 注釈 1 件。`rect` / `ellipse` / `arrow` / `text` / `callout` / `badge` / `spotlight` / `blur` |
+| `rotationOf` / `normalizeRotation` | 注釈の回転の角度（`rotation`。四角・楕円・テキスト・吹き出しだけ。ほかは 0）を 0〜360 未満にそろえて返す（ADR-0015） |
 | `PiiMaskSchema` / `PiiAppliedSchema` | 個人情報の加工範囲と、適用済みの記録（ADR-0007） |
 | `createDocument` | 画像の大きさから空のドキュメントを作る |
 | `applyOps` | 注釈の変更（`add` / `update` / `remove` / `reorder` / `renumber`）を適用する。結果は `Result` で返し、例外を投げない |
