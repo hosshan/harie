@@ -335,6 +335,9 @@
 .harie-handle-to {
   cursor: move;
 }
+.harie-handle-rotate {
+  cursor: grab;
+}
 .harie-inspector-body {
   display: flex;
   flex-direction: column;

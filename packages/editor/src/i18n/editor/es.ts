@@ -48,6 +48,7 @@ export const es: EditorMessages = {
     label: "Lienzo de anotaciones",
     newText: "Texto",
     newCallout: "Escribe una descripción",
+    rotate: "Arrastra para girar (Mayús: de 15° en 15°)",
     sketchMiss:
       "No se reconoció ninguna forma. Traza un recuadro, un círculo, una línea o una flecha.",
     elementCallout: (role, label) =>

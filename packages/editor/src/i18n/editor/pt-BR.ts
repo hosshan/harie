@@ -48,6 +48,7 @@ export const ptBR: EditorMessages = {
     label: "Área de anotações",
     newText: "Texto",
     newCallout: "Digite uma descrição",
+    rotate: "Arraste para girar (Shift: de 15° em 15°)",
     sketchMiss:
       "Não foi possível reconhecer uma forma. Desenhe uma caixa, um círculo, uma linha ou uma seta.",
     elementCallout: (role, label) =>

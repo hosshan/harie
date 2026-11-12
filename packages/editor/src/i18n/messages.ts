@@ -50,6 +50,8 @@ const ja = {
     newText: "テキスト",
     newCallout: "説明文を入力",
     sketchMiss: "図形として読み取れませんでした。四角・丸・線・矢印の形でなぞってください",
+    /** 回転のつまみの説明（FR-EDIT-21） */
+    rotate: "ドラッグして回転（Shift で 15° ずつ）",
     /** 要素で囲む道具の吹き出しの文（FR-EDIT-15）。要素の名前がなければ、ふつうの吹き出しと同じ文 */
     elementCallout: (role: string, label: string) =>
       label === ""
@@ -258,6 +260,7 @@ const en: EditorMessages = {
     newText: "Text",
     newCallout: "Enter a description",
     sketchMiss: "Couldn't recognize a shape. Trace a box, circle, line or arrow.",
+    rotate: "Drag to rotate (Shift: 15° steps)",
     elementCallout: (role, label) =>
       label === ""
         ? "Enter a description"

@@ -41,6 +41,7 @@ export const zhTW: EditorMessages = {
     label: "註解編輯區",
     newText: "文字",
     newCallout: "輸入說明",
+    rotate: "拖曳以旋轉（Shift：每次 15°）",
     sketchMiss: "無法辨識為圖形。請描出方框、圓形、線條或箭頭的形狀。",
     elementCallout: (role, label) =>
       label === ""
