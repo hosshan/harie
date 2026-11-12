@@ -149,6 +149,8 @@ export const zhCN: EditorMessages = {
     shortcuts: "打开此列表",
     shiftClick: "加入或移出选择",
     shiftClickKeys: (shift) => `${shift} + 单击`,
+    altDrag: "复制并移动",
+    altDragKeys: (alt) => `${alt} + 拖动`,
     dragEmpty: "选择区域内的标注",
     dragEmptyKeys: "从空白处拖动",
     doubleClick: "编辑文字",

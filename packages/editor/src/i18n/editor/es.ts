@@ -166,6 +166,8 @@ export const es: EditorMessages = {
     shortcuts: "Abrir esta lista",
     shiftClick: "Añadir a la selección / quitar de ella",
     shiftClickKeys: (shift) => `${shift} + clic`,
+    altDrag: "Duplicar y mover",
+    altDragKeys: (alt) => `${alt} + arrastrar`,
     dragEmpty: "Seleccionar las anotaciones de un área",
     dragEmptyKeys: "Arrastrar desde un espacio vacío",
     doubleClick: "Editar el texto",
