@@ -151,6 +151,8 @@ export const ko: EditorMessages = {
     dragEmptyKeys: "빈 곳에서 드래그",
     doubleClick: "글자 편집",
     doubleClickKeys: "더블클릭",
+    snapOff: "맞춤 없이 이동·그리기",
+    snapOffKeys: (mod: string) => `${mod} 누른 채 드래그`,
     or: "또는",
   },
   appliedMask: {

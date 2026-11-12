@@ -26,7 +26,19 @@ import { EDITOR_MESSAGES } from "./i18n/messages";
 import { useMessages } from "./i18n/use-locale";
 import { type AppliedMask, hitAppliedMask, type MaskDraft, maskRect } from "./masks";
 import { annotationsInRect, mergeSelection, moveOps, toggleSelection } from "./selection";
+import { isMacPlatform } from "./shortcuts";
 import { recognizeSketch, type SketchShape } from "./sketch";
+import {
+  connectionPoints,
+  type Guide,
+  type SnapResult,
+  snapArrowEnd,
+  snapDisabled,
+  snapExclusions,
+  snapLines,
+  snapMove,
+  snapPoint,
+} from "./snap";
 import { TextEditor } from "./TextEditor";
 
 export type Tool =
@@ -61,6 +73,10 @@ const MIN_DRAG = 4;
 const SKETCH_MISS_MS = 2500;
 /** 選択枠とつまみの色（ブランドの濃い黄土色。docs/brand/README.md） */
 const SELECTION_COLOR = "#B0861A";
+/** 吸着する距離（画面上の px）。矢印の端が図形の点に吸い付く距離はこの 1.5 倍（FR-EDIT-22） */
+const SNAP_PX = 6;
+/** ガイド線の色。選択枠（黄土色）・マスク（赤）と見分けられる色 */
+const GUIDE_COLOR = "#D6409F";
 
 function distanceToSegment(p: Point, a: Point, b: Point): number {
   const dx = b.x - a.x;
@@ -212,6 +228,9 @@ export function Canvas({
   const m = useMessages(EDITOR_MESSAGES);
   const overlay = useRef<SVGSVGElement>(null);
   const [drag, setDrag] = useState<Drag | null>(null);
+  /** ドラッグ中の吸着の表示（ガイド線と、矢印の端が吸い付いた点）。ドキュメントには残さない */
+  const [snapMark, setSnapMark] = useState<Pick<SnapResult, "guides" | "anchor"> | null>(null);
+  const mac = useMemo(() => isMacPlatform(), []);
   /** 要素で囲む道具で、ポインタの下にある要素（クリックすると囲む範囲を先に示す） */
   const [hoverElement, setHoverElement] = useState<PickableElement | undefined>(undefined);
   useEffect(() => {
@@ -275,6 +294,53 @@ export function Canvas({
     return px / Math.min(rect.width / width, rect.height / height);
   };
 
+  /**
+   * ドラッグ中の点を、他の注釈・画像の端と中央にそろえる（FR-EDIT-22）。⌘（Mac）/ Ctrl を押している間は吸着しない。
+   * 移動は動かす範囲を、描く・大きさを変えるときは掴んでいる点を、矢印の端は図形の中央・辺の中点を優先してそろえる
+   */
+  const snapDrag = (d: Drag, raw: Point, e: { metaKey: boolean; ctrlKey: boolean }): SnapResult => {
+    const none = { point: raw, guides: [] };
+    if (snapDisabled(e, mac)) return none;
+    // クリックしただけ（動かしていない）なら吸着しない。クリックで選んだだけの注釈が吸着で動かないように
+    if ((d.kind === "move" || d.kind === "create") && isClick({ start: d.start, current: raw })) {
+      return none;
+    }
+    const tolerance = screenPx(SNAP_PX);
+    if (d.kind === "move") return snapMove(doc, d.ids, d.start, raw, tolerance);
+    if (d.kind === "create") {
+      return d.tool === "arrow"
+        ? snapArrowEnd(raw, connectionPoints(doc), snapLines(doc), tolerance)
+        : snapPoint(raw, snapLines(doc), tolerance);
+    }
+    if (d.kind !== "resize") return none;
+    const target = doc.annotations.find((a) => a.id === d.id);
+    if (target === undefined) return none;
+    const exclude = snapExclusions(doc, [d.id]);
+    if (target.type === "arrow") {
+      return snapArrowEnd(raw, connectionPoints(doc, exclude), snapLines(doc, exclude), tolerance);
+    }
+    const r = snapPoint(raw, snapLines(doc, exclude), tolerance);
+    // 辺のつまみは動く向きだけをそろえる（吹き出しは幅だけ変わる）
+    const xs = d.handle.includes("e") || d.handle.includes("w");
+    const ys = target.type !== "callout" && (d.handle.includes("n") || d.handle.includes("s"));
+    return {
+      point: { x: xs ? r.point.x : raw.x, y: ys ? r.point.y : raw.y },
+      guides: r.guides.filter((g) => (g.axis === "x" ? xs : ys)),
+    };
+  };
+  /** 描き始めの点の吸着。矢印は図形の中央・辺の中点から引き出せる */
+  const snapStart = (
+    t: "rect" | "ellipse" | "arrow",
+    p: Point,
+    e: { metaKey: boolean; ctrlKey: boolean },
+  ): Point => {
+    if (snapDisabled(e, mac)) return p;
+    const tolerance = screenPx(SNAP_PX);
+    return t === "arrow"
+      ? snapArrowEnd(p, connectionPoints(doc), snapLines(doc), tolerance).point
+      : snapPoint(p, snapLines(doc), tolerance).point;
+  };
+
   const onPointerDown = (e: PointerEvent<SVGSVGElement>) => {
     if (e.button !== 0) return;
     e.currentTarget.setPointerCapture(e.pointerId);
@@ -300,11 +366,12 @@ export function Canvas({
         setDrag({ kind: "move", ids: state.selectedIds, start: p, current: p });
         return;
       }
-      setDrag(
-        tool === "sketch"
-          ? { kind: "sketch", points: [p], start: p, current: p }
-          : { kind: "create", tool, start: p, current: p },
-      );
+      if (tool === "sketch") {
+        setDrag({ kind: "sketch", points: [p], start: p, current: p });
+        return;
+      }
+      const start = snapStart(tool, p, e);
+      setDrag({ kind: "create", tool, start, current: start });
       return;
     }
     if (tool === "mask") {
@@ -395,13 +462,23 @@ export function Canvas({
       });
       return;
     }
-    setDrag({ ...drag, current: toPoint(e) });
+    const snapped = snapDrag(drag, toPoint(e), e);
+    setSnapMark(
+      snapped.guides.length === 0 && snapped.anchor === undefined
+        ? null
+        : {
+            guides: snapped.guides,
+            ...(snapped.anchor === undefined ? {} : { anchor: snapped.anchor }),
+          },
+    );
+    setDrag({ ...drag, current: snapped.point });
   };
 
   const onPointerUp = (e: PointerEvent<SVGSVGElement>) => {
     if (drag === null) return;
-    const final = { ...drag, current: toPoint(e) };
+    const final = { ...drag, current: snapDrag(drag, toPoint(e), e).point };
     setDrag(null);
+    setSnapMark(null);
     if (final.kind === "mask") {
       const rect = maskRect(final.start, final.current, doc.canvas);
       if (rect !== null) onMaskDrawn?.(rect);
@@ -556,6 +633,15 @@ export function Canvas({
             pointerEvents="none"
           />
         )}
+        {drag !== null && snapMark !== null && (
+          <SnapGuides
+            guides={snapMark.guides}
+            anchor={snapMark.anchor}
+            width={width}
+            height={height}
+            stroke={screenPx(1)}
+          />
+        )}
         {drag?.kind === "marquee" && !isClick(drag) && (
           <Marquee rect={boxFrom(drag.start, drag.current)} stroke={screenPx(1)} />
         )}
@@ -593,6 +679,63 @@ export function Canvas({
     const k = Math.min(rect.width / width, rect.height / height);
     return { k, ox: (rect.width - width * k) / 2, oy: (rect.height - height * k) / 2 };
   }
+}
+
+/** 吸着したときのガイド線（画像の端から端まで）と、矢印の端が吸い付いた点（FR-EDIT-22） */
+function SnapGuides({
+  guides,
+  anchor,
+  width,
+  height,
+  stroke,
+}: {
+  guides: readonly Guide[];
+  anchor: Point | undefined;
+  width: number;
+  height: number;
+  stroke: number;
+}) {
+  return (
+    <g className="harie-snap-guides" pointerEvents="none">
+      {guides.map((g) =>
+        g.axis === "x" ? (
+          <line
+            key={`x${g.at}`}
+            data-guide="x"
+            x1={g.at}
+            y1={0}
+            x2={g.at}
+            y2={height}
+            stroke={GUIDE_COLOR}
+            strokeWidth={stroke}
+          />
+        ) : (
+          <line
+            key={`y${g.at}`}
+            data-guide="y"
+            x1={0}
+            y1={g.at}
+            x2={width}
+            y2={g.at}
+            stroke={GUIDE_COLOR}
+            strokeWidth={stroke}
+          />
+        ),
+      )}
+      {anchor !== undefined && (
+        <circle
+          data-guide="anchor"
+          cx={anchor.x}
+          cy={anchor.y}
+          r={stroke * 5}
+          fill="#FFFFFF"
+          fillOpacity={0.6}
+          stroke={GUIDE_COLOR}
+          strokeWidth={stroke * 2}
+        />
+      )}
+    </g>
+  );
 }
 
 /** 範囲選択の四角 */

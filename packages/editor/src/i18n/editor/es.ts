@@ -156,6 +156,8 @@ export const es: EditorMessages = {
     dragEmptyKeys: "Arrastrar desde un espacio vacío",
     doubleClick: "Editar el texto",
     doubleClickKeys: "Doble clic",
+    snapOff: "Mover o dibujar sin ajustar",
+    snapOffKeys: (mod: string) => `Mantener ${mod} al arrastrar`,
     or: "o",
   },
   appliedMask: {
