@@ -25,7 +25,7 @@ const doc = (): HarieDocument => ({
   ],
 });
 
-describe("吸着とガイド線（FR-EDIT-22）", () => {
+describe("吸着とガイド線（FR-EDIT-23）", () => {
   it("画像の端・中央と、注釈の左右の端・中央、上下の端・中央を線にする", () => {
     const lines = snapLines(doc(), new Set(["rect-2", "arrow-1", "badge-1"]));
     expect(lines.x).toEqual([0, 400, 800, 100, 200, 300]);

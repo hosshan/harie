@@ -48,7 +48,7 @@ const rects = (page: Page) => page.locator(".harie-canvas-image rect");
 const num = async (page: Page, i: number, name: string) =>
   Number(await rects(page).nth(i).getAttribute(name));
 
-test("FR-EDIT-22: 動かす・描くときはほかの図形の端・中央にそろい、ガイド線を出す。⌘ / Ctrl を押すと吸着しない", async ({
+test("FR-EDIT-23: 動かす・描くときはほかの図形の端・中央にそろい、ガイド線を出す。⌘ / Ctrl を押すと吸着しない", async ({
   page,
 }) => {
   await open(page);
@@ -81,7 +81,7 @@ test("FR-EDIT-22: 動かす・描くときはほかの図形の端・中央に�
   expect(await num(page, 1, "y")).toBe(202);
 });
 
-test("FR-EDIT-22: 矢印の端は図形の中央・辺の中点に吸い付く", async ({ page }) => {
+test("FR-EDIT-23: 矢印の端は図形の中央・辺の中点に吸い付く", async ({ page }) => {
   await open(page);
   await page.keyboard.press("r");
   await drag(page, [40, 40], [200, 140]);

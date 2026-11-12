@@ -67,6 +67,8 @@ Harie ファイルに埋め込む注釈ドキュメント（JSON）の構造。�
 | `spotlight` | `x, y, w, h` | 範囲外を暗くする（Next） |
 | `blur` | `x, y, w, h, method` | **可逆マスク**。PII 以外（見せたくないだけの UI）向け。PII には使わない。`method: mosaic` は SVG で表現できないため、描画では強めのぼかしで代替する |
 
+`rect` / `ellipse` / `text` / `callout` は任意で `rotation`（度、時計回り）を持てる（FR-EDIT-21 / ADR-0015）。回転の軸は回す前の範囲（`annotationBox`）の中心で、`x, y, w, h` は回す前の値のまま持つ。省略・0 は回さない。ほかの種類（矢印は端点で向きを変える。番号は丸）は `rotation` を持っても無視する。範囲選択・重なりの判定・番号や吹き出しの配置は、回した形を囲む縦横の四角（`annotationBounds`）を使う。`rotation` はそれより前の版では無視され、回さずに描かれる（フィールドは保存しても残る）。
+
 `blur` を注釈として持つと、ベース画像に元のピクセルが残る。PII の加工は注釈ではなく、ベース画像の書き換え（`pii.applied` に記録）で行う。エディタはこの違いを UI 上で明確に区別する。
 
 PII 加工の指示は `PiiMask`（`kind`, `method`, `rect`, 任意で `replacement`・`color`）で表す。指示はドキュメントに保存せず、加工後に `pii.applied`（`kind`, `method`, `rect`）だけを残す。ダミー置換の文字列も残さない。

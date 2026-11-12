@@ -1,0 +1,3 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`FR-EDIT-21: 回転した注釈の描画（ADR-0015） > 範囲の中心を軸に回すグループで包む。0° なら包まない 1`] = `"<svg xmlns="http://www.w3.org/2000/svg" width="800" height="600" viewBox="0 0 800 600"><g transform="rotate(30 200 150)"><rect x="100" y="100" width="200" height="100" fill="none" stroke="#E5484D" stroke-width="4"/></g><g transform="rotate(-45 440 120)"><ellipse cx="440" cy="120" rx="40" ry="20" fill="none" stroke="#E5484D" stroke-width="4"/></g><g ><g transform="rotate(90 34 412)"><text x="10" y="421.12" font-family="Noto Sans JP" font-size="24" font-weight="400" fill="#1C2024">回転</text></g></g><rect x="0" y="0" width="10" height="10" fill="none" stroke="#E5484D" stroke-width="4"/></svg>"`;

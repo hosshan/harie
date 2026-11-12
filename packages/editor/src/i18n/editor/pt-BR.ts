@@ -48,6 +48,7 @@ export const ptBR: EditorMessages = {
     label: "Área de anotações",
     newText: "Texto",
     newCallout: "Digite uma descrição",
+    rotate: "Arraste para girar (Shift: de 15° em 15°)",
     sketchMiss:
       "Não foi possível reconhecer uma forma. Desenhe uma caixa, um círculo, uma linha ou uma seta.",
     elementCallout: (role, label) =>
@@ -98,6 +99,9 @@ export const ptBR: EditorMessages = {
     summaryText: (size) => `Texto ${size === undefined ? "misto" : `${size}px`}`,
     multiple: (n) => `${n} anotações`,
     deleteAll: "Excluir todas as anotações selecionadas",
+    transform: "Girar e espelhar",
+    turns: { ccw: "Girar 90° para a esquerda", cw: "Girar 90° para a direita" },
+    flips: { horizontal: "Espelhar horizontalmente", vertical: "Espelhar verticalmente" },
     align: "Alinhar",
     alignToImage: "À imagem",
     alignments: {

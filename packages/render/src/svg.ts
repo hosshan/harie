@@ -6,6 +6,7 @@ import {
   arrowEnds,
   type HarieDocument,
   type LineDash,
+  rotationOf,
   type Style,
 } from "@harie/model";
 import { EXTRA_FONT_FAMILIES, type ExtraFont, extraFontOf } from "./extra-fonts";
@@ -230,6 +231,46 @@ export function calloutConnector(
   };
 }
 
+/** 点 p を、c を中心に deg 度（時計回り）回した点 */
+export function rotatePoint(p: Point, deg: number, c: Point): Point {
+  if (deg === 0) return p;
+  const r = (deg * Math.PI) / 180;
+  const cos = Math.cos(r);
+  const sin = Math.sin(r);
+  const dx = p.x - c.x;
+  const dy = p.y - c.y;
+  return { x: c.x + dx * cos - dy * sin, y: c.y + dx * sin + dy * cos };
+}
+
+export function boxCenter(b: Bounds): Point {
+  return { x: b.x + b.w / 2, y: b.y + b.h / 2 };
+}
+
+/**
+ * 回した枠（box を中心で deg 度回したもの）の中心から toward へ向かう線が、枠の縁と交わる点。
+ * 吹き出しの線を、回した吹き出し・枠の縁から出す・縁に当てるのに使う（ADR-0015）
+ */
+function edgeToward(box: Bounds, deg: number, toward: Point): Point {
+  const c = boxCenter(box);
+  const local = rotatePoint(toward, -deg, c);
+  const dx = local.x - c.x;
+  const dy = local.y - c.y;
+  if (dx === 0 && dy === 0) return c;
+  const t = Math.min(
+    dx === 0 ? Number.POSITIVE_INFINITY : box.w / 2 / Math.abs(dx),
+    dy === 0 ? Number.POSITIVE_INFINITY : box.h / 2 / Math.abs(dy),
+  );
+  return rotatePoint({ x: c.x + dx * Math.min(t, 1), y: c.y + dy * Math.min(t, 1) }, deg, c);
+}
+
+/** 回転があれば、注釈の範囲の中心を軸に回すグループで包む（ADR-0015） */
+function rotated(a: Annotation, theme: Theme, body: string): string {
+  const deg = rotationOf(a);
+  if (deg === 0) return body;
+  const c = boxCenter(annotationBox(a, theme));
+  return `<g transform="rotate(${n(deg)} ${n(c.x)} ${n(c.y)})">${body}</g>`;
+}
+
 function annotation(
   a: Annotation,
   theme: Theme,
@@ -241,27 +282,33 @@ function annotation(
   const common = { opacity: s.opacity };
   switch (a.type) {
     case "rect":
-      return `<rect ${attrs({ x: a.x, y: a.y, width: a.w, height: a.h, rx: s.radius, fill: s.fill ?? "none", stroke: s.stroke, "stroke-width": s.strokeWidth, ...dashAttrs(s), ...common })}/>`;
+      return rotated(
+        a,
+        theme,
+        `<rect ${attrs({ x: a.x, y: a.y, width: a.w, height: a.h, rx: s.radius, fill: s.fill ?? "none", stroke: s.stroke, "stroke-width": s.strokeWidth, ...dashAttrs(s), ...common })}/>`,
+      );
     case "ellipse":
-      return `<ellipse ${attrs({ cx: a.x + a.w / 2, cy: a.y + a.h / 2, rx: a.w / 2, ry: a.h / 2, fill: s.fill ?? "none", stroke: s.stroke, "stroke-width": s.strokeWidth, ...dashAttrs(s), ...common })}/>`;
+      return rotated(
+        a,
+        theme,
+        `<ellipse ${attrs({ cx: a.x + a.w / 2, cy: a.y + a.h / 2, rx: a.w / 2, ry: a.h / 2, fill: s.fill ?? "none", stroke: s.stroke, "stroke-width": s.strokeWidth, ...dashAttrs(s), ...common })}/>`,
+      );
     case "arrow":
       return `<g ${attrs(common)}>${arrow(a, s)}</g>`;
     case "text":
-      return `<g ${attrs(common)}>${textLines(a.text.split("\n"), a.x, a.y, s)}</g>`;
+      return `<g ${attrs(common)}>${rotated(a, theme, textLines(a.text.split("\n"), a.x, a.y, s))}</g>`;
     case "callout": {
       const { pad, lines, h } = calloutLayout(a, s);
       const target = a.anchor === undefined ? undefined : visible.get(a.anchor.annotationId);
       const link =
-        target === undefined || target.id === a.id
-          ? null
-          : calloutConnector({ x: a.x, y: a.y, w: a.w, h }, annotationBounds(target, theme));
+        target === undefined || target.id === a.id ? null : calloutLink(a, target, theme);
       // 線は吹き出しの下に描き、枠の縁から出ているように見せる
       const connector =
         link === null ||
         Math.hypot(link.to.x - link.from.x, link.to.y - link.from.y) < s.strokeWidth * 2
           ? ""
           : arrow(link, { ...s, head: "end", dash: undefined });
-      return `<g ${attrs(common)}>${connector}<rect ${attrs({ x: a.x, y: a.y, width: a.w, height: h, rx: s.radius ?? theme.calloutRadius, fill: s.fill ?? theme.calloutFill, stroke: s.stroke, "stroke-width": Math.max(1, s.strokeWidth / 2) })}/>${textLines(lines, a.x + pad, a.y + pad, s)}</g>`;
+      return `<g ${attrs(common)}>${connector}${rotated(a, theme, `<rect ${attrs({ x: a.x, y: a.y, width: a.w, height: h, rx: s.radius ?? theme.calloutRadius, fill: s.fill ?? theme.calloutFill, stroke: s.stroke, "stroke-width": Math.max(1, s.strokeWidth / 2) })}/>${textLines(lines, a.x + pad, a.y + pad, s)}`)}</g>`;
     }
     case "badge": {
       const r = s.fontSize * 0.8;
@@ -285,13 +332,55 @@ function annotation(
   }
 }
 
+/**
+ * 吹き出しから紐付け先へ引く線。どちらも回していなければ `calloutConnector` のまま。
+ * 回していれば、回した範囲を囲む四角どうしで向きを決め、端を回した縁に寄せる（ADR-0015）
+ */
+function calloutLink(
+  callout: Extract<Annotation, { type: "callout" }>,
+  target: Annotation,
+  theme: Theme,
+): { from: Point; to: Point } | null {
+  const link = calloutConnector(annotationBounds(callout, theme), annotationBounds(target, theme));
+  if (link === null) return null;
+  const cDeg = rotationOf(callout);
+  const tDeg = rotationOf(target);
+  if (cDeg === 0 && tDeg === 0) return link;
+  const tBox = annotationBox(target, theme);
+  const from = cDeg === 0 ? link.from : edgeToward(annotationBox(callout, theme), cDeg, link.to);
+  const to = tDeg === 0 ? link.to : edgeToward(tBox, tDeg, from);
+  return { from, to };
+}
+
 export type Bounds = { x: number; y: number; w: number; h: number };
 
 /**
- * 注釈が描かれる範囲。エディタの選択枠・当たり判定に使う。
- * 描画（`annotation()`）と同じ寸法の計算を使い、表示とずれないようにする。
+ * 注釈が描かれる範囲（回転を含む）。回していれば、回した形を囲む縦横の四角。
+ * 範囲選択・重なりの判定・番号や吹き出しの配置に使う。回す前の範囲は `annotationBox`。
  */
 export function annotationBounds(a: Annotation, theme: Theme = THEMES.default): Bounds {
+  const box = annotationBox(a, theme);
+  const deg = rotationOf(a);
+  if (deg === 0) return box;
+  const c = boxCenter(box);
+  const corners = [
+    { x: box.x, y: box.y },
+    { x: box.x + box.w, y: box.y },
+    { x: box.x + box.w, y: box.y + box.h },
+    { x: box.x, y: box.y + box.h },
+  ].map((p) => rotatePoint(p, deg, c));
+  const xs = corners.map((p) => p.x);
+  const ys = corners.map((p) => p.y);
+  const x = Math.min(...xs);
+  const y = Math.min(...ys);
+  return { x, y, w: Math.max(...xs) - x, h: Math.max(...ys) - y };
+}
+
+/**
+ * 回す前の注釈の範囲。描画（`annotation()`）と同じ寸法の計算を使い、表示とずれないようにする。
+ * 回転の軸はこの範囲の中心（ADR-0015）。エディタの選択枠・つまみ・当たり判定はこの範囲を回して使う。
+ */
+export function annotationBox(a: Annotation, theme: Theme = THEMES.default): Bounds {
   const s = resolve(theme, a);
   switch (a.type) {
     case "rect":

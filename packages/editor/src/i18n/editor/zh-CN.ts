@@ -41,6 +41,7 @@ export const zhCN: EditorMessages = {
     label: "标注编辑区",
     newText: "文字",
     newCallout: "输入说明",
+    rotate: "拖动以旋转（Shift：每次 15°）",
     sketchMiss: "无法识别为图形。请描出方框、圆形、线条或箭头的形状。",
     elementCallout: (role, label) =>
       label === ""
@@ -84,6 +85,9 @@ export const zhCN: EditorMessages = {
     summaryText: (size) => `文字 ${size === undefined ? "混合" : `${size}px`}`,
     multiple: (n) => `${n} 个标注`,
     deleteAll: "删除所有选中的标注",
+    transform: "旋转·翻转",
+    turns: { ccw: "向左旋转 90°", cw: "向右旋转 90°" },
+    flips: { horizontal: "水平翻转", vertical: "垂直翻转" },
     align: "对齐",
     alignToImage: "对齐图片",
     alignments: {
