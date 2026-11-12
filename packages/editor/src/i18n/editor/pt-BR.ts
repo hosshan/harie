@@ -99,6 +99,9 @@ export const ptBR: EditorMessages = {
     summaryText: (size) => `Texto ${size === undefined ? "misto" : `${size}px`}`,
     multiple: (n) => `${n} anotações`,
     deleteAll: "Excluir todas as anotações selecionadas",
+    transform: "Girar e espelhar",
+    turns: { ccw: "Girar 90° para a esquerda", cw: "Girar 90° para a direita" },
+    flips: { horizontal: "Espelhar horizontalmente", vertical: "Espelhar verticalmente" },
     align: "Alinhar",
     alignToImage: "À imagem",
     alignments: {

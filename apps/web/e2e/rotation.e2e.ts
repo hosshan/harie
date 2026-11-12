@@ -44,3 +44,40 @@ test("FR-EDIT-21: 回転のつまみで四角を回し、元に戻せる", async
   await page.keyboard.press("ControlOrMeta+z");
   await expect(rotated).toHaveCount(0);
 });
+
+test("FR-EDIT-22: 右の欄のボタンで 90° 回転・反転する", async ({ page }) => {
+  await page.goto("/");
+  await page
+    .getByLabel("画像ファイル")
+    .setInputFiles({ name: "large-base.jpg", mimeType: "image/jpeg", buffer: fixture });
+  const surface = page.getByRole("application", { name: "注釈の編集面" });
+  await expect(surface).toBeVisible();
+  const box = await surface.boundingBox();
+  if (box === null) throw new Error("編集面がない");
+
+  // 矢印を描く（左から右へ）
+  await page.keyboard.press("a");
+  await page.mouse.move(box.x + box.width * 0.3, box.y + box.height * 0.5);
+  await page.mouse.down();
+  await page.mouse.move(box.x + box.width * 0.7, box.y + box.height * 0.5, { steps: 5 });
+  await page.mouse.up();
+
+  const line = page.locator(".harie-canvas-image line");
+  const x1 = Number(await line.getAttribute("x1"));
+  const x2 = Number(await line.getAttribute("x2"));
+  expect(x1).toBeLessThan(x2);
+
+  // 左右に反転すると向きが逆になる
+  await page.getByRole("button", { name: "左右に反転" }).click();
+  await expect
+    .poll(async () => Number(await line.getAttribute("x1")))
+    .toBeGreaterThan(Number(await line.getAttribute("x2")));
+
+  // 右に 90° 回すと縦になる
+  await page.getByRole("button", { name: "右に 90° 回転" }).click();
+  await expect
+    .poll(async () =>
+      Math.abs(Number(await line.getAttribute("x1")) - Number(await line.getAttribute("x2"))),
+    )
+    .toBeLessThan(2);
+});

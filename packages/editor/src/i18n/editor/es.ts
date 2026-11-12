@@ -99,6 +99,9 @@ export const es: EditorMessages = {
     summaryText: (size) => `Texto ${size === undefined ? "mixto" : `${size}px`}`,
     multiple: (n) => `${n} anotaciones`,
     deleteAll: "Eliminar todas las anotaciones seleccionadas",
+    transform: "Girar y voltear",
+    turns: { ccw: "Girar 90° a la izquierda", cw: "Girar 90° a la derecha" },
+    flips: { horizontal: "Voltear horizontalmente", vertical: "Voltear verticalmente" },
     align: "Alinear",
     alignToImage: "A la imagen",
     alignments: {

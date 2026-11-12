@@ -94,6 +94,9 @@ export const ko: EditorMessages = {
     summaryText: (size) => `글자 ${size === undefined ? "혼합" : `${size}px`}`,
     multiple: (n) => `주석 ${n}개`,
     deleteAll: "선택한 주석 모두 삭제",
+    transform: "회전·반전",
+    turns: { ccw: "왼쪽으로 90° 회전", cw: "오른쪽으로 90° 회전" },
+    flips: { horizontal: "좌우 반전", vertical: "상하 반전" },
     align: "정렬",
     alignToImage: "이미지 기준",
     alignments: {

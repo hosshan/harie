@@ -85,6 +85,9 @@ export const zhCN: EditorMessages = {
     summaryText: (size) => `文字 ${size === undefined ? "混合" : `${size}px`}`,
     multiple: (n) => `${n} 个标注`,
     deleteAll: "删除所有选中的标注",
+    transform: "旋转·翻转",
+    turns: { ccw: "向左旋转 90°", cw: "向右旋转 90°" },
+    flips: { horizontal: "水平翻转", vertical: "垂直翻转" },
     align: "对齐",
     alignToImage: "对齐图片",
     alignments: {

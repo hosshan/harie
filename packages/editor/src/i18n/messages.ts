@@ -101,6 +101,10 @@ const ja = {
     multiple: (n: number) => `${n} 個の注釈`,
     deleteAll: "選んだ注釈をすべて削除",
     /** 整列（FR-EDIT-20）。1 つだけ選んでいるときは画像に揃える */
+    /** 90° 回転・反転（FR-EDIT-22） */
+    transform: "回転・反転",
+    turns: { ccw: "左に 90° 回転", cw: "右に 90° 回転" },
+    flips: { horizontal: "左右に反転", vertical: "上下に反転" },
     align: "整列",
     alignToImage: "画像に揃える",
     alignments: {
@@ -319,6 +323,9 @@ const en: EditorMessages = {
     summaryText: (size) => `Text ${size === undefined ? "mixed" : `${size}px`}`,
     multiple: (n) => `${n} annotations`,
     deleteAll: "Delete all selected annotations",
+    transform: "Rotate & flip",
+    turns: { ccw: "Rotate 90° left", cw: "Rotate 90° right" },
+    flips: { horizontal: "Flip horizontal", vertical: "Flip vertical" },
     align: "Align",
     alignToImage: "To image",
     alignments: {
