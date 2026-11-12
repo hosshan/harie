@@ -138,6 +138,8 @@ export const zhTW: EditorMessages = {
     shortcuts: "開啟這個列表",
     shiftClick: "加入或移出選取",
     shiftClickKeys: (shift) => `${shift} + 點按`,
+    altDrag: "複製並移動",
+    altDragKeys: (alt) => `${alt} + 拖曳`,
     dragEmpty: "選取範圍內的註解",
     dragEmptyKeys: "從空白處拖曳",
     doubleClick: "編輯文字",

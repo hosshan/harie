@@ -87,6 +87,10 @@ export function ShortcutList({ file = {}, mask = true, element = false }: Shortc
           label: m.shortcuts.shiftClick,
           keys: [m.shortcuts.shiftClickKeys(mac ? "⇧" : "Shift")],
         },
+        {
+          label: m.shortcuts.altDrag,
+          keys: [m.shortcuts.altDragKeys(mac ? "⌥" : "Alt")],
+        },
         { label: m.shortcuts.dragEmpty, keys: [m.shortcuts.dragEmptyKeys] },
         { label: m.shortcuts.doubleClick, keys: [m.shortcuts.doubleClickKeys] },
       ],

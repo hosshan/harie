@@ -147,6 +147,8 @@ export const ko: EditorMessages = {
     shortcuts: "이 목록 열기",
     shiftClick: "선택에 추가 / 선택에서 빼기",
     shiftClickKeys: (shift) => `${shift} + 클릭`,
+    altDrag: "복제해서 옮기기",
+    altDragKeys: (alt) => `${alt} + 드래그`,
     dragEmpty: "영역에 걸친 주석 선택",
     dragEmptyKeys: "빈 곳에서 드래그",
     doubleClick: "글자 편집",

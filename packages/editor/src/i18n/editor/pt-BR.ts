@@ -152,6 +152,8 @@ export const ptBR: EditorMessages = {
     shortcuts: "Abrir esta lista",
     shiftClick: "Adicionar à seleção / remover dela",
     shiftClickKeys: (shift) => `${shift} + clique`,
+    altDrag: "Duplicar e mover",
+    altDragKeys: (alt) => `${alt} + arrastar`,
     dragEmpty: "Selecionar as anotações de uma área",
     dragEmptyKeys: "Arrastar a partir de um espaço vazio",
     doubleClick: "Editar o texto",
