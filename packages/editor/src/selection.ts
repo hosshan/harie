@@ -1,6 +1,12 @@
 // 複数の注釈の選択と、まとめての移動（FR-EDIT-11）。結果は applyOps の操作として返す
-import type { Annotation, HarieDocument, Point, Rect } from "@harie/model";
-import { annotationBounds, type Bounds } from "@harie/render";
+import {
+  type Annotation,
+  type HarieDocument,
+  type Point,
+  type Rect,
+  rotationOf,
+} from "@harie/model";
+import { annotationBounds, annotationBox, type Bounds, boxCenter } from "@harie/render";
 import { isBoxed, MIN_CALLOUT_WIDTH, movePatch } from "./geometry";
 
 /** Shift を押してクリックしたとき。選んでいなければ加え、選んでいれば外す */
@@ -100,7 +106,19 @@ export function scaleOps(
   return doc.annotations.flatMap((a) => {
     if (!selected.has(a.id) || followsSelectedBox(a, selected)) return [];
     let patch: Record<string, unknown>;
-    if (a.type === "arrow") patch = { from: map(a.from), to: map(a.to) };
+    if (rotationOf(a) !== 0) {
+      // 回した注釈（ADR-0015）は中心を写し、幅・高さを倍率で掛けて、角度はそのまま保つ
+      const size: Record<string, number> = isBoxed(a)
+        ? { w: Math.max(1, round(a.w * sx)), h: Math.max(1, round(a.h * sy)) }
+        : a.type === "callout"
+          ? { w: Math.max(MIN_CALLOUT_WIDTH, round(a.w * sx)) }
+          : {};
+      const c = boxCenter(annotationBox(a));
+      const moved = { x: to.x + (c.x - from.x) * sx, y: to.y + (c.y - from.y) * sy };
+      const next = boxCenter(annotationBox({ ...a, ...size } as Annotation));
+      const at = a as { x: number; y: number };
+      patch = { ...size, x: round(at.x + moved.x - next.x), y: round(at.y + moved.y - next.y) };
+    } else if (a.type === "arrow") patch = { from: map(a.from), to: map(a.to) };
     else if (isBoxed(a)) {
       // 端を写してから幅・高さを出す（丸めで隣り合う枠の間がずれないように）
       const p = map(a);

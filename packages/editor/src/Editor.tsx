@@ -55,6 +55,7 @@ import { moveOps, pasteOps, type Reorder, removeOps, reorderOps, resizeOps } fro
 import { formatShortcut, isMacPlatform, matchesShortcut, type ShortcutId } from "./shortcuts";
 import { adoptSuggestionOps, rejectSuggestionOps } from "./suggestions";
 import { initialTool, TOOL_SHORTCUTS } from "./tools";
+import { FLIPS, type Flip, flipOps, TURNS, type Turn, turnOps } from "./transform";
 
 /** コピーした注釈をクリップボードに入れる形式。貼り付けるときは外部入力として検証する */
 export const ANNOTATIONS_MIME = "application/x-harie-annotations+json";
@@ -1036,8 +1037,77 @@ function Inspector({
           />
         )}
       </fieldset>
+      <TransformField doc={doc} ids={ids} dispatch={dispatch} />
       <AlignField doc={doc} ids={ids} dispatch={dispatch} />
     </div>
+  );
+}
+
+/** 90° 回転・反転のボタンの絵（24 × 24） */
+const TRANSFORM_ICONS: Record<Turn | Flip, ReactNode> = {
+  ccw: (
+    <>
+      <path d="M3 4v5h5" />
+      <path d="M4.6 14a8 8 0 1 0 1.8-8.3L3 9" />
+    </>
+  ),
+  cw: (
+    <>
+      <path d="M21 4v5h-5" />
+      <path d="M19.4 14a8 8 0 1 1-1.8-8.3L21 9" />
+    </>
+  ),
+  horizontal: (
+    <>
+      <path d="M12 3v18" strokeDasharray="2 2" />
+      <path d="M9 7 4 17h5zM15 7l5 10h-5z" />
+    </>
+  ),
+  vertical: (
+    <>
+      <path d="M3 12h18" strokeDasharray="2 2" />
+      <path d="M7 9 17 4v5zM7 15l10 5v-5z" />
+    </>
+  ),
+};
+
+/**
+ * 90° 回転と左右・上下の反転（FR-EDIT-22）。1 つならその注釈の中心、2 つ以上なら選んだ全体の中心を軸にする。
+ * 変わらないとき（番号 1 つだけ、回していない四角の反転など）は押せない。どれも 1 回の操作として元に戻せる
+ */
+function TransformField({
+  doc,
+  ids,
+  dispatch,
+}: {
+  doc: HarieDocument;
+  ids: readonly string[];
+  dispatch: Dispatch<EditorAction>;
+}) {
+  const m = useMessages(EDITOR_MESSAGES);
+  const buttons = [
+    ...TURNS.map((how) => ({ how, label: m.inspector.turns[how], ops: turnOps(doc, ids, how) })),
+    ...FLIPS.map((how) => ({ how, label: m.inspector.flips[how], ops: flipOps(doc, ids, how) })),
+  ];
+  return (
+    <fieldset className="harie-field">
+      <legend className="harie-field-label">{m.inspector.transform}</legend>
+      <div className="harie-tiles harie-transform">
+        {buttons.map(({ how, label, ops }) => (
+          <button
+            key={how}
+            type="button"
+            className="harie-tile"
+            aria-label={label}
+            title={label}
+            disabled={ops.length === 0}
+            onClick={() => dispatch({ type: "apply", ops })}
+          >
+            <Icon size={16}>{TRANSFORM_ICONS[how]}</Icon>
+          </button>
+        ))}
+      </div>
+    </fieldset>
   );
 }
 

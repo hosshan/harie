@@ -63,8 +63,22 @@ const base = {
 
 const boxed = { ...base, x: finite, y: finite, w: nonNegative, h: nonNegative };
 
-export const RectAnnotationSchema = z.looseObject({ ...boxed, type: z.literal("rect") });
-export const EllipseAnnotationSchema = z.looseObject({ ...boxed, type: z.literal("ellipse") });
+/**
+ * 回転の角度（度、時計回り）。注釈の範囲の中心を軸に回す（FR-EDIT-21 / ADR-0015）。省略は 0。
+ * x, y, w（, h）は回転する前の位置と大きさのまま持つ
+ */
+const rotation = finite.optional();
+
+/** 回転できる注釈の種類（ADR-0015）。矢印は端点で向きを変えるので含めない */
+export const ROTATABLE_TYPES = ["rect", "ellipse", "text", "callout"] as const;
+export type RotatableType = (typeof ROTATABLE_TYPES)[number];
+
+export const RectAnnotationSchema = z.looseObject({ ...boxed, rotation, type: z.literal("rect") });
+export const EllipseAnnotationSchema = z.looseObject({
+  ...boxed,
+  rotation,
+  type: z.literal("ellipse"),
+});
 export const ArrowAnnotationSchema = z.looseObject({
   ...base,
   type: z.literal("arrow"),
@@ -77,6 +91,7 @@ export const TextAnnotationSchema = z.looseObject({
   x: finite,
   y: finite,
   text: z.string(),
+  rotation,
 });
 export const CalloutAnnotationSchema = z.looseObject({
   ...base,
@@ -85,6 +100,7 @@ export const CalloutAnnotationSchema = z.looseObject({
   y: finite,
   w: finite.positive(),
   text: z.string(),
+  rotation,
   anchor: z
     .object({
       annotationId: z.string(),
@@ -129,6 +145,19 @@ export const AnnotationSchema = z
   .meta({ id: "HarieAnnotation" });
 export type Annotation = z.infer<typeof AnnotationSchema>;
 export type AnnotationType = Annotation["type"];
+
+/** 注釈の回転の角度（度）。回転できない種類・省略・0 は 0。-180 より大きく 180 以下にそろえる */
+export function rotationOf(a: Annotation): number {
+  if (!(ROTATABLE_TYPES as readonly string[]).includes(a.type)) return 0;
+  return normalizeRotation((a as { rotation?: number }).rotation ?? 0);
+}
+
+/** 角度を -180 より大きく 180 以下にそろえる（-0 は 0） */
+export function normalizeRotation(deg: number): number {
+  const r = ((((deg + 180) % 360) + 360) % 360) - 180;
+  const v = r === -180 ? 180 : r;
+  return v === 0 ? 0 : v;
+}
 
 export const PiiKindSchema = z.enum(["name", "email", "phone", "address", "id", "face", "other"]);
 export const PiiMethodSchema = z.enum(["replace", "fill", "mosaic", "blur"]);

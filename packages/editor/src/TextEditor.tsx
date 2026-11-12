@@ -1,6 +1,6 @@
 // テキスト・吹き出しの文字を、編集面の上でその場で直す入力欄（FR-EDIT-03）
-import type { Annotation } from "@harie/model";
-import { annotationBounds, FONT_FAMILY, THEMES } from "@harie/render";
+import { type Annotation, rotationOf } from "@harie/model";
+import { annotationBox, FONT_FAMILY, THEMES } from "@harie/render";
 import { useEffect, useRef } from "react";
 import { EDITOR_MESSAGES } from "./i18n/messages";
 import { useMessages } from "./i18n/use-locale";
@@ -28,7 +28,9 @@ export function TextEditor({ annotation, frame, onCommit, onCancel }: TextEditor
 
   const defaults = THEMES.default.defaults;
   const fontSize = annotation.style?.fontSize ?? defaults.fontSize;
-  const b = annotationBounds(annotation);
+  const b = annotationBox(annotation);
+  // 回した注釈は、入力欄も同じ中心・角度で回す（ADR-0015）
+  const deg = rotationOf(annotation);
   // 吹き出しは枠の内側の余白（描画の calloutLayout と同じ 0.6em）に合わせる
   const pad = annotation.type === "callout" ? fontSize * 0.6 : 0;
   // 行の高さ 1.4 の上下に付く余白（0.2em）の分だけ上げ、描画と同じ位置・上下中央に文字を置く
@@ -62,6 +64,12 @@ export function TextEditor({ annotation, frame, onCommit, onCancel }: TextEditor
               borderRadius: 8 * k,
             }
           : { minWidth: Math.max(b.w, fontSize * 4) * k }),
+        ...(deg === 0
+          ? {}
+          : {
+              transform: `rotate(${deg}deg)`,
+              transformOrigin: `${(b.w / 2) * k}px ${(b.h / 2 + (annotation.type === "callout" ? 0 : leading)) * k}px`,
+            }),
         fontFamily: `"${FONT_FAMILY}", sans-serif`,
         fontSize: fontSize * k,
         fontWeight: annotation.style?.fontWeight === "bold" ? 700 : 400,

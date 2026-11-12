@@ -1,6 +1,20 @@
 // 編集面。下層に buildSvg の SVG（保存時と同じ見た目、ADR-0005）、上層に操作用の SVG を重ねる
-import { type Annotation, applyOps, type HarieDocument, type Point } from "@harie/model";
-import { annotationBounds, type Bounds, buildSvg, layoutAnchors, THEMES } from "@harie/render";
+import {
+  type Annotation,
+  applyOps,
+  type HarieDocument,
+  type Point,
+  rotationOf,
+} from "@harie/model";
+import {
+  annotationBounds,
+  annotationBox,
+  type Bounds,
+  boxCenter,
+  buildSvg,
+  layoutAnchors,
+  THEMES,
+} from "@harie/render";
 import {
   type CSSProperties,
   type Dispatch,
@@ -15,11 +29,15 @@ import { type DrawDefaults, styleForNew } from "./draw-defaults";
 import { elementBox, type PickableElement, pickElement } from "./element-pick";
 import {
   boxFrom,
-  contains,
   type Handle,
   handlePosition,
   handlesFor,
+  hitsBox,
+  isRotatable,
+  ROTATE_HANDLE,
+  ROTATION_STEP,
   resizePatch,
+  rotatePatch,
   scaleBox,
 } from "./geometry";
 import { type EditorAction, type EditorState, newAnnotationId } from "./history";
@@ -55,6 +73,8 @@ type Drag =
   /** 選んだ注釈をまとめて動かす。copy は Alt（Option）を押している間で、元を残して複製を動かす */
   | { kind: "move"; ids: readonly string[]; copy: boolean; start: Point; current: Point }
   | { kind: "resize"; id: string; handle: Handle; current: Point }
+  /** 回転のつまみで回す（FR-EDIT-21）。snap は Shift を押しているか（15° 刻み） */
+  | { kind: "rotate"; id: string; current: Point; snap: boolean }
   /** 複数選んだ注釈を囲む枠のつまみで、まとめて拡大・縮小する（FR-EDIT-11）。Shift で縦横比を保つ */
   | {
       kind: "scale";
@@ -97,10 +117,7 @@ export function badgeAnchorAt(
 ): { anchor: { annotationId: string } } | Record<string, never> {
   const box = [...doc.annotations]
     .reverse()
-    .find(
-      (a) =>
-        (a.type === "rect" || a.type === "ellipse") && contains(annotationBounds(a), p, tolerance),
-    );
+    .find((a) => (a.type === "rect" || a.type === "ellipse") && hitsBox(a, p, tolerance));
   return box === undefined ? {} : { anchor: { annotationId: box.id } };
 }
 
@@ -108,7 +125,7 @@ export function badgeAnchorAt(
 export function hitTest(doc: HarieDocument, p: Point, tolerance: number): Annotation | undefined {
   return [...doc.annotations].reverse().find((a) => {
     if (a.type === "arrow") return distanceToSegment(p, a.from, a.to) <= tolerance;
-    return contains(annotationBounds(a), p, tolerance);
+    return hitsBox(a, p, tolerance);
   });
 }
 
@@ -170,7 +187,11 @@ function dragOps(doc: HarieDocument, drag: Drag, defaults: DrawDefaults = {}): u
   }
   const target = doc.annotations.find((a) => a.id === drag.id);
   if (target === undefined) return [];
-  return [{ op: "update", id: drag.id, patch: resizePatch(target, drag.handle, drag.current) }];
+  const patch =
+    drag.kind === "rotate"
+      ? rotatePatch(target, drag.current, drag.snap ? ROTATION_STEP : undefined)
+      : resizePatch(target, drag.handle, drag.current);
+  return [{ op: "update", id: drag.id, patch }];
 }
 
 /** 押した位置から動かしていない（クリックしただけ） */
@@ -290,6 +311,7 @@ export function Canvas({
   const moved =
     drag !== null &&
     (drag.kind === "resize" ||
+      drag.kind === "rotate" ||
       drag.kind === "scale" ||
       drag.current.x !== drag.start.x ||
       drag.current.y !== drag.start.y);
@@ -315,17 +337,25 @@ export function Canvas({
    * 囲む枠ごとまとめて変える（FR-EDIT-11）
    */
   const grabHandle = (e: PointerEvent<SVGSVGElement>, p: Point): boolean => {
-    const handle = (e.target as Element).getAttribute("data-handle") as Handle | null;
+    const handle = (e.target as Element).getAttribute("data-handle");
     const ids = state.selectedIds;
     const [only] = ids;
     if (handle === null || only === undefined) return false;
     if (ids.length === 1) {
-      setDrag({ kind: "resize", id: only, handle, current: p });
+      setDrag(gripDrag(only, handle, p, e.shiftKey));
       return true;
     }
     const bounds = selectionBounds(doc, ids);
     if (bounds === undefined) return false;
-    setDrag({ kind: "scale", ids, handle, bounds, start: p, current: p, keepRatio: e.shiftKey });
+    setDrag({
+      kind: "scale",
+      ids,
+      handle: handle as Handle,
+      bounds,
+      start: p,
+      current: p,
+      keepRatio: e.shiftKey,
+    });
     return true;
   };
 
@@ -439,13 +469,15 @@ export function Canvas({
       });
       return;
     }
-    // ドラッグの途中で Alt を押す・離すと、複製と移動を切り替える
+    // ドラッグの途中で Alt を押す・離すと、複製と移動を切り替える。Shift を押す・離すと回転の刻みを切り替える
     setDrag(
       drag.kind === "move"
         ? { ...drag, copy: e.altKey, current: toPoint(e) }
         : drag.kind === "scale"
           ? { ...drag, current: toPoint(e), keepRatio: e.shiftKey }
-          : { ...drag, current: toPoint(e) },
+          : drag.kind === "rotate"
+            ? { ...drag, snap: e.shiftKey, current: toPoint(e) }
+            : { ...drag, current: toPoint(e) },
     );
   };
 
@@ -456,7 +488,9 @@ export function Canvas({
         ? { ...drag, copy: e.altKey, current: toPoint(e) }
         : drag.kind === "scale"
           ? { ...drag, current: toPoint(e), keepRatio: e.shiftKey }
-          : { ...drag, current: toPoint(e) };
+          : drag.kind === "rotate"
+            ? { ...drag, snap: e.shiftKey, current: toPoint(e) }
+            : { ...drag, current: toPoint(e) };
     setDrag(null);
     if (final.kind === "mask") {
       const rect = maskRect(final.start, final.current, doc.canvas);
@@ -610,8 +644,9 @@ export function Canvas({
             annotation={a}
             handleSize={handleSize}
             stroke={screenPx(1.5)}
-            // 1 つだけ選んでいるときは注釈ごとのつまみ、複数のときは囲む枠のつまみを出す
+            // 1 つだけ選んでいるときは注釈ごとのつまみ（大きさ・回転）、複数のときは囲む枠のつまみを出す
             handles={selected.length === 1}
+            rotateLabel={m.canvas.rotate}
           />
         ))}
         {selected.length > 1 &&
@@ -700,21 +735,40 @@ function Marquee({
   );
 }
 
+/** つまみを掴んだときのドラッグ。回転のつまみなら回し、それ以外は大きさを変える */
+function gripDrag(id: string, grip: string, p: Point, shift: boolean): Drag {
+  return grip === ROTATE_HANDLE
+    ? { kind: "rotate", id, current: p, snap: shift }
+    : { kind: "resize", id, handle: grip as Handle, current: p };
+}
+
 function Selection({
   annotation,
   handleSize,
   stroke,
   handles,
+  rotateLabel,
 }: {
   annotation: Annotation;
   handleSize: number;
   stroke: number;
   handles: boolean;
+  rotateLabel: string;
 }) {
-  const b = annotationBounds(annotation);
+  // 回す前の範囲に枠とつまみを描き、注釈と同じ角度で回す（ADR-0015）
+  const b = annotationBox(annotation);
   const pad = handleSize / 2;
+  const deg = rotationOf(annotation);
+  const c = boxCenter(b);
+  /** 回転のつまみを選択枠の上辺からどれだけ離すか */
+  const reach = handleSize * 2.4;
   return (
-    <g className="harie-selection" data-selected={annotation.id}>
+    <g
+      className="harie-selection"
+      data-selected={annotation.id}
+      data-rotation={deg === 0 ? undefined : deg}
+      transform={deg === 0 ? undefined : `rotate(${deg} ${c.x} ${c.y})`}
+    >
       {annotation.type !== "arrow" && (
         <rect
           x={b.x - pad}
@@ -745,6 +799,31 @@ function Selection({
           />
         );
       })}
+      {handles && isRotatable(annotation) && (
+        <>
+          <line
+            x1={c.x}
+            y1={b.y - pad}
+            x2={c.x}
+            y2={b.y - pad - reach + handleSize / 2}
+            stroke={SELECTION_COLOR}
+            strokeWidth={stroke}
+            pointerEvents="none"
+          />
+          <circle
+            data-handle={ROTATE_HANDLE}
+            cx={c.x}
+            cy={b.y - pad - reach}
+            r={handleSize / 2}
+            fill="#FFFFFF"
+            stroke={SELECTION_COLOR}
+            strokeWidth={stroke}
+            className="harie-handle harie-handle-rotate"
+          >
+            <title>{rotateLabel}</title>
+          </circle>
+        </>
+      )}
     </g>
   );
 }
