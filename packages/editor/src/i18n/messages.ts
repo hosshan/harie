@@ -98,6 +98,18 @@ const ja = {
     /** 複数選んでいるときの見出し */
     multiple: (n: number) => `${n} 個の注釈`,
     deleteAll: "選んだ注釈をすべて削除",
+    /** 整列（FR-EDIT-20）。1 つだけ選んでいるときは画像に揃える */
+    align: "整列",
+    alignToImage: "画像に揃える",
+    alignments: {
+      left: "左揃え",
+      hcenter: "左右中央揃え",
+      right: "右揃え",
+      top: "上揃え",
+      vcenter: "上下中央揃え",
+      bottom: "下揃え",
+    },
+    distributions: { horizontal: "左右に等間隔", vertical: "上下に等間隔" },
     /** 値が揃っていない（複数選んでいて、注釈ごとに違う） */
     mixed: "混在",
     listSeparator: "・",
@@ -302,6 +314,20 @@ const en: EditorMessages = {
     summaryText: (size) => `Text ${size === undefined ? "mixed" : `${size}px`}`,
     multiple: (n) => `${n} annotations`,
     deleteAll: "Delete all selected annotations",
+    align: "Align",
+    alignToImage: "To image",
+    alignments: {
+      left: "Align left",
+      hcenter: "Align horizontal centers",
+      right: "Align right",
+      top: "Align top",
+      vcenter: "Align vertical centers",
+      bottom: "Align bottom",
+    },
+    distributions: {
+      horizontal: "Distribute horizontally",
+      vertical: "Distribute vertically",
+    },
     mixed: "Mixed",
     listSeparator: ", ",
     colorText: "Text color",
