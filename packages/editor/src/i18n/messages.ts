@@ -177,6 +177,8 @@ const ja = {
     dragEmptyKeys: "何もない所からドラッグ",
     doubleClick: "文字を編集",
     doubleClickKeys: "ダブルクリック",
+    snapOff: "吸着させずに動かす・描く",
+    snapOffKeys: (mod: string) => `${mod} を押しながらドラッグ`,
     or: "または",
   },
   appliedMask: {
@@ -400,6 +402,8 @@ const en: EditorMessages = {
     dragEmptyKeys: "Drag from an empty spot",
     doubleClick: "Edit text",
     doubleClickKeys: "Double-click",
+    snapOff: "Move or draw without snapping",
+    snapOffKeys: (mod: string) => `Hold ${mod} while dragging`,
     or: "or",
   },
   appliedMask: {

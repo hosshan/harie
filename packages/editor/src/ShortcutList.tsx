@@ -93,6 +93,7 @@ export function ShortcutList({ file = {}, mask = true, element = false }: Shortc
         },
         { label: m.shortcuts.dragEmpty, keys: [m.shortcuts.dragEmptyKeys] },
         { label: m.shortcuts.doubleClick, keys: [m.shortcuts.doubleClickKeys] },
+        { label: m.shortcuts.snapOff, keys: [m.shortcuts.snapOffKeys(mac ? "⌘" : "Ctrl")] },
       ],
     },
   ];

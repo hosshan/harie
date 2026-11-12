@@ -176,6 +176,8 @@ export const ptBR: EditorMessages = {
     dragEmptyKeys: "Arrastar a partir de um espaço vazio",
     doubleClick: "Editar o texto",
     doubleClickKeys: "Clique duplo",
+    snapOff: "Mover ou desenhar sem alinhar",
+    snapOffKeys: (mod: string) => `Segurar ${mod} ao arrastar`,
     or: "ou",
   },
   appliedMask: {

@@ -159,6 +159,8 @@ export const zhCN: EditorMessages = {
     dragEmptyKeys: "从空白处拖动",
     doubleClick: "编辑文字",
     doubleClickKeys: "双击",
+    snapOff: "不吸附地移动、绘制",
+    snapOffKeys: (mod: string) => `按住 ${mod} 拖动`,
     or: "或",
   },
   appliedMask: {

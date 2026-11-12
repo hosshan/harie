@@ -159,6 +159,8 @@ export const zhTW: EditorMessages = {
     dragEmptyKeys: "從空白處拖曳",
     doubleClick: "編輯文字",
     doubleClickKeys: "按兩下",
+    snapOff: "不吸附地移動、繪製",
+    snapOffKeys: (mod: string) => `按住 ${mod} 拖曳`,
     or: "或",
   },
   appliedMask: {
