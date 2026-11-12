@@ -468,6 +468,53 @@ test("FR-EDIT-11: 注釈を複数選んで、まとめて線の太さ・色を�
   await expect(rects).toHaveCount(0);
 });
 
+test("FR-EDIT-11: 複数選んだ注釈を、囲む枠のつまみでまとめて拡大・縮小できる", async ({ page }) => {
+  await openFixture(page, "large-base.jpg");
+  await page.getByRole("button", { name: "四角" }).click();
+  await drag(page, [40, 40], [140, 100]);
+  await page.getByRole("button", { name: "四角" }).click();
+  await drag(page, [200, 40], [300, 100]);
+  await page.getByRole("button", { name: "選択" }).click();
+  await page.keyboard.press("ControlOrMeta+a");
+
+  const rects = annotationRects(page);
+  const geometry = async (i: number) =>
+    Promise.all(
+      ["x", "y", "width", "height"].map(async (k) => Number(await rects.nth(i).getAttribute(k))),
+    );
+  const before = [await geometry(0), await geometry(1)];
+
+  // 1 つずつのつまみではなく、囲む枠のつまみを出す
+  const group = page.locator(".harie-group-selection");
+  await expect(group.locator("[data-handle]")).toHaveCount(8);
+  await expect(page.locator(".harie-selection [data-handle]")).toHaveCount(0);
+
+  // 右下のつまみを右下へ動かすと、左上を固定して 2 つともまとめて大きくなる
+  const handle = await group.locator('[data-handle="se"]').boundingBox();
+  if (handle === null) throw new Error("つまみがない");
+  const cx = handle.x + handle.width / 2;
+  const cy = handle.y + handle.height / 2;
+  await page.mouse.move(cx, cy);
+  await page.mouse.down();
+  await page.mouse.move(cx + 60, cy + 40);
+  await page.mouse.move(cx + 120, cy + 80);
+  await page.mouse.up();
+  const after = [await geometry(0), await geometry(1)];
+  const [r0, r1] = [after[0] ?? [], after[1] ?? []];
+  const [b0, b1] = [before[0] ?? [], before[1] ?? []];
+  expect(r0[0]).toBe(b0[0]);
+  expect(r0[1]).toBe(b0[1]);
+  expect(r0[2] ?? 0).toBeGreaterThan(b0[2] ?? 0);
+  expect(r0[3] ?? 0).toBeGreaterThan(b0[3] ?? 0);
+  expect(r1[0] ?? 0).toBeGreaterThan(b1[0] ?? 0);
+  expect(r1[2] ?? 0).toBeGreaterThan(b1[2] ?? 0);
+
+  // ドラッグ 1 回を 1 つの操作として元に戻せる
+  await page.keyboard.press("ControlOrMeta+z");
+  await expect.poll(() => geometry(0)).toEqual(b0);
+  await expect.poll(() => geometry(1)).toEqual(b1);
+});
+
 test("FR-EDIT-14: 番号・吹き出しのない枠に、ボタン 1 つで番号と吹き出しを付ける", async ({
   page,
 }) => {

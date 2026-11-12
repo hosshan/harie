@@ -1,6 +1,6 @@
 // 複数の注釈の選択と、まとめての移動（FR-EDIT-11）。結果は applyOps の操作として返す
-import type { Annotation, HarieDocument, Rect } from "@harie/model";
-import { annotationBounds } from "@harie/render";
+import type { Annotation, HarieDocument, Point, Rect } from "@harie/model";
+import { annotationBounds, type Bounds } from "@harie/render";
 import { isBoxed, MIN_CALLOUT_WIDTH, movePatch } from "./geometry";
 
 /** Shift を押してクリックしたとき。選んでいなければ加え、選んでいれば外す */
@@ -63,6 +63,63 @@ export function resizeOps(
     const current: Record<string, unknown> = a;
     if (patch === undefined || Object.entries(patch).every(([k, v]) => current[k] === v)) return [];
     return [{ op: "update", id: a.id, patch }];
+  });
+}
+
+/** 選んだ注釈をすべて囲む枠。選んでいなければ undefined */
+export function selectionBounds(doc: HarieDocument, ids: readonly string[]): Bounds | undefined {
+  const boxes = doc.annotations.filter((a) => ids.includes(a.id)).map((a) => annotationBounds(a));
+  if (boxes.length === 0) return undefined;
+  const x = Math.min(...boxes.map((b) => b.x));
+  const y = Math.min(...boxes.map((b) => b.y));
+  const right = Math.max(...boxes.map((b) => b.x + b.w));
+  const bottom = Math.max(...boxes.map((b) => b.y + b.h));
+  return { x, y, w: right - x, h: bottom - y };
+}
+
+/**
+ * 選んだ注釈を、囲む枠 from が to になるよう比例して拡大・縮小する操作（FR-EDIT-11）。
+ * 枠・楕円は位置と大きさ、矢印は両端、吹き出しは位置と幅を変える。テキスト・番号は位置（左上）だけを
+ * 動かす。線の太さと文字の大きさは変えない。枠も一緒に選んだ紐付けた番号は、枠に付いていく（ADR-0011）
+ */
+export function scaleOps(
+  doc: HarieDocument,
+  ids: readonly string[],
+  from: Bounds,
+  to: Bounds,
+): unknown[] {
+  const sx = from.w === 0 ? 1 : to.w / from.w;
+  const sy = from.h === 0 ? 1 : to.h / from.h;
+  if (sx === 1 && sy === 1 && to.x === from.x && to.y === from.y) return [];
+  const round = (v: number) => Math.round(v);
+  const map = (p: Point): Point => ({
+    x: round(to.x + (p.x - from.x) * sx),
+    y: round(to.y + (p.y - from.y) * sy),
+  });
+  const selected = new Set(ids);
+  return doc.annotations.flatMap((a) => {
+    if (!selected.has(a.id) || followsSelectedBox(a, selected)) return [];
+    let patch: Record<string, unknown>;
+    if (a.type === "arrow") patch = { from: map(a.from), to: map(a.to) };
+    else if (isBoxed(a)) {
+      // 端を写してから幅・高さを出す（丸めで隣り合う枠の間がずれないように）
+      const p = map(a);
+      const q = map({ x: a.x + a.w, y: a.y + a.h });
+      patch = { ...p, w: Math.max(1, q.x - p.x), h: Math.max(1, q.y - p.y) };
+    } else if (a.type === "callout") {
+      patch = { ...map(a), w: Math.max(MIN_CALLOUT_WIDTH, round(a.w * sx)) };
+    } else {
+      patch = map(a);
+      // 紐付けた番号だけを動かすときと同じく、紐付けを外して置いた位置に残す
+      if (a.type === "badge" && a.anchor !== undefined) patch.anchor = undefined;
+    }
+    const current: Record<string, unknown> = a;
+    const same = Object.entries(patch).every(([k, v]) =>
+      typeof v === "object" && v !== null
+        ? JSON.stringify(v) === JSON.stringify(current[k])
+        : current[k] === v,
+    );
+    return same ? [] : [{ op: "update", id: a.id, patch }];
   });
 }
 
