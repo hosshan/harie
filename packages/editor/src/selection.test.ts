@@ -4,6 +4,7 @@ import { MIN_GROUP_SIZE, scaleBox } from "./geometry";
 import { editorReducer, initialState } from "./history";
 import {
   annotationsInRect,
+  duplicateOps,
   mergeSelection,
   moveOps,
   pasteOps,
@@ -237,5 +238,32 @@ describe("囲む枠のつまみで新しい枠を決める（FR-EDIT-11）", () 
   it("幅が 0 の向きは変えない", () => {
     const line = { x: 50, y: 0, w: 0, h: 100 };
     expect(scaleBox(line, "se", { x: 300, y: 200 })).toEqual({ x: 50, y: 0, w: 0, h: 200 });
+  });
+});
+
+describe("Alt + ドラッグで複製して動かす（FR-EDIT-12）", () => {
+  it("元は残し、複製を (dx, dy) ずらして描いた順に重ね、一緒に複製した枠への紐付けは付け替える", () => {
+    const d = doc();
+    // 選んだ順ではなく、描いた順に複製する
+    const { ops, ids } = duplicateOps(d, ["badge-1", "rect-1"], 30, -5);
+    expect(ids).toEqual(["rect-2", "badge-2"]);
+    const s = editorReducer(initialState(d), { type: "apply", ops, select: ids });
+    expect(s.selectedIds).toEqual(["rect-2", "badge-2"]);
+    expect(s.doc.annotations.find((a) => a.id === "rect-1")).toMatchObject({ x: 10, y: 10 });
+    expect(s.doc.annotations.find((a) => a.id === "rect-2")).toMatchObject({ x: 40, y: 5 });
+    expect(s.doc.annotations.find((a) => a.id === "badge-2")).toMatchObject({
+      anchor: { annotationId: "rect-2" },
+    });
+    expect(s.doc.annotations.map((a) => a.id).slice(-2)).toEqual(["rect-2", "badge-2"]);
+  });
+
+  it("矢印は両端をずらし、選んだものがなければ何もしない", () => {
+    const { ops } = duplicateOps(doc(), ["arrow-1"], 10, 20);
+    expect((ops[0] as { annotation: object }).annotation).toMatchObject({
+      id: "arrow-2",
+      from: { x: 310, y: 320 },
+      to: { x: 410, y: 320 },
+    });
+    expect(duplicateOps(doc(), ["missing"], 10, 20)).toEqual({ ops: [], ids: [] });
   });
 });

@@ -28,6 +28,7 @@ import { useMessages } from "./i18n/use-locale";
 import { type AppliedMask, hitAppliedMask, type MaskDraft, maskRect } from "./masks";
 import {
   annotationsInRect,
+  duplicateOps,
   mergeSelection,
   moveOps,
   scaleOps,
@@ -51,8 +52,8 @@ export type Tool =
   | "element";
 
 type Drag =
-  /** 選んだ注釈をまとめて動かす */
-  | { kind: "move"; ids: readonly string[]; start: Point; current: Point }
+  /** 選んだ注釈をまとめて動かす。copy は Alt（Option）を押している間で、元を残して複製を動かす */
+  | { kind: "move"; ids: readonly string[]; copy: boolean; start: Point; current: Point }
   | { kind: "resize"; id: string; handle: Handle; current: Point }
   /** 複数選んだ注釈を囲む枠のつまみで、まとめて拡大・縮小する（FR-EDIT-11）。Shift で縦横比を保つ */
   | {
@@ -136,7 +137,9 @@ export function sketchOps(doc: HarieDocument, shape: SketchShape, defaults: Draw
 function dragOps(doc: HarieDocument, drag: Drag, defaults: DrawDefaults = {}): unknown[] {
   if (drag.kind === "mask" || drag.kind === "marquee" || drag.kind === "sketch") return [];
   if (drag.kind === "move") {
-    return moveOps(doc, drag.ids, drag.current.x - drag.start.x, drag.current.y - drag.start.y);
+    const dx = drag.current.x - drag.start.x;
+    const dy = drag.current.y - drag.start.y;
+    return drag.copy ? duplicateOps(doc, drag.ids, dx, dy).ops : moveOps(doc, drag.ids, dx, dy);
   }
   if (drag.kind === "create") {
     const id = newAnnotationId(doc, drag.tool);
@@ -343,7 +346,7 @@ export function Canvas({
       if (grabHandle(e, p)) return;
       const grabbed = e.shiftKey ? undefined : hitTest(doc, p, screenPx(6));
       if (grabbed !== undefined && state.selectedIds.includes(grabbed.id)) {
-        setDrag({ kind: "move", ids: state.selectedIds, start: p, current: p });
+        setDrag({ kind: "move", ids: state.selectedIds, copy: e.altKey, start: p, current: p });
         return;
       }
       setDrag(
@@ -407,7 +410,7 @@ export function Canvas({
         ? state.selectedIds
         : [hit.id];
     dispatch({ type: "select", ids });
-    if (ids.includes(hit.id)) setDrag({ kind: "move", ids, start: p, current: p });
+    if (ids.includes(hit.id)) setDrag({ kind: "move", ids, copy: e.altKey, start: p, current: p });
   };
 
   // テキスト・吹き出しをダブルクリックすると、その場で文字を編集する（FR-EDIT-03）
@@ -436,19 +439,24 @@ export function Canvas({
       });
       return;
     }
+    // ドラッグの途中で Alt を押す・離すと、複製と移動を切り替える
     setDrag(
-      drag.kind === "scale"
-        ? { ...drag, current: toPoint(e), keepRatio: e.shiftKey }
-        : { ...drag, current: toPoint(e) },
+      drag.kind === "move"
+        ? { ...drag, copy: e.altKey, current: toPoint(e) }
+        : drag.kind === "scale"
+          ? { ...drag, current: toPoint(e), keepRatio: e.shiftKey }
+          : { ...drag, current: toPoint(e) },
     );
   };
 
   const onPointerUp = (e: PointerEvent<SVGSVGElement>) => {
     if (drag === null) return;
     const final: Drag =
-      drag.kind === "scale"
-        ? { ...drag, current: toPoint(e), keepRatio: e.shiftKey }
-        : { ...drag, current: toPoint(e) };
+      drag.kind === "move"
+        ? { ...drag, copy: e.altKey, current: toPoint(e) }
+        : drag.kind === "scale"
+          ? { ...drag, current: toPoint(e), keepRatio: e.shiftKey }
+          : { ...drag, current: toPoint(e) };
     setDrag(null);
     if (final.kind === "mask") {
       const rect = maskRect(final.start, final.current, doc.canvas);
@@ -491,16 +499,31 @@ export function Canvas({
       return;
     }
     if (final.kind === "move" && isClick(final)) return;
+    if (final.kind === "move" && final.copy) {
+      // 複製したものを選び、続けて動かしたり文言を直したりできるようにする
+      const copied = duplicateOps(
+        doc,
+        final.ids,
+        final.current.x - final.start.x,
+        final.current.y - final.start.y,
+      );
+      if (copied.ops.length > 0) dispatch({ type: "apply", ops: copied.ops, select: copied.ids });
+      return;
+    }
     const ops = dragOps(doc, final, drawDefaults);
     const id = created(ops);
     dispatch({ type: "apply", ops, ...(id === undefined ? {} : { select: id }) });
   };
 
   // 範囲選択の途中は、選ばれる注釈を先に示す
+  // Alt を押して複製しながら動かしている間は、動いている複製のほうに選択枠を付ける
   const selectedIds =
     drag?.kind === "marquee" && !isClick(drag)
       ? mergeSelection(drag.base, annotationsInRect(doc, boxFrom(drag.start, drag.current)))
-      : state.selectedIds;
+      : drag?.kind === "move" && drag.copy && !isClick(drag)
+        ? duplicateOps(doc, drag.ids, drag.current.x - drag.start.x, drag.current.y - drag.start.y)
+            .ids
+        : state.selectedIds;
   const selected = display.annotations.filter((a) => selectedIds.includes(a.id));
   const handleSize = screenPx(10);
   const editing = doc.annotations.find((a) => a.id === editingId);
