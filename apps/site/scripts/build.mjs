@@ -34,9 +34,29 @@ for (const entry of await readdir(dist, { recursive: true })) {
   if (next !== html) await writeFile(file, next);
 }
 
+// 紹介ページ（LP 各言語とプライバシーポリシー）にだけ Google アナリティクス（GA4）を入れる（ADR-0017, NFR-SEC-06）。
+// Web エディタ（dist/app/）はこの後に写すので対象にならない。測定 ID が空なら何も入れない
+await injectAnalytics(dist);
+
 const appDir = process.env.HARIE_SITE_APP_DIR;
 if (appDir) {
   await cp(appDir, `${dist}/app`, { recursive: true });
   console.log(`dist/app/ に ${appDir} を入れました`);
 }
 console.log("dist/ に書き出しました");
+
+async function injectAnalytics(dir) {
+  const { GA_MEASUREMENT_ID, analyticsSnippet } = await import("./analytics.mjs");
+  if (!GA_MEASUREMENT_ID) return;
+  const snippet = analyticsSnippet(GA_MEASUREMENT_ID);
+  let count = 0;
+  for (const entry of await readdir(dir, { recursive: true })) {
+    if (!entry.endsWith(".html") || entry.startsWith("app/")) continue;
+    const file = `${dir}/${entry}`;
+    const html = await readFile(file, "utf8");
+    if (!html.includes("</head>")) continue;
+    await writeFile(file, html.replace("</head>", `${snippet}\n  </head>`));
+    count++;
+  }
+  console.log(`${count} ページに Google アナリティクス（${GA_MEASUREMENT_ID}）を入れました`);
+}

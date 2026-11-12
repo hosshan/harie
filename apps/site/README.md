@@ -42,6 +42,14 @@ node apps/site/scripts/serve.mjs
 - `FAQPage` の質問と答えは、ページの「よくある質問」の節と同じ文にする。`pnpm --filter @harie/site build` の最初に [scripts/check-seo.mjs](scripts/check-seo.mjs) が、この一致、`canonical` と `og:url` の一致、`sitemap.xml` の URL に対応するページがあることを確かめ、ずれていればビルドを止める
 - よくある質問の答えは畳まずに全部見せる（AI の回答に引かれやすいよう、1 つの答えだけで意味が通る文にする）
 
+## アクセス解析（Google アナリティクス）
+
+- 紹介ページ（LP 各言語とプライバシーポリシー）にだけ GA4 を入れる。Web エディタ（`/app/`）には入れない（ADR-0017, NFR-SEC-06）
+- 測定 ID は [scripts/analytics.mjs](scripts/analytics.mjs) の `GA_MEASUREMENT_ID`。`build.mjs` が `dist/` の HTML の `<head>` に差し込む（`src/` の HTML には書かない）。空なら何も入れない
+- `harie.studio` で開いたときだけ読み込むので、ローカルのプレビューは数えない。EEA・英国・スイスは Cookie を使わない計測（同意モード）、広告の機能は切ってある
+- エディタを開くリンクのクリックは `open_editor` イベントで数える。外部リンク（ストア、GitHub など）のクリックとファイルのダウンロードは GA の拡張計測が数える
+- 計測する内容を変えたら、プライバシーポリシー（日英）の「このサイトについて」と `llms.txt` も直す
+
 ## 各言語のページ
 
 韓国語・繁體中文・简体中文・スペイン語・ポルトガル語（ブラジル）のページは、英語版の HTML の文を `i18n/<言語>.json` の訳に置き換えて作る。構成・画像・スクリプトは英語版と同じで、`lang`・`canonical`・`og:locale`・言語メニュー・ストアのリンクの `hl` だけを言語ごとに変える。韓国語と中国語は Google Fonts の Noto Sans KR / TC / SC を読み込む。
