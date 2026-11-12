@@ -468,6 +468,46 @@ test("FR-EDIT-11: 注釈を複数選んで、まとめて線の太さ・色を�
   await expect(rects).toHaveCount(0);
 });
 
+test("FR-EDIT-12: Alt を押しながらドラッグすると、選んだ注釈を複製して動かす", async ({ page }) => {
+  await openFixture(page, "large-base.jpg");
+  await page.getByRole("button", { name: "四角" }).click();
+  await drag(page, [40, 40], [140, 100]);
+  await page.getByRole("button", { name: "四角" }).click();
+  await drag(page, [200, 40], [300, 100]);
+  await page.getByRole("button", { name: "選択" }).click();
+  const rects = annotationRects(page);
+  await expect(rects).toHaveCount(2);
+  const y = async (i: number) => Number(await rects.nth(i).getAttribute("y"));
+  const before = [await y(0), await y(1)];
+
+  // 1 つだけ: 元は動かさず、複製が動く。離した後は複製を選んでいる
+  await page.keyboard.down("Alt");
+  await drag(page, [90, 40], [90, 200]);
+  await page.keyboard.up("Alt");
+  await expect(rects).toHaveCount(3);
+  expect([await y(0), await y(1)]).toEqual(before);
+  await expect.poll(() => y(2)).toBeGreaterThan((before[0] ?? 0) + 140);
+  const inspector = page.getByRole("complementary", { name: "選択中の注釈" });
+  await expect(inspector.getByRole("heading", { name: /四角/ })).toBeVisible();
+  // 複製は 1 回の操作として元に戻せる
+  await page.keyboard.press("ControlOrMeta+z");
+  await expect(rects).toHaveCount(2);
+
+  // 複数選んでいれば、まとめて複製する
+  await drag(page, [20, 20], [320, 60]);
+  await expect(inspector.getByRole("heading", { name: /2 個の注釈/ })).toBeVisible();
+  await page.keyboard.down("Alt");
+  await drag(page, [90, 40], [90, 200]);
+  await page.keyboard.up("Alt");
+  await expect(rects).toHaveCount(4);
+  expect([await y(0), await y(1)]).toEqual(before);
+  await expect(inspector.getByRole("heading", { name: /2 個の注釈/ })).toBeVisible();
+
+  // Alt を押していなければ、これまでどおり動かすだけ
+  await drag(page, [90, 200], [90, 260]);
+  await expect(rects).toHaveCount(4);
+});
+
 test("FR-EDIT-14: 番号・吹き出しのない枠に、ボタン 1 つで番号と吹き出しを付ける", async ({
   page,
 }) => {

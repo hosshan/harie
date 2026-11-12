@@ -18,6 +18,15 @@ import {
   useReducer,
   useState,
 } from "react";
+import {
+  ALIGNMENTS,
+  type Alignment,
+  alignOps,
+  canDistribute,
+  DISTRIBUTIONS,
+  type Distribution,
+  distributeOps,
+} from "./align";
 import { Canvas, type Tool } from "./Canvas";
 import {
   addPaletteColor,
@@ -1027,7 +1036,82 @@ function Inspector({
           />
         )}
       </fieldset>
+      <AlignField doc={doc} ids={ids} dispatch={dispatch} />
     </div>
+  );
+}
+
+/** 整列のボタンの絵（24 × 24） */
+const alignIcon = (axis: string, bars: string) => (
+  <>
+    <path d={axis} />
+    <path d={bars} strokeWidth={3} />
+  </>
+);
+const ALIGN_ICONS: Record<Alignment | Distribution, ReactNode> = {
+  left: alignIcon("M4 3v18", "M8 8h11M8 16h6"),
+  hcenter: alignIcon("M12 3v18", "M6 8h12M9 16h6"),
+  right: alignIcon("M20 3v18", "M5 8h11M10 16h6"),
+  top: alignIcon("M3 4h18", "M8 8v11M16 8v6"),
+  vcenter: alignIcon("M3 12h18", "M8 6v12M16 9v6"),
+  bottom: alignIcon("M3 20h18", "M8 5v11M16 10v6"),
+  horizontal: alignIcon("M3 4v16M21 4v16", "M9 8v8M15 8v8"),
+  vertical: alignIcon("M4 3h16M4 21h16", "M8 9h8M8 15h8"),
+};
+
+/**
+ * 整列と等間隔の分布（FR-EDIT-20）。2 つ以上選んでいれば選んだ範囲に、1 つなら画像に揃える。
+ * 等間隔は 3 つ以上選んでいるときだけ使える。どれも 1 回の操作として元に戻せる
+ */
+function AlignField({
+  doc,
+  ids,
+  dispatch,
+}: {
+  doc: HarieDocument;
+  ids: readonly string[];
+  dispatch: Dispatch<EditorAction>;
+}) {
+  const m = useMessages(EDITOR_MESSAGES);
+  const apply = (ops: unknown[]) => {
+    if (ops.length > 0) dispatch({ type: "apply", ops });
+  };
+  const distributable = canDistribute(doc, ids);
+  const toImage = ids.length === 1;
+  return (
+    <fieldset className="harie-field">
+      <legend className="harie-field-label">
+        {m.inspector.align}
+        {toImage && <span className="harie-field-value">{m.inspector.alignToImage}</span>}
+      </legend>
+      <div className="harie-tiles harie-align">
+        {ALIGNMENTS.map((how) => (
+          <button
+            key={how}
+            type="button"
+            className="harie-tile"
+            aria-label={m.inspector.alignments[how]}
+            title={m.inspector.alignments[how]}
+            onClick={() => apply(alignOps(doc, ids, how))}
+          >
+            <Icon size={16}>{ALIGN_ICONS[how]}</Icon>
+          </button>
+        ))}
+        {DISTRIBUTIONS.map((how) => (
+          <button
+            key={how}
+            type="button"
+            className="harie-tile"
+            aria-label={m.inspector.distributions[how]}
+            title={m.inspector.distributions[how]}
+            disabled={!distributable}
+            onClick={() => apply(distributeOps(doc, ids, how))}
+          >
+            <Icon size={16}>{ALIGN_ICONS[how]}</Icon>
+          </button>
+        ))}
+      </div>
+    </fieldset>
   );
 }
 

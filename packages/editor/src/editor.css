@@ -964,3 +964,22 @@ label.harie-field .harie-field-label {
 .harie-tiles-2 .harie-tile {
   height: 44px;
 }
+/* 整列（FR-EDIT-20）。絵だけのボタンを 1 列に並べる */
+.harie-align {
+  grid-template-columns: repeat(8, minmax(0, 1fr));
+  gap: 4px;
+}
+.harie-inspector-body .harie-align .harie-tile {
+  height: 32px;
+}
+.harie-align svg {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+}
+.harie-inspector-body .harie-align .harie-tile:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  border-color: var(--harie-line);
+}
