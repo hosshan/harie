@@ -70,17 +70,16 @@ export const ko: WebMessages = {
     button: "크기 변경",
     title: "저장할 이미지 크기",
     description:
-      "저장·복사하는 이미지만 이 크기로 그립니다. 원본 이미지와 주석은 그대로 남으므로 나중에 몇 번이든 바꿀 수 있습니다.",
+      "저장하는 이미지만 이 크기로 만듭니다. 가로세로 비율은 그대로이고 원본 이미지는 남으므로 나중에 되돌릴 수 있습니다.",
     original: (w, h) => `원본 이미지: ${w} × ${h} px`,
     width: "너비(W)",
     height: "높이(H)",
-    keepAspect: "가로세로 비율 유지",
-    presets: "배율",
     invalid: (max) => `너비와 높이는 1~${max}의 정수로 입력해 주세요`,
     cancel: "취소",
     apply: "변경",
     done: (w, h) => `저장할 이미지 크기를 ${w} × ${h} px로 했습니다`,
-    reset: "저장할 이미지 크기를 원래 크기로 되돌렸습니다",
+    restored: "저장할 이미지 크기를 원래 크기로 되돌렸습니다",
+    resetButton: "원래 크기로",
   },
   masks: {
     applied: (n) =>

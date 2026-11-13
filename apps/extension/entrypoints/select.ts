@@ -1,7 +1,7 @@
 // 範囲選択・要素選択のオーバーレイ（FR-CAP-02）。拡張のボタンを押したタブにだけ、その都度注入する（activeTab）。
 // 選び終えたらオーバーレイを消してから background に範囲を送る（オーバーレイが写り込まないように）。
 // 範囲選択では、撮る画像の幅×高さを数値で決められる（FR-CAP-10）。決めると、その大きさの枠がカーソルに付いてきて、
-// クリックした位置で撮る。最後に決めた大きさは storage に覚えておき、次の範囲選択でも使う
+// クリックした位置で撮る。欄は毎回空から始め、空のままならこれまでどおりドラッグで選ぶ
 import { browser } from "wxt/browser";
 import type { SelectText } from "@/lib/capture";
 import { dragRect, elementRect, fixedRect, parseSelectSide } from "@/lib/selection";
@@ -17,9 +17,6 @@ type HarieWindow = Window & {
 };
 type Rect = { x: number; y: number; w: number; h: number };
 type Size = { width: number; height: number };
-
-/** 最後に決めた範囲の大きさ（画像ピクセル）を覚えておくキー */
-const SIZE_KEY = "harie.selectSize";
 
 const FONT = "13px/1.4 system-ui,sans-serif";
 
@@ -132,10 +129,7 @@ export default defineUnlistedScript(() => {
     if (fixed === null || tooLarge) show(null);
   };
   for (const input of inputs) {
-    input.addEventListener("input", () => {
-      updateFixed();
-      if (fixed !== null) void browser.storage.local.set({ [SIZE_KEY]: fixed }).catch(() => {});
-    });
+    input.addEventListener("input", updateFixed);
   }
   // 入力中のキーをページのショートカットに渡さない（Esc は下の onKey で受ける）
   for (const type of ["keydown", "keyup", "keypress"] as const) {
@@ -143,24 +137,6 @@ export default defineUnlistedScript(() => {
       if ((e as KeyboardEvent).key !== "Escape") e.stopPropagation();
     });
   }
-  if (inputs.length > 0) {
-    void browser.storage.local
-      .get(SIZE_KEY)
-      .then((stored) => {
-        const s = stored[SIZE_KEY] as Partial<Size> | undefined;
-        const [wi, hi] = inputs;
-        if (wi === undefined || hi === undefined || s === undefined) return;
-        if (wi.value !== "" || hi.value !== "") return;
-        const width = parseSelectSide(String(s.width ?? ""));
-        const height = parseSelectSide(String(s.height ?? ""));
-        if (width === null || height === null) return;
-        wi.value = String(width);
-        hi.value = String(height);
-        updateFixed();
-      })
-      .catch(() => {});
-  }
-
   let start: { x: number; y: number } | null = null;
   let hovered: Element | null = null;
 

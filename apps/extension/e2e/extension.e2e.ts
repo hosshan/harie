@@ -222,7 +222,7 @@ test("FR-CAP-02: 範囲を選んで撮ると、その範囲だけの画像にな
   expect(Buffer.from(file).includes(Buffer.from("hanako.sato@example.com"))).toBe(false);
 });
 
-test("FR-CAP-10: 範囲選択で幅×高さを入れると、クリックした位置をその大きさちょうどで撮り、次も同じ大きさを使う", async ({
+test("FR-CAP-10: 範囲選択で幅×高さを入れると、クリックした位置をその大きさちょうどで撮る", async ({
   context,
   worker,
   extensionId,
@@ -245,10 +245,9 @@ test("FR-CAP-10: 範囲選択で幅×高さを入れると、クリックした�
   const editor = await opened;
   await expect(editor.locator(".harie-canvas-overlay")).toHaveAttribute("viewBox", "0 0 150 60");
 
-  // 次の範囲選択でも、最後に決めた大きさが入っている
+  // 次の範囲選択では欄は空から始まり、これまでどおりドラッグで選べる
   await startCapture(worker, target, "region");
-  await expect(overlay.getByRole("textbox", { name: "幅（W）" })).toHaveValue("150");
-  await expect(overlay.getByRole("textbox", { name: "高さ（H）" })).toHaveValue("60");
+  await expect(overlay.getByRole("textbox", { name: "幅（W）" })).toHaveValue("");
   await target.keyboard.press("Escape");
   await expect(overlay).toHaveCount(0);
 });

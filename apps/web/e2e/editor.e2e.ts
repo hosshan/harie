@@ -1155,7 +1155,7 @@ test("NFR-PLAT-01: スマホの幅では、ファイル名を 1 行に収め、�
   );
 });
 
-test("FR-EDIT-24: 保存する画像の大きさを数値・倍率で変え、ベース画像と注釈はそのまま残す", async ({
+test("FR-EDIT-24: 保存する画像の大きさを数値で変え、ベース画像と注釈はそのまま残す", async ({
   page,
 }) => {
   await openFixture(page, "large-base.jpg");
@@ -1201,17 +1201,17 @@ test("FR-EDIT-24: 保存する画像の大きさを数値・倍率で変え、�
   });
   expect(writeHarie({ rendered, base: read.base.bytes, doc: read.doc })).toEqual(file);
 
-  // 縦横比を外して入れられ、100% で元の大きさに戻せる
+  // 高さを入れると幅が付いてくる。「元の大きさに戻す」で元に戻せる
   await page.getByRole("button", { name: "サイズ変更" }).click();
   await expect(width).toHaveValue("260");
-  await dialog.getByRole("checkbox", { name: "縦横比を保つ" }).uncheck();
-  await height.fill("50");
-  await expect(width).toHaveValue("260");
+  await height.fill("100");
+  await expect(width).toHaveValue("130");
   await width.fill("0");
   await expect(dialog.getByRole("button", { name: "変更する" })).toBeDisabled();
-  await dialog.getByRole("button", { name: "100%" }).click();
+  await dialog.getByRole("button", { name: "元の大きさに戻す" }).click();
   await expect(width).toHaveValue("520");
   await expect(height).toHaveValue("400");
+  await expect(dialog.getByRole("button", { name: "元の大きさに戻す" })).toHaveCount(0);
   await dialog.getByRole("button", { name: "変更する" }).click();
   await expect(page.locator(".app-header-status")).toHaveText(
     "保存する画像のサイズを元の大きさに戻しました",

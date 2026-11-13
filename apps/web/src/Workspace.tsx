@@ -391,7 +391,7 @@ export function Workspace({
         onApply={(size) => {
           setResizeOpen(false);
           dispatch({ type: "apply", ops: [{ op: "setOutputSize", size }] });
-          setStatus(size === null ? m.resize.reset : m.resize.done(size.width, size.height));
+          setStatus(size === null ? m.resize.restored : m.resize.done(size.width, size.height));
         }}
       />
       <Modal open={confirmOpen} label={m.open.button} onClose={() => setConfirmOpen(false)}>

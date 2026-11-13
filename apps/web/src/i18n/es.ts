@@ -74,17 +74,16 @@ export const es: WebMessages = {
     button: "Cambiar tamaño",
     title: "Tamaño de la imagen guardada",
     description:
-      "Solo la imagen que guardas o copias se dibuja con este tamaño. La imagen original y las anotaciones se conservan, así que puedes cambiarlo cuando quieras.",
+      "Solo la imagen guardada tendrá este tamaño. Se mantiene la proporción y la imagen original se conserva, así que puedes volver atrás.",
     original: (w, h) => `Imagen original: ${w} × ${h} px`,
     width: "Ancho (W)",
     height: "Alto (H)",
-    keepAspect: "Mantener proporción",
-    presets: "Escala",
     invalid: (max) => `Introduce números enteros de 1 a ${max} para el ancho y el alto`,
     cancel: "Cancelar",
     apply: "Cambiar",
     done: (w, h) => `Tamaño de la imagen guardada: ${w} × ${h} px`,
-    reset: "Se restableció el tamaño original de la imagen guardada",
+    restored: "Se restableció el tamaño original de la imagen guardada",
+    resetButton: "Volver al tamaño original",
   },
   masks: {
     applied: (n) =>
