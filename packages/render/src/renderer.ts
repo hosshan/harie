@@ -7,6 +7,7 @@ import encodeJpeg, { init as initJpegEncoder } from "@jsquash/jpeg/encode.js";
 import { initWasm, Resvg } from "@resvg/resvg-wasm";
 import { toDataUri } from "./base64";
 import { type ExtraFont, requiredExtraFonts } from "./extra-fonts";
+import { resolveFrame } from "./frame";
 import {
   type ConvertibleType,
   flattenOnWhite,
@@ -48,8 +49,8 @@ export type RenderInput = {
   quality?: number;
   includeSuggested?: boolean;
   /**
-   * 書き出しの大きさ（FR-EDIT-24）で描くか。既定 true（保存・コピーする画像）。
-   * false はベース画像と同じ大きさで描く（注釈の座標と画像のピクセルを合わせて見せたいとき。MCP のプレビュー）
+   * 書き出しの大きさ（FR-EDIT-24）で描き、仕上げ（FR-FILE-16）を付けるか。既定 true（保存・コピーする画像）。
+   * false はベース画像と同じ大きさで、仕上げも付けずに描く（注釈の座標と画像のピクセルを合わせて見せたいとき。MCP のプレビュー）
    */
   atOutputSize?: boolean;
 };
@@ -134,11 +135,12 @@ export async function createRenderer(init: RendererInit): Promise<Renderer> {
     );
   };
 
-  const rasterizeSvg = (svg: string, width?: number) => {
+  const rasterizeSvg = (svg: string, width?: number, transparent = false) => {
     const resvg = new Resvg(svg, {
       font: { fontBuffers, defaultFontFamily: FONT_FAMILY, sansSerifFamily: FONT_FAMILY },
-      // 背景は不透明の白。透過 PNG のベース画像でも JPEG と同じ見た目にする
-      background: "#FFFFFF",
+      // 背景は不透明の白。透過 PNG のベース画像でも JPEG と同じ見た目にする。
+      // 仕上げの余白を透過にしたときだけ（PNG）、背景を塗らない（画像の部分は仕上げが白地を敷く）
+      ...(transparent ? {} : { background: "#FFFFFF" }),
       ...(width === undefined ? {} : { fitTo: { mode: "width" as const, value: width } }),
     });
     try {
@@ -155,6 +157,12 @@ export async function createRenderer(init: RendererInit): Promise<Renderer> {
       // 保存・コピーする画像は書き出しの大きさで描く（FR-EDIT-24）
       applyOutputSize: input.atOutputSize ?? true,
     });
+
+  /** 仕上げの余白を透過にしていて、透過を残せる形式か */
+  const transparentFrame = (input: Omit<RenderInput, "quality">) =>
+    input.output === "png" &&
+    (input.atOutputSize ?? true) &&
+    resolveFrame(input.doc.frame)?.background === null;
 
   const encode = async (
     img: ReturnType<typeof rasterizeSvg>,
@@ -265,7 +273,11 @@ export async function createRenderer(init: RendererInit): Promise<Renderer> {
       return fromPixels(pixels, type);
     },
     renderPixels(input) {
-      const img = rasterizeSvg(toSvg(input));
+      const img = rasterizeSvg(
+        toSvg(input),
+        undefined,
+        transparentFrame({ ...input, output: "png" }),
+      );
       try {
         return { width: img.width, height: img.height, data: img.pixels.slice() };
       } finally {
@@ -275,7 +287,7 @@ export async function createRenderer(init: RendererInit): Promise<Renderer> {
     async render(input) {
       const svg = toSvg(input);
       await ensureFonts(svg);
-      const img = rasterizeSvg(svg);
+      const img = rasterizeSvg(svg, undefined, transparentFrame(input));
       try {
         return await encode(img, input.output, input.quality ?? 90);
       } finally {

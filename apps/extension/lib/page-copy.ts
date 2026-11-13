@@ -1,6 +1,6 @@
 // ページ上の Harie 画像で、説明文をその場でコピーするための位置（FR-FILE-12）。service worker で動く
 import type { HarieDocument } from "@harie/model";
-import { annotationBounds, THEMES } from "@harie/render";
+import { annotationBounds, outputArea, THEMES } from "@harie/render";
 import { annotationText } from "./page-image";
 
 /** コピーできる説明文。位置は表示中の画像に対する割合（0〜1）で、ページの画像の大きさに合わせて置く */
@@ -10,8 +10,8 @@ export type PageImageInfo = { harie: false } | { harie: true; targets: CopyTarge
 
 export function pageImageInfo(doc: HarieDocument): PageImageInfo {
   const theme = THEMES[doc.theme.preset] ?? THEMES.default;
-  // 切り抜いているときは、切り抜いた範囲が画像になる
-  const area = doc.canvas.crop ?? { x: 0, y: 0, w: doc.canvas.width, h: doc.canvas.height };
+  // 切り抜いているときは切り抜いた範囲が、仕上げの余白（FR-FILE-16）があればその分だけ広い範囲が画像になる
+  const area = outputArea(doc);
   const targets: CopyTarget[] = [];
   for (const a of doc.annotations) {
     if (a.status === "suggested") continue;

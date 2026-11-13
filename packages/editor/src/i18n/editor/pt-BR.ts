@@ -60,6 +60,11 @@ export const ptBR: EditorMessages = {
             ? `Clique em “${label}”`
             : `Confira “${label}”`,
   },
+  frame: {
+    label: "Acabamento da imagem",
+    note: "Adicionado ao redor da imagem salva para que as bordas apareçam em uma página branca.",
+    presets: { none: "Nenhum", border: "Borda", shadow: "Sombra", card: "Arredondado" },
+  },
   steps: {
     label: "Números e balões",
     note: (n) =>

@@ -59,6 +59,11 @@ export const ko: EditorMessages = {
             ? `“${label}”을(를) 누릅니다`
             : `“${label}”을(를) 확인합니다`,
   },
+  frame: {
+    label: "이미지 마감",
+    note: "저장할 이미지 둘레에 붙입니다. 흰 페이지에 붙여도 경계가 보입니다.",
+    presets: { none: "없음", border: "테두리", shadow: "그림자", card: "둥근 모서리" },
+  },
   steps: {
     label: "번호와 말풍선",
     note: (n) =>

@@ -2,7 +2,13 @@
 // （docs/03-design/document-model.md の「操作」）
 import { z } from "zod";
 import { err, ok, type Result } from "./result";
-import { type Annotation, AnnotationSchema, type HarieDocument, OutputSizeSchema } from "./schema";
+import {
+  type Annotation,
+  AnnotationSchema,
+  FrameSchema,
+  type HarieDocument,
+  OutputSizeSchema,
+} from "./schema";
 
 export const OpSchema = z.discriminatedUnion("op", [
   z.object({ op: z.literal("add"), annotation: AnnotationSchema, index: z.int().optional() }),
@@ -16,6 +22,8 @@ export const OpSchema = z.discriminatedUnion("op", [
   z.object({ op: z.literal("renumber") }),
   /** 書き出しの大きさを変える（FR-EDIT-24）。null で元の大きさに戻す。注釈の座標は変えない */
   z.object({ op: z.literal("setOutputSize"), size: OutputSizeSchema.nullable() }),
+  /** 保存する画像の仕上げを置き換える（FR-FILE-16）。null で外す */
+  z.object({ op: z.literal("frame"), frame: FrameSchema.nullable() }),
 ]);
 export type Op = z.infer<typeof OpSchema>;
 
@@ -30,13 +38,17 @@ function applyOne(doc: HarieDocument, op: Op): Result<HarieDocument> {
     const { output: _, ...canvas } = doc.canvas;
     return ok({ ...doc, canvas: op.size === null ? canvas : { ...canvas, output: op.size } });
   }
+  if (op.op === "frame") {
+    const { frame: _, ...rest } = doc;
+    return ok(op.frame === null ? rest : { ...rest, frame: op.frame });
+  }
   const result = applyToAnnotations(doc.annotations, op);
   return result.ok ? ok({ ...doc, annotations: result.value }) : result;
 }
 
 function applyToAnnotations(
   annotations: Annotation[],
-  op: Exclude<Op, { op: "setOutputSize" }>,
+  op: Exclude<Op, { op: "setOutputSize" | "frame" }>,
 ): Result<Annotation[]> {
   switch (op.op) {
     case "add": {

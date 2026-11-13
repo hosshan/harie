@@ -23,6 +23,8 @@ The server never calls an LLM. The client's LLM looks at the image and decides w
 
 Annotations are `rect`, `ellipse`, `arrow`, `text`, `callout`, `badge`, `spotlight` and `blur`. Boxes, ellipses, text and callouts can be rotated with `rotation` (degrees, clockwise, around the center of the box), and arrows can have heads at the end, the start, both or neither (`style.head`). The saved image can be drawn at a different size with the `setOutputSize` op (`{"op":"setOutputSize","size":{"width":640,"height":400}}`, `null` for the original size); the base image and annotation coordinates stay the same, and images returned by the tools stay at the base image size. Versions before 0.8.0 ignore it and save at the original size. Versions before 0.6.0 keep `rotation` but draw the shape unrotated, and read a file with `head: "start"` only as a plain image.
 
+`harie_edit` also takes `{"op":"frame","frame":{"padding":32,"shadow":{"blur":24}}}`, which adds padding, a background, a shadow, a border or rounded corners around the saved image so it stands out on a white help page (0.9.0 and later; `"frame": null` removes it). Annotation coordinates do not change, and the image returned to the AI is drawn without the frame. Earlier versions keep the setting but save without it.
+
 `harie_open`, `harie_edit` and `harie_replace_base` accept `image: false` to skip the image and return only the JSON. Images take up much of the client's context, so use it when you only read or rewrite text.
 
 The server can only access files under the directory given by `--root` (default: the current directory). `harie_mask` rewrites the base image, so the change cannot be undone once saved. To keep the original, save to another file with `outPath`.

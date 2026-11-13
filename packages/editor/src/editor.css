@@ -232,7 +232,14 @@
  */
 .harie-canvas {
   position: relative;
-  width: min(100cqw, 100cqh * var(--harie-canvas-ratio, 1));
+  /* 仕上げの余白（FR-FILE-16）を付けているときは、余白も台に収まるよう画像を小さくする */
+  width: min(
+    100cqw *
+    var(--harie-frame-fit-x, 1),
+    100cqh *
+    var(--harie-frame-fit-y, 1) *
+    var(--harie-canvas-ratio, 1)
+  );
   background: #fff;
   box-shadow:
     0 0 0 1px rgba(43, 38, 32, 0.12),
@@ -1001,4 +1008,30 @@ label.harie-field .harie-field-label {
   opacity: 0.4;
   cursor: not-allowed;
   border-color: var(--harie-line);
+}
+/* 画像の仕上げ（FR-FILE-16）。何も選んでいないときの右の欄で、案内の上に区切って置く */
+.harie-frame-field {
+  padding-bottom: 16px;
+  margin-bottom: 16px;
+  border-bottom: 1px solid var(--harie-line);
+}
+.harie-frame-note {
+  margin: 8px 0 0;
+  font-size: 12px;
+  line-height: 1.6;
+  color: var(--harie-muted);
+}
+/* 仕上げを付けているときは、編集面の影の代わりに保存時と同じ仕上げを見せる */
+.harie-canvas[data-framed] {
+  background: transparent;
+  box-shadow: none;
+}
+.harie-canvas-frame {
+  position: absolute;
+  pointer-events: none;
+}
+.harie-canvas-frame > svg {
+  display: block;
+  width: 100%;
+  height: 100%;
 }

@@ -26,7 +26,7 @@ import { fileURLToPath } from "node:url";
 import { parseArgs } from "node:util";
 
 /** 起動する MCP サーバー。HARIE_MCP_COMMAND（JSON の配列）で差し替えられる（テストやローカルのビルドを使うとき） */
-const DEFAULT_SERVER = ["npx", "-y", "@harie/mcp@^0.8.0"];
+const DEFAULT_SERVER = ["npx", "-y", "@harie/mcp@^0.9.0"];
 const PROTOCOL_VERSION = "2025-06-18";
 const TIMEOUT_MS = Number(process.env.HARIE_TIMEOUT_MS ?? 180_000);
 

@@ -72,6 +72,7 @@ harie guide <file> --intent "説明したいこと"        # 手引きの全文�
 - `rect` / `ellipse` / `text` / `callout` は `rotation`（度、時計回り。範囲の中心を軸に回し、`x, y, w, h` は回す前の値）で回せる。
 - 保存する画像の大きさは `{"op":"setOutputSize","size":{"width":640,"height":400}}` で変える（`null` で元の大きさ）。ベース画像と座標はそのまま。Retina の画像を画面と同じ大きさで載せたいときなどに使う。
 - 注釈の `blur` は外せるぼかし。個人情報には使わない。
+- `{"op":"frame","frame":{"padding":32,"shadow":{"blur":24}}}` で、保存する画像のまわりに余白・影を付けられる（白いヘルプページで画像の境目が分かるようにする）。ほかに `background`（`#RRGGBB` か `transparent`。透過は PNG のときだけ）、`radius`（角丸）、`border`（`{"width":1}`。縁の線）。`"frame": null` で外す。注釈の座標は変わらず、返す画像には付かない。頼まれたときだけ付ける。
 
 ## 注釈の決まり
 

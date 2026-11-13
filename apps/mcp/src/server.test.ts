@@ -58,8 +58,8 @@ describe("harie MCP server", () => {
     const edit = JSON.stringify(tools.find((t) => t.name === "harie_edit")?.inputSchema);
     // style は注釈の種類ごとに繰り返さず、1 か所の定義を参照する
     expect(edit.match(/"strokeWidth"/g)).toHaveLength(1);
-    // 12,000 から、保存する画像の大きさの操作（setOutputSize、FR-EDIT-24）の分だけ広げた
-    expect(JSON.stringify(tools).length).toBeLessThan(12_500);
+    // 12,000 から、保存する画像の大きさ（setOutputSize、FR-EDIT-24）と仕上げ（frame、FR-FILE-16）の操作の分だけ広げた
+    expect(JSON.stringify(tools).length).toBeLessThan(13_000);
   });
 
   it("FR-MCP-08: AI 提案と同じ手引きをプロンプトと instructions で渡す", async () => {
@@ -227,6 +227,39 @@ describe("harie MCP server", () => {
       image: false,
     });
     expect(turned.json()).toMatchObject({ annotations: [{ id: "r1", rotation: 90 }, arrow] });
+  });
+
+  it("FR-FILE-16: frame 操作で保存する画像に仕上げを付け、AI に返す画像には付けない", async () => {
+    const { root, call } = await setup();
+    await call("harie_create", { imagePath: "screen.png" });
+    const frame = { padding: 10, shadow: { blur: 8 } };
+    const edited = await call("harie_edit", {
+      path: "screen.harie.png",
+      ops: [{ op: "frame", frame }],
+    });
+    expect(edited.isError).toBe(false);
+    expect(edited.json()).toMatchObject({ frame });
+    const read = readHarie(new Uint8Array(readFileSync(join(root, "screen.harie.png"))));
+    expect(read.kind === "harie" && read.doc.frame).toEqual(frame);
+    // 保存した画像は余白の分だけ大きい（PNG の IHDR の幅・高さ）
+    const saved = readFileSync(join(root, "screen.harie.png"));
+    const size = (b: Uint8Array) => {
+      const v = new DataView(b.buffer, b.byteOffset);
+      return [v.getUint32(16), v.getUint32(20)];
+    };
+    const plain = readFileSync(new URL("base.png", FIXTURES));
+    const [w, h] = size(plain);
+    expect(size(saved)).toEqual([(w ?? 0) + 20, (h ?? 0) + 20]);
+    // AI に返す画像は注釈の座標と合わせるため、仕上げなしの大きさ
+    const shown = Buffer.from(edited.image?.data ?? "", "base64");
+    expect(size(shown)).toEqual([w, h]);
+
+    const cleared = await call("harie_edit", {
+      path: "screen.harie.png",
+      ops: [{ op: "frame", frame: null }],
+      image: false,
+    });
+    expect(cleared.json().frame).toBeUndefined();
   });
 
   it("FR-FILE-01, 02: format で保存形式を選べ、ベース画像はそのまま埋め込み、以後もその形式で保存する", async () => {

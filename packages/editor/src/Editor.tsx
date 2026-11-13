@@ -45,6 +45,7 @@ import {
   unscaleDrawDefaults,
 } from "./draw-defaults";
 import { elementPadding, elementStepOps, type PickableElement } from "./element-pick";
+import { FrameField } from "./FrameField";
 import { type EditorAction, type EditorState, editorReducer, initialState } from "./history";
 import { EDITOR_MESSAGES, type EditorMessages } from "./i18n/messages";
 import { useMessages } from "./i18n/use-locale";
@@ -544,6 +545,7 @@ export function Editor({
             tool !== "mask" && (
               <>
                 <StepsCard doc={state.doc} dispatch={dispatch} drawDefaults={drawDefaults} />
+                <FrameField doc={state.doc} dispatch={dispatch} scale={imageScale} />
                 <EmptyInspector tools={tools} onShowShortcuts={onShowShortcuts} />
                 {aside !== undefined && aside !== null && (
                   <div className="harie-inspector-extra">{aside}</div>

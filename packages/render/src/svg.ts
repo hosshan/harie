@@ -11,6 +11,7 @@ import {
   type Style,
 } from "@harie/model";
 import { EXTRA_FONT_FAMILIES, type ExtraFont, extraFontOf } from "./extra-fonts";
+import { outputScale, resolveFrame, scaleFrame, wrapFrame } from "./frame";
 import { THEMES, type Theme } from "./theme";
 import { attrs, esc, n } from "./xml";
 
@@ -51,8 +52,8 @@ export type BuildSvgOptions = {
   /** AI 提案中（status: "suggested"）の注釈も描くか。保存時は描かない（FR-AI-02）。 */
   includeSuggested?: boolean;
   /**
-   * 書き出しの大きさ（FR-EDIT-24）で描く。保存・コピーする画像を描くときに使う。
-   * 省略すると表示範囲と同じ大きさ（エディタの表示用）
+   * 書き出しの大きさ（FR-EDIT-24）で描き、仕上げ（FR-FILE-16）を付ける。保存・コピーする画像を描くときに使う。
+   * 省略すると表示範囲と同じ大きさで、仕上げも付けない（エディタの表示用）
    */
   applyOutputSize?: boolean;
 };
@@ -469,5 +470,14 @@ export function buildSvg(input: HarieDocument, options: BuildSvgOptions = {}): s
       : `<image ${attrs({ href: options.baseImageHref, x: 0, y: 0, width, height, preserveAspectRatio: "none" })}/>`;
   const size = options.applyOutputSize ? outputSize(doc) : { width: view.w, height: view.h };
   const scaled = size.width !== view.w || size.height !== view.h;
-  return `<svg xmlns="http://www.w3.org/2000/svg" ${attrs({ width: size.width, height: size.height, viewBox: `${n(view.x)} ${n(view.y)} ${n(view.w)} ${n(view.h)}`, ...(scaled ? { preserveAspectRatio: "none" } : {}) })}>${base}${body}</svg>`;
+  const svg = (place?: { x: number; y: number }) =>
+    `<svg xmlns="http://www.w3.org/2000/svg" ${attrs({ ...place, width: size.width, height: size.height, viewBox: `${n(view.x)} ${n(view.y)} ${n(view.w)} ${n(view.h)}`, ...(scaled ? { preserveAspectRatio: "none" } : {}) })}>${base}${body}</svg>`;
+  // 保存する画像には仕上げ（FR-FILE-16）を、書き出しの大きさと同じ倍率で外側に付ける（ADR-0018）
+  const frame = options.applyOutputSize ? resolveFrame(doc.frame) : null;
+  if (frame === null) return svg();
+  return wrapFrame(
+    scaleFrame(frame, outputScale(doc)),
+    { x: 0, y: 0, w: size.width, h: size.height },
+    svg,
+  );
 }

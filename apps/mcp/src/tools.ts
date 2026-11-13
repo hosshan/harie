@@ -104,6 +104,7 @@ function docSummary(doc: HarieDocument) {
     },
     annotations: doc.annotations,
     piiApplied: doc.pii.applied.length,
+    ...(doc.frame === undefined ? {} : { frame: doc.frame }),
   };
 }
 
@@ -112,7 +113,7 @@ async function renderImage(
   base: Loaded["base"],
   output: ImageFormat,
 ): Promise<ImageOut> {
-  // 注釈の座標と見比べられるよう、書き出しの大きさを決めていてもベース画像の大きさで描く
+  // 注釈の座標と見比べられるよう、書き出しの大きさ・仕上げ（FR-FILE-16）を決めていてもベース画像の大きさで描く
   const data = await (await nodeRenderer()).render({
     doc,
     base,
@@ -131,9 +132,9 @@ async function save(target: string, doc: HarieDocument, base: Loaded["base"], ou
   const saved = prepareForSave(doc);
   const rendered = await (await nodeRenderer()).render({ doc: saved, base, output });
   writeAtomic(target, writeHarie({ rendered, base: base.bytes, doc: saved }));
-  // 返す画像は注釈の座標と同じ大きさにする。書き出しの大きさを決めているときだけ描き直す（FR-EDIT-24）
+  // 返す画像は注釈の座標と同じ大きさにする。書き出しの大きさ・仕上げを決めているときだけ描き直す（FR-EDIT-24, FR-FILE-16）
   const shown =
-    saved.canvas.output === undefined
+    saved.canvas.output === undefined && saved.frame === undefined
       ? rendered
       : await (await nodeRenderer()).render({ doc: saved, base, output, atOutputSize: false });
   return { saved, rendered: { data: shown, mediaType: mediaTypeOf(output) } };
