@@ -78,3 +78,18 @@ describe("rebaseDocument", () => {
     ]);
   });
 });
+
+describe("rebaseDocument と書き出しの大きさ", () => {
+  it("FR-EDIT-24: 書き出しの大きさも同じ比率で合わせる", () => {
+    const r = applyOps(doc([]), [{ op: "setOutputSize", size: { width: 400, height: 300 } }]);
+    if (!r.ok) throw new Error(r.error.message);
+    expect(rebaseDocument(r.value, { width: 1600, height: 900 }).doc.canvas.output).toEqual({
+      width: 800,
+      height: 450,
+    });
+    expect(rebaseDocument(r.value, { width: 800, height: 600 }).doc.canvas.output).toEqual({
+      width: 400,
+      height: 300,
+    });
+  });
+});

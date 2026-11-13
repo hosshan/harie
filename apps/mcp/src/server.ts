@@ -28,7 +28,8 @@ badge に anchor: {"annotationId": 枠の id} を付けると、枠の左上の�
 rect / ellipse / text / callout は rotation（度、時計回り。範囲の中心が軸。x, y, w, h は回す前の値）で回せる。
 style（任意）: stroke, strokeWidth, fill, color, fontSize, fontWeight, radius, opacity, head（矢印の矢じり: end / start / both / none。start は from 側、none は矢じりのない線）, dash（solid / dashed / dotted。四角・楕円・矢印の線の種類）。
 blur は可逆なぼかしで、個人情報の加工には使わないこと。
-{"op":"frame","frame":{"padding":32,"shadow":{"blur":24}}} で保存画像のまわりに余白・影を付ける（ほかに background, radius, border。null で外す。返す画像には付かない）。`;
+setOutputSize は保存する画像の大きさ（null で元の大きさ）。座標は変わらない。
+{"op":"frame","frame":{"padding":32,"shadow":{"blur":24}}} で保存画像のまわりに余白・影を付ける（ほかに background, radius, border。null で外す）。返す画像には大きさも仕上げも反映しない。`;
 
 function toResult(out: ToolOutput, withImage: boolean): CallToolResult {
   const content: CallToolResult["content"] = [

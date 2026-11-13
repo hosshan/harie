@@ -15,7 +15,8 @@
 | `FrameSchema` / `Frame` | 保存する画像の仕上げ（余白・背景・角丸・縁の線・影。FR-FILE-16 / ADR-0017）。ドキュメントの `frame` に持つ |
 | `PiiMaskSchema` / `PiiAppliedSchema` | 個人情報の加工範囲と、適用済みの記録（ADR-0007） |
 | `createDocument` | 画像の大きさから空のドキュメントを作る |
-| `applyOps` | 注釈の変更（`add` / `update` / `remove` / `reorder` / `renumber`、仕上げの `frame`）を適用する。結果は `Result` で返し、例外を投げない |
+| `applyOps` | 注釈の変更（`add` / `update` / `remove` / `reorder` / `renumber`）と、保存する画像の大きさ（`setOutputSize`）・仕上げ（`frame`）の変更を適用する。結果は `Result` で返し、例外を投げない |
+| `outputSize` / `viewSize` / `keepAspect` | 保存する画像の大きさ（`canvas.output`。なければ表示範囲と同じ）と、縦横比を保ったもう一辺（FR-EDIT-24, ADR-0018） |
 | `migrateDocument` | 読み込んだ JSON を検証し、現行の `SCHEMA_VERSION` にそろえる |
 | `prepareForSave` / `recordPiiApplied` | 保存前の整理（未採用の AI 提案を除くなど）と、PII 加工の記録 |
 | `buildFileName` / `parseFileName` / `renameForSave` | 保存ファイル名（`<名前>.harie.jpg` など）の組み立てと解釈 |

@@ -12,11 +12,12 @@ import {
 } from "@/lib/capture";
 import { handlePageMessage, PageMessageSchema, syncPageScripts } from "@/lib/page-fetch";
 import { onPageSettingsChanged } from "@/lib/page-settings";
+import { MAX_SELECT_SIDE } from "@/lib/selection";
 import type { CssRect } from "@/lib/snapshot";
 
 type Message =
   | { type: "harie:start"; mode: CaptureMode; tabId: number; locale?: Locale }
-  | { type: "harie:selected"; rect: CssRect }
+  | { type: "harie:selected"; rect: CssRect; size?: { width: number; height: number } }
   | { type: "harie:cancelled" };
 
 async function start(
@@ -49,7 +50,18 @@ export default defineBackground(() => {
       // 選択範囲は外部（ページ側）から来る値なので、数値であることを確かめてから使う
       const r = message.rect;
       if ([r?.x, r?.y, r?.w, r?.h].every((v) => typeof v === "number" && Number.isFinite(v))) {
-        void finishCapture(sender.tab, r).catch((e) => console.error(captureErrorMessage(e)));
+        // 数値で決めた大きさ（FR-CAP-10）も、1〜上限の整数であるときだけ使う
+        const s = message.size;
+        const size =
+          s !== undefined &&
+          [s?.width, s?.height].every(
+            (v) => Number.isInteger(v) && (v as number) >= 1 && (v as number) <= MAX_SELECT_SIDE,
+          )
+            ? { width: s.width, height: s.height }
+            : null;
+        void finishCapture(sender.tab, r, new Date(), size).catch((e) =>
+          console.error(captureErrorMessage(e)),
+        );
       }
     }
     return false;

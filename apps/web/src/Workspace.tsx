@@ -25,6 +25,7 @@ import { IMAGE_ACCEPT_ATTR, prepareImage } from "./import-image";
 import { mismatchMessage, type Opened } from "./load";
 import { Modal } from "./Modal";
 import { useWebMessages } from "./messages";
+import { ResizeDialog } from "./ResizeDialog";
 import { SaveFormatMenu, SaveFormatMenuItems } from "./SaveFormatMenu";
 import { buildSaveFile, type Saved } from "./save";
 import { addUnsaved, masksInImage, removeUnsaved, type UnsavedMasks } from "./unsaved-masks";
@@ -92,6 +93,7 @@ export function Workspace({
   // 保存するまでは、適用したマスクを外せるように加工前の画像を持つ（ADR-0009）
   const [unsaved, setUnsaved] = useState<UnsavedMasks | null>(null);
   const [confirmOpen, setConfirmOpen] = useState(false);
+  const [resizeOpen, setResizeOpen] = useState(false);
   // 画像を差し替えたら、キャプチャ時の DOM 情報は今の画像と合わないので使わない
   const [rebased, setRebased] = useState(false);
   const elements = useMemo(
@@ -369,12 +371,29 @@ export function Workspace({
             shortcut: formatShortcut("replaceImage", mac),
             placement: "start",
           },
+          {
+            icon: "resize",
+            label: m.resize.button,
+            onSelect: () => setResizeOpen(true),
+            disabled: saving,
+            placement: "start",
+          },
           ...actions,
         ]}
         menu={<SaveFormatMenuItems value={format} onChange={setFormat} disabled={saving} />}
       >
         <SaveFormatMenu value={format} onChange={setFormat} disabled={saving} />
       </Header>
+      <ResizeDialog
+        open={resizeOpen}
+        doc={state.doc}
+        onClose={() => setResizeOpen(false)}
+        onApply={(size) => {
+          setResizeOpen(false);
+          dispatch({ type: "apply", ops: [{ op: "setOutputSize", size }] });
+          setStatus(size === null ? m.resize.restored : m.resize.done(size.width, size.height));
+        }}
+      />
       <Modal open={confirmOpen} label={m.open.button} onClose={() => setConfirmOpen(false)}>
         <h2>{m.open.confirmTitle}</h2>
         <p>

@@ -1,7 +1,7 @@
 // 保存する画像の仕上げ（FR-FILE-16 / ADR-0017）
 import { applyOps, createDocument, type Frame, type HarieDocument } from "@harie/model";
 import { describe, expect, it } from "vitest";
-import { buildFramePreview, outputArea, outputSize, resolveFrame } from "./frame";
+import { buildFramePreview, outputArea, resolveFrame, savedImageSize } from "./frame";
 import { buildSvg } from "./svg";
 import { fixture, nodeRenderer } from "./test-utils/node-renderer";
 
@@ -44,15 +44,15 @@ describe("仕上げ FR-FILE-16", () => {
 
   it("保存する画像は余白の分だけ大きく、注釈の座標の範囲も外へ広がる", () => {
     const d = doc(64, 40, { padding: 10 });
-    expect(outputSize(d)).toEqual({ width: 84, height: 60 });
+    expect(savedImageSize(d)).toEqual({ width: 84, height: 60 });
     expect(outputArea(d)).toEqual({ x: -10, y: -10, w: 84, h: 60 });
     expect(outputArea(doc(64, 40))).toEqual({ x: 0, y: 0, w: 64, h: 40 });
   });
 
-  it("buildSvg は frame を指定したときだけ包む（エディタの表示は変わらない）", () => {
+  it("buildSvg は保存用（applyOutputSize）のときだけ包む（エディタの表示は変わらない）", () => {
     const d = doc(64, 40, { padding: 10, shadow: { blur: 8 } });
     expect(buildSvg(d)).toBe(buildSvg(doc(64, 40)));
-    const framed = buildSvg(d, { frame: true });
+    const framed = buildSvg(d, { applyOutputSize: true });
     expect(framed).toMatch(/^<svg [^>]*width="84" height="60"/);
     expect(framed).toContain('x="10" y="10" width="64" height="40" viewBox="0 0 64 40"');
     expect(framed).toContain("feGaussianBlur");
@@ -71,9 +71,9 @@ describe("仕上げ FR-FILE-16", () => {
     expect(px(framed, 6 + 20, 6 + 20)).toEqual(px(plain, 20, 20));
   });
 
-  it("frame: false なら仕上げを付けない（AI に見せる画像など）", async () => {
+  it("atOutputSize: false なら仕上げを付けない（AI に見せる画像など）", async () => {
     const r = await nodeRenderer();
-    const p = r.renderPixels({ doc: doc(64, 40, { padding: 6 }), base, frame: false });
+    const p = r.renderPixels({ doc: doc(64, 40, { padding: 6 }), base, atOutputSize: false });
     expect([p.width, p.height]).toEqual([64, 40]);
   });
 
@@ -125,5 +125,18 @@ describe("仕上げ FR-FILE-16", () => {
     const bordered = buildFramePreview(doc(64, 40, { border: { width: 1 } }));
     expect(bordered?.over).toContain('stroke="#D4D4D8"');
     expect(buildFramePreview(doc(64, 40))).toBeNull();
+  });
+});
+
+describe("書き出しの大きさ（FR-EDIT-24）と仕上げ", () => {
+  it("書き出しを縮めると、仕上げも同じ倍率で縮めて外側に付ける（ADR-0018）", async () => {
+    const d = doc(64, 40, { padding: 10, background: "#336699" });
+    const r0 = applyOps(d, [{ op: "setOutputSize", size: { width: 32, height: 20 } }]);
+    if (!r0.ok) throw new Error(r0.error.message);
+    expect(savedImageSize(r0.value)).toEqual({ width: 42, height: 30 });
+    const r = await nodeRenderer();
+    const p = r.renderPixels({ doc: r0.value, base });
+    expect([p.width, p.height]).toEqual([42, 30]);
+    expect(px(p, 2, 2)).toEqual([0x33, 0x66, 0x99, 255]);
   });
 });

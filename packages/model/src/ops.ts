@@ -5,9 +5,9 @@ import { err, ok, type Result } from "./result";
 import {
   type Annotation,
   AnnotationSchema,
-  type Frame,
   FrameSchema,
   type HarieDocument,
+  OutputSizeSchema,
 } from "./schema";
 
 export const OpSchema = z.discriminatedUnion("op", [
@@ -20,6 +20,8 @@ export const OpSchema = z.discriminatedUnion("op", [
   z.object({ op: z.literal("remove"), id: z.string() }),
   z.object({ op: z.literal("reorder"), id: z.string(), index: z.int() }),
   z.object({ op: z.literal("renumber") }),
+  /** 書き出しの大きさを変える（FR-EDIT-24）。null で元の大きさに戻す。注釈の座標は変えない */
+  z.object({ op: z.literal("setOutputSize"), size: OutputSizeSchema.nullable() }),
   /** 保存する画像の仕上げを置き換える（FR-FILE-16）。null で外す */
   z.object({ op: z.literal("frame"), frame: FrameSchema.nullable() }),
 ]);
@@ -31,9 +33,22 @@ function clampIndex(index: number, length: number): number {
   return Math.max(0, Math.min(index, length));
 }
 
-function applyOne(
+function applyOne(doc: HarieDocument, op: Op): Result<HarieDocument> {
+  if (op.op === "setOutputSize") {
+    const { output: _, ...canvas } = doc.canvas;
+    return ok({ ...doc, canvas: op.size === null ? canvas : { ...canvas, output: op.size } });
+  }
+  if (op.op === "frame") {
+    const { frame: _, ...rest } = doc;
+    return ok(op.frame === null ? rest : { ...rest, frame: op.frame });
+  }
+  const result = applyToAnnotations(doc.annotations, op);
+  return result.ok ? ok({ ...doc, annotations: result.value }) : result;
+}
+
+function applyToAnnotations(
   annotations: Annotation[],
-  op: Exclude<Op, { op: "frame" }>,
+  op: Exclude<Op, { op: "setOutputSize" | "frame" }>,
 ): Result<Annotation[]> {
   switch (op.op) {
     case "add": {
@@ -82,24 +97,13 @@ export function applyOps(
   doc: HarieDocument,
   ops: readonly unknown[],
 ): Result<HarieDocument, OpError> {
-  let annotations = doc.annotations;
-  let frame: Frame | null | undefined = doc.frame;
+  let next = doc;
   for (const [opIndex, raw] of ops.entries()) {
     const parsed = OpSchema.safeParse(raw);
     if (!parsed.success) return err({ opIndex, message: z.prettifyError(parsed.error) });
-    if (parsed.data.op === "frame") {
-      frame = parsed.data.frame;
-      continue;
-    }
-    const result = applyOne(annotations, parsed.data);
+    const result = applyOne(next, parsed.data);
     if (!result.ok) return err({ opIndex, message: result.error });
-    annotations = result.value;
+    next = result.value;
   }
-  if (frame === doc.frame) return ok({ ...doc, annotations });
-  const { frame: _old, ...rest } = doc;
-  return ok(
-    frame === null || frame === undefined
-      ? { ...rest, annotations }
-      : { ...rest, annotations, frame },
-  );
+  return ok(next);
 }

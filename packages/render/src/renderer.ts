@@ -48,8 +48,11 @@ export type RenderInput = {
   /** JPEG 品質（1〜100）。既定 90 */
   quality?: number;
   includeSuggested?: boolean;
-  /** ドキュメントの仕上げ（FR-FILE-16）を付けるか。既定 true。MCP で AI に見せる画像など、注釈の座標と画像を合わせたいときは false */
-  frame?: boolean;
+  /**
+   * 書き出しの大きさ（FR-EDIT-24）で描き、仕上げ（FR-FILE-16）を付けるか。既定 true（保存・コピーする画像）。
+   * false はベース画像と同じ大きさで、仕上げも付けずに描く（注釈の座標と画像のピクセルを合わせて見せたいとき。MCP のプレビュー）
+   */
+  atOutputSize?: boolean;
 };
 
 export type Pixels = { width: number; height: number; data: Uint8Array };
@@ -151,13 +154,14 @@ export async function createRenderer(init: RendererInit): Promise<Renderer> {
     buildSvg(input.doc, {
       baseImageHref: toDataUri(input.base.bytes, input.base.mediaType),
       includeSuggested: input.includeSuggested ?? false,
-      frame: input.frame ?? true,
+      // 保存・コピーする画像は書き出しの大きさで描く（FR-EDIT-24）
+      applyOutputSize: input.atOutputSize ?? true,
     });
 
   /** 仕上げの余白を透過にしていて、透過を残せる形式か */
   const transparentFrame = (input: Omit<RenderInput, "quality">) =>
     input.output === "png" &&
-    (input.frame ?? true) &&
+    (input.atOutputSize ?? true) &&
     resolveFrame(input.doc.frame)?.background === null;
 
   const encode = async (

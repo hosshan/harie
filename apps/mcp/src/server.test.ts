@@ -2,7 +2,7 @@ import { mkdirSync, mkdtempSync, readFileSync, symlinkSync, writeFileSync } from
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { GUIDE_LAYOUT_RULES, GUIDE_TARGET_RULE, GUIDE_TEXT_RULES } from "@harie/ai/guide";
-import { readHarie } from "@harie/format";
+import { readHarie, readImageSize } from "@harie/format";
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { InMemoryTransport } from "@modelcontextprotocol/sdk/inMemory.js";
 import type { CallToolResult } from "@modelcontextprotocol/sdk/types.js";
@@ -58,8 +58,8 @@ describe("harie MCP server", () => {
     const edit = JSON.stringify(tools.find((t) => t.name === "harie_edit")?.inputSchema);
     // style は注釈の種類ごとに繰り返さず、1 か所の定義を参照する
     expect(edit.match(/"strokeWidth"/g)).toHaveLength(1);
-    // 12,000 から仕上げの frame 操作（FR-FILE-16）の分だけ広げた
-    expect(JSON.stringify(tools).length).toBeLessThan(12_500);
+    // 12,000 から、保存する画像の大きさ（setOutputSize、FR-EDIT-24）と仕上げ（frame、FR-FILE-16）の操作の分だけ広げた
+    expect(JSON.stringify(tools).length).toBeLessThan(13_000);
   });
 
   it("FR-MCP-08: AI 提案と同じ手引きをプロンプトと instructions で渡す", async () => {
@@ -142,6 +142,22 @@ describe("harie MCP server", () => {
     });
     expect(replaced.json()).toMatchObject({ revision: 3 });
     expect(replaced.image).toBeUndefined();
+  });
+
+  it("FR-EDIT-24: setOutputSize で保存する画像の大きさを変え、返す画像は座標と同じ大きさのまま", async () => {
+    const { root, call } = await setup();
+    await call("harie_create", { imagePath: "screen.png" });
+    const edited = await call("harie_edit", {
+      path: "screen.harie.png",
+      ops: [{ op: "setOutputSize", size: { width: 32, height: 20 } }],
+    });
+    expect(edited.json()).toMatchObject({
+      canvas: { width: 64, height: 40, output: { width: 32, height: 20 } },
+    });
+    const shown = readImageSize(Buffer.from(edited.image?.data ?? "", "base64"));
+    expect(shown).toMatchObject({ width: 64, height: 40 });
+    const saved = new Uint8Array(readFileSync(join(root, "screen.harie.png")));
+    expect(readImageSize(saved)).toMatchObject({ width: 32, height: 20 });
   });
 
   it("ADR-0011: anchor を付けた番号は、枠の左上の外側の位置で保存する", async () => {

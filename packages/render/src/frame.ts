@@ -1,6 +1,6 @@
 // 保存する画像の仕上げ（FR-FILE-16 / ADR-0017）。画像のまわりに余白・背景・影・線・角丸を付ける。
 // 注釈の座標は変えず、描いた画像（buildSvg の出力）を外側の SVG で包む
-import type { Frame, HarieDocument } from "@harie/model";
+import { type Frame, type HarieDocument, outputSize as modelOutputSize } from "@harie/model";
 import type { Bounds } from "./svg";
 import { attrs, n } from "./xml";
 
@@ -63,10 +63,33 @@ export function outputArea(doc: HarieDocument): Bounds {
   return { x: view.x - p, y: view.y - p, w: view.w + 2 * p, h: view.h + 2 * p };
 }
 
-/** 保存する画像の大きさ（px）。仕上げの余白を含む */
-export function outputSize(doc: HarieDocument): { width: number; height: number } {
-  const a = outputArea(doc);
-  return { width: a.w, height: a.h };
+/**
+ * 書き出しの大きさ（FR-EDIT-24）の、画像（表示範囲）に対する倍率。仕上げの値（画像のピクセル）はこの倍率で縮めて描く（ADR-0018）。
+ * 縦横で違うときは小さいほう
+ */
+export function outputScale(doc: HarieDocument): number {
+  const view = viewOf(doc);
+  const out = modelOutputSize(doc);
+  return Math.min(out.width / view.w, out.height / view.h);
+}
+
+/** 仕上げの値を倍率で縮める・広げる */
+export function scaleFrame(f: ResolvedFrame, k: number): ResolvedFrame {
+  if (k === 1) return f;
+  return {
+    ...f,
+    padding: f.padding * k,
+    radius: f.radius * k,
+    border: f.border === null ? null : { ...f.border, width: f.border.width * k },
+    shadow: f.shadow === null ? null : { ...f.shadow, blur: f.shadow.blur * k, y: f.shadow.y * k },
+  };
+}
+
+/** 保存する画像の大きさ（px）。書き出しの大きさ（FR-EDIT-24）に、同じ倍率で縮めた仕上げの余白を足す */
+export function savedImageSize(doc: HarieDocument): { width: number; height: number } {
+  const out = modelOutputSize(doc);
+  const p = (resolveFrame(doc.frame)?.padding ?? 0) * outputScale(doc);
+  return { width: out.width + 2 * p, height: out.height + 2 * p };
 }
 
 /** 仕上げで、画像の下に敷くもの（背景・影）と上に重ねるもの（線）、画像の切り抜き */

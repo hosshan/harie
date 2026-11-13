@@ -29,3 +29,33 @@ export function elementRect(
     1,
   );
 }
+
+/** 範囲の大きさを数値で決めたとき（FR-CAP-10）の一辺の上限（画像ピクセル） */
+export const MAX_SELECT_SIDE = 8192;
+
+/** 入力欄の文字を一辺の大きさ（画像ピクセル）にする。1〜上限の整数でなければ null */
+export function parseSelectSide(text: string): number | null {
+  const t = text.trim();
+  if (!/^\d+$/.test(t)) return null;
+  const v = Number(t);
+  return v >= 1 && v <= MAX_SELECT_SIDE ? v : null;
+}
+
+/**
+ * 大きさを決めた範囲（FR-CAP-10）を、カーソルの位置を左上にして置く。はみ出す分は内側へ寄せる。
+ * size は画像ピクセルなので、CSS ピクセルに直して置く。ビューポートに収まらなければ null
+ */
+export function fixedRect(
+  cursor: { x: number; y: number },
+  size: { width: number; height: number },
+  viewport: { width: number; height: number },
+  scale: number,
+): CssRect | null {
+  const w = size.width / scale;
+  const h = size.height / scale;
+  // 丸めで 1px はみ出すくらいは許す（ビューポートいっぱいの大きさを入れたとき）
+  if (w > viewport.width + 0.5 || h > viewport.height + 0.5) return null;
+  const x = Math.max(0, Math.min(cursor.x, viewport.width - w));
+  const y = Math.max(0, Math.min(cursor.y, viewport.height - h));
+  return { x, y, w: Math.min(w, viewport.width), h: Math.min(h, viewport.height) };
+}
