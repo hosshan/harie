@@ -2,15 +2,15 @@ import { describe, expect, it, vi } from "vitest";
 
 vi.mock("wxt/browser", () => ({ browser: {} }));
 
-const { countdown, DEFAULT_DELAY, parseDelay } = await import("./timer");
+const { countdown, TIMER_SECONDS, timerDelay } = await import("./timer");
 
 describe("FR-CAP-11: 遅延キャプチャ", () => {
-  it("待ち時間は 3・5・10 秒のどれか。知らない値は既定（3 秒）にする", () => {
-    expect(parseDelay(5)).toBe(5);
-    expect(parseDelay(10)).toBe(10);
-    expect(parseDelay(60)).toBe(DEFAULT_DELAY);
-    expect(parseDelay("5")).toBe(DEFAULT_DELAY);
-    expect(parseDelay(undefined)).toBe(3);
+  it("タイマーをオンにしたときだけ待つ（待ち時間は 5 秒に決めてあり、選ばせない）", () => {
+    expect(TIMER_SECONDS).toBe(5);
+    expect(timerDelay(true)).toBe(5);
+    expect(timerDelay(false)).toBe(0);
+    expect(timerDelay("true")).toBe(0);
+    expect(timerDelay(undefined)).toBe(0);
   });
 
   it("1 秒ごとに残りを知らせ、最後に 0 を知らせる", async () => {

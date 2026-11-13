@@ -74,20 +74,25 @@ export async function startCapture(
   worker: Worker,
   target: Page,
   mode: "visible" | "region" | "element",
+  timer = false,
 ): Promise<{ ok: boolean; message?: string }> {
   const url = target.url();
   return worker.evaluate(
-    async ({ mode, url }) => {
+    async ({ mode, url, timer }) => {
       const [tab] = await chrome.tabs.query({ url });
       if (tab?.id === undefined) throw new Error("tab not found");
       await chrome.tabs.update(tab.id, { active: true });
       const start = (
         globalThis as unknown as {
-          harieStart: (m: string, id: number) => Promise<{ ok: boolean; message?: string }>;
+          harieStart: (
+            m: string,
+            id: number,
+            options: { timer: boolean },
+          ) => Promise<{ ok: boolean; message?: string }>;
         }
       ).harieStart;
-      return start(mode, tab.id);
+      return start(mode, tab.id, { timer });
     },
-    { mode, url },
+    { mode, url, timer },
   );
 }

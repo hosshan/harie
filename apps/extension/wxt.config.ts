@@ -28,8 +28,6 @@ export default defineConfig({
         suggested_key: { default: "Alt+Shift+S" },
         description: "__MSG_captureVisible__",
       },
-      // 遅延キャプチャ（FR-CAP-11）。既定のキーは付けない（chrome://extensions/shortcuts で割り当てる）
-      "capture-delayed": { description: "__MSG_captureDelayed__" },
     },
     icons: { 16: "icon/16.png", 32: "icon/32.png", 48: "icon/48.png", 128: "icon/128.png" },
   },

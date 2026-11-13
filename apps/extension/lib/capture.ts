@@ -34,30 +34,61 @@ type Tab = {
   url?: string | undefined;
 };
 
-/** 範囲・要素選択のオーバーレイを出す。選び終えると content からメッセージが来て finishCapture に進む */
-export async function startSelection(tab: Tab, mode: "region" | "element"): Promise<void> {
+/**
+ * 撮った瞬間の画面と DOM 情報。タイマーで撮った画面を止め、その上で範囲・要素を選ぶとき（FR-CAP-11）は、
+ * オーバーレイ（content script の隔離された環境）に預け、選び終えたときに範囲と一緒に返してもらう
+ * （選んでいる間に service worker が止まっても失われないように）
+ */
+export type Frame = { dataUrl: string; raw: RawSnapshot | null };
+
+/** ページから返ってきた止めた画面を確かめる。形が違えば null（撮り直さず、失敗にする） */
+export function parseFrame(value: unknown): Frame | null {
+  if (typeof value !== "object" || value === null) return null;
+  const v = value as { dataUrl?: unknown; raw?: unknown };
+  if (typeof v.dataUrl !== "string" || !v.dataUrl.startsWith("data:image/png;base64,")) return null;
+  const raw = v.raw as RawSnapshot | null | undefined;
+  const width = raw?.viewport?.width;
+  const valid =
+    raw !== null &&
+    typeof raw === "object" &&
+    typeof width === "number" &&
+    Number.isFinite(width) &&
+    width > 0 &&
+    Array.isArray(raw.elements);
+  // DOM 情報は補助なので、形が合わなければ画像だけにする（中身は toImageSnapshot が zod で確かめる）
+  return { dataUrl: v.dataUrl, raw: valid ? raw : null };
+}
+
+/**
+ * 範囲・要素選択のオーバーレイを出す。選び終えると content からメッセージが来て finishCapture に進む。
+ * frame を渡すと、その画面を止めてオーバーレイの背景に出し、その上で選ぶ（タイマーのあとでメニューが閉じても困らない）。
+ * 要素は、今の DOM ではなく撮ったときの要素の位置で選ぶ
+ */
+export async function startSelection(
+  tab: Tab,
+  mode: "region" | "element",
+  frame: Frame | null = null,
+): Promise<void> {
   const tabId = requireTabId(tab);
   await browser.scripting.executeScript({
     target: { tabId },
-    func: (m: string, hint: string) => {
-      const w = window as Window & { __harieSelectMode?: string; __harieSelectHint?: string };
+    func: (m: string, hint: string, f: Frame | null) => {
+      const w = window as Window & {
+        __harieSelectMode?: string;
+        __harieSelectHint?: string;
+        __harieFrozen?: Frame | null;
+      };
       w.__harieSelectMode = m;
       w.__harieSelectHint = hint;
+      w.__harieFrozen = f;
     },
-    args: [mode, mode === "region" ? messages().dragHint : messages().clickHint],
+    args: [mode, mode === "region" ? messages().dragHint : messages().clickHint, frame],
   });
   await browser.scripting.executeScript({ target: { tabId }, files: ["/select.js"] });
 }
 
-/**
- * 可視範囲を撮る（FR-CAP-01）。crop を渡すとその範囲（CSS ピクセル）に切り抜く（FR-CAP-02）。
- * 撮影と同時に DOM 情報を取る（FR-CAP-03）。取れないページ（PDF ビューアなど）では画像だけにする
- */
-export async function finishCapture(
-  tab: Tab,
-  crop: CssRect | null,
-  now = new Date(),
-): Promise<string> {
+/** 今の画面を撮る（DOM 情報も一緒に）。取れないページ（PDF ビューアなど）では DOM 情報なし */
+export async function grabFrame(tab: Tab): Promise<Frame> {
   const tabId = requireTabId(tab);
   let raw: RawSnapshot | null = null;
   try {
@@ -71,10 +102,22 @@ export async function finishCapture(
   }
   const dataUrl = await browser.tabs.captureVisibleTab(
     tab.windowId ?? browser.windows.WINDOW_ID_CURRENT,
-    {
-      format: "png",
-    },
+    { format: "png" },
   );
+  return { dataUrl, raw };
+}
+
+/**
+ * 可視範囲を撮る（FR-CAP-01）。crop を渡すとその範囲（CSS ピクセル）に切り抜く（FR-CAP-02）。
+ * 撮影と同時に DOM 情報を取る（FR-CAP-03）。frame を渡すと撮り直さずにその画面を使う（FR-CAP-11）
+ */
+export async function finishCapture(
+  tab: Tab,
+  crop: CssRect | null,
+  now = new Date(),
+  frame?: Frame,
+): Promise<string> {
+  const { dataUrl, raw } = frame ?? (await grabFrame(tab));
   let image = await (await fetch(dataUrl)).blob();
   const bitmap = await createImageBitmap(image);
   const full = { width: bitmap.width, height: bitmap.height };

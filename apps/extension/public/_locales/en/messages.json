@@ -10,8 +10,5 @@
   },
   "captureVisible": {
     "message": "Capture the visible area"
-  },
-  "captureDelayed": {
-    "message": "Capture the visible area with a timer"
   }
 }

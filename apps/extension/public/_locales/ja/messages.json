@@ -10,8 +10,5 @@
   },
   "captureVisible": {
     "message": "見えている範囲をキャプチャする"
-  },
-  "captureDelayed": {
-    "message": "タイマーで見えている範囲をキャプチャする"
   }
 }

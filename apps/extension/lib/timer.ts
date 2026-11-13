@@ -1,28 +1,17 @@
-// 遅延キャプチャ（タイマー, FR-CAP-11）。押してから数秒待って見えている範囲を撮る。
+// 遅延キャプチャ（タイマー, FR-CAP-11）。押してから数秒待って撮る。範囲・要素は、待ち終えた画面を止めてその上で選ぶ。
 // 待つ間にメニューを開いたりツールチップを出したりできるよう、ポップアップを閉じ、service worker で数える。
 // 残りの秒数はツールバーのアイコンのバッジに出す（ページに何かを出すと写り込み、ホバーも外れるため）
 import { browser } from "wxt/browser";
 
-/** 選べる待ち時間（秒）。service worker が待つ間に止められないよう、長くても 10 秒にする */
-export const DELAY_CHOICES = [3, 5, 10] as const;
-export type CaptureDelay = (typeof DELAY_CHOICES)[number];
-export const DEFAULT_DELAY: CaptureDelay = 3;
+/**
+ * タイマーの待ち時間（秒）。選ばせず 1 つに決める（選ぶ手間を増やさない）。
+ * ツールバーから手を戻してメニューを開くのに足り、service worker が待つ間に止められない長さ
+ */
+export const TIMER_SECONDS = 5;
 
-const KEY = "harie.captureDelay";
-
-/** 保存された値・メッセージで来た値を、選べる待ち時間に直す。知らない値は既定にする */
-export function parseDelay(raw: unknown): CaptureDelay {
-  return DELAY_CHOICES.find((d) => d === raw) ?? DEFAULT_DELAY;
-}
-
-/** 待ち時間はポップアップで選び、ショートカットでも同じ値を使う（service worker は localStorage を読めない） */
-export async function loadDelay(): Promise<CaptureDelay> {
-  const got = await browser.storage.local.get(KEY);
-  return parseDelay(got[KEY]);
-}
-
-export function saveDelay(delay: CaptureDelay): Promise<void> {
-  return browser.storage.local.set({ [KEY]: delay });
+/** メッセージで来たタイマーの指定を秒に直す。オンなら TIMER_SECONDS、それ以外は 0（待たない） */
+export function timerDelay(timer: unknown): number {
+  return timer === true ? TIMER_SECONDS : 0;
 }
 
 type Wait = (ms: number, signal: AbortSignal) => Promise<void>;
@@ -75,7 +64,7 @@ export function cancelTimer(): boolean {
 
 /**
  * 待ってから capture を呼ぶ。待っている間に別のタイマーを始めたら、前のものは止める。
- * 待ち終えたときに撮るタブが前面にないと、別のタブを撮ってしまうので撮らない
+ * 待ち終えたときに撮るタブが前面にないと、別のタブを撮ってしまうので撮らない。capture の失敗もバッジで知らせる
  */
 export async function runTimer(
   tabId: number,
