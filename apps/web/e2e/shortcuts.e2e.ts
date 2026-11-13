@@ -1,5 +1,5 @@
 import { readFileSync } from "node:fs";
-import { expect, type Page, test } from "@playwright/test";
+import { expect, type FileChooser, type Page, test } from "@playwright/test";
 
 const fixture = readFileSync(
   new URL("../../../packages/format/fixtures/large-base.jpg", import.meta.url),
@@ -161,10 +161,12 @@ test("FR-EDIT-12: 画像を開く前も Ctrl / ⌘ + O で開け、Ctrl / ⌘ + 
     "title",
     "画像を差し替える（Ctrl+Shift+O）",
   );
-  const [chooser] = await Promise.all([
-    page.waitForEvent("filechooser"),
-    page.keyboard.press("ControlOrMeta+Shift+O"),
-  ]);
+  // filechooser を待ち始めてからキーを押すと、ブラウザ側で横取りの設定が間に合わず
+  // ファイル選択の画面が出ても拾えないことがある（CI で時々失敗した）。先に listener を付けて横取りを有効にしておく
+  const chooserPromise = new Promise<FileChooser>((resolve) => page.once("filechooser", resolve));
+  await page.evaluate(() => new Promise((r) => requestAnimationFrame(r)));
+  await page.keyboard.press("ControlOrMeta+Shift+O");
+  const chooser = await chooserPromise;
   await chooser.setFiles({ name: "new.jpg", mimeType: "image/jpeg", buffer: fixture });
   await expect(page.getByRole("status")).toContainText("画像を差し替えました");
 
