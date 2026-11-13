@@ -1,7 +1,15 @@
-// 設定ページ。ページ上の Harie 画像（FR-FILE-12, FR-FILE-13）のボタンを選ぶ。
+// 設定ページ。表示言語（NFR-I18N-01）と、ページ上の Harie 画像（FR-FILE-12, FR-FILE-13）のボタンを選ぶ。
 // ポップアップを簡単にするため、ポップアップから移した（ポップアップの「画像ガイドの表示設定」・chrome://extensions の「拡張機能のオプション」から開く）
-import { applyDocumentLang, getLocale } from "@harie/editor/locale";
+import {
+  applyDocumentLang,
+  getLocale,
+  isLocale,
+  LOCALE_NAMES,
+  LOCALES,
+  setLocale,
+} from "@harie/editor/locale";
 import { browser } from "wxt/browser";
+import { saveExtensionLocale, shareStoredLocale } from "@/lib/locale-store";
 import { extensionMessages } from "@/lib/messages";
 import { normalizeSite, PAGE_ORIGINS } from "@/lib/page-image";
 import {
@@ -19,6 +27,7 @@ document.title = m.settings;
 for (const el of document.querySelectorAll<HTMLElement>("[data-message]")) {
   const key = el.dataset.message as
     | "settings"
+    | "language"
     | "popupNote"
     | "pageTitle"
     | "pageEdit"
@@ -29,6 +38,19 @@ for (const el of document.querySelectorAll<HTMLElement>("[data-message]")) {
     | "pageNote";
   el.textContent = m[key];
 }
+
+// 表示言語。選ぶと、ポップアップ・エディタ・撮るときの案内・ページ上のボタンもこの言語になる。
+// 言語の名前はその言語自身で書く（今の表示が読めない人でも選べるように）
+const languageSelect = document.querySelector("#language") as HTMLSelectElement;
+for (const l of LOCALES) languageSelect.add(new Option(LOCALE_NAMES[l], l, false, l === locale));
+void shareStoredLocale();
+languageSelect.addEventListener("change", async () => {
+  const next = languageSelect.value;
+  if (!isLocale(next)) return;
+  setLocale(next);
+  await saveExtensionLocale(next);
+  location.reload();
+});
 
 // ページ上の Harie 画像（FR-FILE-12, FR-FILE-13）。出すボタンと、ボタンを出すサイト（空ならすべて）を選ぶ。
 // ボタンをオンにしたときだけ、画像を読むためのサイトの権限を求める。設定か権限が変わると background がページ用のスクリプトを登録し直す

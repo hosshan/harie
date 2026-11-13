@@ -2,12 +2,14 @@
 // サイト上の画像ガイドの設定は、ポップアップを簡単にするため設定ページ（entrypoints/options）に置く
 import { applyDocumentLang, getLocale } from "@harie/editor/locale";
 import { browser } from "wxt/browser";
+import { shareStoredLocale } from "@/lib/locale-store";
 import { extensionMessages } from "@/lib/messages";
 
 // 言語はエディタの設定と同じ（拡張のページどうしは localStorage を共有する）
 const locale = getLocale();
 const m = extensionMessages(locale);
 applyDocumentLang(locale);
+void shareStoredLocale();
 for (const el of document.querySelectorAll<HTMLElement>("[data-message]")) {
   const key = el.dataset.message as
     | "visible"

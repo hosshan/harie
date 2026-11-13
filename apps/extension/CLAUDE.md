@@ -2,7 +2,7 @@
 
 Chrome 拡張（WXT, Manifest V3）。表示中のタブをキャプチャし、拡張の中のエディタページで編集・保存する。構成と権限は [integrations.md 1 章](../../docs/03-design/integrations.md)。
 
-- 権限は `activeTab`・`scripting`・`downloads`・`storage` だけ（NFR-SEC-03。`storage` はページ上のボタンの設定用）。増やすときは `STORE.md` の説明も書き、PR で理由を示す。`host_permissions` は E2E 用ビルド（`HARIE_E2E=1`）にだけ付ける。ページ上の Harie 画像（`entrypoints/page.ts`）のサイト権限は `optional_host_permissions` で、設定ページ（`entrypoints/options/`）でオンにしたときだけ求め、background が `registerContentScripts` で許可されたサイトにだけ入れる（integrations.md 1.5）。
+- 権限は `activeTab`・`scripting`・`downloads`・`storage` だけ（NFR-SEC-03。`storage` はページ上のボタンの設定と表示言語用）。増やすときは `STORE.md` の説明も書き、PR で理由を示す。`host_permissions` は E2E 用ビルド（`HARIE_E2E=1`）にだけ付ける。ページ上の Harie 画像（`entrypoints/page.ts`）のサイト権限は `optional_host_permissions` で、設定ページ（`entrypoints/options/`）でオンにしたときだけ求め、background が `registerContentScripts` で許可されたサイトにだけ入れる（integrations.md 1.5）。
 - ページ用スクリプトから来るメッセージは zod で確かめる。説明文は content script の中だけに持ち、DOM に書かない。ページ用スクリプトは小さく保つ（zod・描画を含めない）。`@harie/model` は `@harie/model/file-name` だけを読み、注釈の範囲の計算は service worker 側（`lib/page-copy.ts`）で行う。
 - ページに注入するコード（`lib/collect.ts` の `collectDomSnapshot`、`entrypoints/select.ts`）はページの中で動く。`collectDomSnapshot` は関数ごと送るので、外の変数・import を使わない。
 - 選択オーバーレイは消してから撮る（写り込み防止）。ページから来る範囲は数値か確かめてから使う。
@@ -34,7 +34,8 @@ pnpm --filter @harie/extension e2e        # 配布用とテスト用をビルド
    - Alt+Shift+S（`chrome://extensions/shortcuts` で変更可）で「見えている範囲」が撮れる。
    - 保存するとダウンロードに `*.harie.png` ができ、Web 版の Harie で開くと注釈を直せる。
    - `chrome://` のページでは「このページはブラウザの制限でキャプチャできません」と出る。
-4. ポップアップの「画像ガイドの表示設定」で設定ページを開き、2 つのボタンをオンにし（サイトへのアクセス権を求められる）、次を確かめる。
+4. ポップアップの「設定」で設定ページを開き、「表示言語」を English などに変えると、設定ページがその言語で表示し直され、ポップアップ・エディタ・範囲を選ぶときの案内・ページ上のボタン（タブを開き直したあと）もその言語になる。日本語に戻して続ける。
+5. 設定ページで、2 つのボタンをオンにし（サイトへのアクセス権を求められる）、次を確かめる。
    - GitHub で `*.harie.png` のファイル（例: このリポジトリの `apps/site/src/assets/tasklane-notifications.harie.png`）を開き、カーソルを当てるまで見た目が変わらないこと。PR・コミットの差分でも同じように動く。
    - 吹き出しの枠にカーソルを当てるとその枠の上にコピーボタンが出て、その説明文がコピーできる。右上の「まとめてコピー」で番号順の説明文がコピーできる。
    - 右上の Harie のボタンを押すとエディタで開く。普通の画像には何も出ない。

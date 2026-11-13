@@ -35,7 +35,7 @@ Chrome ウェブストアに**公開**（検索に出る）で出すときに、
 
 ■ 権限とデータについて
 ・ボタンかショートカットを押したタブにだけ、そのときに限ってアクセスします。インストール時に常時のサイトへのアクセス権は求めません
-・GitHub やほかのサイトに載っている Harie 画像を見る・直す機能は任意です。設定ページ（ポップアップの「画像ガイドの表示設定」）でオンにしたときだけ、そのサイトの画像を読む権限を求めます
+・GitHub やほかのサイトに載っている Harie 画像を見る・直す機能は任意です。設定ページ（ポップアップの「設定」）でオンにしたときだけ、そのサイトの画像を読む権限を求めます
 ・開発者のサーバーはなく、画像や操作の記録を開発者が受け取ることはありません
 ・AI 機能を使うときだけ、同意を確かめてから画像を Anthropic の API に直接送ります
 
@@ -60,7 +60,7 @@ Saved images are plain JPEG / PNG files, so you can paste them anywhere. The ann
 
 ■ Permissions and data
 - Harie accesses only the tab where you pressed the button or shortcut, and only at that moment. No standing site access is requested at install
-- Viewing and editing Harie images on GitHub and other sites is optional. Only when you turn it on in the settings page ("Image guide display settings" in the popup) does Harie ask for permission to read images on those sites
+- Viewing and editing Harie images on GitHub and other sites is optional. Only when you turn it on in the settings page ("Settings" in the popup) does Harie ask for permission to read images on those sites
 - There are no developer servers; the developer never receives your images or usage records
 - Only when you use the AI features, and after you confirm, is the image sent directly to Anthropic's API
 
@@ -86,7 +86,7 @@ Open source (MIT License). Source code: https://github.com/hosshan/harie
 
 ■ 권한과 데이터
 - 버튼이나 단축키를 누른 탭에만, 그 순간에만 접근합니다. 설치할 때 상시 사이트 접근 권한을 요청하지 않습니다
-- GitHub나 다른 사이트의 Harie 이미지를 보고 고치는 기능은 선택 사항입니다. 설정 페이지(팝업의 「이미지 가이드 표시 설정」)에서 켰을 때만 해당 사이트의 이미지를 읽는 권한을 요청합니다
+- GitHub나 다른 사이트의 Harie 이미지를 보고 고치는 기능은 선택 사항입니다. 설정 페이지(팝업의 「설정」)에서 켰을 때만 해당 사이트의 이미지를 읽는 권한을 요청합니다
 - 개발자 서버가 없으며, 개발자는 이미지나 사용 기록을 받지 않습니다
 - AI 기능을 쓸 때만, 동의를 확인한 뒤 이미지를 Anthropic API로 직접 보냅니다
 
@@ -112,7 +112,7 @@ Open source (MIT License). Source code: https://github.com/hosshan/harie
 
 ■ 權限與資料
 - 只會在你按下按鈕或快捷鍵的分頁、且只在那個當下存取。安裝時不要求常駐的網站存取權限
-- 在 GitHub 和其他網站上檢視、修改 Harie 圖片的功能是選用的。只有在設定頁面（彈出視窗的「圖片教學顯示設定」）中開啟時，才會要求讀取該網站圖片的權限
+- 在 GitHub 和其他網站上檢視、修改 Harie 圖片的功能是選用的。只有在設定頁面（彈出視窗的「設定」）中開啟時，才會要求讀取該網站圖片的權限
 - 沒有開發者的伺服器，開發者不會收到你的圖片或使用紀錄
 - 只有在使用 AI 功能時，才會在你確認後把圖片直接傳送到 Anthropic 的 API
 
@@ -138,7 +138,7 @@ Open source (MIT License). Source code: https://github.com/hosshan/harie
 
 ■ 权限与数据
 - 只访问你按下按钮或快捷键的标签页，且只在那一刻访问。安装时不申请常驻的网站访问权限
-- 在 GitHub 和其他网站上查看、修改 Harie 图片的功能是可选的。只有在设置页面（弹出窗口的「图片教程显示设置」）中开启后，才会申请读取该网站图片的权限
+- 在 GitHub 和其他网站上查看、修改 Harie 图片的功能是可选的。只有在设置页面（弹出窗口的「设置」）中开启后，才会申请读取该网站图片的权限
 - 没有开发者服务器，开发者不会收到你的图片或使用记录
 - 只有在使用 AI 功能时，才会在你确认后把图片直接发送到 Anthropic 的 API
 
@@ -164,7 +164,7 @@ Las imágenes guardadas son JPEG / PNG normales, así que puedes pegarlas donde 
 
 ■ Permisos y datos
 - Harie solo accede a la pestaña en la que pulsaste el botón o el atajo, y solo en ese momento. No pide acceso permanente a los sitios al instalarse
-- Ver y editar imágenes de Harie en GitHub y otros sitios es opcional. Solo cuando lo activas en la página de ajustes («Ajustes de visualización de guías de imagen» en la ventana emergente), Harie pide permiso para leer las imágenes de esos sitios
+- Ver y editar imágenes de Harie en GitHub y otros sitios es opcional. Solo cuando lo activas en la página de ajustes («Configuración» en la ventana emergente), Harie pide permiso para leer las imágenes de esos sitios
 - No hay servidores del desarrollador; el desarrollador nunca recibe tus imágenes ni tu historial de uso
 - Solo cuando usas las funciones de IA, y después de que lo confirmes, la imagen se envía directamente a la API de Anthropic
 
@@ -190,7 +190,7 @@ As imagens salvas são JPEG / PNG comuns, então você pode colá-las em qualque
 
 ■ Permissões e dados
 - O Harie só acessa a aba em que você apertou o botão ou o atalho, e só naquele momento. Nenhum acesso permanente aos sites é pedido na instalação
-- Ver e editar imagens do Harie no GitHub e em outros sites é opcional. Só quando você ativa na página de configurações ("Configurações de exibição de guias de imagem" no pop-up) o Harie pede permissão para ler as imagens desses sites
+- Ver e editar imagens do Harie no GitHub e em outros sites é opcional. Só quando você ativa na página de configurações ("Configurações" no pop-up) o Harie pede permissão para ler as imagens desses sites
 - Não há servidores do desenvolvedor; o desenvolvedor nunca recebe suas imagens nem seu histórico de uso
 - Só quando você usa os recursos de IA, e depois de confirmar, a imagem é enviada diretamente para a API da Anthropic
 
@@ -218,7 +218,7 @@ Capture a screenshot of the current web page and turn it into an annotated image
 | `activeTab` | 利用者がツールバーのボタンかショートカットを押したタブだけを、そのときに限ってキャプチャするため。常時のサイト権限は求めない。 |
 | `scripting` | 押したタブに、範囲・要素を選ぶためのオーバーレイと、画面上の要素の位置と文字を読み取る処理を、その都度注入するため。読み取った情報は注釈の位置合わせと個人情報の候補探しにだけ使い、保存ファイルには含めない。 |
 | `downloads` | 注釈を付けた画像を、利用者のダウンロードフォルダに保存するため。 |
-| `storage` | 設定ページで選んだ「サイト上の画像ガイド」のボタンの設定（出すボタンと、ボタンを出すサイトの一覧）を、拡張の中に保存して読むため。 |
+| `storage` | 設定ページで選んだ「サイト上の画像ガイド」のボタンの設定（出すボタンと、ボタンを出すサイトの一覧）と、選んだ表示言語を、拡張の中に保存して読むため。 |
 | 任意のホスト権限（`optional_host_permissions`: `<all_urls>`） | インストール時には求めない。利用者が設定ページで「画像に編集ボタンを表示」「画像に文章のコピーボタンを表示」をオンにしたときだけ求める。画像は CDN など別のドメインから届くことが多く、それを読むために全サイトが対象になる。ボタンは利用者が指定したサイト（指定がなければすべて）でだけ出し、ページ上の Harie 画像（注釈を埋め込んだ JPEG / PNG）を見つけ、画像を読んで説明文をコピーできるようにしたり、拡張のエディタで開いたりするため。読んだ画像は端末の外に送らない。 |
 
 英語で書く場合:
@@ -228,7 +228,7 @@ Capture a screenshot of the current web page and turn it into an annotated image
 | `activeTab` | To capture only the tab where the user pressed the toolbar button or keyboard shortcut, and only at that moment. No persistent host permissions are requested. |
 | `scripting` | To inject, on demand into that tab, the overlay for choosing a region or element and a function that reads element positions and text. This information is used only to align annotations and to find personal-data candidates, and is never written into saved files. |
 | `downloads` | To save the annotated image to the user's downloads folder. |
-| `storage` | To store, inside the extension, the settings for buttons on Harie images (which buttons to show and on which sites). |
+| `storage` | To store, inside the extension, the settings for buttons on Harie images (which buttons to show and on which sites) and the chosen display language. |
 | Optional host permissions (`optional_host_permissions`: `<all_urls>`) | Not requested at install. Requested only when the user turns on "Show an edit button on images" or "Show copy buttons for text on images" on the settings page. It covers all sites because images are often served from other domains such as CDNs. Buttons appear only on the sites the user lists (all sites if none), where the extension finds Harie images (JPEG / PNG files with embedded annotations) and reads them so the user can copy their notes or open them in the extension's editor. Images read this way never leave the device. |
 
 ### リモートコード

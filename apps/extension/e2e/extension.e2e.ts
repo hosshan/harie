@@ -499,3 +499,37 @@ test("FR-CAP-11: ポップアップのタイマーはオン・オフだけで覚
   await popup.getByRole("button", { name: "やめる" }).click();
   await expect.poll(() => badge(worker)).toBe("");
 });
+
+test("NFR-I18N-01: 設定ページで表示言語を選ぶと、ポップアップ・撮るときの案内もその言語になる", async ({
+  context,
+  worker,
+  extensionId,
+  target,
+}) => {
+  const options = await context.newPage();
+  await options.goto(`chrome-extension://${extensionId}/options.html`);
+  await expect(options.getByRole("heading", { level: 1 })).toHaveText("設定");
+  const language = options.getByLabel("表示言語");
+  await expect(language).toHaveValue("ja");
+  await language.selectOption("en");
+  await expect(options.getByRole("heading", { level: 1 })).toHaveText("Settings");
+  await expect(options.getByLabel("Language")).toHaveValue("en");
+  await expect(options.getByLabel("Show an edit button on images")).toBeVisible();
+  // service worker・ページ用スクリプトにも見えるよう chrome.storage にも写す
+  expect(await worker.evaluate(() => chrome.storage.local.get("harie.locale"))).toEqual({
+    "harie.locale": "en",
+  });
+
+  const popup = await context.newPage();
+  await popup.goto(`chrome-extension://${extensionId}/popup.html`);
+  await expect(popup.getByRole("button", { name: "Visible area" })).toBeVisible();
+  await expect(popup.getByRole("button", { name: "Settings" })).toBeVisible();
+  await popup.close();
+  await options.close();
+
+  // ショートカットと同じく言語を渡さずに始めても、選んだ言語で案内する
+  await target.bringToFront();
+  await startCapture(worker, target, "region");
+  await expect(target.locator("[data-harie-overlay]")).toContainText("Drag over the area");
+  await target.keyboard.press("Escape");
+});
