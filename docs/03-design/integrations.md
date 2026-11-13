@@ -10,7 +10,7 @@
 
 | 部品 | 役割 | 実装 |
 |---|---|---|
-| ポップアップ / ショートカット（Alt+Shift+S） | キャプチャ開始（見えている範囲・範囲を選ぶ・要素を選ぶ）と、空のエディタを開く（FR-CAP-08） | `entrypoints/popup/` |
+| ポップアップ / ショートカット（Alt+Shift+S） | キャプチャ開始（見えている範囲・範囲を選ぶ・要素を選ぶ）と、空のエディタを開く（FR-CAP-08）。下端に拡張のバージョン（FR-CAP-10、`runtime.getManifest().version`） | `entrypoints/popup/` |
 | 選択オーバーレイ（押したときに注入） | 範囲・要素選択。選び終えたらオーバーレイを消してから範囲を送る。（Next）DOM テキストのダミー置換 | `entrypoints/select.ts` |
 | DOM スナップショット（押したときに注入） | 可視範囲の主要要素を取る（1.3） | `lib/collect.ts` |
 | service worker | `chrome.tabs.captureVisibleTab` で撮影し、範囲選択なら切り抜く。キャプチャを IndexedDB に置き、エディタページを開く | `entrypoints/background.ts`, `lib/capture.ts` |

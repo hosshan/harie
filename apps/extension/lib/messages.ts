@@ -38,6 +38,7 @@ const ja = {
   copyText: "この文章をコピー",
   copyAll: "文章をまとめてコピー",
   copied: "コピーしました",
+  version: (version: string) => `バージョン ${version}`,
 } as const;
 
 export type ExtensionMessages = Messages<typeof ja>;
@@ -75,6 +76,7 @@ const en: ExtensionMessages = {
   copyText: "Copy this text",
   copyAll: "Copy all text",
   copied: "Copied",
+  version: (version) => `Version ${version}`,
 };
 
 const CATALOG: Record<Locale, ExtensionMessages> = {

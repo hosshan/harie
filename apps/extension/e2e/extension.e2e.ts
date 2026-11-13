@@ -2,6 +2,10 @@ import { readFileSync } from "node:fs";
 import { readHarie } from "@harie/format";
 import { expect, startCapture, test } from "./fixtures";
 
+const pkg = JSON.parse(readFileSync(new URL("../package.json", import.meta.url), "utf8")) as {
+  version: string;
+};
+
 const editorOpened = (context: import("@playwright/test").BrowserContext, extensionId: string) =>
   context.waitForEvent("page", (p) =>
     p.url().startsWith(`chrome-extension://${extensionId}/editor.html`),
@@ -265,6 +269,12 @@ test("FR-FILE-11: 撮った画像を保存せずにクリップボードへコ�
   // 拡張のページには clipboard-read を与えられないので、書き込めたこと（失敗の表示が出ないこと）を確かめる
   await editor.getByRole("button", { name: "コピー", exact: true }).click();
   await expect(editor.getByRole("status")).toHaveText("画像をコピーしました");
+});
+
+test("FR-CAP-10: ポップアップに拡張のバージョンが出る", async ({ context, extensionId }) => {
+  const popup = await context.newPage();
+  await popup.goto(`chrome-extension://${extensionId}/popup.html`);
+  await expect(popup.getByText(`バージョン ${pkg.version}`)).toBeVisible();
 });
 
 test("FR-CAP-08: ポップアップから空のエディタを開き、貼り付けた画像を編集できる", async ({

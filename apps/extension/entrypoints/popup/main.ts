@@ -33,6 +33,10 @@ for (const el of document.querySelectorAll<HTMLElement>("[data-message]")) {
   el.textContent = m[key];
 }
 
+// 入っている版（FR-CAP-10）。ストアから更新が届いたかを確かめるため
+const version = document.querySelector<HTMLElement>(".version");
+if (version !== null) version.textContent = m.version(browser.runtime.getManifest().version);
+
 const alert = document.querySelector<HTMLElement>("[role=alert]");
 
 for (const button of document.querySelectorAll<HTMLButtonElement>("button[data-mode]")) {

@@ -34,6 +34,7 @@ export const ko: ExtensionMessages = {
   copyText: "이 글 복사",
   copyAll: "글 모두 복사",
   copied: "복사했습니다",
+  version: (version) => `버전 ${version}`,
 };
 
 export const zhTW: ExtensionMessages = {
@@ -69,6 +70,7 @@ export const zhTW: ExtensionMessages = {
   copyText: "複製這段文字",
   copyAll: "複製全部文字",
   copied: "已複製",
+  version: (version) => `版本 ${version}`,
 };
 
 export const zhCN: ExtensionMessages = {
@@ -104,6 +106,7 @@ export const zhCN: ExtensionMessages = {
   copyText: "复制这段文字",
   copyAll: "复制全部文字",
   copied: "已复制",
+  version: (version) => `版本 ${version}`,
 };
 
 export const es: ExtensionMessages = {
@@ -140,6 +143,7 @@ export const es: ExtensionMessages = {
   copyText: "Copiar este texto",
   copyAll: "Copiar todo el texto",
   copied: "Copiado",
+  version: (version) => `Versión ${version}`,
 };
 
 export const ptBR: ExtensionMessages = {
@@ -176,4 +180,5 @@ export const ptBR: ExtensionMessages = {
   copyText: "Copiar este texto",
   copyAll: "Copiar todo o texto",
   copied: "Copiado",
+  version: (version) => `Versão ${version}`,
 };
