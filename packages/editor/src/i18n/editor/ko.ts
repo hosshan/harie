@@ -63,10 +63,6 @@ export const ko: EditorMessages = {
     label: "이미지 마감",
     note: "저장할 이미지 둘레에 붙입니다. 흰 페이지에 붙여도 경계가 보입니다.",
     presets: { none: "없음", border: "테두리", shadow: "그림자", card: "둥근 모서리" },
-    background: "여백 색",
-    backgrounds: { white: "흰색", transparent: "투명" },
-    transparentNote: "투명은 PNG로 저장할 때만 적용됩니다. JPEG는 흰색이 됩니다.",
-    custom: "AI 등으로 붙인 사용자 지정 마감입니다. 다시 고르면 바뀝니다.",
   },
   steps: {
     label: "번호와 말풍선",

@@ -1,19 +1,10 @@
 // 画像の仕上げ（FR-FILE-16）。何も選んでいないときの右の欄に置き、保存する画像のまわりの余白・影・枠線を選ぶ
 import type { HarieDocument } from "@harie/model";
 import type { Dispatch } from "react";
-import {
-  FRAME_PRESETS,
-  type FrameBackground,
-  type FramePreset,
-  frameBackground,
-  framePreset,
-  matchFramePreset,
-} from "./frame-presets";
+import { FRAME_PRESETS, type FramePreset, framePreset, matchFramePreset } from "./frame-presets";
 import type { EditorAction } from "./history";
 import { EDITOR_MESSAGES } from "./i18n/messages";
 import { useMessages } from "./i18n/use-locale";
-
-const BACKGROUNDS: readonly FrameBackground[] = ["white", "transparent"];
 
 /** 選択肢の見本（小さな画像に、その仕上げを付けた形） */
 function FrameSample({ preset }: { preset: FramePreset }) {
@@ -67,13 +58,8 @@ export function FrameField({
 }) {
   const m = useMessages(EDITOR_MESSAGES);
   const current = matchFramePreset(doc.frame, scale);
-  const background = frameBackground(doc.frame);
-  const padded = (doc.frame?.padding ?? 0) > 0;
-  const apply = (preset: FramePreset, bg: FrameBackground) =>
-    dispatch({
-      type: "apply",
-      ops: [{ op: "frame", frame: framePreset(preset, scale, bg) ?? null }],
-    });
+  const apply = (preset: FramePreset) =>
+    dispatch({ type: "apply", ops: [{ op: "frame", frame: framePreset(preset, scale) ?? null }] });
   return (
     <section className="harie-inspector-body harie-frame-field" aria-label={m.frame.label}>
       <fieldset className="harie-field">
@@ -85,37 +71,15 @@ export function FrameField({
               type="button"
               className="harie-tile"
               aria-pressed={current === p}
-              onClick={() => apply(p, background)}
+              onClick={() => apply(p)}
             >
               <FrameSample preset={p} />
               <small>{m.frame.presets[p]}</small>
             </button>
           ))}
         </div>
-        <p className="harie-frame-note">{current === null ? m.frame.custom : m.frame.note}</p>
+        <p className="harie-frame-note">{m.frame.note}</p>
       </fieldset>
-      {padded && current !== null && (
-        <fieldset className="harie-field">
-          <legend className="harie-field-label">{m.frame.background}</legend>
-          <div className="harie-tiles harie-tiles-2">
-            {BACKGROUNDS.map((bg) => (
-              <button
-                key={bg}
-                type="button"
-                className="harie-tile harie-frame-bg"
-                aria-pressed={background === bg}
-                onClick={() => apply(current, bg)}
-              >
-                <span className="harie-frame-swatch" data-bg={bg} aria-hidden="true" />
-                <small>{m.frame.backgrounds[bg]}</small>
-              </button>
-            ))}
-          </div>
-          {background === "transparent" && (
-            <p className="harie-frame-note">{m.frame.transparentNote}</p>
-          )}
-        </fieldset>
-      )}
     </section>
   );
 }

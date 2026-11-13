@@ -66,10 +66,6 @@ const ja = {
     label: "画像の仕上げ",
     note: "保存する画像のまわりに付けます。白いページに貼っても境目が分かります。",
     presets: { none: "なし", border: "枠線", shadow: "影", card: "影と角丸" },
-    background: "余白の色",
-    backgrounds: { white: "白", transparent: "透明" },
-    transparentNote: "透明は PNG で保存したときだけ。JPEG では白になります。",
-    custom: "AI などで付けた独自の仕上げです。選び直すと置き換わります。",
   },
   steps: {
     label: "番号と吹き出し",
@@ -303,10 +299,6 @@ const en: EditorMessages = {
     label: "Image finish",
     note: "Added around the saved image so its edges stand out on a white page.",
     presets: { none: "None", border: "Border", shadow: "Shadow", card: "Rounded" },
-    background: "Padding color",
-    backgrounds: { white: "White", transparent: "Clear" },
-    transparentNote: "Clear only works when saving as PNG. JPEG uses white.",
-    custom: "A custom finish (set by AI or another tool). Picking one replaces it.",
   },
   steps: {
     label: "Numbers and callouts",

@@ -56,10 +56,6 @@ export const zhTW: EditorMessages = {
     label: "圖片外框",
     note: "加在儲存的圖片周圍，貼到白色頁面上也看得出邊界。",
     presets: { none: "無", border: "邊框", shadow: "陰影", card: "圓角陰影" },
-    background: "留白顏色",
-    backgrounds: { white: "白色", transparent: "透明" },
-    transparentNote: "透明僅在儲存為 PNG 時有效，JPEG 會是白色。",
-    custom: "由 AI 等設定的自訂外框。重新選擇即會取代。",
   },
   steps: {
     label: "編號與說明框",

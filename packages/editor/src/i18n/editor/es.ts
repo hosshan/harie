@@ -64,11 +64,6 @@ export const es: EditorMessages = {
     label: "Acabado de la imagen",
     note: "Se añade alrededor de la imagen guardada para que sus bordes se vean en una página blanca.",
     presets: { none: "Ninguno", border: "Borde", shadow: "Sombra", card: "Redondeado" },
-    background: "Color del margen",
-    backgrounds: { white: "Blanco", transparent: "Transparente" },
-    transparentNote: "Transparente solo funciona al guardar en PNG. En JPEG será blanco.",
-    custom:
-      "Acabado personalizado (puesto por la IA u otra herramienta). Al elegir uno se reemplaza.",
   },
   steps: {
     label: "Números y globos",
