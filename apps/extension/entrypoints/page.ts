@@ -3,8 +3,9 @@
 // - Harie 画像にカーソルを当てると、右上に薄く編集ボタンと「まとめてコピー」を出す。編集は拡張のエディタで開く
 // - 説明文（吹き出し・文字）の枠にカーソルを当てると、その枠の上にコピーボタンを出す
 // 説明文は content script（ページの JS から見えない隔離された環境）の中だけに持ち、DOM には書かない。
-import { getLocale } from "@harie/editor/locale";
+import { detectLocale } from "@harie/editor/locale";
 import { browser } from "wxt/browser";
+import { loadExtensionLocale } from "@/lib/locale-store";
 import { extensionMessages } from "@/lib/messages";
 import type { CopyTarget, PageImageInfo } from "@/lib/page-copy";
 import { isHarieImageUrl, isHttpUrl } from "@/lib/page-image";
@@ -32,11 +33,12 @@ const CHECK = icon('<path d="M20 6 9 17l-5-5"/>');
 const send = <T>(message: { type: string; url: string }) =>
   browser.runtime.sendMessage(message) as Promise<T>;
 
-export default defineUnlistedScript(() => {
+export default defineUnlistedScript(async () => {
   const w = window as Window & { __hariePage?: boolean };
   if (w.__hariePage) return;
   w.__hariePage = true;
-  const m = extensionMessages(getLocale());
+  // 言語は設定ページ・エディタで選んだもの。選んでいなければブラウザの言語（ページの localStorage は使わない）
+  const m = extensionMessages((await loadExtensionLocale()) ?? detectLocale(navigator.languages));
 
   const host = document.createElement("div");
   host.dataset.hariePage = "";

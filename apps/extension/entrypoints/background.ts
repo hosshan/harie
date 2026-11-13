@@ -1,7 +1,7 @@
 // service worker。ポップアップ・ショートカット・選択オーバーレイからの指示でキャプチャする（integrations.md 1.1）。
 // ページ上の Harie 画像の読み込み・エディタで開く処理も受け持つ（integrations.md 1.5）
 
-import { isLocale, type Locale } from "@harie/editor/locale";
+import { getLocale, isLocale, type Locale } from "@harie/editor/locale";
 import { browser } from "wxt/browser";
 import {
   type CaptureMode,
@@ -13,6 +13,7 @@ import {
   setCaptureLocale,
   startSelection,
 } from "@/lib/capture";
+import { loadExtensionLocale } from "@/lib/locale-store";
 import { handlePageMessage, PageMessageSchema, syncPageScripts } from "@/lib/page-fetch";
 import { onPageSettingsChanged } from "@/lib/page-settings";
 import { MAX_SELECT_SIDE } from "@/lib/selection";
@@ -39,11 +40,14 @@ type Message =
 async function start(
   mode: CaptureMode,
   tabId: number,
-  options: { timer?: unknown } = {},
+  options: { timer?: unknown; locale?: Locale } = {},
 ): Promise<{ ok: true } | { ok: false; message: string }> {
   const delay = timerDelay(options.timer);
   try {
     const tab = await browser.tabs.get(tabId);
+    // ショートカットから撮るとき・ポップアップから言語が来なかったときは、設定ページで選んだ言語を使う
+    if (options.locale === undefined)
+      setCaptureLocale((await loadExtensionLocale()) ?? getLocale());
     cancelTimer();
     await clearError();
     if (delay > 0) {
@@ -72,8 +76,12 @@ export default defineBackground(() => {
       return true;
     }
     if (message.type === "harie:start") {
-      if (isLocale(message.locale)) setCaptureLocale(message.locale);
-      void start(message.mode, message.tabId, { timer: message.timer }).then(sendResponse);
+      const locale = isLocale(message.locale) ? message.locale : undefined;
+      if (locale !== undefined) setCaptureLocale(locale);
+      void start(message.mode, message.tabId, {
+        timer: message.timer,
+        ...(locale === undefined ? {} : { locale }),
+      }).then(sendResponse);
       return true;
     }
     if (message.type === "harie:timer-status") {

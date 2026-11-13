@@ -11,7 +11,7 @@
 | 部品 | 役割 | 実装 |
 |---|---|---|
 | ポップアップ / ショートカット（Alt+Shift+S） | キャプチャ開始（見えている範囲・範囲を選ぶ・要素を選ぶ。「5 秒待ってから撮る」スイッチ（FR-CAP-11））と、空のエディタを開く（FR-CAP-08）・設定ページへのリンク | `entrypoints/popup/` |
-| 設定ページ（`options_ui`, タブで開く） | ページ上の Harie 画像のボタンの設定（1.5）。ポップアップを簡単に保つため分けた | `entrypoints/options/` |
+| 設定ページ（`options_ui`, タブで開く） | 表示言語（1.6）と、ページ上の Harie 画像のボタンの設定（1.5）。ポップアップを簡単に保つため分けた | `entrypoints/options/` |
 | 選択オーバーレイ（押したときに注入） | 範囲・要素選択。選び終えたらオーバーレイを消してから範囲を送る。範囲選択では撮る画像の幅×高さを数値で決められ、その大きさを範囲と一緒に送る（FR-CAP-10。service worker が丸めで 1px ずれないよう、その大きさちょうどに切り抜く）。（Next）DOM テキストのダミー置換 | `entrypoints/select.ts` |
 | DOM スナップショット（押したときに注入） | 可視範囲の主要要素を取る（1.3） | `lib/collect.ts` |
 | service worker | `chrome.tabs.captureVisibleTab` で撮影し、範囲選択なら切り抜く。キャプチャを IndexedDB に置き、エディタページを開く | `entrypoints/background.ts`, `lib/capture.ts` |
@@ -60,7 +60,7 @@ type DomSnapshot = {
 
 ### 1.5 ページ上の Harie 画像（FR-FILE-12, FR-FILE-13）
 
-ページの見た目は変えず、Harie 画像にカーソルを当てたときだけボタンを出す。設定ページ（ポップアップの「画像ガイドの表示設定」から開く）の「サイト上の画像ガイド」で、出すボタンとボタンを出すサイトを選ぶ（`lib/page-settings.ts`、`chrome.storage.local` に保存）。
+ページの見た目は変えず、Harie 画像にカーソルを当てたときだけボタンを出す。設定ページ（ポップアップの「設定」から開く）の「サイト上の画像ガイド」で、出すボタンとボタンを出すサイトを選ぶ（`lib/page-settings.ts`、`chrome.storage.local` に保存）。
 
 | 項目 | 既定 | 内容 |
 |---|---|---|
@@ -75,6 +75,14 @@ type DomSnapshot = {
 - **説明文のコピー（FR-FILE-12）**: service worker が吹き出し・文字の注釈の範囲（`@harie/render` の `annotationBounds`。切り抜きを考慮）を画像に対する割合にして返す。カーソルがその範囲に入ると、枠の右上の角にコピーボタンを出す。編集ボタンの隣の「まとめてコピー」は「番号. 吹き出しの文」を番号順に並べたテキストをコピーする。AI の提案中（未採用）の注釈は含めない。
 - 画像は service worker が拡張の権限で読む（ページの CORS の制限を受けない。非公開リポジトリのために cookie を付ける）。40 MB より大きいものは読まない。メッセージは zod で形を確かめる。
 - 説明文は content script（ページの JS から見えない隔離された環境）の中だけに持ち、DOM には書かない。読んだ画像はどこにも送らない。
+
+### 1.6 表示言語（NFR-I18N-01）
+
+拡張の文言は `lib/messages.ts`（とエディタの `@harie/web/messages`）にあり、7 言語で出す。初めはブラウザの言語に合わせ、設定ページの「表示言語」で変えられる。
+
+- 拡張のページ（ポップアップ・設定ページ・エディタ）は localStorage の `harie.locale` を共有する。エディタの設定で変えても同じ値になる。
+- service worker とページに注入するスクリプトは拡張の localStorage を読めないので、拡張のページが同じ値を `chrome.storage.local`（`harie.locale`）にも写す（`lib/locale-store.ts`）。ショートカットで撮るときの案内・失敗の文、ページ上の Harie 画像のボタンはこれを読む。選ばれていなければブラウザの言語（ページの localStorage は使わない）。
+- 拡張の名前・説明・ツールバーのボタンの題名・ショートカットの説明は manifest の `_locales` にあり、Chrome の言語に従う（拡張から変えられない）。
 
 ## 2. MCP サーバー
 
