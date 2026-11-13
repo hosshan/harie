@@ -425,3 +425,54 @@ input {
 .app-guide-copy button {
   flex: none;
 }
+/* 保存する画像のサイズ（FR-EDIT-24）。幅 × 高さ px を 1 行に並べる */
+.app-resize form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.app-resize .app-resize-fields {
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+}
+.app-resize .app-resize-fields label {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1;
+  min-width: 0;
+}
+.app-resize .app-resize-fields input {
+  width: 100%;
+  font-variant-numeric: tabular-nums;
+}
+.app-resize .app-resize-fields input[aria-invalid="true"] {
+  border-color: #c2410c;
+}
+.app-resize-times,
+.app-resize-unit {
+  padding-bottom: 6px;
+}
+/* 元の大きさと、変えたときだけ出す「元の大きさに戻す」 */
+.app-resize .app-resize-original {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 12px;
+  margin: 0;
+}
+.app-resize .app-link-button {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--accent-text);
+  font: inherit;
+  text-decoration: underline;
+  cursor: pointer;
+}
+.app-resize .app-resize-error {
+  margin: 0;
+  color: #c2410c;
+  font-size: 13px;
+}

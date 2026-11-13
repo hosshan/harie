@@ -1,5 +1,12 @@
 // ベース画像の差し替え（FR-EDIT-10）。注釈を引き継ぎ、新しい画像の大きさに合わせる
-import type { Annotation, HarieDocument, PiiApplied, Rect, Style } from "@harie/model";
+import {
+  type Annotation,
+  type HarieDocument,
+  MAX_OUTPUT_SIDE,
+  type PiiApplied,
+  type Rect,
+  type Style,
+} from "@harie/model";
 import { layoutAnchors } from "./svg";
 import { THEMES, type Theme } from "./theme";
 
@@ -13,6 +20,7 @@ export type RebaseResult = {
 };
 
 const round = (v: number) => Math.round(v * 100) / 100;
+const clampSide = (v: number) => Math.min(MAX_OUTPUT_SIDE, Math.max(1, Math.round(v)));
 
 /**
  * 注釈を残したまま、ベース画像を別の大きさ（同じでもよい）の画像に差し替えたドキュメントを返す。
@@ -40,6 +48,15 @@ export function rebaseDocument(
     width: size.width,
     height: size.height,
     crop: doc.canvas.crop === null ? null : rect(doc.canvas.crop),
+    // 書き出しの大きさも同じ比率で合わせる（同じ画面を撮り直したなら変わらない。FR-EDIT-24）
+    ...(doc.canvas.output === undefined
+      ? {}
+      : {
+          output: {
+            width: clampSide(doc.canvas.output.width * sx),
+            height: clampSide(doc.canvas.output.height * sy),
+          },
+        }),
   };
   const pii = { ...doc.pii, applied: [] };
   if (sx === 1 && sy === 1) return { doc: { ...doc, canvas, pii }, previousPii };

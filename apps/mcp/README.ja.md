@@ -19,7 +19,7 @@ Claude などの MCP クライアントから「この画像に枠を付けて�
 | `harie_mask` | 個人情報をベース画像に焼き込んで隠す（元に戻せない）。`confirm: true` を付けたときだけ保存し、付けなければ加工後の画像を返すだけ |
 | `harie_replace_base` | 注釈を残したまま、画像だけを新しいスクリーンショットに差し替える（画面が変わったとき）。新しい画像は `harie_create` と同じ形式を読める。大きさが違えば注釈を比率で合わせる。前の画像のマスクは引き継がず、その範囲を `previousPii` で返す |
 
-注釈は `rect` / `ellipse` / `arrow` / `text` / `callout` / `badge` / `spotlight` / `blur`。四角・楕円・テキスト・吹き出しは `rotation`（度、時計回り。範囲の中心が軸）で回せ、矢印の矢じりは終端・始端・両端・なしを選べる（`style.head`）。0.6.0 より前の版は `rotation` を保持するが回さずに描き、`head: "start"` を含むファイルは普通の画像としてしか読めない。
+注釈は `rect` / `ellipse` / `arrow` / `text` / `callout` / `badge` / `spotlight` / `blur`。四角・楕円・テキスト・吹き出しは `rotation`（度、時計回り。範囲の中心が軸）で回せ、矢印の矢じりは終端・始端・両端・なしを選べる（`style.head`）。保存する画像の大きさは `setOutputSize` 操作（`{"op":"setOutputSize","size":{"width":640,"height":400}}`、`null` で元の大きさ）で変えられる。ベース画像と注釈の座標は変わらず、ツールが返す画像もベース画像の大きさのまま。0.8.0 より前の版はこれを無視して元の大きさで保存する。0.6.0 より前の版は `rotation` を保持するが回さずに描き、`head: "start"` を含むファイルは普通の画像としてしか読めない。
 
 `harie_open` / `harie_edit` / `harie_replace_base` は `image: false` を付けると画像を返さず、JSON だけを返す。画像はクライアントのコンテキストを大きく使うので、文言を読む・直すだけのときに使う。
 

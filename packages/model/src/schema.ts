@@ -188,6 +188,15 @@ export type PiiMask = z.infer<typeof PiiMaskSchema>;
 
 const isoDateTime = z.iso.datetime({ offset: true });
 
+/** 書き出しの一辺の上限（ピクセル）。拡大しすぎてメモリを使い切らないようにする */
+export const MAX_OUTPUT_SIDE = 8192;
+
+export const OutputSizeSchema = z.object({
+  width: z.int().positive().max(MAX_OUTPUT_SIDE),
+  height: z.int().positive().max(MAX_OUTPUT_SIDE),
+});
+export type OutputSize = z.infer<typeof OutputSizeSchema>;
+
 export const DocumentSchema = z.looseObject({
   schemaVersion: z.literal(SCHEMA_VERSION),
   docId: z.uuid(),
@@ -205,11 +214,17 @@ export const DocumentSchema = z.looseObject({
     createdAt: isoDateTime,
     updatedAt: isoDateTime,
   }),
-  canvas: z.object({
+  // 新しいバージョンで追加されたフィールドを古いアプリが保存時に消さないよう、loose にする
+  canvas: z.looseObject({
     width: z.int().positive(),
     height: z.int().positive(),
     devicePixelRatio: finite.positive().default(1),
     crop: RectSchema.nullable().default(null),
+    /**
+     * 書き出しの大きさ（FR-EDIT-24, ADR-0018）。保存する画像だけをこの大きさで描く。
+     * ベース画像と注釈の座標は変えない。省略は表示範囲（crop か画像全体）と同じ大きさ
+     */
+    output: OutputSizeSchema.optional(),
   }),
   theme: z.looseObject({ preset: z.string().default("default") }).default({ preset: "default" }),
   annotations: z.array(AnnotationSchema).default([]),
