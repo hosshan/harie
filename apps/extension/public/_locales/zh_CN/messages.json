@@ -10,5 +10,8 @@
   },
   "captureVisible": {
     "message": "截取可见区域"
+  },
+  "captureDelayed": {
+    "message": "定时截取可见范围"
   }
 }

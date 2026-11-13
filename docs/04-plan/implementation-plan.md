@@ -72,6 +72,7 @@
 | タスク | 要件 | 完了条件 |
 |---|---|---|
 | ✅ 可視範囲・範囲選択・要素選択キャプチャ | FR-CAP-01, 02 | 手動テスト + E2E（E2E は拡張を読み込んだ Chromium で通る。手動テストの手順は `apps/extension/CLAUDE.md`、実施は未） |
+| ✅ タイマーで撮る（遅延キャプチャ） | FR-CAP-11 | E2E（数えてから撮る・タブを替えたら撮らない・やめる）。メニュー・ツールチップが写ることは実際の Chrome で手動確認 |
 | ✅ DOM スナップショット、AI・PII への受け渡し | FR-CAP-03, FR-AI-03 | 枠が要素に吸着する（E2E。要素番号で指した提案が要素の矩形になる） |
 | ✅ 拡張ページでエディタ、`chrome.downloads` で保存 | — | キャプチャ → 保存まで一続き（E2E） |
 | ✅ Chrome Web Store 申請準備（公開） | NFR-SEC-03 | 掲載情報・権限の説明文（`apps/extension/STORE.md`）、掲載用の画像（`apps/extension/store-assets/`）、プライバシーポリシー（`https://harie.studio/privacy/`）。2026-10-23 に Chrome ウェブストアで公開 |

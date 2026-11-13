@@ -9,6 +9,7 @@ import {
   type PageSettings,
   savePageSettings,
 } from "@/lib/page-settings";
+import { DELAY_CHOICES, loadDelay, parseDelay, saveDelay } from "@/lib/timer";
 
 // 言語はエディタの設定と同じ（拡張のページどうしは localStorage を共有する）
 const locale = getLocale();
@@ -22,6 +23,9 @@ for (const el of document.querySelectorAll<HTMLElement>("[data-message]")) {
     | "region"
     | "element"
     | "blank"
+    | "timer"
+    | "timerHint"
+    | "timerCancel"
     | "popupNote"
     | "pageTitle"
     | "pageEdit"
@@ -51,6 +55,46 @@ for (const button of document.querySelectorAll<HTMLButtonElement>("button[data-m
       alert.textContent = result.message ?? m.failed;
       alert.hidden = false;
     }
+  });
+}
+
+// 遅延キャプチャ（FR-CAP-11）。数え始めたらポップアップを閉じ、残りはツールバーのアイコンに出る。
+// 待ち時間は覚えておき、ショートカット（capture-delayed）でも同じ値を使う
+const delaySelect = document.querySelector<HTMLSelectElement>(".timer select") as HTMLSelectElement;
+delaySelect.setAttribute("aria-label", m.timerDelay);
+delaySelect.replaceChildren(...DELAY_CHOICES.map((d) => new Option(m.timerSeconds(d), String(d))));
+delaySelect.value = String(await loadDelay());
+delaySelect.addEventListener("change", () => {
+  void saveDelay(parseDelay(Number(delaySelect.value)));
+});
+document.querySelector("button[data-timer]")?.addEventListener("click", async () => {
+  const [tab] = await browser.tabs.query({ active: true, currentWindow: true });
+  if (tab?.id === undefined) return;
+  const result = (await browser.runtime.sendMessage({
+    type: "harie:timer",
+    tabId: tab.id,
+    delay: Number(delaySelect.value),
+    locale,
+  })) as { ok: boolean; message?: string };
+  if (result.ok) {
+    window.close();
+  } else if (alert !== null) {
+    alert.textContent = result.message ?? m.failed;
+    alert.hidden = false;
+  }
+});
+
+// 数えている途中でアイコンを押すと、残りと「やめる」を出す
+const pendingBox = document.querySelector<HTMLElement>(".timer-pending") as HTMLElement;
+const pending = (await browser.runtime.sendMessage({ type: "harie:timer-status" })) as {
+  left: number;
+} | null;
+if (pending !== null) {
+  (pendingBox.querySelector("span") as HTMLElement).textContent = m.timerPending(pending.left);
+  pendingBox.hidden = false;
+  pendingBox.querySelector("button")?.addEventListener("click", async () => {
+    await browser.runtime.sendMessage({ type: "harie:timer-cancel" });
+    pendingBox.hidden = true;
   });
 }
 

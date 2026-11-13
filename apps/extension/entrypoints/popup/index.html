@@ -10,6 +10,12 @@
       button { display: block; width: 100%; margin: 0 0 6px; padding: 8px 10px; border: 1px solid #e6dcc6; border-radius: 6px; background: #fff; font: inherit; text-align: left; cursor: pointer; }
       button:hover { border-color: #b0861a; background: #fbf6e9; }
       .blank { margin-top: 16px; }
+      .timer { display: flex; gap: 4px; margin: 0 0 6px; }
+      .timer button { flex: 1; margin: 0; }
+      .timer select { padding: 0 4px; border: 1px solid #e6dcc6; border-radius: 6px; background: #fff; font: inherit; cursor: pointer; }
+      .timer-pending { display: flex; align-items: center; justify-content: space-between; gap: 6px; margin: 0 0 6px; padding: 6px 8px; border-radius: 6px; background: #fbf6e9; }
+      .timer-pending[hidden] { display: none; }
+      .timer-pending button { display: inline-block; width: auto; margin: 0; padding: 2px 10px; }
       .muted { color: #7a7064; font-size: 12px; margin: 6px 0 0; }
       [role="alert"] { color: #b42318; margin: 6px 0 0; }
       h2 { font-size: 12px; margin: 12px 0 4px; padding-top: 10px; border-top: 1px solid #e6dcc6; }
@@ -34,6 +40,15 @@
     <button type="button" data-mode="visible" data-message="visible">見えている範囲</button>
     <button type="button" data-mode="region" data-message="region">範囲を選ぶ</button>
     <button type="button" data-mode="element" data-message="element">要素を選ぶ</button>
+    <div class="timer">
+      <button type="button" data-timer data-message="timer">タイマーで撮る</button>
+      <select name="delay"></select>
+    </div>
+    <p class="muted" data-message="timerHint">押したあと、撮りたいメニューやツールチップを出しておけます。</p>
+    <div class="timer-pending" role="status" hidden>
+      <span></span>
+      <button type="button" data-message="timerCancel">やめる</button>
+    </div>
     <button type="button" class="blank" data-message="blank">空のエディタを開く</button>
     <p class="muted" data-message="popupNote">AIを利用しない場合、画像やページ情報は端末内でのみ処理されます。</p>
     <p role="alert" hidden></p>

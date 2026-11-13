@@ -10,5 +10,8 @@
   },
   "captureVisible": {
     "message": "Capturar el área visible"
+  },
+  "captureDelayed": {
+    "message": "Capturar el área visible con temporizador"
   }
 }

@@ -320,3 +320,88 @@ test("FR-FILE-15, FR-CAP-08: 空のエディタで HEIC を開ける（拡張の
   await expect(editor.locator(".app-file-name")).toHaveText("photo.heic");
   await expect(editor.locator(".harie-canvas-overlay")).toHaveAttribute("viewBox", "0 0 64 48");
 });
+
+/** background の遅延キャプチャの入口を呼ぶ（ポップアップの「タイマーで撮る」と同じ処理） */
+async function startTimer(worker: import("@playwright/test").Worker, url: string, delay: number) {
+  return worker.evaluate(
+    async ({ url, delay }) => {
+      const [tab] = await chrome.tabs.query({ url });
+      if (tab?.id === undefined) throw new Error("tab not found");
+      await chrome.tabs.update(tab.id, { active: true });
+      const start = (
+        globalThis as unknown as {
+          harieTimer: (id: number, d: number) => Promise<{ ok: boolean; message?: string }>;
+        }
+      ).harieTimer;
+      return start(tab.id, delay);
+    },
+    { url, delay },
+  );
+}
+
+const badge = (worker: import("@playwright/test").Worker) =>
+  worker.evaluate(() => chrome.action.getBadgeText({}));
+
+test("FR-CAP-11: タイマーで撮ると、残りの秒数をアイコンに出し、待ってから見えている範囲を撮る", async ({
+  context,
+  worker,
+  extensionId,
+  target,
+}) => {
+  const opened = editorOpened(context, extensionId);
+  const startedAt = Date.now();
+  expect(await startTimer(worker, target.url(), 3)).toEqual({ ok: true });
+  await expect.poll(() => badge(worker)).toMatch(/^[123]$/);
+  const editor = await opened;
+  expect(Date.now() - startedAt).toBeGreaterThanOrEqual(2900);
+  expect(await badge(worker)).toBe("");
+  await expect(editor.locator(".harie-canvas-overlay")).toHaveAttribute("viewBox", "0 0 800 600");
+});
+
+test("FR-CAP-11: 待っている間にタブを切り替えると撮らず、アイコンの「!」で知らせる", async ({
+  context,
+  worker,
+  target,
+}) => {
+  expect(await startTimer(worker, target.url(), 3)).toEqual({ ok: true });
+  const other = await context.newPage();
+  await other.goto("http://harie.test/other");
+  await other.bringToFront();
+  await worker.evaluate(async () => {
+    const [tab] = await chrome.tabs.query({ url: "http://harie.test/other" });
+    if (tab?.id !== undefined) await chrome.tabs.update(tab.id, { active: true });
+  });
+  await expect.poll(() => badge(worker), { timeout: 8000 }).toBe("!");
+  expect(await worker.evaluate(() => chrome.action.getTitle({}))).toBe(
+    "タブが切り替わったので撮りませんでした",
+  );
+  expect(context.pages().some((p) => p.url().includes("editor.html"))).toBe(false);
+});
+
+test("FR-CAP-11: ポップアップで待ち時間を選べ、数えている途中で開くと「やめる」で止められる", async ({
+  context,
+  worker,
+  extensionId,
+  target,
+}) => {
+  const popup = await context.newPage();
+  await popup.goto(`chrome-extension://${extensionId}/popup.html`);
+  const select = popup.getByRole("combobox", { name: "待ち時間" });
+  await expect(select.locator("option")).toHaveText(["3 秒", "5 秒", "10 秒"]);
+  await select.selectOption("10");
+  await expect
+    .poll(() => worker.evaluate(() => chrome.storage.local.get("harie.captureDelay")))
+    .toEqual({ "harie.captureDelay": 10 });
+  await expect(popup.getByRole("button", { name: "タイマーで撮る" })).toBeVisible();
+
+  expect(await startTimer(worker, target.url(), 10)).toEqual({ ok: true });
+  await popup.reload();
+  await expect(
+    popup.getByRole("status").filter({ hasText: /あと \d+ 秒で撮ります/ }),
+  ).toBeVisible();
+  await popup.getByRole("button", { name: "やめる" }).click();
+  await expect.poll(() => badge(worker)).toBe("");
+  expect(await worker.evaluate(() => chrome.storage.local.get("harie.captureDelay"))).toEqual({
+    "harie.captureDelay": 10,
+  });
+});

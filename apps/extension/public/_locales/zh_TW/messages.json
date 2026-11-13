@@ -10,5 +10,8 @@
   },
   "captureVisible": {
     "message": "擷取可見範圍"
+  },
+  "captureDelayed": {
+    "message": "定時擷取可見範圍"
   }
 }

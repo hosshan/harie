@@ -10,5 +10,8 @@
   },
   "captureVisible": {
     "message": "Capturar a área visível"
+  },
+  "captureDelayed": {
+    "message": "Capturar a área visível com timer"
   }
 }

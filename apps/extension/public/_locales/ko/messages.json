@@ -10,5 +10,8 @@
   },
   "captureVisible": {
     "message": "보이는 영역 캡처"
+  },
+  "captureDelayed": {
+    "message": "타이머로 보이는 영역 캡처"
   }
 }

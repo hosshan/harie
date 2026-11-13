@@ -24,7 +24,8 @@ export function setCaptureLocale(next: Locale): void {
   locale = next;
 }
 
-const messages = () => extensionMessages(locale);
+/** 今の言語の文言（service worker の中で使う） */
+export const messages = () => extensionMessages(locale);
 
 type Tab = {
   id?: number | undefined;
