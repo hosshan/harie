@@ -60,6 +60,16 @@ export const ptBR: EditorMessages = {
             ? `Clique em “${label}”`
             : `Confira “${label}”`,
   },
+  frame: {
+    label: "Acabamento da imagem",
+    note: "Adicionado ao redor da imagem salva para que as bordas apareçam em uma página branca.",
+    presets: { none: "Nenhum", border: "Borda", shadow: "Sombra", card: "Arredondado" },
+    background: "Cor da margem",
+    backgrounds: { white: "Branco", transparent: "Transparente" },
+    transparentNote: "Transparente só funciona ao salvar em PNG. Em JPEG fica branco.",
+    custom:
+      "Acabamento personalizado (definido pela IA ou outra ferramenta). Escolher outro o substitui.",
+  },
   steps: {
     label: "Números e balões",
     note: (n) =>

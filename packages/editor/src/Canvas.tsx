@@ -11,6 +11,7 @@ import {
   annotationBox,
   type Bounds,
   boxCenter,
+  buildFramePreview,
   buildSvg,
   layoutAnchors,
   THEMES,
@@ -324,6 +325,9 @@ export function Canvas({
       }),
     [display, baseImageUrl],
   );
+
+  // 保存する画像の仕上げ（FR-FILE-16）。編集面の外側へ余白の分だけはみ出して見せる
+  const framePreview = useMemo(() => buildFramePreview(doc), [doc]);
 
   // クリックしただけ（動かしていない）ではパレットを隠さない。ちらつかないように
   const moved =
@@ -657,19 +661,48 @@ export function Canvas({
   return (
     <div
       className="harie-canvas"
+      data-framed={framePreview !== null ? "" : undefined}
       style={
         {
           aspectRatio: `${width} / ${height}`,
           "--harie-canvas-ratio": width / height,
+          ...(framePreview !== null && {
+            "--harie-frame-fit-x": width / (width + 2 * framePreview.frame.padding),
+            "--harie-frame-fit-y": height / (height + 2 * framePreview.frame.padding),
+          }),
         } as CSSProperties
       }
     >
+      {framePreview !== null && (
+        <div
+          className="harie-canvas-frame"
+          style={frameBoxStyle(framePreview.frame.padding, width, height)}
+          // biome-ignore lint/security/noDangerouslySetInnerHtml: buildFramePreview が属性をエスケープして生成する
+          dangerouslySetInnerHTML={{ __html: framePreview.under }}
+        />
+      )}
       {/* buildSvg の出力（エスケープ済みの SVG 文字列） */}
       <div
         className="harie-canvas-image"
+        style={
+          framePreview !== null && framePreview.frame.radius > 0
+            ? {
+                borderRadius: `${(framePreview.frame.radius / width) * 100}% / ${(framePreview.frame.radius / height) * 100}%`,
+                overflow: "hidden",
+              }
+            : undefined
+        }
         // biome-ignore lint/security/noDangerouslySetInnerHtml: buildSvg が属性・本文をエスケープして生成する
         dangerouslySetInnerHTML={{ __html: markup }}
       />
+      {framePreview?.over != null && (
+        <div
+          className="harie-canvas-frame"
+          style={frameBoxStyle(framePreview.frame.padding, width, height)}
+          // biome-ignore lint/security/noDangerouslySetInnerHtml: buildFramePreview が属性をエスケープして生成する
+          dangerouslySetInnerHTML={{ __html: framePreview.over }}
+        />
+      )}
       <svg
         ref={overlay}
         className="harie-canvas-overlay"
@@ -1122,4 +1155,14 @@ function MaskOutline({
       )}
     </g>
   );
+}
+
+/** 仕上げの見せ方の位置。編集面（画像）を基準に、余白の分だけ外へ広げる（割合で指定し、表示の大きさに追従する） */
+function frameBoxStyle(padding: number, width: number, height: number): CSSProperties {
+  return {
+    left: `${(-padding / width) * 100}%`,
+    top: `${(-padding / height) * 100}%`,
+    width: `${((width + 2 * padding) / width) * 100}%`,
+    height: `${((height + 2 * padding) / height) * 100}%`,
+  };
 }

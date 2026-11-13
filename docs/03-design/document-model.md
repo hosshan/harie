@@ -30,6 +30,7 @@ Harie ファイルに埋め込む注釈ドキュメント（JSON）の構造。�
       "text": "「メール通知」をオンにすると、タスクの更新時にメールが届きます",
       "anchor": { "annotationId": "a1", "side": "right" } }
   ],
+  "frame": { "padding": 64, "radius": 20, "shadow": { "blur": 48, "y": 12, "color": "#00000033" } },
   "pii": {
     "applied": [ { "kind": "email", "method": "replace", "rect": { "x": 1800, "y": 92, "w": 320, "h": 40 } } ]
   },
@@ -51,6 +52,7 @@ Harie ファイルに埋め込む注釈ドキュメント（JSON）の構造。�
 | スタイル | 注釈ごとの上書き + `theme.preset` | プリセットを変えるだけで全体の色を揃えられる（FR-EDIT-08） |
 | 提案中の注釈 | `"status": "suggested"` を付けて同じ配列に入れる | 採用はフラグを外すだけ。保存時は既定で `suggested` を除外 |
 | PII | 加工の**記録**（種別・方法・範囲）のみ。元の値は持たない | 加工前の情報を残さない（[ADR-0007](../adr/0007-pii-masking.md)） |
+| 仕上げ | `frame`（任意）に余白・背景・角丸・縁の線・影を px で持ち、保存時に画像の外側へ描く。注釈の座標は画像のまま | 保存後も直せる。古い版は知らないフィールドとして残し、仕上げなしで描く（[ADR-0017](../adr/0017-image-frame.md)） |
 | DOM 情報 | 既定ではファイルに含めない（`context.dom` は参照のみ） | サイズとプライバシー。DOM には PII が含まれうる |
 | 作成者 | 既定では記録しない | NFR-SEC-05 |
 
@@ -83,7 +85,8 @@ type Op =
   | { op: "update"; id: string; patch: Partial<Annotation> }
   | { op: "remove"; id: string }
   | { op: "reorder"; id: string; index: number }
-  | { op: "renumber" };
+  | { op: "renumber" }
+  | { op: "frame"; frame: Frame | null }; // 保存する画像の仕上げを置き換える。null で外す（FR-FILE-16）
 
 function apply(doc: HarieDocument, ops: Op[]): HarieDocument; // 不正な操作は検証エラーを返す
 ```

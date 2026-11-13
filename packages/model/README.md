@@ -12,9 +12,10 @@
 | `DocumentSchema` / `HarieDocument` | 注釈ドキュメント全体（キャンバスの大きさ・注釈の配列・リビジョンなど） |
 | `AnnotationSchema` / `Annotation` | 注釈 1 件。`rect` / `ellipse` / `arrow` / `text` / `callout` / `badge` / `spotlight` / `blur` |
 | `rotationOf` / `normalizeRotation` | 注釈の回転の角度（`rotation`。四角・楕円・テキスト・吹き出しだけ。ほかは 0）を 0〜360 未満にそろえて返す（ADR-0015） |
+| `FrameSchema` / `Frame` | 保存する画像の仕上げ（余白・背景・角丸・縁の線・影。FR-FILE-16 / ADR-0017）。ドキュメントの `frame` に持つ |
 | `PiiMaskSchema` / `PiiAppliedSchema` | 個人情報の加工範囲と、適用済みの記録（ADR-0007） |
 | `createDocument` | 画像の大きさから空のドキュメントを作る |
-| `applyOps` | 注釈の変更（`add` / `update` / `remove` / `reorder` / `renumber`）を適用する。結果は `Result` で返し、例外を投げない |
+| `applyOps` | 注釈の変更（`add` / `update` / `remove` / `reorder` / `renumber`、仕上げの `frame`）を適用する。結果は `Result` で返し、例外を投げない |
 | `migrateDocument` | 読み込んだ JSON を検証し、現行の `SCHEMA_VERSION` にそろえる |
 | `prepareForSave` / `recordPiiApplied` | 保存前の整理（未採用の AI 提案を除くなど）と、PII 加工の記録 |
 | `buildFileName` / `parseFileName` / `renameForSave` | 保存ファイル名（`<名前>.harie.jpg` など）の組み立てと解釈 |

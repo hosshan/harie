@@ -1153,3 +1153,44 @@ test("NFR-PLAT-01: スマホの幅では、ファイル名を 1 行に収め、�
     "true",
   );
 });
+
+test("FR-FILE-16: 画像の仕上げで影を付けて保存すると、余白を含む画像になり、元に戻せる", async ({
+  page,
+}) => {
+  await openFixture(page, "large-base.jpg");
+  const finish = page.getByRole("region", { name: "画像の仕上げ" });
+  await finish.getByRole("button", { name: "影", exact: true }).click();
+  await expect(finish.getByRole("button", { name: "影", exact: true })).toHaveAttribute(
+    "aria-pressed",
+    "true",
+  );
+  // 編集面の外側に仕上げを見せる
+  await expect(page.locator(".harie-canvas-frame")).toHaveCount(1);
+
+  const [download] = await Promise.all([
+    page.waitForEvent("download"),
+    page.getByRole("button", { name: "保存" }).click(),
+  ]);
+  const file = new Uint8Array(readFileSync(await download.path()));
+  const read = readHarie(file);
+  expect(read.kind).toBe("harie");
+  if (read.kind !== "harie") return;
+  const padding = read.doc.frame?.padding ?? 0;
+  expect(padding).toBeGreaterThan(0);
+  expect(read.doc.frame?.shadow?.blur).toBeGreaterThan(0);
+  // ブラウザで保存したファイルと、Node で同じ注釈から作ったファイルが一致する（NFR-PLAT-05）
+  const rendered = await (await nodeRenderer()).render({
+    doc: read.doc,
+    base: read.base,
+    output: "jpeg",
+  });
+  expect(writeHarie({ rendered, base: read.base.bytes, doc: read.doc })).toEqual(file);
+
+  // 元に戻すと仕上げが外れる
+  await page.keyboard.press("ControlOrMeta+z");
+  await expect(finish.getByRole("button", { name: "なし" })).toHaveAttribute(
+    "aria-pressed",
+    "true",
+  );
+  await expect(page.locator(".harie-canvas-frame")).toHaveCount(0);
+});

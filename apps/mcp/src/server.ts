@@ -27,7 +27,8 @@ const OPS_HELP = `ops は操作の配列。座標はベース画像のピクセ�
 badge に anchor: {"annotationId": 枠の id} を付けると、枠の左上の外側に自動で置かれる（x, y は 0 でよい）。
 rect / ellipse / text / callout は rotation（度、時計回り。範囲の中心が軸。x, y, w, h は回す前の値）で回せる。
 style（任意）: stroke, strokeWidth, fill, color, fontSize, fontWeight, radius, opacity, head（矢印の矢じり: end / start / both / none。start は from 側、none は矢じりのない線）, dash（solid / dashed / dotted。四角・楕円・矢印の線の種類）。
-blur は可逆なぼかしで、個人情報の加工には使わないこと。`;
+blur は可逆なぼかしで、個人情報の加工には使わないこと。
+{"op":"frame","frame":{"padding":32,"shadow":{"blur":24}}} で保存画像のまわりに余白・影を付ける（ほかに background, radius, border。null で外す。返す画像には付かない）。`;
 
 function toResult(out: ToolOutput, withImage: boolean): CallToolResult {
   const content: CallToolResult["content"] = [
@@ -64,7 +65,15 @@ export function createServer(options: { root: string }): McpServer {
     { instructions: SERVER_INSTRUCTIONS },
   );
   const path = z.string().describe(`ファイルのパス（${guard.root} からの相対パスか絶対パス）`);
-  const ops = z.array(OpSchema).describe(OPS_HELP);
+  // 仕上げ（frame）の中身は OPS_HELP で示し、ツール定義を小さく保つ。中身は applyOps が FrameSchema で検証する
+  const ops = z
+    .array(
+      z.discriminatedUnion("op", [
+        z.object({ op: z.literal("frame"), frame: z.looseObject({}).nullable() }),
+        ...OpSchema.options.filter((o) => o.shape.op.value !== "frame"),
+      ]),
+    )
+    .describe(OPS_HELP);
   // 画像はコンテキストを大きく使う。文言の確認・修正だけなら注釈の JSON で足りるので省けるようにする
   const image = z
     .boolean()

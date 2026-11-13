@@ -186,6 +186,34 @@ export const PiiMaskSchema = z.object({
 });
 export type PiiMask = z.infer<typeof PiiMaskSchema>;
 
+/**
+ * 保存する画像の仕上げ（FR-FILE-16 / ADR-0017）。画像のまわりに余白・背景・影・線・角丸を付ける。
+ * ドキュメントに持つので、保存後も変えたり外したりできる。座標は画像のピクセルで、注釈の座標は変わらない
+ */
+export const FrameSchema = z
+  .looseObject({
+    /** 画像のまわりの余白（px）。保存する画像は上下左右にこの分だけ大きくなる。省略は 0 */
+    padding: nonNegative.max(1000).optional(),
+    /** 余白の色。`transparent` は PNG で保存したときだけ透過になる（JPEG は白）。省略は白 */
+    background: z.union([color, z.literal("transparent")]).optional(),
+    /** 画像の角の丸み（px）。省略は 0 */
+    radius: nonNegative.max(1000).optional(),
+    /** 画像の縁の線 */
+    border: z.object({ width: finite.positive().max(100), color: color.optional() }).optional(),
+    /** 画像の影。余白がないと見えない */
+    shadow: z
+      .object({
+        blur: nonNegative.max(500),
+        /** 下へのずれ（px）。省略は blur の 1/4 */
+        y: finite.min(-500).max(500).optional(),
+        /** 影の色（#RRGGBBAA で濃さも指定できる）。省略は黒の 25% */
+        color: color.optional(),
+      })
+      .optional(),
+  })
+  .meta({ id: "HarieFrame" });
+export type Frame = z.infer<typeof FrameSchema>;
+
 const isoDateTime = z.iso.datetime({ offset: true });
 
 export const DocumentSchema = z.looseObject({
@@ -214,6 +242,8 @@ export const DocumentSchema = z.looseObject({
   theme: z.looseObject({ preset: z.string().default("default") }).default({ preset: "default" }),
   annotations: z.array(AnnotationSchema).default([]),
   pii: z.object({ applied: z.array(PiiAppliedSchema).default([]) }).default({ applied: [] }),
+  /** 保存する画像の仕上げ（FR-FILE-16）。省略は仕上げなし */
+  frame: FrameSchema.optional(),
   context: z.looseObject({ intent: z.string().optional() }).optional(),
 });
 export type HarieDocument = z.infer<typeof DocumentSchema>;

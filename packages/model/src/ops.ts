@@ -2,7 +2,13 @@
 // （docs/03-design/document-model.md の「操作」）
 import { z } from "zod";
 import { err, ok, type Result } from "./result";
-import { type Annotation, AnnotationSchema, type HarieDocument } from "./schema";
+import {
+  type Annotation,
+  AnnotationSchema,
+  type Frame,
+  FrameSchema,
+  type HarieDocument,
+} from "./schema";
 
 export const OpSchema = z.discriminatedUnion("op", [
   z.object({ op: z.literal("add"), annotation: AnnotationSchema, index: z.int().optional() }),
@@ -14,6 +20,8 @@ export const OpSchema = z.discriminatedUnion("op", [
   z.object({ op: z.literal("remove"), id: z.string() }),
   z.object({ op: z.literal("reorder"), id: z.string(), index: z.int() }),
   z.object({ op: z.literal("renumber") }),
+  /** 保存する画像の仕上げを置き換える（FR-FILE-16）。null で外す */
+  z.object({ op: z.literal("frame"), frame: FrameSchema.nullable() }),
 ]);
 export type Op = z.infer<typeof OpSchema>;
 
@@ -23,7 +31,10 @@ function clampIndex(index: number, length: number): number {
   return Math.max(0, Math.min(index, length));
 }
 
-function applyOne(annotations: Annotation[], op: Op): Result<Annotation[]> {
+function applyOne(
+  annotations: Annotation[],
+  op: Exclude<Op, { op: "frame" }>,
+): Result<Annotation[]> {
   switch (op.op) {
     case "add": {
       if (annotations.some((a) => a.id === op.annotation.id)) {
@@ -72,12 +83,23 @@ export function applyOps(
   ops: readonly unknown[],
 ): Result<HarieDocument, OpError> {
   let annotations = doc.annotations;
+  let frame: Frame | null | undefined = doc.frame;
   for (const [opIndex, raw] of ops.entries()) {
     const parsed = OpSchema.safeParse(raw);
     if (!parsed.success) return err({ opIndex, message: z.prettifyError(parsed.error) });
+    if (parsed.data.op === "frame") {
+      frame = parsed.data.frame;
+      continue;
+    }
     const result = applyOne(annotations, parsed.data);
     if (!result.ok) return err({ opIndex, message: result.error });
     annotations = result.value;
   }
-  return ok({ ...doc, annotations });
+  if (frame === doc.frame) return ok({ ...doc, annotations });
+  const { frame: _old, ...rest } = doc;
+  return ok(
+    frame === null || frame === undefined
+      ? { ...rest, annotations }
+      : { ...rest, annotations, frame },
+  );
 }

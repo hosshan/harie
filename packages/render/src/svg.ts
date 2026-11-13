@@ -10,6 +10,7 @@ import {
   type Style,
 } from "@harie/model";
 import { EXTRA_FONT_FAMILIES, type ExtraFont, extraFontOf } from "./extra-fonts";
+import { resolveFrame, wrapFrame } from "./frame";
 import { THEMES, type Theme } from "./theme";
 import { attrs, esc, n } from "./xml";
 
@@ -49,6 +50,11 @@ export type BuildSvgOptions = {
   baseImageHref?: string;
   /** AI 提案中（status: "suggested"）の注釈も描くか。保存時は描かない（FR-AI-02）。 */
   includeSuggested?: boolean;
+  /**
+   * ドキュメントの仕上げ（`frame`。余白・背景・影・線・角丸）を付けるか（FR-FILE-16）。既定 false。
+   * 保存する画像には付け、エディタの編集面（注釈の座標と画面を合わせる）には付けない
+   */
+  frame?: boolean;
 };
 
 type Resolved = {
@@ -461,5 +467,8 @@ export function buildSvg(input: HarieDocument, options: BuildSvgOptions = {}): s
     options.baseImageHref === undefined
       ? ""
       : `<image ${attrs({ href: options.baseImageHref, x: 0, y: 0, width, height, preserveAspectRatio: "none" })}/>`;
-  return `<svg xmlns="http://www.w3.org/2000/svg" ${attrs({ width: view.w, height: view.h, viewBox: `${n(view.x)} ${n(view.y)} ${n(view.w)} ${n(view.h)}` })}>${base}${body}</svg>`;
+  const svg = (place?: { x: number; y: number }) =>
+    `<svg xmlns="http://www.w3.org/2000/svg" ${attrs({ ...place, width: view.w, height: view.h, viewBox: `${n(view.x)} ${n(view.y)} ${n(view.w)} ${n(view.h)}` })}>${base}${body}</svg>`;
+  const frame = options.frame ? resolveFrame(doc.frame) : null;
+  return frame === null ? svg() : wrapFrame(frame, view, svg);
 }

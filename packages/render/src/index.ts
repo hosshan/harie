@@ -1,5 +1,6 @@
 export { toBase64, toDataUri } from "./base64";
 export * from "./extra-fonts";
+export * from "./frame";
 export * from "./import";
 export * from "./mask";
 export * from "./rebase";

@@ -99,6 +99,7 @@ function docSummary(doc: HarieDocument) {
     canvas: { width: doc.canvas.width, height: doc.canvas.height },
     annotations: doc.annotations,
     piiApplied: doc.pii.applied.length,
+    ...(doc.frame === undefined ? {} : { frame: doc.frame }),
   };
 }
 
@@ -107,7 +108,14 @@ async function renderImage(
   base: Loaded["base"],
   output: ImageFormat,
 ): Promise<ImageOut> {
-  const data = await (await nodeRenderer()).render({ doc, base, output, includeSuggested: true });
+  // 返す画像は注釈の座標と合わせるため、仕上げ（余白・影など。FR-FILE-16）を付けない
+  const data = await (await nodeRenderer()).render({
+    doc,
+    base,
+    output,
+    includeSuggested: true,
+    frame: false,
+  });
   return { data, mediaType: mediaTypeOf(output) };
 }
 
@@ -119,7 +127,10 @@ async function save(target: string, doc: HarieDocument, base: Loaded["base"], ou
   const saved = prepareForSave(doc);
   const rendered = await (await nodeRenderer()).render({ doc: saved, base, output });
   writeAtomic(target, writeHarie({ rendered, base: base.bytes, doc: saved }));
-  return { saved, rendered: { data: rendered, mediaType: mediaTypeOf(output) } };
+  // 返す画像は仕上げなし（注釈の座標と合わせる）。仕上げがなければ保存した画像と同じ
+  const shown =
+    saved.frame === undefined ? rendered : (await renderImage(saved, base, output)).data;
+  return { saved, rendered: { data: shown, mediaType: mediaTypeOf(output) } };
 }
 
 const EXT_FORMATS: Record<string, ImageFormat> = { ".jpg": "jpeg", ".jpeg": "jpeg", ".png": "png" };
