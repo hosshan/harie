@@ -5,11 +5,19 @@ import type { Locale, Messages } from "@harie/editor/locale";
 import { es, ko, ptBR, zhCN, zhTW } from "./i18n/catalogs";
 
 const ja = {
-  popupTitle: "Harie でキャプチャ",
   visible: "見えている範囲",
   region: "範囲を選ぶ",
   element: "要素を選ぶ",
+  visibleTip: "今見えている画面をそのまま撮ります",
+  regionTip: "ドラッグした範囲を撮ります",
+  elementTip: "クリックした要素を、少し余白を付けて撮ります",
+  settings: "画像ガイドの表示設定",
   blank: "空のエディタを開く",
+  timerLabel: "5 秒待ってから撮る",
+  timerTip: "待ってから撮ります。待つ間に、撮りたいメニューやツールチップを出しておけます",
+  timerPending: (n: number) => `あと ${n} 秒で撮ります`,
+  timerCancel: "やめる",
+  timerTabChanged: "タブが切り替わったので撮りませんでした",
   popupNote: "AIを利用しない場合、画像やページ情報は端末内でのみ処理されます。",
   failed: "キャプチャできませんでした",
   failedWith: (detail: string) => `キャプチャできませんでした: ${detail}`,
@@ -47,11 +55,19 @@ const ja = {
 export type ExtensionMessages = Messages<typeof ja>;
 
 const en: ExtensionMessages = {
-  popupTitle: "Capture with Harie",
   visible: "Visible area",
   region: "Select an area",
   element: "Select an element",
+  visibleTip: "Capture the screen as you see it",
+  regionTip: "Capture an area you drag",
+  elementTip: "Capture the element you click, with a small margin",
+  settings: "Image guide display settings",
   blank: "Open a blank editor",
+  timerLabel: "Wait 5 seconds before capturing",
+  timerTip: "Waits before capturing, so you can open the menu or tooltip you want in the shot",
+  timerPending: (n) => `Capturing in ${n} s`,
+  timerCancel: "Cancel",
+  timerTabChanged: "Didn't capture because the tab changed",
   popupNote: "Unless you use AI, images and page info are processed only on this device.",
   failed: "Couldn't capture",
   failedWith: (detail) => `Couldn't capture: ${detail}`,

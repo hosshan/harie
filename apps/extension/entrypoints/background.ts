@@ -7,6 +7,9 @@ import {
   type CaptureMode,
   captureErrorMessage,
   finishCapture,
+  grabFrame,
+  messages,
+  parseFrame,
   setCaptureLocale,
   startSelection,
 } from "@/lib/capture";
@@ -14,19 +17,46 @@ import { handlePageMessage, PageMessageSchema, syncPageScripts } from "@/lib/pag
 import { onPageSettingsChanged } from "@/lib/page-settings";
 import { MAX_SELECT_SIDE } from "@/lib/selection";
 import type { CssRect } from "@/lib/snapshot";
+import { cancelTimer, clearError, pendingTimer, runTimer, timerDelay } from "@/lib/timer";
 
 type Message =
-  | { type: "harie:start"; mode: CaptureMode; tabId: number; locale?: Locale }
-  | { type: "harie:selected"; rect: CssRect; size?: { width: number; height: number } }
+  | { type: "harie:start"; mode: CaptureMode; tabId: number; timer?: unknown; locale?: Locale }
+  | { type: "harie:timer-status" }
+  | { type: "harie:timer-cancel" }
+  | {
+      type: "harie:selected";
+      rect: CssRect;
+      size?: { width: number; height: number };
+      frame?: unknown;
+    }
   | { type: "harie:cancelled" };
 
+/**
+ * キャプチャを始める。タイマーなら 5 秒数え始めてすぐ戻り、ポップアップを閉じさせる（FR-CAP-11）。
+ * 撮る許可（activeTab）は押したタブに付き、そのタブでページを移るまで続くので、待ってからでも撮れる。
+ * 範囲・要素は、待ち終えた画面を撮って止め、その上で選ぶ（選ぶ操作でメニューが閉じても困らないように）
+ */
 async function start(
   mode: CaptureMode,
   tabId: number,
+  options: { timer?: unknown } = {},
 ): Promise<{ ok: true } | { ok: false; message: string }> {
+  const delay = timerDelay(options.timer);
   try {
     const tab = await browser.tabs.get(tabId);
-    if (mode === "visible") await finishCapture(tab, null);
+    cancelTimer();
+    await clearError();
+    if (delay > 0) {
+      void runTimer(
+        tabId,
+        delay,
+        async () => {
+          if (mode === "visible") await finishCapture(tab, null);
+          else await startSelection(tab, mode, await grabFrame(tab));
+        },
+        { tabChanged: messages().timerTabChanged },
+      );
+    } else if (mode === "visible") await finishCapture(tab, null);
     else await startSelection(tab, mode);
     return { ok: true };
   } catch (e) {
@@ -43,8 +73,16 @@ export default defineBackground(() => {
     }
     if (message.type === "harie:start") {
       if (isLocale(message.locale)) setCaptureLocale(message.locale);
-      void start(message.mode, message.tabId).then(sendResponse);
+      void start(message.mode, message.tabId, { timer: message.timer }).then(sendResponse);
       return true;
+    }
+    if (message.type === "harie:timer-status") {
+      sendResponse(pendingTimer());
+      return false;
+    }
+    if (message.type === "harie:timer-cancel") {
+      sendResponse(cancelTimer());
+      return false;
     }
     if (message.type === "harie:selected" && sender.tab !== undefined) {
       // 選択範囲は外部（ページ側）から来る値なので、数値であることを確かめてから使う
@@ -59,9 +97,13 @@ export default defineBackground(() => {
           )
             ? { width: s.width, height: s.height }
             : null;
-        void finishCapture(sender.tab, r, new Date(), size).catch((e) =>
-          console.error(captureErrorMessage(e)),
-        );
+        // 止めた画面の上で選んだときは、その画面を切り抜く（撮り直すと、閉じたメニューの画面になる。FR-CAP-11）
+        const frozen = message.frame === undefined ? undefined : parseFrame(message.frame);
+        if (frozen !== null) {
+          void finishCapture(sender.tab, r, new Date(), size, frozen).catch((e) =>
+            console.error(captureErrorMessage(e)),
+          );
+        }
       }
     }
     return false;

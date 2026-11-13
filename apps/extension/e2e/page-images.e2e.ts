@@ -142,14 +142,14 @@ test("FR-FILE-12: 説明文の枠にカーソルを当てるとコピーボタ�
   );
 });
 
-test("FR-FILE-12, 13: ポップアップで出すボタンを選べる。オフにしたボタンは出さない", async ({
+test("FR-FILE-12, 13: 設定ページで出すボタンを選べる。オフにしたボタンは出さない", async ({
   context,
   worker,
   extensionId,
   target,
 }) => {
   const popup = await context.newPage();
-  await popup.goto(`chrome-extension://${extensionId}/popup.html`);
+  await popup.goto(`chrome-extension://${extensionId}/options.html`);
   const edit = popup.getByLabel("画像に編集ボタンを表示");
   const copy = popup.getByLabel("画像に文章のコピーボタンを表示");
   await expect(edit).not.toBeChecked();

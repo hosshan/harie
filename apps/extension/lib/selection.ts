@@ -59,3 +59,14 @@ export function fixedRect(
   const y = Math.max(0, Math.min(cursor.y, viewport.height - h));
   return { x, y, w: Math.min(w, viewport.width), h: Math.min(h, viewport.height) };
 }
+
+/** 点を含む矩形のうち、いちばん小さいもの（止めた画面で要素を選ぶとき。FR-CAP-11） */
+export function smallestRectAt(rects: CssRect[], p: { x: number; y: number }): CssRect | null {
+  let best: CssRect | null = null;
+  for (const r of rects) {
+    if (p.x < r.x || p.y < r.y || p.x > r.x + r.w || p.y > r.y + r.h) continue;
+    if (r.w <= 0 || r.h <= 0) continue;
+    if (best === null || r.w * r.h < best.w * best.h) best = r;
+  }
+  return best;
+}

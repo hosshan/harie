@@ -2,11 +2,19 @@
 import type { ExtensionMessages } from "../messages";
 
 export const ko: ExtensionMessages = {
-  popupTitle: "Harie로 캡처",
   visible: "보이는 영역",
   region: "영역 선택",
   element: "요소 선택",
+  visibleTip: "지금 보이는 화면을 그대로 찍습니다",
+  regionTip: "드래그한 영역을 찍습니다",
+  elementTip: "클릭한 요소를 약간의 여백과 함께 찍습니다",
+  settings: "이미지 가이드 표시 설정",
   blank: "빈 편집기 열기",
+  timerLabel: "5초 기다린 뒤 찍기",
+  timerTip: "기다린 뒤에 찍습니다. 기다리는 동안 찍고 싶은 메뉴나 툴팁을 열어 둘 수 있습니다",
+  timerPending: (n) => `${n}초 후에 찍습니다`,
+  timerCancel: "취소",
+  timerTabChanged: "탭이 바뀌어서 찍지 않았습니다",
   popupNote: "AI를 사용하지 않으면 이미지와 페이지 정보는 이 기기 안에서만 처리됩니다.",
   failed: "캡처하지 못했습니다",
   failedWith: (detail) => `캡처하지 못했습니다: ${detail}`,
@@ -41,11 +49,19 @@ export const ko: ExtensionMessages = {
 };
 
 export const zhTW: ExtensionMessages = {
-  popupTitle: "用 Harie 擷取",
   visible: "可見範圍",
   region: "選擇範圍",
   element: "選擇元素",
+  visibleTip: "直接擷取目前看到的畫面",
+  regionTip: "擷取拖曳選取的範圍",
+  elementTip: "擷取點選的元素，並留一點邊距",
+  settings: "圖片教學顯示設定",
   blank: "開啟空白編輯器",
+  timerLabel: "等 5 秒後再擷取",
+  timerTip: "等待後再擷取。等待期間可先開啟想擷取的選單或提示框",
+  timerPending: (n) => `${n} 秒後擷取`,
+  timerCancel: "取消",
+  timerTabChanged: "分頁已切換，因此沒有擷取",
   popupNote: "不使用 AI 時，圖片和頁面資訊只會在這台裝置上處理。",
   failed: "無法擷取",
   failedWith: (detail) => `無法擷取：${detail}`,
@@ -80,11 +96,19 @@ export const zhTW: ExtensionMessages = {
 };
 
 export const zhCN: ExtensionMessages = {
-  popupTitle: "用 Harie 截图",
   visible: "可见区域",
   region: "选择区域",
   element: "选择元素",
+  visibleTip: "直接截取当前看到的画面",
+  regionTip: "截取拖动选取的范围",
+  elementTip: "截取点击的元素，并留一点边距",
+  settings: "图片教程显示设置",
   blank: "打开空白编辑器",
+  timerLabel: "等 5 秒后再截取",
+  timerTip: "等待后再截取。等待期间可先打开想截取的菜单或提示框",
+  timerPending: (n) => `${n} 秒后截取`,
+  timerCancel: "取消",
+  timerTabChanged: "标签页已切换，因此没有截取",
   popupNote: "不使用 AI 时，图片和页面信息只会在这台设备上处理。",
   failed: "无法截图",
   failedWith: (detail) => `无法截图：${detail}`,
@@ -119,11 +143,20 @@ export const zhCN: ExtensionMessages = {
 };
 
 export const es: ExtensionMessages = {
-  popupTitle: "Capturar con Harie",
   visible: "Área visible",
   region: "Elegir un área",
   element: "Elegir un elemento",
+  visibleTip: "Captura la pantalla tal como se ve",
+  regionTip: "Captura la zona que arrastres",
+  elementTip: "Captura el elemento en el que hagas clic, con un pequeño margen",
+  settings: "Ajustes de visualización de guías de imagen",
   blank: "Abrir el editor vacío",
+  timerLabel: "Esperar 5 segundos antes de capturar",
+  timerTip:
+    "Espera antes de capturar, para que puedas abrir el menú o la descripción emergente que quieras",
+  timerPending: (n) => `Captura en ${n} s`,
+  timerCancel: "Cancelar",
+  timerTabChanged: "No se capturó porque cambió la pestaña",
   popupNote:
     "Si no usas la IA, las imágenes y la información de la página se procesan solo en este dispositivo.",
   failed: "No se pudo capturar",
@@ -160,11 +193,19 @@ export const es: ExtensionMessages = {
 };
 
 export const ptBR: ExtensionMessages = {
-  popupTitle: "Capturar com o Harie",
   visible: "Área visível",
   region: "Escolher uma área",
   element: "Escolher um elemento",
+  visibleTip: "Captura a tela como você a vê",
+  regionTip: "Captura a região que você arrastar",
+  elementTip: "Captura o elemento clicado, com uma pequena margem",
+  settings: "Configurações de exibição de guias de imagem",
   blank: "Abrir o editor vazio",
+  timerLabel: "Esperar 5 segundos antes de capturar",
+  timerTip: "Espera antes de capturar, para você abrir o menu ou a dica que quer na imagem",
+  timerPending: (n) => `Capturando em ${n} s`,
+  timerCancel: "Cancelar",
+  timerTabChanged: "A captura não foi feita porque a aba mudou",
   popupNote:
     "Se você não usar a IA, as imagens e as informações da página são processadas apenas neste dispositivo.",
   failed: "Não foi possível capturar",

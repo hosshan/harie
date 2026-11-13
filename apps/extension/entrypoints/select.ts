@@ -1,10 +1,11 @@
 // 範囲選択・要素選択のオーバーレイ（FR-CAP-02）。拡張のボタンを押したタブにだけ、その都度注入する（activeTab）。
 // 選び終えたらオーバーレイを消してから background に範囲を送る（オーバーレイが写り込まないように）。
 // 範囲選択では、撮る画像の幅×高さを数値で決められる（FR-CAP-10）。決めると、その大きさの枠がカーソルに付いてきて、
-// クリックした位置で撮る。欄は毎回空から始め、空のままならこれまでどおりドラッグで選ぶ
+// クリックした位置で撮る。欄は毎回空から始め、空のままならこれまでどおりドラッグで選ぶ。
+// タイマーで撮ったとき（FR-CAP-11）は、止めた画面をオーバーレイに敷き、その上で選ぶ。要素は撮ったときの位置で選ぶ
 import { browser } from "wxt/browser";
-import type { SelectText } from "@/lib/capture";
-import { dragRect, elementRect, fixedRect, parseSelectSide } from "@/lib/selection";
+import type { Frame, SelectText } from "@/lib/capture";
+import { dragRect, elementRect, fixedRect, parseSelectSide, smallestRectAt } from "@/lib/selection";
 
 type Mode = "region" | "element";
 type HarieWindow = Window & {
@@ -13,6 +14,8 @@ type HarieWindow = Window & {
   __harieSelectHint?: string;
   /** 大きさを決める欄の文言（同上） */
   __harieSelectText?: SelectText;
+  /** タイマーで止めた画面（同上） */
+  __harieFrozen?: Frame | null;
   __harieOverlayCleanup?: (() => void) | undefined;
 };
 type Rect = { x: number; y: number; w: number; h: number };
@@ -27,6 +30,9 @@ export default defineUnlistedScript(() => {
   const text = w.__harieSelectText;
   const hintText = w.__harieSelectHint ?? "";
   const viewport = () => ({ width: window.innerWidth, height: window.innerHeight });
+  const frozen = w.__harieFrozen ?? null;
+  w.__harieFrozen = null;
+  const frozenRects = frozen?.raw?.elements.map((e) => e.rect) ?? null;
   // 画像のピクセル ÷ CSS ピクセル（撮った画像の大きさで数える）
   const scale = () => window.devicePixelRatio || 1;
   const toImage = (r: Rect): Size => ({
@@ -85,6 +91,11 @@ export default defineUnlistedScript(() => {
     panel.append(fields);
   }
   root.append(box, label, panelHost);
+  if (frozen !== null) {
+    // 止めた画面を敷く。少し暗くするのはオーバーレイだけで、切り抜くのは止めた画面そのもの
+    root.style.backgroundImage = `linear-gradient(rgba(15,23,42,0.15),rgba(15,23,42,0.15)),url("${frozen.dataUrl}")`;
+    root.style.backgroundSize = "100% 100%";
+  }
   document.documentElement.append(root);
 
   const show = (r: Rect | null) => {
@@ -138,7 +149,7 @@ export default defineUnlistedScript(() => {
     });
   }
   let start: { x: number; y: number } | null = null;
-  let hovered: Element | null = null;
+  let hovered: Rect | null = null;
 
   const finish = (rect: Rect | null, size: Size | null = null) => {
     cleanup();
@@ -148,7 +159,12 @@ export default defineUnlistedScript(() => {
         void browser.runtime.sendMessage(
           rect === null
             ? { type: "harie:cancelled" }
-            : { type: "harie:selected", rect, ...(size === null ? {} : { size }) },
+            : {
+                type: "harie:selected",
+                rect,
+                ...(size === null ? {} : { size }),
+                ...(frozen === null ? {} : { frame: frozen }),
+              },
         );
       }),
     );
@@ -163,6 +179,12 @@ export default defineUnlistedScript(() => {
     document.elementsFromPoint(e.clientX, e.clientY).find((el) => !root.contains(el)) ?? null;
   const onPanel = (e: Event) => e.composedPath().includes(panelHost);
   const point = (e: MouseEvent) => ({ x: e.clientX, y: e.clientY });
+  /** カーソルの下の要素の矩形。止めた画面では撮ったときの要素の位置から選ぶ */
+  const targetRect = (e: MouseEvent): Rect | null => {
+    if (frozenRects !== null) return smallestRectAt(frozenRects, point(e));
+    const r = target(e)?.getBoundingClientRect();
+    return r === undefined ? null : { x: r.left, y: r.top, w: r.width, h: r.height };
+  };
 
   root.addEventListener("mousedown", (e) => {
     if (onPanel(e)) return;
@@ -188,9 +210,8 @@ export default defineUnlistedScript(() => {
       if (start !== null) show(dragRect(start, point(e), viewport(), 1));
       return;
     }
-    hovered = target(e);
-    const r = hovered?.getBoundingClientRect();
-    show(r === undefined ? null : { x: r.left, y: r.top, w: r.width, h: r.height });
+    hovered = targetRect(e);
+    show(hovered);
   });
   root.addEventListener("mouseup", (e) => {
     if (mode === "region") {
@@ -205,10 +226,9 @@ export default defineUnlistedScript(() => {
       return;
     }
     if (onPanel(e)) return;
-    const el = hovered ?? target(e);
-    if (el === null) return;
-    const r = el.getBoundingClientRect();
-    finish(elementRect({ x: r.left, y: r.top, w: r.width, h: r.height }, viewport()));
+    const r = hovered ?? targetRect(e);
+    if (r === null) return;
+    finish(elementRect(r, viewport()));
   });
   window.addEventListener("keydown", onKey, true);
 
