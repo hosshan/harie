@@ -221,7 +221,7 @@ export const DocumentSchema = z.looseObject({
     devicePixelRatio: finite.positive().default(1),
     crop: RectSchema.nullable().default(null),
     /**
-     * 書き出しの大きさ（FR-EDIT-24, ADR-0017）。保存する画像だけをこの大きさで描く。
+     * 書き出しの大きさ（FR-EDIT-24, ADR-0018）。保存する画像だけをこの大きさで描く。
      * ベース画像と注釈の座標は変えない。省略は表示範囲（crop か画像全体）と同じ大きさ
      */
     output: OutputSizeSchema.optional(),

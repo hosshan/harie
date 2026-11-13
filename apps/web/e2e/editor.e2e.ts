@@ -1190,7 +1190,7 @@ test("FR-EDIT-24: 保存する画像の大きさを数値・倍率で変え、�
     height: 400,
     output: { width: 260, height: 200 },
   });
-  // 注釈の座標とベース画像は変わらない（ADR-0004, ADR-0017）
+  // 注釈の座標とベース画像は変わらない（ADR-0004, ADR-0018）
   expect(read.doc.annotations[0]).toMatchObject({ x: 40, y: 40, w: 200, h: 80 });
   expect(read.base.bytes).toEqual(new Uint8Array(fixture("large-base.jpg")));
   // NFR-PLAT-05: ブラウザと Node で同じバイト列になる
