@@ -76,6 +76,22 @@ const ja = {
     resized: "注釈を新しい画像の大きさに合わせました。",
     remask: (n: number) => `前の画像でマスクしていた ${n} か所は、かけ直してください`,
   },
+  resize: {
+    button: "サイズ変更",
+    title: "保存する画像のサイズ",
+    description:
+      "保存・コピーする画像だけをこの大きさで描きます。元の画像と注釈はそのまま残るので、あとから何度でも変えられます。",
+    original: (w: number, h: number) => `元の画像: ${w} × ${h} px`,
+    width: "幅（W）",
+    height: "高さ（H）",
+    keepAspect: "縦横比を保つ",
+    presets: "倍率",
+    invalid: (max: number) => `幅と高さは 1〜${max} の整数で入力してください`,
+    cancel: "キャンセル",
+    apply: "変更する",
+    done: (w: number, h: number) => `保存する画像のサイズを ${w} × ${h} px にしました`,
+    reset: "保存する画像のサイズを元の大きさに戻しました",
+  },
   masks: {
     applied: (n: number) =>
       `${n} か所をマスクしました。保存するまでは、範囲を選んで隠すのをやめられます`,
@@ -280,6 +296,22 @@ const en: WebMessages = {
     resized: "Annotations were resized to fit the new image. ",
     remask: (n) =>
       `Please mask again the ${n} ${n === 1 ? "area" : "areas"} you had masked in the previous image`,
+  },
+  resize: {
+    button: "Resize",
+    title: "Saved image size",
+    description:
+      "Only the image you save or copy is drawn at this size. The original image and annotations are kept, so you can change it again anytime.",
+    original: (w, h) => `Original image: ${w} × ${h} px`,
+    width: "Width (W)",
+    height: "Height (H)",
+    keepAspect: "Keep aspect ratio",
+    presets: "Scale",
+    invalid: (max) => `Enter whole numbers from 1 to ${max} for width and height`,
+    cancel: "Cancel",
+    apply: "Resize",
+    done: (w, h) => `Saved image size set to ${w} × ${h} px`,
+    reset: "Saved image size reset to the original",
   },
   masks: {
     applied: (n) =>

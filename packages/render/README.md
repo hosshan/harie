@@ -16,7 +16,7 @@
 | `annotationBox` / `rotatePoint` / `boxCenter` | 回す前の範囲と、その中心を軸にした点の回転。回した注釈のつまみや変形に使う |
 | `createRenderer({ resvgWasm, jpegEncoderWasm, fonts, loadExtraFont? })` | 描画エンジンを作る。`loadExtraFont` は補助フォント（`EXTRA_FONT_FILES`）のバイト列を返す |
 | `requiredExtraFonts(text)` | テキストを描くのに要る補助フォント |
-| `renderer.render({ doc, base, output })` | 保存用の画像（`@harie/format` で埋め込む前のもの）を返す |
+| `renderer.render({ doc, base, output, atOutputSize? })` | 保存用の画像（`@harie/format` で埋め込む前のもの）を返す。`canvas.output` があればその大きさで描く（FR-EDIT-24）。`atOutputSize: false` でベース画像の大きさ |
 | `renderer.renderPixels` | RGBA ピクセルを返す（テスト・プレビュー用） |
 | `renderer.applyMasks({ base, width, height, masks })` | 個人情報のマスク（塗りつぶし・モザイク・ぼかし・ダミー置換）をベース画像に焼き込む |
 | `THEMES` | 色・線幅などの見た目のテーマ |

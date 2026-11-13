@@ -164,3 +164,27 @@ describe("Renderer", () => {
     expect(ms).toBeLessThan(10_000);
   }, 20_000);
 });
+
+describe("書き出しの大きさ（FR-EDIT-24）", () => {
+  it("FR-EDIT-24: 保存する画像は書き出しの大きさで描き、注釈も同じ比率で縮む", async () => {
+    const d = doc(64, 48, [red]);
+    const r = applyOps(d, [{ op: "setOutputSize", size: { width: 32, height: 24 } }]);
+    if (!r.ok) throw new Error(r.error.message);
+    const renderer = await nodeRenderer();
+    const pixels = renderer.renderPixels({ doc: r.value, base });
+    expect([pixels.width, pixels.height]).toEqual([32, 24]);
+    // 元の (8,8)-(48,28) の赤い枠は、半分の (4,4)-(24,14) に描かれる
+    expect(px(pixels, 4, 9).slice(0, 3)).toEqual([255, 0, 0]);
+    const full = renderer.renderPixels({ doc: d, base });
+    expect([full.width, full.height]).toEqual([64, 48]);
+  });
+
+  it("FR-EDIT-24: 縦横比が違えば軸ごとに伸び縮みさせる", async () => {
+    const r = applyOps(doc(64, 48, []), [
+      { op: "setOutputSize", size: { width: 128, height: 24 } },
+    ]);
+    if (!r.ok) throw new Error(r.error.message);
+    const pixels = (await nodeRenderer()).renderPixels({ doc: r.value, base });
+    expect([pixels.width, pixels.height]).toEqual([128, 24]);
+  });
+});

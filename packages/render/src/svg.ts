@@ -6,6 +6,7 @@ import {
   arrowEnds,
   type HarieDocument,
   type LineDash,
+  outputSize,
   rotationOf,
   type Style,
 } from "@harie/model";
@@ -49,6 +50,11 @@ export type BuildSvgOptions = {
   baseImageHref?: string;
   /** AI 提案中（status: "suggested"）の注釈も描くか。保存時は描かない（FR-AI-02）。 */
   includeSuggested?: boolean;
+  /**
+   * 書き出しの大きさ（FR-EDIT-24）で描く。保存・コピーする画像を描くときに使う。
+   * 省略すると表示範囲と同じ大きさ（エディタの表示用）
+   */
+  applyOutputSize?: boolean;
 };
 
 type Resolved = {
@@ -461,5 +467,7 @@ export function buildSvg(input: HarieDocument, options: BuildSvgOptions = {}): s
     options.baseImageHref === undefined
       ? ""
       : `<image ${attrs({ href: options.baseImageHref, x: 0, y: 0, width, height, preserveAspectRatio: "none" })}/>`;
-  return `<svg xmlns="http://www.w3.org/2000/svg" ${attrs({ width: view.w, height: view.h, viewBox: `${n(view.x)} ${n(view.y)} ${n(view.w)} ${n(view.h)}` })}>${base}${body}</svg>`;
+  const size = options.applyOutputSize ? outputSize(doc) : { width: view.w, height: view.h };
+  const scaled = size.width !== view.w || size.height !== view.h;
+  return `<svg xmlns="http://www.w3.org/2000/svg" ${attrs({ width: size.width, height: size.height, viewBox: `${n(view.x)} ${n(view.y)} ${n(view.w)} ${n(view.h)}`, ...(scaled ? { preserveAspectRatio: "none" } : {}) })}>${base}${body}</svg>`;
 }

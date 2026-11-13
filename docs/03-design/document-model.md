@@ -45,6 +45,7 @@ Harie ファイルに埋め込む注釈ドキュメント（JSON）の構造。�
 | 項目 | 判断 | 理由 |
 |---|---|---|
 | 座標系 | ベース画像のピクセル座標（左上原点）。`devicePixelRatio` を別途記録 | 画面の CSS 座標と画像座標の変換を 1 か所に閉じ込める |
+| 保存する画像の大きさ | `canvas.output`（`{ width, height }`、任意）。省略は表示範囲（`crop` か画像全体）と同じ。座標は変えず、保存・コピーする画像だけをこの大きさで描く | 元の画像を残したまま何度でも変えられる（FR-EDIT-24, [ADR-0017](../adr/0017-output-size.md)） |
 | 注釈の順序 | 配列の順 = 描画順（後ろほど上） | 単純で、MCP からも理解しやすい |
 | ID | ドキュメント内で一意な短い文字列 | MCP で「a3 のテキストを変えて」と指定しやすい |
 | 番号バッジ | `number` を明示的に持つ。`renumber` 操作で振り直す | 自動採番だけにすると、削除時に意図しない番号変更が起きる |
@@ -83,7 +84,8 @@ type Op =
   | { op: "update"; id: string; patch: Partial<Annotation> }
   | { op: "remove"; id: string }
   | { op: "reorder"; id: string; index: number }
-  | { op: "renumber" };
+  | { op: "renumber" }
+  | { op: "setOutputSize"; size: { width: number; height: number } | null }; // 保存する画像の大きさ（FR-EDIT-24）。null で元の大きさ
 
 function apply(doc: HarieDocument, ops: Op[]): HarieDocument; // 不正な操作は検証エラーを返す
 ```

@@ -32,3 +32,4 @@
 | [0014](./0014-arrow-heads.md) | 矢印の矢じりを始端・終端それぞれに付け外しできるよう、`style.head` に `start` を加える | 承認 |
 | [0015](./0015-annotation-rotation.md) | 注釈の回転を、範囲の中心を軸にした角度 `rotation` として持つ | 承認 |
 | [0016](./0016-import-other-image-formats.md) | JPEG / PNG 以外の画像は、取り込むときに一度だけ PNG / JPEG に変換してベース画像にする | 提案中 |
+| [0017](./0017-output-size.md) | 画像のサイズ変更は、ベース画像を残したまま保存する画像の大きさ `canvas.output` として持つ | 提案中 |

@@ -96,7 +96,12 @@ function docSummary(doc: HarieDocument) {
     docId: doc.docId,
     revision: doc.revision,
     title: doc.meta.title,
-    canvas: { width: doc.canvas.width, height: doc.canvas.height },
+    canvas: {
+      width: doc.canvas.width,
+      height: doc.canvas.height,
+      // 保存する画像の大きさ（FR-EDIT-24）。決めていなければ省く。座標は常に width × height のまま
+      ...(doc.canvas.output === undefined ? {} : { output: doc.canvas.output }),
+    },
     annotations: doc.annotations,
     piiApplied: doc.pii.applied.length,
   };
@@ -107,7 +112,14 @@ async function renderImage(
   base: Loaded["base"],
   output: ImageFormat,
 ): Promise<ImageOut> {
-  const data = await (await nodeRenderer()).render({ doc, base, output, includeSuggested: true });
+  // 注釈の座標と見比べられるよう、書き出しの大きさを決めていてもベース画像の大きさで描く
+  const data = await (await nodeRenderer()).render({
+    doc,
+    base,
+    output,
+    includeSuggested: true,
+    atOutputSize: false,
+  });
   return { data, mediaType: mediaTypeOf(output) };
 }
 
@@ -119,7 +131,12 @@ async function save(target: string, doc: HarieDocument, base: Loaded["base"], ou
   const saved = prepareForSave(doc);
   const rendered = await (await nodeRenderer()).render({ doc: saved, base, output });
   writeAtomic(target, writeHarie({ rendered, base: base.bytes, doc: saved }));
-  return { saved, rendered: { data: rendered, mediaType: mediaTypeOf(output) } };
+  // 返す画像は注釈の座標と同じ大きさにする。書き出しの大きさを決めているときだけ描き直す（FR-EDIT-24）
+  const shown =
+    saved.canvas.output === undefined
+      ? rendered
+      : await (await nodeRenderer()).render({ doc: saved, base, output, atOutputSize: false });
+  return { saved, rendered: { data: shown, mediaType: mediaTypeOf(output) } };
 }
 
 const EXT_FORMATS: Record<string, ImageFormat> = { ".jpg": "jpeg", ".jpeg": "jpeg", ".png": "png" };

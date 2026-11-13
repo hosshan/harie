@@ -222,6 +222,37 @@ test("FR-CAP-02: 範囲を選んで撮ると、その範囲だけの画像にな
   expect(Buffer.from(file).includes(Buffer.from("hanako.sato@example.com"))).toBe(false);
 });
 
+test("FR-CAP-10: 範囲選択で幅×高さを入れると、クリックした位置をその大きさちょうどで撮り、次も同じ大きさを使う", async ({
+  context,
+  worker,
+  extensionId,
+  target,
+}) => {
+  await startCapture(worker, target, "region");
+  const overlay = target.locator("[data-harie-overlay]");
+  await overlay.getByRole("textbox", { name: "幅（W）" }).fill("150");
+  await overlay.getByRole("textbox", { name: "高さ（H）" }).fill("60");
+  await expect(overlay.getByText("クリックした位置を左上にして")).toBeVisible();
+  // 画面より大きい値では撮れない
+  await overlay.getByRole("textbox", { name: "幅（W）" }).fill("5000");
+  await expect(overlay.getByText("画面より大きいため")).toBeVisible();
+  await overlay.getByRole("textbox", { name: "幅（W）" }).fill("150");
+
+  const opened = editorOpened(context, extensionId);
+  await target.mouse.move(30, 300);
+  await expect(overlay.getByText("150 × 60")).toBeVisible();
+  await target.mouse.click(30, 300);
+  const editor = await opened;
+  await expect(editor.locator(".harie-canvas-overlay")).toHaveAttribute("viewBox", "0 0 150 60");
+
+  // 次の範囲選択でも、最後に決めた大きさが入っている
+  await startCapture(worker, target, "region");
+  await expect(overlay.getByRole("textbox", { name: "幅（W）" })).toHaveValue("150");
+  await expect(overlay.getByRole("textbox", { name: "高さ（H）" })).toHaveValue("60");
+  await target.keyboard.press("Escape");
+  await expect(overlay).toHaveCount(0);
+});
+
 test("FR-CAP-02: 要素を選ぶと、余白付きでその要素を撮る。Esc でやめられる", async ({
   context,
   worker,
