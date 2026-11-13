@@ -1,5 +1,5 @@
 // 設定ページ。ページ上の Harie 画像（FR-FILE-12, FR-FILE-13）のボタンを選ぶ。
-// ポップアップを簡単にするため、ポップアップから移した（ポップアップの「設定」・chrome://extensions の「拡張機能のオプション」から開く）
+// ポップアップを簡単にするため、ポップアップから移した（ポップアップの「画像ガイドの表示設定」・chrome://extensions の「拡張機能のオプション」から開く）
 import { applyDocumentLang, getLocale } from "@harie/editor/locale";
 import { browser } from "wxt/browser";
 import { extensionMessages } from "@/lib/messages";
@@ -15,10 +15,10 @@ import {
 const locale = getLocale();
 const m = extensionMessages(locale);
 applyDocumentLang(locale);
-document.title = m.settingsTitle;
+document.title = m.settings;
 for (const el of document.querySelectorAll<HTMLElement>("[data-message]")) {
   const key = el.dataset.message as
-    | "settingsTitle"
+    | "settings"
     | "popupNote"
     | "pageTitle"
     | "pageEdit"
