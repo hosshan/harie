@@ -7,6 +7,7 @@ import { extensionMessages } from "./messages";
 import {
   type CssRect,
   captureFileName,
+  fitImageRect,
   type RawSnapshot,
   toImageRect,
   toImageSnapshot,
@@ -59,6 +60,9 @@ export function parseFrame(value: unknown): Frame | null {
   return { dataUrl: v.dataUrl, raw: valid ? raw : null };
 }
 
+/** 範囲選択のオーバーレイで、大きさを数値で決める欄の文言（FR-CAP-10） */
+export type SelectText = { fixedHint: string; width: string; height: string; tooLarge: string };
+
 /**
  * 範囲・要素選択のオーバーレイを出す。選び終えると content からメッセージが来て finishCapture に進む。
  * frame を渡すと、その画面を止めてオーバーレイの背景に出し、その上で選ぶ（タイマーのあとでメニューが閉じても困らない）。
@@ -72,17 +76,29 @@ export async function startSelection(
   const tabId = requireTabId(tab);
   await browser.scripting.executeScript({
     target: { tabId },
-    func: (m: string, hint: string, f: Frame | null) => {
+    func: (m: string, hint: string, text: SelectText, f: Frame | null) => {
       const w = window as Window & {
         __harieSelectMode?: string;
         __harieSelectHint?: string;
+        __harieSelectText?: SelectText;
         __harieFrozen?: Frame | null;
       };
       w.__harieSelectMode = m;
       w.__harieSelectHint = hint;
+      w.__harieSelectText = text;
       w.__harieFrozen = f;
     },
-    args: [mode, mode === "region" ? messages().dragHint : messages().clickHint, frame],
+    args: [
+      mode,
+      mode === "region" ? messages().dragHint : messages().clickHint,
+      {
+        fixedHint: messages().fixedHint,
+        width: messages().selectWidth,
+        height: messages().selectHeight,
+        tooLarge: messages().selectTooLarge,
+      },
+      frame,
+    ],
   });
   await browser.scripting.executeScript({ target: { tabId }, files: ["/select.js"] });
 }
@@ -109,12 +125,14 @@ export async function grabFrame(tab: Tab): Promise<Frame> {
 
 /**
  * 可視範囲を撮る（FR-CAP-01）。crop を渡すとその範囲（CSS ピクセル）に切り抜く（FR-CAP-02）。
+ * exactSize を渡すと、切り抜いた画像をその大きさ（画像ピクセル）ちょうどにする（FR-CAP-10）。
  * 撮影と同時に DOM 情報を取る（FR-CAP-03）。frame を渡すと撮り直さずにその画面を使う（FR-CAP-11）
  */
 export async function finishCapture(
   tab: Tab,
   crop: CssRect | null,
   now = new Date(),
+  exactSize: { width: number; height: number } | null = null,
   frame?: Frame,
 ): Promise<string> {
   const { dataUrl, raw } = frame ?? (await grabFrame(tab));
@@ -127,6 +145,8 @@ export async function finishCapture(
   try {
     if (crop !== null) {
       imageRect = toImageRect(crop, scale, full);
+      // 大きさを数値で決めたときは、その大きさちょうどの画像にする（FR-CAP-10）
+      if (exactSize !== null) imageRect = fitImageRect(imageRect, exactSize, full);
       if (imageRect.w === 0 || imageRect.h === 0) throw new Error(messages().emptyRange);
       const canvas = new OffscreenCanvas(imageRect.w, imageRect.h);
       const ctx = canvas.getContext("2d");

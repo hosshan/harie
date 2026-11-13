@@ -47,6 +47,11 @@ export type RenderInput = {
   /** JPEG 品質（1〜100）。既定 90 */
   quality?: number;
   includeSuggested?: boolean;
+  /**
+   * 書き出しの大きさ（FR-EDIT-24）で描くか。既定 true（保存・コピーする画像）。
+   * false はベース画像と同じ大きさで描く（注釈の座標と画像のピクセルを合わせて見せたいとき。MCP のプレビュー）
+   */
+  atOutputSize?: boolean;
 };
 
 export type Pixels = { width: number; height: number; data: Uint8Array };
@@ -147,6 +152,8 @@ export async function createRenderer(init: RendererInit): Promise<Renderer> {
     buildSvg(input.doc, {
       baseImageHref: toDataUri(input.base.bytes, input.base.mediaType),
       includeSuggested: input.includeSuggested ?? false,
+      // 保存・コピーする画像は書き出しの大きさで描く（FR-EDIT-24）
+      applyOutputSize: input.atOutputSize ?? true,
     });
 
   const encode = async (

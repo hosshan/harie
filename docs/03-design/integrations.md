@@ -12,7 +12,7 @@
 |---|---|---|
 | ポップアップ / ショートカット（Alt+Shift+S） | キャプチャ開始（見えている範囲・範囲を選ぶ・要素を選ぶ。「5 秒待ってから撮る」スイッチ（FR-CAP-11））と、空のエディタを開く（FR-CAP-08）・設定ページへのリンク | `entrypoints/popup/` |
 | 設定ページ（`options_ui`, タブで開く） | ページ上の Harie 画像のボタンの設定（1.5）。ポップアップを簡単に保つため分けた | `entrypoints/options/` |
-| 選択オーバーレイ（押したときに注入） | 範囲・要素選択。選び終えたらオーバーレイを消してから範囲を送る。（Next）DOM テキストのダミー置換 | `entrypoints/select.ts` |
+| 選択オーバーレイ（押したときに注入） | 範囲・要素選択。選び終えたらオーバーレイを消してから範囲を送る。範囲選択では撮る画像の幅×高さを数値で決められ、その大きさを範囲と一緒に送る（FR-CAP-10。service worker が丸めで 1px ずれないよう、その大きさちょうどに切り抜く）。（Next）DOM テキストのダミー置換 | `entrypoints/select.ts` |
 | DOM スナップショット（押したときに注入） | 可視範囲の主要要素を取る（1.3） | `lib/collect.ts` |
 | service worker | `chrome.tabs.captureVisibleTab` で撮影し、範囲選択なら切り抜く。キャプチャを IndexedDB に置き、エディタページを開く | `entrypoints/background.ts`, `lib/capture.ts` |
 | ページ用スクリプト（許可したサイトにだけ登録） | ページ上の Harie 画像に、カーソルを当てたときだけ編集ボタンと説明文のコピーボタンを出す（1.5） | `entrypoints/page.ts`, `lib/page-image.ts`, `lib/page-copy.ts`, `lib/page-fetch.ts` |

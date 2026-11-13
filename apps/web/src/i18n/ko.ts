@@ -66,6 +66,21 @@ export const ko: WebMessages = {
     resized: "주석을 새 이미지 크기에 맞췄습니다. ",
     remask: (n) => `이전 이미지에서 마스크한 ${n}곳은 다시 마스크해 주세요`,
   },
+  resize: {
+    button: "크기 변경",
+    title: "저장할 이미지 크기",
+    description:
+      "저장하는 이미지만 이 크기로 만듭니다. 가로세로 비율은 그대로이고 원본 이미지는 남으므로 나중에 되돌릴 수 있습니다.",
+    original: (w, h) => `원본 이미지: ${w} × ${h} px`,
+    width: "너비(W)",
+    height: "높이(H)",
+    invalid: (max) => `너비와 높이는 1~${max}의 정수로 입력해 주세요`,
+    cancel: "취소",
+    apply: "변경",
+    done: (w, h) => `저장할 이미지 크기를 ${w} × ${h} px로 했습니다`,
+    restored: "저장할 이미지 크기를 원래 크기로 되돌렸습니다",
+    resetButton: "원래 크기로",
+  },
   masks: {
     applied: (n) =>
       `${n}곳을 마스크했습니다. 저장하기 전까지는 영역을 선택해 가리기를 취소할 수 있습니다`,

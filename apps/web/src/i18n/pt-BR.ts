@@ -70,6 +70,21 @@ export const ptBR: WebMessages = {
     remask: (n) =>
       `Aplique de novo a máscara ${n === 1 ? "na área" : `nas ${n} áreas`} que você tinha mascarado na imagem anterior`,
   },
+  resize: {
+    button: "Redimensionar",
+    title: "Tamanho da imagem salva",
+    description:
+      "Só a imagem salva fica neste tamanho. A proporção é mantida e a imagem original continua guardada, então dá para voltar depois.",
+    original: (w, h) => `Imagem original: ${w} × ${h} px`,
+    width: "Largura (W)",
+    height: "Altura (H)",
+    invalid: (max) => `Digite números inteiros de 1 a ${max} para a largura e a altura`,
+    cancel: "Cancelar",
+    apply: "Redimensionar",
+    done: (w, h) => `Tamanho da imagem salva definido como ${w} × ${h} px`,
+    restored: "O tamanho da imagem salva voltou ao original",
+    resetButton: "Voltar ao tamanho original",
+  },
   masks: {
     applied: (n) =>
       `${areas(n)} ${n === 1 ? "foi mascarada" : "foram mascaradas"}. Até salvar, você pode selecionar uma área e reexibi-la`,

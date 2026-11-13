@@ -15,6 +15,7 @@ import {
 } from "@/lib/capture";
 import { handlePageMessage, PageMessageSchema, syncPageScripts } from "@/lib/page-fetch";
 import { onPageSettingsChanged } from "@/lib/page-settings";
+import { MAX_SELECT_SIDE } from "@/lib/selection";
 import type { CssRect } from "@/lib/snapshot";
 import { cancelTimer, clearError, pendingTimer, runTimer, timerDelay } from "@/lib/timer";
 
@@ -22,7 +23,12 @@ type Message =
   | { type: "harie:start"; mode: CaptureMode; tabId: number; timer?: unknown; locale?: Locale }
   | { type: "harie:timer-status" }
   | { type: "harie:timer-cancel" }
-  | { type: "harie:selected"; rect: CssRect; frame?: unknown }
+  | {
+      type: "harie:selected";
+      rect: CssRect;
+      size?: { width: number; height: number };
+      frame?: unknown;
+    }
   | { type: "harie:cancelled" };
 
 /**
@@ -82,10 +88,19 @@ export default defineBackground(() => {
       // 選択範囲は外部（ページ側）から来る値なので、数値であることを確かめてから使う
       const r = message.rect;
       if ([r?.x, r?.y, r?.w, r?.h].every((v) => typeof v === "number" && Number.isFinite(v))) {
-        // 止めた画面の上で選んだときは、その画面を切り抜く（撮り直すと、閉じたメニューの画面になる）
+        // 数値で決めた大きさ（FR-CAP-10）も、1〜上限の整数であるときだけ使う
+        const s = message.size;
+        const size =
+          s !== undefined &&
+          [s?.width, s?.height].every(
+            (v) => Number.isInteger(v) && (v as number) >= 1 && (v as number) <= MAX_SELECT_SIDE,
+          )
+            ? { width: s.width, height: s.height }
+            : null;
+        // 止めた画面の上で選んだときは、その画面を切り抜く（撮り直すと、閉じたメニューの画面になる。FR-CAP-11）
         const frozen = message.frame === undefined ? undefined : parseFrame(message.frame);
         if (frozen !== null) {
-          void finishCapture(sender.tab, r, new Date(), frozen).catch((e) =>
+          void finishCapture(sender.tab, r, new Date(), size, frozen).catch((e) =>
             console.error(captureErrorMessage(e)),
           );
         }

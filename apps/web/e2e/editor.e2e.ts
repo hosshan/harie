@@ -1,5 +1,5 @@
 import { readFileSync } from "node:fs";
-import { readHarie, writeHarie } from "@harie/format";
+import { readHarie, readImageSize, writeHarie } from "@harie/format";
 import { createDocument } from "@harie/model";
 import { expect, type Page, test } from "@playwright/test";
 import { nodeRenderer } from "../../../packages/render/src/test-utils/node-renderer";
@@ -643,6 +643,7 @@ test("ヘッダーの「画像を開く」は、今の画像を閉じる前に�
   await expect(header.getByRole("button")).toHaveText([
     "画像を開く",
     "画像を差し替える",
+    "サイズ変更",
     "JPEG",
     "保存",
     "コピー",
@@ -1152,4 +1153,71 @@ test("NFR-PLAT-01: スマホの幅では、ファイル名を 1 行に収め、�
     "aria-pressed",
     "true",
   );
+});
+
+test("FR-EDIT-24: 保存する画像の大きさを数値で変え、ベース画像と注釈はそのまま残す", async ({
+  page,
+}) => {
+  await openFixture(page, "large-base.jpg");
+  await page.getByRole("button", { name: "四角" }).click();
+  await drag(page, [40, 40], [240, 120]);
+
+  await page.getByRole("button", { name: "サイズ変更" }).click();
+  const dialog = page.getByRole("dialog", { name: "保存する画像のサイズ" });
+  await expect(dialog).toContainText("元の画像: 520 × 400 px");
+  const width = dialog.getByRole("textbox", { name: "幅（W）" });
+  const height = dialog.getByRole("textbox", { name: "高さ（H）" });
+  await expect(width).toHaveValue("520");
+  // 縦横比を保つ（既定）: 幅を入れると高さが付いてくる
+  await width.fill("260");
+  await expect(height).toHaveValue("200");
+  await dialog.getByRole("button", { name: "変更する" }).click();
+  await expect(page.locator(".app-header-status")).toHaveText(
+    "保存する画像のサイズを 260 × 200 px にしました",
+  );
+
+  const [download] = await Promise.all([
+    page.waitForEvent("download"),
+    page.getByRole("button", { name: "保存" }).click(),
+  ]);
+  const file = new Uint8Array(readFileSync(await download.path()));
+  expect(readImageSize(file)).toMatchObject({ width: 260, height: 200 });
+  const read = readHarie(file);
+  expect(read.kind).toBe("harie");
+  if (read.kind !== "harie") return;
+  expect(read.doc.canvas).toMatchObject({
+    width: 520,
+    height: 400,
+    output: { width: 260, height: 200 },
+  });
+  // 注釈の座標とベース画像は変わらない（ADR-0004, ADR-0018）
+  expect(read.doc.annotations[0]).toMatchObject({ x: 40, y: 40, w: 200, h: 80 });
+  expect(read.base.bytes).toEqual(new Uint8Array(fixture("large-base.jpg")));
+  // NFR-PLAT-05: ブラウザと Node で同じバイト列になる
+  const rendered = await (await nodeRenderer()).render({
+    doc: read.doc,
+    base: read.base,
+    output: "jpeg",
+  });
+  expect(writeHarie({ rendered, base: read.base.bytes, doc: read.doc })).toEqual(file);
+
+  // 高さを入れると幅が付いてくる。「元の大きさに戻す」で元に戻せる
+  await page.getByRole("button", { name: "サイズ変更" }).click();
+  await expect(width).toHaveValue("260");
+  await height.fill("100");
+  await expect(width).toHaveValue("130");
+  await width.fill("0");
+  await expect(dialog.getByRole("button", { name: "変更する" })).toBeDisabled();
+  await dialog.getByRole("button", { name: "元の大きさに戻す" }).click();
+  await expect(width).toHaveValue("520");
+  await expect(height).toHaveValue("400");
+  await expect(dialog.getByRole("button", { name: "元の大きさに戻す" })).toHaveCount(0);
+  await dialog.getByRole("button", { name: "変更する" }).click();
+  await expect(page.locator(".app-header-status")).toHaveText(
+    "保存する画像のサイズを元の大きさに戻しました",
+  );
+  // 元に戻すで、前の大きさに戻る
+  await page.keyboard.press("ControlOrMeta+z");
+  await page.getByRole("button", { name: "サイズ変更" }).click();
+  await expect(width).toHaveValue("260");
 });

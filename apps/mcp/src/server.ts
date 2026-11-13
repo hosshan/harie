@@ -27,7 +27,8 @@ const OPS_HELP = `ops は操作の配列。座標はベース画像のピクセ�
 badge に anchor: {"annotationId": 枠の id} を付けると、枠の左上の外側に自動で置かれる（x, y は 0 でよい）。
 rect / ellipse / text / callout は rotation（度、時計回り。範囲の中心が軸。x, y, w, h は回す前の値）で回せる。
 style（任意）: stroke, strokeWidth, fill, color, fontSize, fontWeight, radius, opacity, head（矢印の矢じり: end / start / both / none。start は from 側、none は矢じりのない線）, dash（solid / dashed / dotted。四角・楕円・矢印の線の種類）。
-blur は可逆なぼかしで、個人情報の加工には使わないこと。`;
+blur は可逆なぼかしで、個人情報の加工には使わないこと。
+setOutputSize は保存する画像の大きさ（null で元の大きさ）。座標は変わらない。`;
 
 function toResult(out: ToolOutput, withImage: boolean): CallToolResult {
   const content: CallToolResult["content"] = [

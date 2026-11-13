@@ -60,3 +60,43 @@ export function recordPiiApplied(
 ): HarieDocument {
   return { ...doc, pii: { ...doc.pii, applied: [...doc.pii.applied, ...applied] } };
 }
+
+/** 表示範囲（トリミングしていればその範囲、なければ画像全体）の大きさ */
+export function viewSize(doc: HarieDocument): { width: number; height: number } {
+  const { width, height, crop } = doc.canvas;
+  return crop === null ? { width, height } : { width: crop.w, height: crop.h };
+}
+
+/**
+ * 保存する画像の大きさ（FR-EDIT-24）。書き出しの大きさを決めていなければ表示範囲と同じ。
+ * 決めた大きさが表示範囲と縦横比が違えば、縦横それぞれの比率で伸び縮みさせて描く
+ */
+export function outputSize(doc: HarieDocument): { width: number; height: number } {
+  const output = doc.canvas.output;
+  if (output !== undefined) return { width: output.width, height: output.height };
+  const view = viewSize(doc);
+  return {
+    width: Math.max(1, Math.round(view.width)),
+    height: Math.max(1, Math.round(view.height)),
+  };
+}
+
+/**
+ * 幅か高さの一方から、表示範囲の縦横比を保ったもう一方を求める（書き出しの大きさの入力で使う）
+ */
+export function keepAspect(
+  doc: HarieDocument,
+  given: { width: number } | { height: number },
+): { width: number; height: number } {
+  const view = viewSize(doc);
+  if ("width" in given) {
+    return {
+      width: given.width,
+      height: Math.max(1, Math.round((given.width * view.height) / view.width)),
+    };
+  }
+  return {
+    width: Math.max(1, Math.round((given.height * view.width) / view.height)),
+    height: given.height,
+  };
+}

@@ -37,6 +37,25 @@ export function toImageRect(
 }
 
 /**
+ * 大きさを数値で決めた範囲（FR-CAP-10）を、丸めで 1px ずれないよう指定の大きさちょうどにする。
+ * 画像からはみ出すときは左上へ寄せ、それでも収まらなければ画像の大きさまでにする
+ */
+export function fitImageRect(
+  rect: CssRect,
+  size: { width: number; height: number },
+  image: { width: number; height: number },
+): CssRect {
+  const w = Math.min(size.width, image.width);
+  const h = Math.min(size.height, image.height);
+  return {
+    x: Math.max(0, Math.min(rect.x, image.width - w)),
+    y: Math.max(0, Math.min(rect.y, image.height - h)),
+    w,
+    h,
+  };
+}
+
+/**
  * @param scale キャプチャ画像のピクセル ÷ CSS ピクセル（通常は devicePixelRatio）
  * @param crop 切り抜いた範囲（画像ピクセル）。null なら画像全体
  */
