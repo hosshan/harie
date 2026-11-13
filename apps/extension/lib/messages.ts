@@ -5,7 +5,6 @@ import type { Locale, Messages } from "@harie/editor/locale";
 import { es, ko, ptBR, zhCN, zhTW } from "./i18n/catalogs";
 
 const ja = {
-  popupTitle: "Harie でキャプチャ",
   visible: "見えている範囲",
   region: "範囲を選ぶ",
   element: "要素を選ぶ",
@@ -57,7 +56,6 @@ const ja = {
 export type ExtensionMessages = Messages<typeof ja>;
 
 const en: ExtensionMessages = {
-  popupTitle: "Capture with Harie",
   visible: "Visible area",
   region: "Select an area",
   element: "Select an element",

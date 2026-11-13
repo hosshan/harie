@@ -8,10 +8,8 @@ import { extensionMessages } from "@/lib/messages";
 const locale = getLocale();
 const m = extensionMessages(locale);
 applyDocumentLang(locale);
-document.title = m.popupTitle;
 for (const el of document.querySelectorAll<HTMLElement>("[data-message]")) {
   const key = el.dataset.message as
-    | "popupTitle"
     | "visible"
     | "region"
     | "element"

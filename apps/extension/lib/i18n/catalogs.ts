@@ -2,7 +2,6 @@
 import type { ExtensionMessages } from "../messages";
 
 export const ko: ExtensionMessages = {
-  popupTitle: "Harie로 캡처",
   visible: "보이는 영역",
   region: "영역 선택",
   element: "요소 선택",
@@ -51,7 +50,6 @@ export const ko: ExtensionMessages = {
 };
 
 export const zhTW: ExtensionMessages = {
-  popupTitle: "用 Harie 擷取",
   visible: "可見範圍",
   region: "選擇範圍",
   element: "選擇元素",
@@ -100,7 +98,6 @@ export const zhTW: ExtensionMessages = {
 };
 
 export const zhCN: ExtensionMessages = {
-  popupTitle: "用 Harie 截图",
   visible: "可见区域",
   region: "选择区域",
   element: "选择元素",
@@ -149,7 +146,6 @@ export const zhCN: ExtensionMessages = {
 };
 
 export const es: ExtensionMessages = {
-  popupTitle: "Capturar con Harie",
   visible: "Área visible",
   region: "Elegir un área",
   element: "Elegir un elemento",
@@ -201,7 +197,6 @@ export const es: ExtensionMessages = {
 };
 
 export const ptBR: ExtensionMessages = {
-  popupTitle: "Capturar com o Harie",
   visible: "Área visível",
   region: "Escolher uma área",
   element: "Escolher um elemento",
