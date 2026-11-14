@@ -62,8 +62,8 @@ export const es: EditorMessages = {
   },
   frame: {
     label: "Acabado de la imagen",
-    note: "Se añade alrededor de la imagen guardada para que sus bordes se vean en una página blanca.",
-    presets: { none: "Ninguno", border: "Borde", shadow: "Sombra", card: "Redondeado" },
+    note: "Se añade a la imagen guardada y se puede combinar, para que sus bordes se vean en una página blanca.",
+    parts: { border: "Borde", shadow: "Sombra", radius: "Redondeado" },
   },
   steps: {
     label: "Números y globos",
