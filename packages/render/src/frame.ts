@@ -43,7 +43,9 @@ export function resolveFrame(frame: Frame | undefined): ResolvedFrame | null {
           ...splitAlpha(frame.shadow.color ?? DEFAULT_SHADOW),
         };
   if (padding === 0 && radius === 0 && border === null && shadow === null) return null;
-  const background = frame.background === "transparent" ? null : (frame.background ?? "#FFFFFF");
+  // 余白がなければ背景は角丸で切り抜いた角にしか見えない。角は透過にする（白で埋めると角丸が見えない）
+  const background =
+    padding === 0 || frame.background === "transparent" ? null : (frame.background ?? "#FFFFFF");
   return { padding, background, radius, border, shadow };
 }
 
