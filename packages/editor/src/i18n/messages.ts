@@ -62,6 +62,11 @@ const ja = {
             ? `「${label}」を押します`
             : `「${label}」を確認します`,
   },
+  frame: {
+    label: "画像の仕上げ",
+    note: "保存する画像に付けます。組み合わせることもできます。白いページに貼っても境目が分かります。",
+    parts: { border: "枠線", shadow: "影", radius: "角丸" },
+  },
   steps: {
     label: "番号と吹き出し",
     note: (n: number) =>
@@ -289,6 +294,11 @@ const en: EditorMessages = {
           : CLICK_ROLES.has(role)
             ? `Click “${label}”`
             : `Check “${label}”`,
+  },
+  frame: {
+    label: "Image finish",
+    note: "Added to the saved image, and can be combined, so its edges stand out on a white page.",
+    parts: { border: "Border", shadow: "Shadow", radius: "Rounded" },
   },
   steps: {
     label: "Numbers and callouts",

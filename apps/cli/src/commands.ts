@@ -128,6 +128,12 @@ export function inspect(path: string, options: { json?: boolean } = {}): string 
         const list = [...counts].map(([t, c]) => `${t}×${c}`).join(", ");
         lines.push(`注釈: ${doc.annotations.length} 個${list === "" ? "" : `（${list}）`}`);
         lines.push(`PII 加工: ${doc.pii.applied.length} 件`);
+        const { width, height, output } = doc.canvas;
+        lines.push(
+          output === undefined
+            ? `ベース画像の大きさ: ${width}×${height}`
+            : `ベース画像の大きさ: ${width}×${height}（保存する画像は ${output.width}×${output.height}。FR-EDIT-24）`,
+        );
         if (doc.meta.title !== undefined) lines.push(`タイトル: ${doc.meta.title}`);
       }
     }

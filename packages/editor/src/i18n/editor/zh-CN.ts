@@ -52,6 +52,11 @@ export const zhCN: EditorMessages = {
             ? `点击“${label}”`
             : `确认“${label}”`,
   },
+  frame: {
+    label: "图片外框",
+    note: "加在保存的图片上，可以组合使用，贴到白色页面上也能看出边界。",
+    parts: { border: "边框", shadow: "阴影", radius: "圆角" },
+  },
   steps: {
     label: "编号和说明框",
     note: (n) => `有 ${n} 个方框没有编号或说明框。可以按绘制顺序加上编号和说明框。`,

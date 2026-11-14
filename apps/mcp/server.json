@@ -9,13 +9,13 @@
     "source": "github",
     "subfolder": "apps/mcp"
   },
-  "version": "0.7.0",
+  "version": "0.9.0",
   "packages": [
     {
       "registryType": "npm",
       "registryBaseUrl": "https://registry.npmjs.org",
       "identifier": "@harie/mcp",
-      "version": "0.7.0",
+      "version": "0.9.0",
       "transport": {
         "type": "stdio"
       },

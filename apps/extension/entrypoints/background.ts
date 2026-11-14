@@ -1,31 +1,66 @@
 // service worker。ポップアップ・ショートカット・選択オーバーレイからの指示でキャプチャする（integrations.md 1.1）。
 // ページ上の Harie 画像の読み込み・エディタで開く処理も受け持つ（integrations.md 1.5）
 
-import { isLocale, type Locale } from "@harie/editor/locale";
+import { getLocale, isLocale, type Locale } from "@harie/editor/locale";
 import { browser } from "wxt/browser";
 import {
   type CaptureMode,
   captureErrorMessage,
   finishCapture,
+  grabFrame,
+  messages,
+  parseFrame,
   setCaptureLocale,
   startSelection,
 } from "@/lib/capture";
+import { loadExtensionLocale } from "@/lib/locale-store";
 import { handlePageMessage, PageMessageSchema, syncPageScripts } from "@/lib/page-fetch";
 import { onPageSettingsChanged } from "@/lib/page-settings";
+import { MAX_SELECT_SIDE } from "@/lib/selection";
 import type { CssRect } from "@/lib/snapshot";
+import { cancelTimer, clearError, pendingTimer, runTimer, timerDelay } from "@/lib/timer";
 
 type Message =
-  | { type: "harie:start"; mode: CaptureMode; tabId: number; locale?: Locale }
-  | { type: "harie:selected"; rect: CssRect }
+  | { type: "harie:start"; mode: CaptureMode; tabId: number; timer?: unknown; locale?: Locale }
+  | { type: "harie:timer-status" }
+  | { type: "harie:timer-cancel" }
+  | {
+      type: "harie:selected";
+      rect: CssRect;
+      size?: { width: number; height: number };
+      frame?: unknown;
+    }
   | { type: "harie:cancelled" };
 
+/**
+ * キャプチャを始める。タイマーなら 5 秒数え始めてすぐ戻り、ポップアップを閉じさせる（FR-CAP-11）。
+ * 撮る許可（activeTab）は押したタブに付き、そのタブでページを移るまで続くので、待ってからでも撮れる。
+ * 範囲・要素は、待ち終えた画面を撮って止め、その上で選ぶ（選ぶ操作でメニューが閉じても困らないように）
+ */
 async function start(
   mode: CaptureMode,
   tabId: number,
+  options: { timer?: unknown; locale?: Locale } = {},
 ): Promise<{ ok: true } | { ok: false; message: string }> {
+  const delay = timerDelay(options.timer);
   try {
     const tab = await browser.tabs.get(tabId);
-    if (mode === "visible") await finishCapture(tab, null);
+    // ショートカットから撮るとき・ポップアップから言語が来なかったときは、設定ページで選んだ言語を使う
+    if (options.locale === undefined)
+      setCaptureLocale((await loadExtensionLocale()) ?? getLocale());
+    cancelTimer();
+    await clearError();
+    if (delay > 0) {
+      void runTimer(
+        tabId,
+        delay,
+        async () => {
+          if (mode === "visible") await finishCapture(tab, null);
+          else await startSelection(tab, mode, await grabFrame(tab));
+        },
+        { tabChanged: messages().timerTabChanged },
+      );
+    } else if (mode === "visible") await finishCapture(tab, null);
     else await startSelection(tab, mode);
     return { ok: true };
   } catch (e) {
@@ -41,15 +76,42 @@ export default defineBackground(() => {
       return true;
     }
     if (message.type === "harie:start") {
-      if (isLocale(message.locale)) setCaptureLocale(message.locale);
-      void start(message.mode, message.tabId).then(sendResponse);
+      const locale = isLocale(message.locale) ? message.locale : undefined;
+      if (locale !== undefined) setCaptureLocale(locale);
+      void start(message.mode, message.tabId, {
+        timer: message.timer,
+        ...(locale === undefined ? {} : { locale }),
+      }).then(sendResponse);
       return true;
+    }
+    if (message.type === "harie:timer-status") {
+      sendResponse(pendingTimer());
+      return false;
+    }
+    if (message.type === "harie:timer-cancel") {
+      sendResponse(cancelTimer());
+      return false;
     }
     if (message.type === "harie:selected" && sender.tab !== undefined) {
       // 選択範囲は外部（ページ側）から来る値なので、数値であることを確かめてから使う
       const r = message.rect;
       if ([r?.x, r?.y, r?.w, r?.h].every((v) => typeof v === "number" && Number.isFinite(v))) {
-        void finishCapture(sender.tab, r).catch((e) => console.error(captureErrorMessage(e)));
+        // 数値で決めた大きさ（FR-CAP-10）も、1〜上限の整数であるときだけ使う
+        const s = message.size;
+        const size =
+          s !== undefined &&
+          [s?.width, s?.height].every(
+            (v) => Number.isInteger(v) && (v as number) >= 1 && (v as number) <= MAX_SELECT_SIDE,
+          )
+            ? { width: s.width, height: s.height }
+            : null;
+        // 止めた画面の上で選んだときは、その画面を切り抜く（撮り直すと、閉じたメニューの画面になる。FR-CAP-11）
+        const frozen = message.frame === undefined ? undefined : parseFrame(message.frame);
+        if (frozen !== null) {
+          void finishCapture(sender.tab, r, new Date(), size, frozen).catch((e) =>
+            console.error(captureErrorMessage(e)),
+          );
+        }
       }
     }
     return false;

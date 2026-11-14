@@ -60,6 +60,11 @@ export const es: EditorMessages = {
             ? `Haz clic en «${label}»`
             : `Revisa «${label}»`,
   },
+  frame: {
+    label: "Acabado de la imagen",
+    note: "Se añade a la imagen guardada y se puede combinar, para que sus bordes se vean en una página blanca.",
+    parts: { border: "Borde", shadow: "Sombra", radius: "Redondeado" },
+  },
   steps: {
     label: "Números y globos",
     note: (n) =>

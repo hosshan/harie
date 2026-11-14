@@ -70,6 +70,21 @@ export const es: WebMessages = {
     remask: (n) =>
       `Vuelve a enmascarar ${n === 1 ? "el área" : `las ${n} áreas`} que habías enmascarado en la imagen anterior`,
   },
+  resize: {
+    button: "Cambiar tamaño",
+    title: "Tamaño de la imagen guardada",
+    description:
+      "Solo la imagen guardada tendrá este tamaño. Se mantiene la proporción y la imagen original se conserva, así que puedes volver atrás.",
+    original: (w, h) => `Imagen original: ${w} × ${h} px`,
+    width: "Ancho (W)",
+    height: "Alto (H)",
+    invalid: (max) => `Introduce números enteros de 1 a ${max} para el ancho y el alto`,
+    cancel: "Cancelar",
+    apply: "Cambiar",
+    done: (w, h) => `Tamaño de la imagen guardada: ${w} × ${h} px`,
+    restored: "Se restableció el tamaño original de la imagen guardada",
+    resetButton: "Volver al tamaño original",
+  },
   masks: {
     applied: (n) =>
       `Se enmascararon ${areas(n)}. Hasta que guardes, puedes seleccionar un área y volver a mostrarla`,

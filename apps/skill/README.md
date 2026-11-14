@@ -96,5 +96,5 @@ node apps/mcp/eval/run.mjs --runs 8 --conditions skill --out /tmp/a  # 作成・
 ## 開発
 
 - テスト: `pnpm exec vitest run --project skill`。npm からは取らず、`HARIE_MCP_COMMAND` でリポジトリの `apps/mcp/src` を tsx で起動して確かめる。
-- MCP のツールや引数を変えたら、`scripts/harie.mjs` と `SKILL.md` の対応表もそろえる。スクリプトが起動する版は `DEFAULT_SERVER`（`@harie/mcp@^0.7.0`）で、互換性のない変更や、`SKILL.md` で新しい注釈の書き方（`rotation` など）を案内したときはここも上げる。
+- MCP のツールや引数を変えたら、`scripts/harie.mjs` と `SKILL.md` の対応表もそろえる。スクリプトが起動する版は `DEFAULT_SERVER`（`@harie/mcp@^0.9.0`）で、互換性のない変更や、`SKILL.md` で新しい注釈の書き方（`rotation` など）を案内したときはここも上げる。
 - リリース: Actions の「Release (prepare)」で target に `skill` を選ぶと版上げの PR ができ、マージすると `skill-v<版>` のタグが付いて `harie.skill` が GitHub Release に添付される（`release-skill.yml`）。

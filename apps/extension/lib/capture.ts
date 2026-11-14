@@ -7,6 +7,7 @@ import { extensionMessages } from "./messages";
 import {
   type CssRect,
   captureFileName,
+  fitImageRect,
   type RawSnapshot,
   toImageRect,
   toImageSnapshot,
@@ -24,7 +25,8 @@ export function setCaptureLocale(next: Locale): void {
   locale = next;
 }
 
-const messages = () => extensionMessages(locale);
+/** 今の言語の文言（service worker の中で使う） */
+export const messages = () => extensionMessages(locale);
 
 type Tab = {
   id?: number | undefined;
@@ -33,30 +35,76 @@ type Tab = {
   url?: string | undefined;
 };
 
-/** 範囲・要素選択のオーバーレイを出す。選び終えると content からメッセージが来て finishCapture に進む */
-export async function startSelection(tab: Tab, mode: "region" | "element"): Promise<void> {
+/**
+ * 撮った瞬間の画面と DOM 情報。タイマーで撮った画面を止め、その上で範囲・要素を選ぶとき（FR-CAP-11）は、
+ * オーバーレイ（content script の隔離された環境）に預け、選び終えたときに範囲と一緒に返してもらう
+ * （選んでいる間に service worker が止まっても失われないように）
+ */
+export type Frame = { dataUrl: string; raw: RawSnapshot | null };
+
+/** ページから返ってきた止めた画面を確かめる。形が違えば null（撮り直さず、失敗にする） */
+export function parseFrame(value: unknown): Frame | null {
+  if (typeof value !== "object" || value === null) return null;
+  const v = value as { dataUrl?: unknown; raw?: unknown };
+  if (typeof v.dataUrl !== "string" || !v.dataUrl.startsWith("data:image/png;base64,")) return null;
+  const raw = v.raw as RawSnapshot | null | undefined;
+  const width = raw?.viewport?.width;
+  const valid =
+    raw !== null &&
+    typeof raw === "object" &&
+    typeof width === "number" &&
+    Number.isFinite(width) &&
+    width > 0 &&
+    Array.isArray(raw.elements);
+  // DOM 情報は補助なので、形が合わなければ画像だけにする（中身は toImageSnapshot が zod で確かめる）
+  return { dataUrl: v.dataUrl, raw: valid ? raw : null };
+}
+
+/** 範囲選択のオーバーレイで、大きさを数値で決める欄の文言（FR-CAP-10） */
+export type SelectText = { fixedHint: string; width: string; height: string; tooLarge: string };
+
+/**
+ * 範囲・要素選択のオーバーレイを出す。選び終えると content からメッセージが来て finishCapture に進む。
+ * frame を渡すと、その画面を止めてオーバーレイの背景に出し、その上で選ぶ（タイマーのあとでメニューが閉じても困らない）。
+ * 要素は、今の DOM ではなく撮ったときの要素の位置で選ぶ
+ */
+export async function startSelection(
+  tab: Tab,
+  mode: "region" | "element",
+  frame: Frame | null = null,
+): Promise<void> {
   const tabId = requireTabId(tab);
   await browser.scripting.executeScript({
     target: { tabId },
-    func: (m: string, hint: string) => {
-      const w = window as Window & { __harieSelectMode?: string; __harieSelectHint?: string };
+    func: (m: string, hint: string, text: SelectText, f: Frame | null) => {
+      const w = window as Window & {
+        __harieSelectMode?: string;
+        __harieSelectHint?: string;
+        __harieSelectText?: SelectText;
+        __harieFrozen?: Frame | null;
+      };
       w.__harieSelectMode = m;
       w.__harieSelectHint = hint;
+      w.__harieSelectText = text;
+      w.__harieFrozen = f;
     },
-    args: [mode, mode === "region" ? messages().dragHint : messages().clickHint],
+    args: [
+      mode,
+      mode === "region" ? messages().dragHint : messages().clickHint,
+      {
+        fixedHint: messages().fixedHint,
+        width: messages().selectWidth,
+        height: messages().selectHeight,
+        tooLarge: messages().selectTooLarge,
+      },
+      frame,
+    ],
   });
   await browser.scripting.executeScript({ target: { tabId }, files: ["/select.js"] });
 }
 
-/**
- * 可視範囲を撮る（FR-CAP-01）。crop を渡すとその範囲（CSS ピクセル）に切り抜く（FR-CAP-02）。
- * 撮影と同時に DOM 情報を取る（FR-CAP-03）。取れないページ（PDF ビューアなど）では画像だけにする
- */
-export async function finishCapture(
-  tab: Tab,
-  crop: CssRect | null,
-  now = new Date(),
-): Promise<string> {
+/** 今の画面を撮る（DOM 情報も一緒に）。取れないページ（PDF ビューアなど）では DOM 情報なし */
+export async function grabFrame(tab: Tab): Promise<Frame> {
   const tabId = requireTabId(tab);
   let raw: RawSnapshot | null = null;
   try {
@@ -70,10 +118,24 @@ export async function finishCapture(
   }
   const dataUrl = await browser.tabs.captureVisibleTab(
     tab.windowId ?? browser.windows.WINDOW_ID_CURRENT,
-    {
-      format: "png",
-    },
+    { format: "png" },
   );
+  return { dataUrl, raw };
+}
+
+/**
+ * 可視範囲を撮る（FR-CAP-01）。crop を渡すとその範囲（CSS ピクセル）に切り抜く（FR-CAP-02）。
+ * exactSize を渡すと、切り抜いた画像をその大きさ（画像ピクセル）ちょうどにする（FR-CAP-10）。
+ * 撮影と同時に DOM 情報を取る（FR-CAP-03）。frame を渡すと撮り直さずにその画面を使う（FR-CAP-11）
+ */
+export async function finishCapture(
+  tab: Tab,
+  crop: CssRect | null,
+  now = new Date(),
+  exactSize: { width: number; height: number } | null = null,
+  frame?: Frame,
+): Promise<string> {
+  const { dataUrl, raw } = frame ?? (await grabFrame(tab));
   let image = await (await fetch(dataUrl)).blob();
   const bitmap = await createImageBitmap(image);
   const full = { width: bitmap.width, height: bitmap.height };
@@ -83,6 +145,8 @@ export async function finishCapture(
   try {
     if (crop !== null) {
       imageRect = toImageRect(crop, scale, full);
+      // 大きさを数値で決めたときは、その大きさちょうどの画像にする（FR-CAP-10）
+      if (exactSize !== null) imageRect = fitImageRect(imageRect, exactSize, full);
       if (imageRect.w === 0 || imageRect.h === 0) throw new Error(messages().emptyRange);
       const canvas = new OffscreenCanvas(imageRect.w, imageRect.h);
       const ctx = canvas.getContext("2d");

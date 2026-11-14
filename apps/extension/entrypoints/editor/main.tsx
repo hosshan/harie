@@ -2,7 +2,7 @@
 import "@harie/editor/editor.css";
 import "@harie/web/styles.css";
 import type { DomSnapshot } from "@harie/ai";
-import { applyDocumentLang } from "@harie/editor/locale";
+import { applyDocumentLang, getLocale, subscribeLocale } from "@harie/editor/locale";
 import { loadDisplayFonts } from "@harie/web/fonts";
 import { Header, HeaderButton } from "@harie/web/header";
 import { loadImageFile } from "@harie/web/import-image";
@@ -15,6 +15,7 @@ import { StrictMode, useCallback, useEffect, useState } from "react";
 import { createRoot } from "react-dom/client";
 import { browser } from "wxt/browser";
 import { getCapture } from "@/lib/capture-store";
+import { saveExtensionLocale, shareStoredLocale } from "@/lib/locale-store";
 
 /** 保存は chrome.downloads で行う（拡張ページではファイルの上書きができないため、毎回新しいファイルにする） */
 async function deliver(saved: Saved): Promise<void> {
@@ -120,6 +121,9 @@ function App() {
 }
 
 applyDocumentLang();
+// エディタの設定で言語を変えたら、撮るときの案内・ページ上のボタンも同じ言語にする（NFR-I18N-01）
+void shareStoredLocale();
+subscribeLocale(() => void saveExtensionLocale(getLocale()));
 const root = document.getElementById("root");
 if (root === null) throw new Error("#root がありません");
 createRoot(root).render(

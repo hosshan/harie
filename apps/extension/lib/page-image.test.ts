@@ -152,4 +152,15 @@ describe("説明文をその場でコピーする位置（FR-FILE-12）", () => 
     const info = pageImageInfo(doc);
     expect(info.harie && info.targets[0]).toMatchObject({ x: 0.5, y: 0.2, w: 0.25 });
   });
+
+  it("仕上げの余白（FR-FILE-16）があれば、余白を含む画像に対する割合にする", () => {
+    const base = createDocument({ width: 200, height: 100, now: new Date("2026-10-26T00:00:00Z") });
+    const doc: HarieDocument = {
+      ...base,
+      frame: { padding: 50 },
+      annotations: [{ id: "c1", type: "callout", x: 100, y: 50, w: 75, text: "a" }],
+    };
+    const info = pageImageInfo(doc);
+    expect(info.harie && info.targets[0]).toMatchObject({ x: 0.5, y: 0.5, w: 0.25 });
+  });
 });

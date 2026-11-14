@@ -52,6 +52,11 @@ export const zhTW: EditorMessages = {
             ? `點選「${label}」`
             : `確認「${label}」`,
   },
+  frame: {
+    label: "圖片外框",
+    note: "加在儲存的圖片上，可以組合使用，貼到白色頁面上也看得出邊界。",
+    parts: { border: "邊框", shadow: "陰影", radius: "圓角" },
+  },
   steps: {
     label: "編號與說明框",
     note: (n) => `有 ${n} 個方框沒有編號或說明框。可以依繪製順序加上編號和說明框。`,

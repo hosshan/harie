@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { createDocument, prepareForSave } from "./document";
 import { migrateDocument } from "./migrate";
 import { applyOps } from "./ops";
-import { arrowEnds, arrowHeadOf, type HarieDocument } from "./schema";
+import { arrowEnds, arrowHeadOf, DocumentSchema, type HarieDocument } from "./schema";
 
 const DOC_ID = "c8be77cd-bc6d-4747-bf15-12e345a4b522";
 const NOW = new Date("2026-10-07T08:00:00Z");
@@ -163,5 +163,28 @@ describe("FR-EDIT-19: 矢印の矢じり", () => {
     ]);
     expect(r.ok).toBe(true);
     if (r.ok) expect(migrateDocument(JSON.parse(JSON.stringify(r.value))).ok).toBe(true);
+  });
+});
+
+describe("仕上げ（frame 操作）FR-FILE-16", () => {
+  const d = createDocument({ width: 100, height: 80 });
+  it("frame 操作で仕上げを置き換え、null で外す", () => {
+    const set = applyOps(d, [{ op: "frame", frame: { padding: 24, shadow: { blur: 16 } } }]);
+    expect(set.ok && set.value.frame).toEqual({ padding: 24, shadow: { blur: 16 } });
+    if (!set.ok) return;
+    const cleared = applyOps(set.value, [{ op: "frame", frame: null }]);
+    expect(cleared.ok && "frame" in cleared.value).toBe(false);
+  });
+  it("おかしな値は拒否する", () => {
+    expect(applyOps(d, [{ op: "frame", frame: { padding: -1 } }]).ok).toBe(false);
+    expect(applyOps(d, [{ op: "frame", frame: { background: "white" } }]).ok).toBe(false);
+  });
+  it("仕上げはドキュメントとして読み直せる", () => {
+    const set = applyOps(d, [{ op: "frame", frame: { padding: 8, background: "transparent" } }]);
+    if (!set.ok) throw new Error("frame");
+    expect(DocumentSchema.parse(JSON.parse(JSON.stringify(set.value))).frame).toEqual({
+      padding: 8,
+      background: "transparent",
+    });
   });
 });

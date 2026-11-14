@@ -226,6 +226,36 @@ test("FR-CAP-02: 範囲を選んで撮ると、その範囲だけの画像にな
   expect(Buffer.from(file).includes(Buffer.from("hanako.sato@example.com"))).toBe(false);
 });
 
+test("FR-CAP-10: 範囲選択で幅×高さを入れると、クリックした位置をその大きさちょうどで撮る", async ({
+  context,
+  worker,
+  extensionId,
+  target,
+}) => {
+  await startCapture(worker, target, "region");
+  const overlay = target.locator("[data-harie-overlay]");
+  await overlay.getByRole("textbox", { name: "幅（W）" }).fill("150");
+  await overlay.getByRole("textbox", { name: "高さ（H）" }).fill("60");
+  await expect(overlay.getByText("クリックした位置を左上にして")).toBeVisible();
+  // 画面より大きい値では撮れない
+  await overlay.getByRole("textbox", { name: "幅（W）" }).fill("5000");
+  await expect(overlay.getByText("画面より大きいため")).toBeVisible();
+  await overlay.getByRole("textbox", { name: "幅（W）" }).fill("150");
+
+  const opened = editorOpened(context, extensionId);
+  await target.mouse.move(30, 300);
+  await expect(overlay.getByText("150 × 60")).toBeVisible();
+  await target.mouse.click(30, 300);
+  const editor = await opened;
+  await expect(editor.locator(".harie-canvas-overlay")).toHaveAttribute("viewBox", "0 0 150 60");
+
+  // 次の範囲選択では欄は空から始まり、これまでどおりドラッグで選べる
+  await startCapture(worker, target, "region");
+  await expect(overlay.getByRole("textbox", { name: "幅（W）" })).toHaveValue("");
+  await target.keyboard.press("Escape");
+  await expect(overlay).toHaveCount(0);
+});
+
 test("FR-CAP-02: 要素を選ぶと、余白付きでその要素を撮る。Esc でやめられる", async ({
   context,
   worker,
@@ -271,7 +301,7 @@ test("FR-FILE-11: 撮った画像を保存せずにクリップボードへコ�
   await expect(editor.getByRole("status")).toHaveText("画像をコピーしました");
 });
 
-test("FR-CAP-10: ポップアップに拡張のバージョンが出る", async ({ context, extensionId }) => {
+test("FR-CAP-12: ポップアップに拡張のバージョンが出る", async ({ context, extensionId }) => {
   const popup = await context.newPage();
   await popup.goto(`chrome-extension://${extensionId}/popup.html`);
   await expect(popup.getByText(`バージョン ${pkg.version}`)).toBeVisible();
@@ -329,4 +359,187 @@ test("FR-FILE-15, FR-CAP-08: 空のエディタで HEIC を開ける（拡張の
   });
   await expect(editor.locator(".app-file-name")).toHaveText("photo.heic");
   await expect(editor.locator(".harie-canvas-overlay")).toHaveAttribute("viewBox", "0 0 64 48");
+});
+
+const badge = (worker: import("@playwright/test").Worker) =>
+  worker.evaluate(() => chrome.action.getBadgeText({}));
+
+/** エディタが開いたキャプチャの画像（IndexedDB）の 1 点の色 */
+async function capturedPixel(editor: import("@playwright/test").Page, x: number, y: number) {
+  return editor.evaluate(
+    async ({ x, y }) => {
+      const id = location.hash.slice(1);
+      const db = await new Promise<IDBDatabase>((resolve, reject) => {
+        const req = indexedDB.open("harie");
+        req.onsuccess = () => resolve(req.result);
+        req.onerror = () => reject(req.error);
+      });
+      const record = await new Promise<{ image: Blob }>((resolve, reject) => {
+        const req = db.transaction("captures").objectStore("captures").get(id);
+        req.onsuccess = () => resolve(req.result);
+        req.onerror = () => reject(req.error);
+      });
+      const bitmap = await createImageBitmap(record.image);
+      const canvas = new OffscreenCanvas(bitmap.width, bitmap.height);
+      const ctx = canvas.getContext("2d");
+      if (ctx === null) throw new Error("2d がありません");
+      ctx.drawImage(bitmap, 0, 0);
+      return [...ctx.getImageData(x, y, 1, 1).data.slice(0, 3)];
+    },
+    { x, y },
+  );
+}
+
+/** メニューのように、操作すると出て、外を押すと消える要素をページに足す */
+const openMenu = (target: import("@playwright/test").Page) =>
+  target.evaluate(() => {
+    const menu = document.createElement("div");
+    menu.id = "menu";
+    menu.setAttribute("role", "menuitem");
+    menu.textContent = "メニュー";
+    menu.style.cssText =
+      "position:fixed;left:400px;top:100px;width:120px;height:60px;background:#f00";
+    document.body.append(menu);
+    document.addEventListener("mousedown", () => menu.remove(), { once: true, capture: true });
+  });
+
+test("FR-CAP-11: タイマーで撮ると、残りの秒数をアイコンに出し、待ってから見えている範囲を撮る", async ({
+  context,
+  worker,
+  extensionId,
+  target,
+}) => {
+  const opened = editorOpened(context, extensionId);
+  const startedAt = Date.now();
+  expect(await startCapture(worker, target, "visible", true)).toEqual({ ok: true });
+  await expect.poll(() => badge(worker)).toMatch(/^[1-5]$/);
+  // 待っている間に出したメニューが写る
+  await openMenu(target);
+  const editor = await opened;
+  expect(Date.now() - startedAt).toBeGreaterThanOrEqual(4900);
+  expect(await badge(worker)).toBe("");
+  await expect(editor.locator(".harie-canvas-overlay")).toHaveAttribute("viewBox", "0 0 800 600");
+  expect(await capturedPixel(editor, 450, 120)).toEqual([255, 0, 0]);
+});
+
+test("FR-CAP-11: タイマーで範囲を選ぶと、待ち終えた画面を止めて選ぶので、選ぶ操作で消えたメニューも写る", async ({
+  context,
+  worker,
+  extensionId,
+  target,
+}) => {
+  expect(await startCapture(worker, target, "region", true)).toEqual({ ok: true });
+  await openMenu(target);
+  await expect(target.getByText("撮りたい範囲をドラッグしてください")).toBeVisible({
+    timeout: 8000,
+  });
+  const opened = editorOpened(context, extensionId);
+  await target.mouse.move(380, 80);
+  await target.mouse.down();
+  await target.mouse.move(450, 130);
+  await target.mouse.move(540, 180);
+  await target.mouse.up();
+  // ページのメニューは押したときに消えている
+  await expect(target.locator("#menu")).toHaveCount(0);
+  const editor = await opened;
+  await expect(editor.locator(".harie-canvas-overlay")).toHaveAttribute("viewBox", "0 0 160 100");
+  expect(await capturedPixel(editor, 70, 40)).toEqual([255, 0, 0]);
+});
+
+test("FR-CAP-11: タイマーで要素を選ぶと、止めた画面の要素の位置で選べる", async ({
+  context,
+  worker,
+  extensionId,
+  target,
+}) => {
+  expect(await startCapture(worker, target, "element", true)).toEqual({ ok: true });
+  await openMenu(target);
+  await expect(target.getByText("撮りたい要素をクリックしてください")).toBeVisible({
+    timeout: 8000,
+  });
+  const opened = editorOpened(context, extensionId);
+  await target.mouse.move(460, 130);
+  await target.mouse.click(460, 130);
+  const editor = await opened;
+  // メニュー（120x60）に 8px ずつの余白
+  await expect(editor.locator(".harie-canvas-overlay")).toHaveAttribute("viewBox", "0 0 136 76");
+  expect(await capturedPixel(editor, 68, 38)).toEqual([255, 0, 0]);
+});
+
+test("FR-CAP-11: 待っている間にタブを切り替えると撮らず、アイコンの「!」で知らせる", async ({
+  context,
+  worker,
+  target,
+}) => {
+  expect(await startCapture(worker, target, "visible", true)).toEqual({ ok: true });
+  const other = await context.newPage();
+  await other.goto("http://harie.test/other");
+  await other.bringToFront();
+  await worker.evaluate(async () => {
+    const [tab] = await chrome.tabs.query({ url: "http://harie.test/other" });
+    if (tab?.id !== undefined) await chrome.tabs.update(tab.id, { active: true });
+  });
+  await expect.poll(() => badge(worker), { timeout: 10000 }).toBe("!");
+  expect(await worker.evaluate(() => chrome.action.getTitle({}))).toBe(
+    "タブが切り替わったので撮りませんでした",
+  );
+  expect(context.pages().some((p) => p.url().includes("editor.html"))).toBe(false);
+});
+
+test("FR-CAP-11: ポップアップのタイマーはオン・オフだけで覚えない。数えている途中で開くと「やめる」で止められる", async ({
+  context,
+  worker,
+  extensionId,
+  target,
+}) => {
+  const popup = await context.newPage();
+  await popup.goto(`chrome-extension://${extensionId}/popup.html`);
+  const timer = popup.getByRole("checkbox", { name: "5 秒待ってから撮る" });
+  await expect(timer).not.toBeChecked();
+  await timer.check();
+  await popup.reload();
+  await expect(timer).not.toBeChecked();
+  await expect(popup.getByRole("button", { name: "範囲を選ぶ" })).toBeVisible();
+
+  expect(await startCapture(worker, target, "visible", true)).toEqual({ ok: true });
+  await popup.reload();
+  await expect(
+    popup.getByRole("status").filter({ hasText: /あと \d+ 秒で撮ります/ }),
+  ).toBeVisible();
+  await popup.getByRole("button", { name: "やめる" }).click();
+  await expect.poll(() => badge(worker)).toBe("");
+});
+
+test("NFR-I18N-01: 設定ページで表示言語を選ぶと、ポップアップ・撮るときの案内もその言語になる", async ({
+  context,
+  worker,
+  extensionId,
+  target,
+}) => {
+  const options = await context.newPage();
+  await options.goto(`chrome-extension://${extensionId}/options.html`);
+  await expect(options.getByRole("heading", { level: 1 })).toHaveText("設定");
+  const language = options.getByLabel("表示言語");
+  await expect(language).toHaveValue("ja");
+  await language.selectOption("en");
+  await expect(options.getByRole("heading", { level: 1 })).toHaveText("Settings");
+  await expect(options.getByLabel("Language")).toHaveValue("en");
+  await expect(options.getByLabel("Show an edit button on images")).toBeVisible();
+  // service worker・ページ用スクリプトにも見えるよう chrome.storage にも写す
+  expect(await worker.evaluate(() => chrome.storage.local.get("harie.locale"))).toEqual({
+    "harie.locale": "en",
+  });
+
+  const popup = await context.newPage();
+  await popup.goto(`chrome-extension://${extensionId}/popup.html`);
+  await expect(popup.getByRole("button", { name: "Visible area" })).toBeVisible();
+  await expect(popup.getByRole("button", { name: "Settings" })).toBeVisible();
+  await popup.close();
+  await options.close();
+
+  // ショートカットと同じく言語を渡さずに始めても、選んだ言語で案内する
+  await target.bringToFront();
+  await startCapture(worker, target, "region");
+  await expect(target.locator("[data-harie-overlay]")).toContainText("Drag over the area");
+  await target.keyboard.press("Escape");
 });
