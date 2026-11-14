@@ -222,7 +222,7 @@ async function shoot(lang) {
   await popup.goto(`chrome-extension://${extensionId}/popup.html`);
   await popup.evaluate((lang) => localStorage.setItem("harie.locale", lang), lang);
   await popup.reload();
-  await popup.setViewportSize({ width: 320, height: 300 });
+  await popup.setViewportSize({ width: 320, height: 200 });
   const popupPng = await popup.locator("body").screenshot();
 
   // 1. ツールバーのボタンで開くメニュー（ポップアップを撮って、ページの右上に重ねる）
