@@ -84,7 +84,7 @@ const LOCALES = {
       mask: "個人情報を隠す",
       findPii: "ページの文字から探す",
       applyMask: "マスクを適用する",
-      card: "影と角丸",
+      finish: ["影", "角丸"],
       help: {
         title: "Slack 通知の設定 - Tasklane ヘルプセンター",
         brand: "Tasklane ヘルプセンター",
@@ -111,7 +111,7 @@ const LOCALES = {
       mask: "Hide personal info",
       findPii: "Search the page text",
       applyMask: "Apply masks",
-      card: "Rounded",
+      finish: ["Shadow", "Rounded"],
       help: {
         title: "Set up Slack notifications - Tasklane Help Center",
         brand: "Tasklane Help Center",
@@ -259,7 +259,10 @@ async function shoot(lang) {
   await editor.setViewportSize(VIEWPORT);
   await editor.waitForLoadState("networkidle");
   await openInEditor(editor, sample, "tasklane-notifications.harie.png");
-  await editor.getByRole("button", { name: l.labels.card, exact: true }).click();
+  // 画像の仕上げは影と角丸を組み合わせる
+  for (const name of l.labels.finish) {
+    await editor.getByRole("button", { name, exact: true }).click();
+  }
   await editor.waitForTimeout(500);
   await compose(context, await editor.screenshot(), l.captions[2], file(3, "editor"));
 
