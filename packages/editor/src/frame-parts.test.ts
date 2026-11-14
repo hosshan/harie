@@ -14,7 +14,7 @@ describe("画像の仕上げの部品 FR-FILE-16", () => {
     expect(toggleFramePart(undefined, "border", 2)).toEqual({
       border: { width: 2, color: "#D4D4D8" },
     });
-    expect(toggleFramePart(undefined, "radius", 1)).toEqual({ radius: 10 });
+    expect(toggleFramePart(undefined, "radius", 1)).toEqual({ radius: 16 });
   });
   it("枠線・影・角丸を組み合わせられ、1 つずつ外せる", () => {
     let f = toggleFramePart(undefined, "border", 1);
@@ -22,7 +22,7 @@ describe("画像の仕上げの部品 FR-FILE-16", () => {
     f = toggleFramePart(f, "radius", 1);
     expect(frameParts(f)).toEqual({ border: true, shadow: true, radius: true });
     f = toggleFramePart(f, "shadow", 1);
-    expect(f).toEqual({ border: { width: 1, color: "#D4D4D8" }, radius: 10 });
+    expect(f).toEqual({ border: { width: 1, color: "#D4D4D8" }, radius: 16 });
     f = toggleFramePart(f, "border", 1);
     f = toggleFramePart(f, "radius", 1);
     expect(f).toBeUndefined();

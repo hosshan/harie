@@ -6,8 +6,30 @@ import type { Frame } from "@harie/model";
 export const FRAME_PARTS = ["border", "shadow", "radius"] as const;
 export type FramePart = (typeof FRAME_PARTS)[number];
 
-const BORDER = "#D4D4D8";
 const SHADOW = "#00000033";
+
+/** 角の丸みの候補（等倍の px）。中を既定にする */
+export const FRAME_RADII = [
+  { name: "small", value: 8 },
+  { name: "medium", value: 16 },
+  { name: "large", value: 24 },
+  { name: "xlarge", value: 40 },
+] as const;
+/** 枠線の太さの候補（等倍の px） */
+export const FRAME_BORDER_WIDTHS = [
+  { name: "thin", value: 1 },
+  { name: "medium", value: 2 },
+  { name: "thick", value: 4 },
+  { name: "xthick", value: 8 },
+] as const;
+/** 枠線の色の候補。最初の薄いグレーを既定にする（描画の既定色と同じ） */
+export const FRAME_BORDER_COLORS = [
+  { name: "light", value: "#D4D4D8" },
+  { name: "gray", value: "#A1A1AA" },
+  { name: "dark", value: "#52525B" },
+  { name: "black", value: "#18181B" },
+] as const;
+const BORDER = FRAME_BORDER_COLORS[0].value;
 
 /** 今の仕上げに、どの部品が付いているか。AI・MCP で付けた独自の値も、付いていれば付いている扱い */
 export function frameParts(frame: Frame | undefined): Record<FramePart, boolean> {
@@ -36,7 +58,7 @@ export function toggleFramePart(
       else delete next.border;
       break;
     case "radius":
-      if (on) next.radius = s(10);
+      if (on) next.radius = s(16);
       else delete next.radius;
       break;
     case "shadow":

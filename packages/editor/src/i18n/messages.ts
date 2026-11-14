@@ -66,6 +66,11 @@ const ja = {
     label: "画像の仕上げ",
     note: "保存する画像に付けます。組み合わせることもできます。白いページに貼っても境目が分かります。",
     parts: { border: "枠線", shadow: "影", radius: "角丸" },
+    radius: "角の丸み",
+    radii: { small: "小", medium: "中", large: "大", xlarge: "特大" },
+    borderWidth: "枠線の太さ",
+    borderColor: "枠線の色",
+    borderColors: { light: "薄いグレー", gray: "グレー", dark: "濃いグレー", black: "黒" },
   },
   steps: {
     label: "番号と吹き出し",
@@ -299,6 +304,11 @@ const en: EditorMessages = {
     label: "Image finish",
     note: "Added to the saved image, and can be combined, so its edges stand out on a white page.",
     parts: { border: "Border", shadow: "Shadow", radius: "Rounded" },
+    radius: "Corner radius",
+    radii: { small: "Small", medium: "Medium", large: "Large", xlarge: "Extra large" },
+    borderWidth: "Border width",
+    borderColor: "Border color",
+    borderColors: { light: "Light gray", gray: "Gray", dark: "Dark gray", black: "Black" },
   },
   steps: {
     label: "Numbers and callouts",

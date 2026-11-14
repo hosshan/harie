@@ -1,11 +1,20 @@
 // 画像の仕上げ（FR-FILE-16）。何も選んでいないときの右の欄に置き、保存する画像に付ける枠線・影・角丸を
 // それぞれ付け外しする（組み合わせられる）
-import type { HarieDocument } from "@harie/model";
+import type { Frame, HarieDocument } from "@harie/model";
 import type { Dispatch } from "react";
-import { FRAME_PARTS, type FramePart, frameParts, toggleFramePart } from "./frame-parts";
+import {
+  FRAME_BORDER_COLORS,
+  FRAME_BORDER_WIDTHS,
+  FRAME_PARTS,
+  FRAME_RADII,
+  type FramePart,
+  frameParts,
+  toggleFramePart,
+} from "./frame-parts";
 import type { EditorAction } from "./history";
 import { EDITOR_MESSAGES } from "./i18n/messages";
 import { useMessages } from "./i18n/use-locale";
+import { SizeField } from "./SizeField";
 
 /** 部品の見本（小さな画像に、その部品だけを付けた形） */
 function FrameSample({ part }: { part: FramePart }) {
@@ -50,6 +59,11 @@ export function FrameField({
 }) {
   const m = useMessages(EDITOR_MESSAGES);
   const parts = frameParts(doc.frame);
+  const frame = doc.frame;
+  const update = (patch: Partial<Frame>) =>
+    dispatch({ type: "apply", ops: [{ op: "frame", frame: { ...frame, ...patch } }] });
+  const border = frame?.border;
+  const borderColor = (border?.color ?? FRAME_BORDER_COLORS[0].value).toUpperCase();
   const toggle = (part: FramePart) =>
     dispatch({
       type: "apply",
@@ -75,6 +89,60 @@ export function FrameField({
         </div>
         <p className="harie-frame-note">{m.frame.note}</p>
       </fieldset>
+      {parts.radius && (
+        <SizeField
+          legend={m.frame.radius}
+          options={FRAME_RADII.map((o) => ({
+            label: m.frame.radii[o.name],
+            value: Math.round(o.value * scale),
+          }))}
+          min={1}
+          max={1000}
+          value={frame?.radius}
+          onChange={(v) => update({ radius: v })}
+          sample={(_, i) => (
+            <span
+              className="harie-sample-radius"
+              style={{ borderTopLeftRadius: [3, 6, 9, 14][i] ?? 6 }}
+            />
+          )}
+        />
+      )}
+      {parts.border && border !== undefined && (
+        <>
+          <SizeField
+            legend={m.frame.borderWidth}
+            options={FRAME_BORDER_WIDTHS.map((o) => ({
+              label: m.strokeWidths[o.name],
+              value: Math.max(1, Math.round(o.value * scale)),
+            }))}
+            min={1}
+            max={100}
+            value={border.width}
+            onChange={(v) => update({ border: { ...border, width: v } })}
+            sample={(_, i) => (
+              <span className="harie-sample-line" style={{ height: [1, 2, 3.5, 6][i] ?? 2 }} />
+            )}
+          />
+          <fieldset className="harie-field">
+            <legend className="harie-field-label">{m.frame.borderColor}</legend>
+            <div className="harie-swatches">
+              {FRAME_BORDER_COLORS.map((c) => (
+                <button
+                  key={c.value}
+                  type="button"
+                  className="harie-swatch"
+                  aria-label={m.frame.borderColors[c.name]}
+                  title={m.frame.borderColors[c.name]}
+                  aria-pressed={borderColor === c.value}
+                  style={{ background: c.value }}
+                  onClick={() => update({ border: { ...border, color: c.value } })}
+                />
+              ))}
+            </div>
+          </fieldset>
+        </>
+      )}
     </section>
   );
 }

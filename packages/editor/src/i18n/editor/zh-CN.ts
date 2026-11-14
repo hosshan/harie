@@ -56,6 +56,11 @@ export const zhCN: EditorMessages = {
     label: "图片外框",
     note: "加在保存的图片上，可以组合使用，贴到白色页面上也能看出边界。",
     parts: { border: "边框", shadow: "阴影", radius: "圆角" },
+    radius: "圆角大小",
+    radii: { small: "小", medium: "中", large: "大", xlarge: "特大" },
+    borderWidth: "边框粗细",
+    borderColor: "边框颜色",
+    borderColors: { light: "浅灰", gray: "灰", dark: "深灰", black: "黑" },
   },
   steps: {
     label: "编号和说明框",

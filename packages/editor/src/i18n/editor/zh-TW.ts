@@ -56,6 +56,11 @@ export const zhTW: EditorMessages = {
     label: "圖片外框",
     note: "加在儲存的圖片上，可以組合使用，貼到白色頁面上也看得出邊界。",
     parts: { border: "邊框", shadow: "陰影", radius: "圓角" },
+    radius: "圓角大小",
+    radii: { small: "小", medium: "中", large: "大", xlarge: "特大" },
+    borderWidth: "邊框粗細",
+    borderColor: "邊框顏色",
+    borderColors: { light: "淺灰", gray: "灰", dark: "深灰", black: "黑" },
   },
   steps: {
     label: "編號與說明框",
