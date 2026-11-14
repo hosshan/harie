@@ -61,8 +61,8 @@ export const ko: EditorMessages = {
   },
   frame: {
     label: "이미지 마감",
-    note: "저장할 이미지 둘레에 붙입니다. 흰 페이지에 붙여도 경계가 보입니다.",
-    presets: { none: "없음", border: "테두리", shadow: "그림자", card: "둥근 모서리" },
+    note: "저장할 이미지에 붙이며, 함께 쓸 수 있습니다. 흰 페이지에 붙여도 경계가 보입니다.",
+    parts: { border: "테두리", shadow: "그림자", radius: "둥근 모서리" },
   },
   steps: {
     label: "번호와 말풍선",

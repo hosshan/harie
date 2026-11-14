@@ -15,6 +15,14 @@
   <a href="https://www.npmjs.com/package/@harie/mcp">MCP server</a>
 </p>
 
+<p align="center">
+  <a href="https://github.com/hosshan/harie/stargazers"><img src="https://img.shields.io/github/stars/hosshan/harie?style=flat&logo=github" alt="GitHub stars"></a>
+  <a href="https://chromewebstore.google.com/detail/harie/dgbghdgnmjcgjdmhfnmcdphkafkbefll"><img src="https://img.shields.io/chrome-web-store/users/dgbghdgnmjcgjdmhfnmcdphkafkbefll?label=Chrome%20users" alt="Chrome Web Store users"></a>
+  <a href="https://www.npmjs.com/package/@harie/mcp"><img src="https://img.shields.io/npm/dm/@harie/mcp?label=%40harie%2Fmcp" alt="npm downloads"></a>
+  <a href="LICENSE"><img src="https://img.shields.io/github/license/hosshan/harie" alt="MIT License"></a>
+  <a href="https://github.com/sponsors/hosshan"><img src="https://img.shields.io/github/sponsors/hosshan?label=Sponsors&logo=githubsponsors" alt="GitHub Sponsors"></a>
+</p>
+
 An app for adding boxes, arrows and captions to screenshots, for example when writing user guides for web services. Saved files display as ordinary JPEG / PNG images, and opening one in Harie lets you edit the annotations again and again. SVG, WebP, GIF, HEIC and more can be opened too (they are converted to PNG / JPEG when opened; saving is JPEG / PNG only).
 
 ![Harie demo. A saved PNG is opened in the web editor, its annotations come back, and only a callout's text is changed before saving again](docs/images/demo.en.gif)
@@ -62,6 +70,14 @@ Usage, installation, local checks and release steps are in each app's README. Th
 | [packages/render](packages/render/README.md) | Rendering annotations → SVG → pixels |
 | [packages/ai](packages/ai/README.md) | AI annotation suggestions and personal-data detection |
 | [packages/editor](packages/editor/README.md) | Editor UI (React) |
+
+## Support Harie
+
+Harie is an MIT-licensed open source project built by one developer. If it helps you, a ★ Star on this repository keeps the project going and helps others find it.
+
+- To support it on an ongoing basis, you can sponsor it through [GitHub Sponsors](https://github.com/sponsors/hosshan).
+- Bugs and requests ("I want to make this kind of guide image") are welcome in [Issues](https://github.com/hosshan/harie/issues).
+- If you use Harie for your help center or internal guides, I'd love to hear about it.
 
 ## License
 
