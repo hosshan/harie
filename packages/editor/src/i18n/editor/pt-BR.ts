@@ -64,6 +64,11 @@ export const ptBR: EditorMessages = {
     label: "Acabamento da imagem",
     note: "Adicionado à imagem salva e pode ser combinado, para que as bordas apareçam em uma página branca.",
     parts: { border: "Borda", shadow: "Sombra", radius: "Arredondado" },
+    radius: "Raio dos cantos",
+    radii: { small: "Pequeno", medium: "Médio", large: "Grande", xlarge: "Muito grande" },
+    borderWidth: "Espessura da borda",
+    borderColor: "Cor da borda",
+    borderColors: { light: "Cinza-claro", gray: "Cinza", dark: "Cinza-escuro", black: "Preto" },
   },
   steps: {
     label: "Números e balões",

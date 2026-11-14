@@ -27,6 +27,10 @@ for (const button of document.querySelectorAll<HTMLButtonElement>("button[data-m
   button.title = tips[button.dataset.mode as keyof typeof tips];
 }
 
+// 入っている版（FR-CAP-12）。ストアから更新が届いたかを確かめるため
+const version = document.querySelector<HTMLElement>(".version");
+if (version !== null) version.textContent = m.version(browser.runtime.getManifest().version);
+
 const alert = document.querySelector<HTMLElement>("[role=alert]");
 
 // タイマー（FR-CAP-11）。オンにすると、撮り方のボタンを押してから 5 秒待って撮る。
