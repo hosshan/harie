@@ -64,6 +64,11 @@ export const es: EditorMessages = {
     label: "Acabado de la imagen",
     note: "Se añade a la imagen guardada y se puede combinar, para que sus bordes se vean en una página blanca.",
     parts: { border: "Borde", shadow: "Sombra", radius: "Redondeado" },
+    radius: "Radio de las esquinas",
+    radii: { small: "Pequeño", medium: "Mediano", large: "Grande", xlarge: "Muy grande" },
+    borderWidth: "Grosor del borde",
+    borderColor: "Color del borde",
+    borderColors: { light: "Gris claro", gray: "Gris", dark: "Gris oscuro", black: "Negro" },
   },
   steps: {
     label: "Números y globos",

@@ -63,6 +63,11 @@ export const ko: EditorMessages = {
     label: "이미지 마감",
     note: "저장할 이미지에 붙이며, 함께 쓸 수 있습니다. 흰 페이지에 붙여도 경계가 보입니다.",
     parts: { border: "테두리", shadow: "그림자", radius: "둥근 모서리" },
+    radius: "모서리 둥글기",
+    radii: { small: "작게", medium: "보통", large: "크게", xlarge: "아주 크게" },
+    borderWidth: "테두리 두께",
+    borderColor: "테두리 색",
+    borderColors: { light: "연한 회색", gray: "회색", dark: "진한 회색", black: "검정" },
   },
   steps: {
     label: "번호와 말풍선",

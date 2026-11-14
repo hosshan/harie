@@ -595,6 +595,15 @@ label.harie-field .harie-field-label {
   line-height: 1;
   font-weight: 600;
 }
+.harie-sample-radius {
+  display: block;
+  width: 16px;
+  height: 12px;
+  margin-top: 4px;
+  margin-left: 4px;
+  border-top: 2px solid currentColor;
+  border-left: 2px solid currentColor;
+}
 .harie-sample-line {
   display: block;
   width: 60%;
