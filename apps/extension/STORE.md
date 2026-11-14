@@ -12,8 +12,9 @@ Chrome ウェブストアに**公開**（検索に出る）で出すときに、
 | カテゴリ | 仕事効率化（Productivity）の「ツール」 |
 | 言語 | 英語（既定）、日本語、韓国語、中国語（繁体）、中国語（簡体）、スペイン語（ラテンアメリカとスペイン）、ポルトガル語（ブラジル）。言語ごとに下の説明を貼る。スクリーンショットとタイルは日本語と英語だけ作り、ほかの言語は英語のものを使う |
 | アイコン | zip の中の `icon/128.png` |
-| スクリーンショット | `store-assets/screenshot-{1-capture,2-region,3-editor}.png`（日本語）と `.en.png`（英語）。1280×800。番号の順に並べる |
+| スクリーンショット | `store-assets/screenshot-{1-capture,2-region,3-editor,4-mask,5-page}.png`（日本語）と `.en.png`（英語）。1280×800、見出し付き。番号の順に並べる（撮る → 範囲を選ぶ → 注釈 → 個人情報を隠す → Web 上の Harie 画像） |
 | プロモーション タイル（小） | `store-assets/promo-small.png`（日本語）と `promo-small.en.png`（英語）。440×280 |
+| マーキー プロモーション タイル | `store-assets/promo-marquee.png`（日本語）と `promo-marquee.en.png`（英語）。1400×560。任意の欄。ストアのトップなどで大きく紹介されるときに使われる |
 | 公式 URL（ホームページ） | `https://harie.studio/`。言語ごとの欄がないので日本語版の URL のまま。LP はヘッダーの言語メニューで `/en/`・`/ko/`・`/zh-tw/`・`/zh-cn/`・`/es/`・`/pt-br/` に移れる |
 | サポート URL | `https://github.com/hosshan/harie/issues` |
 
@@ -26,12 +27,17 @@ Chrome ウェブストアに**公開**（検索に出る）で出すときに、
 
 ■ できること
 ・キャプチャは「見えている範囲」「範囲を選ぶ」「要素を選ぶ」の 3 通り。Alt+Shift+S でも撮れます
+・「範囲を選ぶ」で幅と高さを入れれば、毎回同じ大きさで撮れます
 ・「5 秒待ってから撮る」をオンにすると、待つ間に開いたメニューやツールチップも撮れます
 ・「空のエディタを開く」から、撮っておいた画像を貼り付けて（Ctrl+V / ⌘V）すぐ編集することもできます
-・枠、矢印、番号、吹き出し、モザイクやダミーへの置き換え
+・枠、矢印、番号、吹き出し、テキスト、手描きのスケッチ。撮った画面のボタンや入力欄をクリックするだけで、枠と番号と説明文をまとめて付ける「要素で囲む」もあります
+・複数選択、整列、回転、Alt ドラッグでの複製、位置合わせのガイドで、見た目をすぐ整えられます
+・保存する画像に枠線・影・角丸を付けたり、大きさを変えたりできます。クリップボードへのコピーにも対応しています
+・メールアドレスなどの個人情報は、ページの文字から探して、ダミーの文字・モザイク・ぼかしで隠せます（AI なしで動き、どこにも送りません）
 ・保存した画像は Web 版（https://harie.studio/app/）やデスクトップ版でも開いて直せます
 ・（任意）GitHub やほかのサイトに載っている Harie 画像にカーソルを当てると、説明文をその場でコピーしたり、そのまま開いて直したりできます
-・AI による補足の提案と個人情報の検出（任意。自分の Anthropic API キーを登録したときだけ動きます）
+・AI による補足の提案と、画像の中の個人情報の検出（任意。自分の Anthropic API キーを登録したときだけ動きます）
+・表示は日本語、英語、韓国語、中国語（繁体・簡体）、スペイン語、ポルトガル語から選べます
 
 ■ 権限とデータについて
 ・ボタンかショートカットを押したタブにだけ、そのときに限ってアクセスします。インストール時に常時のサイトへのアクセス権は求めません
@@ -51,12 +57,17 @@ Saved images are plain JPEG / PNG files, so you can paste them anywhere. The ann
 
 ■ What you can do
 - Capture the visible area, a region you drag, or a single element. Alt+Shift+S captures the visible area
+- Enter a width and height when picking a region to capture the same size every time
 - Turn on "Wait 5 seconds before capturing" to include menus and tooltips you open while it counts down
 - Open a blank editor and paste (Ctrl+V / ⌘V) an image you already captured to annotate it right away
-- Boxes, arrows, numbered badges, callouts, and masking personal data with blur or dummy text
+- Boxes, arrows, numbered badges, callouts, text and freehand sketches. "Box an element" adds a box, a number and a note in one click on a button or field in the capture
+- Multi-select, align, rotate, Alt-drag to duplicate, and snap guides help you tidy things up quickly
+- Give the saved image a border, shadow or rounded corners, resize it, or copy it to the clipboard
+- Find emails and other personal data in the page text and hide them with dummy text, mosaic or blur (works without AI and sends nothing)
 - Open and edit saved images in the web editor (https://harie.studio/app/) or the desktop app
 - (Optional) Hover a Harie image on GitHub or other sites to copy its notes right where they are, or open it and edit it
-- AI annotation suggestions and personal-data detection (optional; works only with your own Anthropic API key)
+- AI annotation suggestions and personal-data detection inside the image (optional; works only with your own Anthropic API key)
+- The interface is available in English, Japanese, Korean, Chinese (Traditional and Simplified), Spanish and Portuguese
 
 ■ Permissions and data
 - Harie accesses only the tab where you pressed the button or shortcut, and only at that moment. No standing site access is requested at install
@@ -76,12 +87,16 @@ Open source (MIT License). Source code: https://github.com/hosshan/harie
 
 ■ 할 수 있는 일
 - 보이는 영역, 드래그한 영역, 요소 하나를 골라 캡처할 수 있습니다. Alt+Shift+S로 보이는 영역을 캡처합니다
+- 영역을 고를 때 너비와 높이를 입력하면 매번 같은 크기로 찍을 수 있습니다
 - 「5초 기다린 뒤 찍기」를 켜면 기다리는 동안 연 메뉴나 툴팁도 찍을 수 있습니다
 - 빈 편집기를 열고 이미 캡처한 이미지를 붙여넣어(Ctrl+V / ⌘V) 바로 편집할 수도 있습니다
-- 박스, 화살표, 번호, 말풍선, 모자이크나 더미 값으로 개인정보 가리기
+- 박스, 화살표, 번호, 말풍선, 텍스트, 손으로 그리는 스케치. 캡처한 화면의 버튼이나 입력란을 클릭만 하면 박스와 번호, 설명을 한꺼번에 붙이는 「요소 감싸기」도 있습니다
+- 여러 개 선택, 정렬, 회전, Alt 드래그로 복제, 맞춤 가이드로 모양을 빠르게 다듬을 수 있습니다
+- 저장할 이미지에 테두리, 그림자, 둥근 모서리를 붙이거나 크기를 바꿀 수 있고, 클립보드로 복사할 수도 있습니다
+- 이메일 주소 같은 개인정보를 페이지의 글자에서 찾아 더미 값, 모자이크, 흐림으로 가릴 수 있습니다(AI 없이 동작하며 아무 데도 보내지 않습니다)
 - 저장한 이미지는 웹 버전(https://harie.studio/app/)이나 데스크톱 앱에서도 열어 고칠 수 있습니다
 - (선택) GitHub나 다른 사이트에 올라간 Harie 이미지에 마우스를 올리면 설명을 그 자리에서 복사하거나 바로 열어 고칠 수 있습니다
-- AI가 주석을 제안하고 개인정보를 찾아 줍니다(선택. 본인의 Anthropic API 키를 등록했을 때만 동작합니다)
+- AI가 주석을 제안하고 이미지 속 개인정보를 찾아 줍니다(선택. 본인의 Anthropic API 키를 등록했을 때만 동작합니다)
 - 화면은 한국어로 표시되며, 한글 주석도 그대로 그려집니다
 
 ■ 권한과 데이터
@@ -102,12 +117,16 @@ Open source (MIT License). Source code: https://github.com/hosshan/harie
 
 ■ 可以做什麼
 - 可擷取可見範圍、拖曳選取的區域，或單一元素。按 Alt+Shift+S 可擷取可見範圍
+- 選取區域時輸入寬度和高度，每次都能擷取相同大小
 - 開啟「等 5 秒後再擷取」，就能把倒數時開啟的選單或提示框一起擷取
 - 也可以開啟空白編輯器，貼上（Ctrl+V / ⌘V）已擷取的圖片後立即編輯
-- 方框、箭頭、編號、說明框，以及用馬賽克或假資料遮蔽個人資料
+- 方框、箭頭、編號、說明框、文字和手繪草圖。只要點一下截圖中的按鈕或輸入欄，「框選元素」就會一次加上方框、編號和說明文字
+- 多重選取、對齊、旋轉、按住 Alt 拖曳複製，以及對齊參考線，能快速整理版面
+- 可替存檔的圖片加上邊框、陰影或圓角，也能調整大小或複製到剪貼簿
+- 從頁面文字找出電子郵件等個人資料，用假資料、馬賽克或模糊遮蔽（不需要 AI，也不會傳送到任何地方）
 - 存好的圖片也能在網頁版（https://harie.studio/app/）或桌面版開啟並修改
 - （選用）把游標移到 GitHub 或其他網站上的 Harie 圖片，就能當場複製說明文字，或直接開啟修改
-- AI 註解建議與個人資料偵測（選用，只有在登錄你自己的 Anthropic API 金鑰時才會運作）
+- AI 註解建議與圖片中個人資料的偵測（選用，只有在登錄你自己的 Anthropic API 金鑰時才會運作）
 - 介面以繁體中文顯示，中文註解也能正確繪製
 
 ■ 權限與資料
@@ -128,12 +147,16 @@ Open source (MIT License). Source code: https://github.com/hosshan/harie
 
 ■ 功能
 - 可截取可见区域、拖动选取的范围，或单个元素。按 Alt+Shift+S 可截取可见区域
+- 选取范围时输入宽度和高度，每次都能截取相同大小
 - 打开「等 5 秒后再截取」，就能把倒数时打开的菜单或提示框一起截取
 - 也可以打开空白编辑器，粘贴（Ctrl+V / ⌘V）已截取的图片后立即编辑
-- 方框、箭头、编号、标注框，以及用马赛克或虚拟数据遮盖个人信息
+- 方框、箭头、编号、标注框、文字和手绘草图。只要点一下截图中的按钮或输入框，「框选元素」就会一次加上方框、编号和说明文字
+- 多选、对齐、旋转、按住 Alt 拖动复制，以及对齐参考线，能快速整理版面
+- 可为保存的图片加上边框、阴影或圆角，也能调整大小或复制到剪贴板
+- 从页面文字中找出邮箱等个人信息，用虚拟数据、马赛克或模糊遮盖（无需 AI，也不会发送到任何地方）
 - 保存的图片也能在网页版（https://harie.studio/app/）或桌面版中打开修改
 - （可选）把鼠标移到 GitHub 或其他网站上的 Harie 图片上，就能当场复制说明文字，或直接打开修改
-- AI 标注建议与个人信息检测（可选，仅在登记你自己的 Anthropic API 密钥后才会工作）
+- AI 标注建议与图片中个人信息的检测（可选，仅在登记你自己的 Anthropic API 密钥后才会工作）
 - 界面以简体中文显示，中文标注也能正确绘制
 
 ■ 权限与数据
@@ -154,12 +177,16 @@ Las imágenes guardadas son JPEG / PNG normales, así que puedes pegarlas donde 
 
 ■ Qué puedes hacer
 - Captura el área visible, una zona que arrastres o un solo elemento. Alt+Shift+S captura el área visible
+- Escribe un ancho y un alto al elegir la zona para capturar siempre el mismo tamaño
 - Activa «Esperar 5 segundos antes de capturar» para incluir los menús y descripciones emergentes que abras durante la cuenta atrás
 - También puedes abrir el editor vacío y pegar (Ctrl+V / ⌘V) una imagen que ya capturaste para anotarla al momento
-- Recuadros, flechas, números, globos de texto y ocultación de datos personales con mosaico o valores ficticios
+- Recuadros, flechas, números, globos de texto, texto y bocetos a mano alzada. «Enmarcar un elemento» añade recuadro, número y nota con un solo clic sobre un botón o campo de la captura
+- Selección múltiple, alineación, rotación, duplicar con Alt + arrastrar y guías de ajuste para ordenar todo en un momento
+- Añade a la imagen guardada un borde, una sombra o esquinas redondeadas, cambia su tamaño o cópiala al portapapeles
+- Busca correos y otros datos personales en el texto de la página y ocúltalos con valores ficticios, mosaico o desenfoque (funciona sin IA y no envía nada)
 - Abre y edita las imágenes guardadas en el editor web (https://harie.studio/app/) o en la aplicación de escritorio
 - (Opcional) Pasa el cursor sobre una imagen de Harie en GitHub u otros sitios para copiar sus notas ahí mismo, o ábrela y edítala
-- Sugerencias de anotaciones con IA y detección de datos personales (opcional; solo funciona con tu propia clave de API de Anthropic)
+- Sugerencias de anotaciones con IA y detección de datos personales dentro de la imagen (opcional; solo funciona con tu propia clave de API de Anthropic)
 - La interfaz está en español
 
 ■ Permisos y datos
@@ -180,12 +207,16 @@ As imagens salvas são JPEG / PNG comuns, então você pode colá-las em qualque
 
 ■ O que você pode fazer
 - Capture a área visível, uma região que você arrasta ou um único elemento. Alt+Shift+S captura a área visível
+- Digite largura e altura ao escolher a região para capturar sempre do mesmo tamanho
 - Ative "Esperar 5 segundos antes de capturar" para incluir menus e dicas que você abrir durante a contagem
 - Você também pode abrir o editor vazio e colar (Ctrl+V / ⌘V) uma imagem já capturada para anotá-la na hora
-- Caixas, setas, números, balões e ocultação de dados pessoais com mosaico ou valores fictícios
+- Caixas, setas, números, balões, texto e esboços à mão livre. "Destacar um elemento" adiciona caixa, número e nota com um clique em um botão ou campo da captura
+- Seleção múltipla, alinhamento, rotação, duplicar com Alt + arrastar e guias de encaixe para deixar tudo arrumado rapidinho
+- Dê à imagem salva uma borda, sombra ou cantos arredondados, mude o tamanho ou copie para a área de transferência
+- Encontre e-mails e outros dados pessoais no texto da página e oculte com valores fictícios, mosaico ou desfoque (funciona sem IA e não envia nada)
 - Abra e edite as imagens salvas no editor web (https://harie.studio/app/) ou no app para desktop
 - (Opcional) Passe o cursor sobre uma imagem do Harie no GitHub ou em outros sites para copiar as notas ali mesmo, ou abra e edite
-- Sugestões de anotações com IA e detecção de dados pessoais (opcional; só funciona com sua própria chave de API da Anthropic)
+- Sugestões de anotações com IA e detecção de dados pessoais dentro da imagem (opcional; só funciona com sua própria chave de API da Anthropic)
 - A interface está em português
 
 ■ Permissões e dados
