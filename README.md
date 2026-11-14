@@ -15,6 +15,14 @@
   <a href="https://www.npmjs.com/package/@harie/mcp">MCP サーバー</a>
 </p>
 
+<p align="center">
+  <a href="https://github.com/hosshan/harie/stargazers"><img src="https://img.shields.io/github/stars/hosshan/harie?style=flat&logo=github" alt="GitHub stars"></a>
+  <a href="https://chromewebstore.google.com/detail/harie/dgbghdgnmjcgjdmhfnmcdphkafkbefll"><img src="https://img.shields.io/chrome-web-store/users/dgbghdgnmjcgjdmhfnmcdphkafkbefll?label=Chrome%20users" alt="Chrome Web Store users"></a>
+  <a href="https://www.npmjs.com/package/@harie/mcp"><img src="https://img.shields.io/npm/dm/@harie/mcp?label=%40harie%2Fmcp" alt="npm downloads"></a>
+  <a href="LICENSE"><img src="https://img.shields.io/github/license/hosshan/harie" alt="MIT License"></a>
+  <a href="https://github.com/sponsors/hosshan"><img src="https://img.shields.io/github/sponsors/hosshan?label=Sponsors&logo=githubsponsors" alt="GitHub Sponsors"></a>
+</p>
+
 Web サービス向けのガイド作成などで、スクリーンショットに枠・矢印・説明文を付けるアプリ。保存した画像は通常の JPEG / PNG として表示でき、Harie で開けば注釈を何度でも再編集できる。SVG・WebP・GIF・HEIC なども読み込める（読み込むときに PNG / JPEG に変換し、保存は JPEG / PNG）。
 
 ![Harie のデモ。保存した PNG を Web エディタで開くと注釈が戻り、吹き出しの文字だけ直して保存し直している](docs/images/demo.gif)
@@ -60,6 +68,14 @@ MVP（M0〜M5: Web エディタ・Chrome 拡張・MCP サーバー・AI 提案�
 | [packages/render](packages/render/README.md) | 注釈 → SVG → ピクセルの描画 |
 | [packages/ai](packages/ai/README.md) | AI の補足提案と個人情報の検出 |
 | [packages/editor](packages/editor/README.md) | エディタ UI（React） |
+
+## 応援する
+
+Harie は個人で開発している MIT ライセンスの OSS。役に立ったら、右上の ★ Star を押してもらえると開発の励みになり、ほかの人にも見つけてもらいやすくなる。
+
+- 継続して支援してもらえる場合は [GitHub Sponsors](https://github.com/sponsors/hosshan) から受け付けている。
+- 不具合や「こういうガイド画像を作りたい」という要望は [Issues](https://github.com/hosshan/harie/issues) へ。
+- 社内のガイドやヘルプページで使っている例を教えてもらえると、とても嬉しい。
 
 ## ライセンス
 
