@@ -54,8 +54,8 @@ export const zhTW: EditorMessages = {
   },
   frame: {
     label: "圖片外框",
-    note: "加在儲存的圖片周圍，貼到白色頁面上也看得出邊界。",
-    presets: { none: "無", border: "邊框", shadow: "陰影", card: "圓角陰影" },
+    note: "加在儲存的圖片上，可以組合使用，貼到白色頁面上也看得出邊界。",
+    parts: { border: "邊框", shadow: "陰影", radius: "圓角" },
   },
   steps: {
     label: "編號與說明框",

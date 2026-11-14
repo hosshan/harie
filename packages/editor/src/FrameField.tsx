@@ -1,47 +1,39 @@
-// 画像の仕上げ（FR-FILE-16）。何も選んでいないときの右の欄に置き、保存する画像のまわりの余白・影・枠線を選ぶ
+// 画像の仕上げ（FR-FILE-16）。何も選んでいないときの右の欄に置き、保存する画像に付ける枠線・影・角丸を
+// それぞれ付け外しする（組み合わせられる）
 import type { HarieDocument } from "@harie/model";
 import type { Dispatch } from "react";
-import { FRAME_PRESETS, type FramePreset, framePreset, matchFramePreset } from "./frame-presets";
+import { FRAME_PARTS, type FramePart, frameParts, toggleFramePart } from "./frame-parts";
 import type { EditorAction } from "./history";
 import { EDITOR_MESSAGES } from "./i18n/messages";
 import { useMessages } from "./i18n/use-locale";
 
-/** 選択肢の見本（小さな画像に、その仕上げを付けた形） */
-function FrameSample({ preset }: { preset: FramePreset }) {
-  const shadow = preset === "shadow" || preset === "card";
+/** 部品の見本（小さな画像に、その部品だけを付けた形） */
+function FrameSample({ part }: { part: FramePart }) {
+  const rx = part === "radius" ? 4 : 0;
   return (
     <svg viewBox="0 0 34 24" width="34" height="24" aria-hidden="true">
-      {shadow && (
+      {part === "shadow" && (
         <rect
-          x="7"
-          y="7.5"
-          width="20"
-          height="12"
-          rx={preset === "card" ? 2.5 : 0}
+          x="6"
+          y="6.5"
+          width="22"
+          height="13"
           fill="#2B2620"
-          opacity="0.28"
+          opacity="0.35"
           style={{ filter: "blur(1.6px)" }}
         />
       )}
       <rect
-        x={shadow ? 7 : 3}
-        y={shadow ? 6 : 3}
-        width={shadow ? 20 : 28}
-        height={shadow ? 12 : 18}
-        rx={preset === "card" ? 2.5 : 0}
-        fill="#FFFFFF"
-        stroke={preset === "none" ? "#E4E4E7" : preset === "border" ? "#8A8580" : "none"}
-        strokeWidth={preset === "border" ? 1.4 : 1}
+        x="6"
+        y="5"
+        width="22"
+        height="13"
+        rx={rx}
+        fill="#E9E4DC"
+        stroke={part === "border" ? "#6B655E" : "none"}
+        strokeWidth="1.4"
       />
-      <rect
-        x={shadow ? 10 : 7}
-        y={shadow ? 9 : 7}
-        width={shadow ? 8 : 12}
-        height="2"
-        rx="1"
-        fill="currentColor"
-        opacity="0.35"
-      />
+      <rect x="9" y="8" width="9" height="2" rx="1" fill="currentColor" opacity="0.35" />
     </svg>
   );
 }
@@ -53,28 +45,31 @@ export function FrameField({
 }: {
   doc: HarieDocument;
   dispatch: Dispatch<EditorAction>;
-  /** 画像の解像度（FR-EDIT-16）。余白・影の大きさをこれに合わせる */
+  /** 画像の解像度（FR-EDIT-16）。線・余白・影・角丸の大きさをこれに合わせる */
   scale: number;
 }) {
   const m = useMessages(EDITOR_MESSAGES);
-  const current = matchFramePreset(doc.frame, scale);
-  const apply = (preset: FramePreset) =>
-    dispatch({ type: "apply", ops: [{ op: "frame", frame: framePreset(preset, scale) ?? null }] });
+  const parts = frameParts(doc.frame);
+  const toggle = (part: FramePart) =>
+    dispatch({
+      type: "apply",
+      ops: [{ op: "frame", frame: toggleFramePart(doc.frame, part, scale) ?? null }],
+    });
   return (
     <section className="harie-inspector-body harie-frame-field" aria-label={m.frame.label}>
       <fieldset className="harie-field">
         <legend className="harie-field-label">{m.frame.label}</legend>
-        <div className="harie-tiles">
-          {FRAME_PRESETS.map((p) => (
+        <div className="harie-tiles harie-frame-tiles">
+          {FRAME_PARTS.map((p) => (
             <button
               key={p}
               type="button"
               className="harie-tile"
-              aria-pressed={current === p}
-              onClick={() => apply(p)}
+              aria-pressed={parts[p]}
+              onClick={() => toggle(p)}
             >
-              <FrameSample preset={p} />
-              <small>{m.frame.presets[p]}</small>
+              <FrameSample part={p} />
+              <small>{m.frame.parts[p]}</small>
             </button>
           ))}
         </div>

@@ -1256,9 +1256,9 @@ test("FR-FILE-16: 画像の仕上げで影を付けて保存すると、余白�
 
   // 元に戻すと仕上げが外れる
   await page.keyboard.press("ControlOrMeta+z");
-  await expect(finish.getByRole("button", { name: "なし" })).toHaveAttribute(
+  await expect(finish.getByRole("button", { name: "影", exact: true })).toHaveAttribute(
     "aria-pressed",
-    "true",
+    "false",
   );
   await expect(page.locator(".harie-canvas-frame")).toHaveCount(0);
 });

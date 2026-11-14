@@ -62,8 +62,8 @@ export const ptBR: EditorMessages = {
   },
   frame: {
     label: "Acabamento da imagem",
-    note: "Adicionado ao redor da imagem salva para que as bordas apareçam em uma página branca.",
-    presets: { none: "Nenhum", border: "Borda", shadow: "Sombra", card: "Arredondado" },
+    note: "Adicionado à imagem salva e pode ser combinado, para que as bordas apareçam em uma página branca.",
+    parts: { border: "Borda", shadow: "Sombra", radius: "Arredondado" },
   },
   steps: {
     label: "Números e balões",
