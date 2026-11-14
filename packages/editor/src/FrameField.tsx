@@ -89,25 +89,6 @@ export function FrameField({
         </div>
         <p className="harie-frame-note">{m.frame.note}</p>
       </fieldset>
-      {parts.radius && (
-        <SizeField
-          legend={m.frame.radius}
-          options={FRAME_RADII.map((o) => ({
-            label: m.frame.radii[o.name],
-            value: Math.round(o.value * scale),
-          }))}
-          min={1}
-          max={1000}
-          value={frame?.radius}
-          onChange={(v) => update({ radius: v })}
-          sample={(_, i) => (
-            <span
-              className="harie-sample-radius"
-              style={{ borderTopLeftRadius: [3, 6, 9, 14][i] ?? 6 }}
-            />
-          )}
-        />
-      )}
       {parts.border && border !== undefined && (
         <>
           <SizeField
@@ -142,6 +123,25 @@ export function FrameField({
             </div>
           </fieldset>
         </>
+      )}
+      {parts.radius && (
+        <SizeField
+          legend={m.frame.radius}
+          options={FRAME_RADII.map((o) => ({
+            label: m.frame.radii[o.name],
+            value: Math.round(o.value * scale),
+          }))}
+          min={1}
+          max={1000}
+          value={frame?.radius}
+          onChange={(v) => update({ radius: v })}
+          sample={(_, i) => (
+            <span
+              className="harie-sample-radius"
+              style={{ borderTopLeftRadius: [3, 6, 9, 14][i] ?? 6 }}
+            />
+          )}
+        />
       )}
     </section>
   );
