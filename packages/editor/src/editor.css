@@ -228,7 +228,8 @@
 }
 /*
  * 画像そのものの枠。縦横比を保って台の内側いっぱいに収める。
- * 影で、白っぽいスクリーンショットでも画像の端が分かるようにする
+ * 線や影は付けない。保存する画像の仕上げ（FR-FILE-16）と見分けがつかなくなるため、
+ * 仕上げがないときは保存結果どおり何も付けずに見せる（台の色で画像の端は分かる）
  */
 .harie-canvas {
   position: relative;
@@ -241,10 +242,6 @@
     var(--harie-canvas-ratio, 1)
   );
   background: #fff;
-  /* 縁の線は付けない。付けると仕上げの「枠線」と見分けにくい */
-  box-shadow:
-    0 2px 6px rgba(43, 38, 32, 0.08),
-    0 12px 32px rgba(43, 38, 32, 0.14);
 }
 /*
  * 右の欄は台と同じ高さに収め、長くなったら欄の中で動かす。
@@ -1022,10 +1019,9 @@ label.harie-field .harie-field-label {
   line-height: 1.6;
   color: var(--harie-muted);
 }
-/* 仕上げを付けているときは、編集面の影の代わりに保存時と同じ仕上げを見せる */
+/* 仕上げを付けているときは、保存時と同じ仕上げを見せる */
 .harie-canvas[data-framed] {
   background: transparent;
-  box-shadow: none;
 }
 .harie-canvas-frame {
   position: absolute;
