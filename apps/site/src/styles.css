@@ -702,6 +702,8 @@ details.lang summary::after {
 .table-wrap {
   margin-top: 56px;
   overflow-x: auto;
+  /* 横のスクロールバー（スマホでは表に重ねて描かれる）を表の下の余白に出す */
+  padding-bottom: 12px;
 }
 
 .compare {
