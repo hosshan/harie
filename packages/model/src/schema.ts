@@ -194,7 +194,7 @@ export const FrameSchema = z
   .looseObject({
     /** 画像のまわりの余白（px）。保存する画像は上下左右にこの分だけ大きくなる。省略は 0 */
     padding: nonNegative.max(1000).optional(),
-    /** 余白の色。`transparent` は PNG で保存したときだけ透過になる（JPEG は白）。省略は白 */
+    /** 余白の色。`transparent` は PNG で保存したときだけ透過になる（JPEG は白）。省略は白。余白がなければ使わず、角丸の角は透過になる */
     background: z.union([color, z.literal("transparent")]).optional(),
     /** 画像の角の丸み（px）。省略は 0 */
     radius: nonNegative.max(1000).optional(),

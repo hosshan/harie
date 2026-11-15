@@ -107,6 +107,18 @@ describe("仕上げ FR-FILE-16", () => {
     expect(px(p, 4, 4)).toEqual([0, 0, 0, 255]);
   });
 
+  it("余白なしの角丸は、角を透過にする（線があっても同じ）", async () => {
+    const r = await nodeRenderer();
+    for (const extra of [{}, { border: { width: 2 } }]) {
+      const p = r.renderPixels({ doc: doc(64, 40, { radius: 12, ...extra }), base });
+      expect(px(p, 0, 0)[3]).toBe(0);
+      expect(px(p, 63, 39)[3]).toBe(0);
+      expect(px(p, 32, 20)[3]).toBe(255);
+    }
+    const preview = buildFramePreview(doc(64, 40, { radius: 12 }));
+    expect(preview?.under).not.toContain('width="64" height="40" fill="#FFFFFF"/><rect');
+  });
+
   it("背景を透過にすると、PNG では余白が透明になり、画像の部分は不透明のまま", async () => {
     const r = await nodeRenderer();
     const d = doc(64, 40, { padding: 6, background: "transparent" });

@@ -33,6 +33,7 @@ A を採る。
 
 - `frame`（任意）: `padding`（余白 px）、`background`（`#RRGGBB` か `transparent`。省略は白）、`radius`（画像の角の丸み px）、`border`（`{ width, color? }`。画像の縁の内側に引く）、`shadow`（`{ blur, y?, color? }`。CSS の box-shadow の blur と同じ感覚の値。`y` の省略は blur の 1/4、色の省略は黒の 25%）。値は画像のピクセル。
 - 余白・角丸・線・影がどれもない `frame` は、ないのと同じに扱う。
+- 余白がないときは `background` を使わず、角丸で切り抜いた角は透過にする（PNG。JPEG では白）。白で埋めると角丸が見えないため（2026-11-14 修正）。
 - `transparent` は PNG で保存したときだけ透過にする。JPEG は透過できないので白にする。画像の部分は透過の PNG をベースにしても、これまでどおり白地に描く。
 - `buildSvg` は保存用（`applyOutputSize: true`）のときだけ包む。書き出しの大きさ（`canvas.output`、[ADR-0018](./0018-output-size.md)）を決めているときは、画像をその大きさで描き、仕上げの値も同じ倍率で縮めて外側に付ける（保存する画像の幅は `output.width + 2 × padding × 倍率`）。エディタの編集面は注釈の座標と画面を合わせるため包まず、`buildFramePreview` の SVG を編集面の外側へはみ出して重ねて見せる。`renderer.render` は既定で包み（保存・コピー）、`atOutputSize: false` で大きさも仕上げも反映しない。
 - MCP は `harie_edit` の操作 `{"op":"frame","frame":...}`（`null` で外す）で指定する。AI に返す画像は注釈の座標と合わせるため仕上げなし・ベース画像の大きさで描く。
