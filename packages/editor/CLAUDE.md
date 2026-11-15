@@ -13,3 +13,4 @@
 - 道具のパレット（`Palette.tsx`）・その場の文字編集（`TextEditor.tsx`）・文字サイズの決まりは `docs/03-design/architecture.md` の「エディタの操作の決まり」に従う。その場の文字編集も確定 1 回を Undo の 1 単位にする。
 - 画面の文字は `src/i18n/messages.ts`（Web 側は `apps/web/src/messages.ts`、拡張は `apps/extension/lib/messages.ts`）に日本語と英語を並べて置き、`useMessages` で読む。英語以外の言語は `src/i18n/editor/`（Web 側は `apps/web/src/i18n/`、拡張は `apps/extension/lib/i18n/`）に置く。コンポーネントに文字を直接書かない（NFR-I18N-01）。どの言語も日本語と同じ形（`Messages` 型）にするので、文言を足したら全言語に足さないと型検査で落ちる。
 - キーボードのショートカットは `shortcuts.ts` に定義を集め、判定（`matchesShortcut`）・表示（`formatShortcut`）・一覧（`ShortcutList`）で同じ定義を使う。Mac は ⌘、ほかは Ctrl（FR-EDIT-12）。
+- 欄の中でスクロールさせる要素には `harie-scroll` を付ける。どの OS でも同じ細いバーを自前で描き、`scrollbar-gutter` の溝に置くので、バーが内容に重ならない（OS ごとに分けない）。

@@ -17,6 +17,40 @@
   /* 画像を置く台。画像（白いスクリーンショットも多い）と見分けられるよう、少し沈んだ色にする */
   --harie-board: #f1ece2;
   --harie-board-dot: rgba(43, 38, 32, 0.09);
+  /* 欄の中のスクロールバー（.harie-scroll）の幅。バーはこの幅の溝に収まり、内容に重ならない */
+  --harie-scrollbar-size: 8px;
+}
+/*
+ * 欄の中でスクロールさせる要素に付ける。OS の既定のバーは macOS では内容に重ねて描かれ、
+ * Windows では太い溝を取るので、どの OS でも同じ細いバーを自前で描き、決まった幅の溝（scrollbar-gutter）に置く。
+ * 溝はバーが出ないときも空けておき、内容がずれないようにする
+ */
+.harie-scroll {
+  scrollbar-gutter: stable;
+}
+.harie-scroll::-webkit-scrollbar {
+  width: var(--harie-scrollbar-size);
+  height: var(--harie-scrollbar-size);
+}
+.harie-scroll::-webkit-scrollbar-track,
+.harie-scroll::-webkit-scrollbar-corner {
+  background: transparent;
+}
+.harie-scroll::-webkit-scrollbar-thumb {
+  /* 溝の中で少し細く見せる（透明な縁の内側だけを塗る） */
+  border: 1px solid transparent;
+  border-radius: 999px;
+  background: rgba(43, 38, 32, 0.22) padding-box;
+}
+.harie-scroll::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(43, 38, 32, 0.4);
+}
+/* ::-webkit-scrollbar のない Firefox は細いバーで近づける */
+@supports not selector(::-webkit-scrollbar) {
+  .harie-scroll {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(43, 38, 32, 0.22) transparent;
+  }
 }
 /* エディタは親の高さいっぱいに広がる（親は高さを決めておく） */
 .harie-editor {
@@ -223,7 +257,8 @@
   flex: 1;
   min-height: 0;
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 240px;
+  /* 右の欄は中身 228px + 左右の余白とスクロールバーの溝（4px + 8px ずつ） */
+  grid-template-columns: minmax(0, 1fr) 252px;
   gap: 16px;
 }
 /*
@@ -250,7 +285,9 @@
 .harie-inspector {
   min-height: 0;
   overflow-y: auto;
-  padding: 2px 6px 16px;
+  /* スクロールバーの溝を左右の両方に取り（.harie-scroll）、バーが出ても出なくても左右の余白をそろえる */
+  scrollbar-gutter: stable both-edges;
+  padding: 2px 4px 16px;
   display: flex;
   flex-direction: column;
 }
@@ -262,11 +299,11 @@
   position: sticky;
   bottom: 0;
   /* 上は残りの高さを空けて下端に寄せる。左右は欄の余白まで広げ、下に動いた色の輪がはみ出して見えないようにする */
-  margin: auto -6px 0;
-  padding: 16px 6px;
+  margin: auto -4px 0;
+  padding: 16px 4px;
   /* 区切り線は上の設定の幅にそろえる */
   background:
-    linear-gradient(var(--harie-line), var(--harie-line)) 6px 0 / calc(100% - 12px) 1px no-repeat
+    linear-gradient(var(--harie-line), var(--harie-line)) 4px 0 / calc(100% - 8px) 1px no-repeat
     var(--harie-panel);
 }
 /* 欄の下の余白は提案の側で取り、その余白から下の設定が透けて見えないようにする */
@@ -386,6 +423,9 @@
   }
   .harie-inspector {
     overflow-y: visible;
+    /* 欄の中では動かさない（ページごと動く）ので、溝は要らない */
+    scrollbar-gutter: auto;
+    padding-inline: 6px;
   }
   /* 欄は台の下に続くので、下端に留めず設定の後ろに区切って置く */
   .harie-inspector:has(> .harie-inspector-foot:not(:empty)) {
@@ -846,6 +886,8 @@ label.harie-field .harie-field-label {
   gap: 16px;
   max-height: min(60vh, 560px);
   overflow-y: auto;
+  /* スクロールバーの溝（.harie-scroll）はダイアログの右の余白に出し、キーの右端を閉じるボタンにそろえる */
+  margin-right: calc(-1 * var(--harie-scrollbar-size));
   font-size: 13px;
 }
 /* スクロールする一覧はダイアログを開いたときに最初にフォーカスを受ける。黒い枠は出さない（キーでのスクロールはそのまま効く） */

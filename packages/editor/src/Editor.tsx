@@ -514,7 +514,7 @@ export function Editor({
             showKeys={keyHint > 0}
           />
         </div>
-        <aside className="harie-inspector" aria-label={m.inspector.label}>
+        <aside className="harie-inspector harie-scroll" aria-label={m.inspector.label}>
           {onApplyMasks !== undefined && (tool === "mask" || masks.length > 0) && (
             <MaskPanel
               drafts={masks}

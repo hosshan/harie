@@ -98,7 +98,7 @@ export function ShortcutList({ file = {}, mask = true, element = false }: Shortc
     },
   ];
   return (
-    <div className="harie-shortcuts">
+    <div className="harie-shortcuts harie-scroll">
       {groups.map((g) => (
         <section key={g.title} aria-label={g.title}>
           <h3>{g.title}</h3>
