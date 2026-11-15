@@ -53,7 +53,6 @@ import { MaskPanel } from "./MaskPanel";
 import { type AppliedMask, type MaskDraft, newMaskDraft, toPiiMasks } from "./masks";
 import { Icon, Palette, type PaletteAction, type PaletteTool, TOOL_ICONS } from "./Palette";
 import { SizeField } from "./SizeField";
-import { useScrollbarKind } from "./scrollbars";
 import { moveOps, pasteOps, type Reorder, removeOps, reorderOps, resizeOps } from "./selection";
 import { formatShortcut, isMacPlatform, matchesShortcut, type ShortcutId } from "./shortcuts";
 import { adoptSuggestionOps, rejectSuggestionOps } from "./suggestions";
@@ -203,7 +202,6 @@ export function Editor({
 }: EditorProps) {
   const m = useMessages(EDITOR_MESSAGES);
   const mac = useMemo(() => isMacPlatform(), []);
-  useScrollbarKind();
   // 開いた画像ごとに作り直される（呼び出し側が key を変える）ので、初期値は開いた時点のドキュメントで決める
   const [tool, setTool] = useState<Tool>(() => initialTool(state.doc));
   /** その場で文字を編集している注釈（ダブルクリック・Enter、またはテキスト・吹き出しを置いた直後） */
@@ -516,7 +514,7 @@ export function Editor({
             showKeys={keyHint > 0}
           />
         </div>
-        <aside className="harie-inspector" aria-label={m.inspector.label}>
+        <aside className="harie-inspector harie-scroll" aria-label={m.inspector.label}>
           {onApplyMasks !== undefined && (tool === "mask" || masks.length > 0) && (
             <MaskPanel
               drafts={masks}

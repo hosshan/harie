@@ -2,7 +2,6 @@
 // ダイアログの枠は呼び出し側（apps/web の Modal）が用意し、ここでは中身だけを描く
 import { EDITOR_MESSAGES, type EditorMessages } from "./i18n/messages";
 import { useMessages } from "./i18n/use-locale";
-import { useScrollbarKind } from "./scrollbars";
 import {
   formatCombo,
   formatShortcut,
@@ -25,7 +24,6 @@ type Row = { label: string; keys: string[] };
 
 export function ShortcutList({ file = {}, mask = true, element = false }: ShortcutListProps) {
   const m = useMessages(EDITOR_MESSAGES);
-  useScrollbarKind();
   const mac = isMacPlatform();
   const row = (id: ShortcutId, label: string = shortcutLabel(m, id)): Row => ({
     label,
@@ -100,7 +98,7 @@ export function ShortcutList({ file = {}, mask = true, element = false }: Shortc
     },
   ];
   return (
-    <div className="harie-shortcuts">
+    <div className="harie-shortcuts harie-scroll">
       {groups.map((g) => (
         <section key={g.title} aria-label={g.title}>
           <h3>{g.title}</h3>
